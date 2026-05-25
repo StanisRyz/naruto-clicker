@@ -27,9 +27,10 @@ Do not add external plugins or external assets without explicit approval.
 
 The main scene contains the first local clicker loop:
 
-- Press `Attack` to damage the current target.
-- Target HP is shown with a label and progress bar.
-- Defeating a target awards gold and creates a stronger next target.
+- Tap/click the main game field to damage the current enemy.
+- Enemy HP is shown with a label and progress bar.
+- Each level requires defeating 10 enemies.
+- Enemy HP and gold reward scale with the current level.
 - Gold can buy a single damage upgrade that increases click damage.
 
 This state is temporary and kept in `scenes/main/Main.gd` while the prototype is small.

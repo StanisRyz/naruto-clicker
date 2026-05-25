@@ -20,6 +20,9 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Preserve the 720x1280 portrait layout.
 - Keep YandexBridge as a future integration point.
 - Keep the current temporary gameplay state in `scenes/main/Main.gd`.
+- Keep the main attack input on the `GameField` tap/click area, not a separate Attack button.
+- Keep level progression simple: 10 enemies defeated per level, then advance the level.
+- Scale enemy HP and gold reward by level with deterministic formulas.
 - Prefer small, safe, isolated patches.
 - Preserve existing project settings unless the task requires a specific change.
 
@@ -39,8 +42,9 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Use Control-based UI for the main scene and other screen layouts.
 - Keep the game vertical and Web-export friendly.
 - Prefer containers and anchors over Node2D positioning for UI.
+- Keep upgrade buttons and future UI controls separate from `GameField` so they do not accidentally trigger attacks.
 - Preserve the main scene UID unless unavoidable.
-- Keep placeholder UI simple until specific gameplay/UI work is requested.
+- Keep prototype UI simple until specific gameplay/UI work is requested.
 
 ## Yandex Games / Web Export Rules
 
@@ -74,8 +78,14 @@ After each patch, validate manually in Godot:
 - Main root node is `Control`.
 - `scenes/main/Main.gd` is attached to the Main root node.
 - Clicker UI is visible.
-- Attack button reduces target HP.
+- There is no separate Attack button.
+- Clicking/tapping `GameField` reduces enemy HP.
+- Clicking upgrade buttons does not attack the enemy.
 - Target defeat gives gold.
+- Defeating 10 enemies advances to the next level.
+- Level text updates correctly.
+- Enemies defeated counter updates correctly.
+- Enemy HP and reward increase after level up.
 - Damage upgrade spends gold and increases damage.
 - Upgrade cannot be bought without enough gold.
 - Scene can be run from Godot.

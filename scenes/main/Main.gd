@@ -2,24 +2,29 @@ extends Control
 
 var gold: int = 0
 var click_damage: int = 1
+var current_level: int = 1
+var enemies_defeated_on_level: int = 0
+var enemies_required_per_level: int = 10
 var target_hp: int = 10
 var target_max_hp: int = 10
-var target_level: int = 1
 var reward_gold: int = 5
 var damage_upgrade_level: int = 0
 var damage_upgrade_cost: int = 10
 
-@onready var gold_label: Label = $MarginContainer/VBoxContainer/GoldLabel
-@onready var damage_label: Label = $MarginContainer/VBoxContainer/DamageLabel
-@onready var target_hp_label: Label = $MarginContainer/VBoxContainer/TargetHpLabel
-@onready var target_progress_bar: ProgressBar = $MarginContainer/VBoxContainer/TargetProgressBar
-@onready var attack_button: Button = $MarginContainer/VBoxContainer/AttackButton
+@onready var gold_label: Label = $MarginContainer/VBoxContainer/StatsContainer/GoldLabel
+@onready var damage_label: Label = $MarginContainer/VBoxContainer/StatsContainer/DamageLabel
+@onready var level_label: Label = $MarginContainer/VBoxContainer/StatsContainer/LevelLabel
+@onready var enemies_defeated_label: Label = $MarginContainer/VBoxContainer/StatsContainer/EnemiesDefeatedLabel
+@onready var game_field: Button = $MarginContainer/VBoxContainer/GameField
+@onready var enemy_name_label: Label = $MarginContainer/VBoxContainer/GameField/GameFieldContent/EnemyNameLabel
+@onready var target_hp_label: Label = $MarginContainer/VBoxContainer/GameField/GameFieldContent/TargetHpLabel
+@onready var target_progress_bar: ProgressBar = $MarginContainer/VBoxContainer/GameField/GameFieldContent/TargetProgressBar
 @onready var upgrade_damage_button: Button = $MarginContainer/VBoxContainer/UpgradeDamageButton
 @onready var status_label: Label = $MarginContainer/VBoxContainer/StatusLabel
 
 
 func _ready() -> void:
-	attack_button.pressed.connect(_on_attack_pressed)
+	game_field.pressed.connect(_attack_target)
 	upgrade_damage_button.pressed.connect(_on_upgrade_damage_pressed)
 	_update_ui()
 
@@ -31,19 +36,22 @@ func _ready() -> void:
 func _update_ui() -> void:
 	gold_label.text = "Gold: %d" % gold
 	damage_label.text = "Damage: %d" % click_damage
-	target_hp_label.text = "Target HP: %d / %d" % [target_hp, target_max_hp]
+	level_label.text = "Level: %d" % current_level
+	enemies_defeated_label.text = "Enemies: %d / %d" % [enemies_defeated_on_level, enemies_required_per_level]
+	enemy_name_label.text = "Enemy"
+	target_hp_label.text = "Enemy HP: %d / %d" % [target_hp, target_max_hp]
 	target_progress_bar.max_value = target_max_hp
 	target_progress_bar.value = target_hp
 	upgrade_damage_button.text = "Upgrade Damage - Cost: %d" % damage_upgrade_cost
 
 
-func _on_attack_pressed() -> void:
+func _attack_target() -> void:
 	target_hp = maxi(target_hp - click_damage, 0)
 
 	if target_hp == 0:
 		_defeat_target()
 	else:
-		status_label.text = "Attack the target!"
+		status_label.text = "Tap the field to attack!"
 
 	_update_ui()
 
@@ -63,8 +71,18 @@ func _on_upgrade_damage_pressed() -> void:
 
 func _defeat_target() -> void:
 	gold += reward_gold
-	status_label.text = "Target defeated! +%d gold" % reward_gold
-	target_level += 1
-	target_max_hp = 10 + (target_level - 1) * 5
+	enemies_defeated_on_level += 1
+	status_label.text = "Enemy defeated! +%d gold" % reward_gold
+
+	if enemies_defeated_on_level >= enemies_required_per_level:
+		current_level += 1
+		enemies_defeated_on_level = 0
+		_recalculate_level_values()
+		status_label.text = "Level up! Level %d" % current_level
+
 	target_hp = target_max_hp
-	reward_gold = 5 + (target_level - 1) * 2
+
+
+func _recalculate_level_values() -> void:
+	target_max_hp = 10 + (current_level - 1) * 8
+	reward_gold = 5 + (current_level - 1) * 3
