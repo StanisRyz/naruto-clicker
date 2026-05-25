@@ -64,3 +64,17 @@ mouse_filter = 2
 size_flags_horizontal = 3
 text = "Lv 1-10"
 horizontal_alignment = 1
+
+[node name="PrestigePointsLabel" type="Label" parent="."]
+layout_mode = 2
+mouse_filter = 2
+size_flags_horizontal = 3
+text = "Prestige: 0"
+horizontal_alignment = 1
+
+[node name="PrestigeRunsLabel" type="Label" parent="."]
+layout_mode = 2
+mouse_filter = 2
+size_flags_horizontal = 3
+text = "Runs: 0"
+horizontal_alignment = 1

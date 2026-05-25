@@ -32,6 +32,8 @@ func _ready() -> void:
 	upgrade_sheet.character_level_upgrade_requested.connect(_on_character_level_upgrade_requested)
 	upgrade_sheet.autoclick_purchase_requested.connect(_on_autoclick_purchase_requested)
 	upgrade_sheet.gold_bonus_purchase_requested.connect(_on_gold_bonus_purchase_requested)
+	upgrade_sheet.prestige_requested.connect(_on_prestige_requested)
+	upgrade_sheet.prestige_confirmed.connect(_on_prestige_confirmed)
 	partner_sheet.partner_purchase_requested.connect(_on_partner_purchase_requested)
 	_update_ui()
 	_sync_boss_timer()
@@ -111,6 +113,23 @@ func _on_upgrades_button_pressed() -> void:
 
 func _on_partners_button_pressed() -> void:
 	partner_sheet.show_sheet()
+
+
+func _on_prestige_requested() -> void:
+	upgrade_sheet.show_prestige_confirm(state)
+
+
+func _on_prestige_confirmed() -> void:
+	var result: Dictionary = state.perform_prestige()
+	boss_time_left = 0.0
+	boss_timer_active = false
+	autoclick_time_left = 0.0
+	gold_bonus_time_left = 0.0
+	autoclick_accumulator = 0.0
+	partner_damage_accumulator = 0.0
+	status_label.text = result.get("status_text", "")
+	_update_ui()
+	_sync_boss_timer()
 
 
 func _sync_boss_timer() -> void:

@@ -9,6 +9,8 @@ extends GridContainer
 @onready var enemies_defeated_label: Label = $EnemiesDefeatedLabel
 @onready var zone_label: Label = $ZoneLabel
 @onready var zone_range_label: Label = $ZoneRangeLabel
+@onready var prestige_points_label: Label = $PrestigePointsLabel
+@onready var prestige_runs_label: Label = $PrestigeRunsLabel
 
 
 func update_view(state: ClickerState) -> void:
@@ -23,3 +25,5 @@ func update_view(state: ClickerState) -> void:
 	]
 	zone_label.text = "Zone: %s" % state.zone_name
 	zone_range_label.text = "Lv %d-%d" % [state.zone_level_start, state.zone_level_end]
+	prestige_points_label.text = "Prestige: %d" % state.prestige_points
+	prestige_runs_label.text = "Runs: %d" % state.total_prestiges

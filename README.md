@@ -53,6 +53,20 @@ The main scene contains the first local clicker loop:
 - Partner damage ticks every 0.1 seconds for `total_dps / 10` damage.
 These formulas are prototype balance values.
 
+## Prestige
+
+Prestige is an unlockable reset inside the Upgrades sheet.
+
+- The Prestige button appears in `UpgradeSheet` alongside other upgrades.
+- It is locked (disabled) until `current_level >= 50`.
+- Reward: `floor(current_level / 50)` prestige points per prestige action.
+  - Level 50 → +1 point, level 100 → +2 points, level 150 → +3 points.
+- Pressing the button opens a confirmation dialog inside the sheet showing the current level, points to gain, and resulting bonuses.
+- Confirming resets all normal progress (gold, character level, game level, abilities, partners, zone) but keeps `prestige_points` and `total_prestiges`.
+- Each prestige point permanently adds +10% to click damage and +10% to gold rewards.
+- Gold Bonus still doubles rewards on top of the prestige gold multiplier.
+- No save system is implemented; prestige state is lost on page reload.
+
 ## Zone Progression
 
 Levels are grouped into zones. Each zone has named enemies and multipliers applied on top of the base HP and reward formulas.

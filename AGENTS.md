@@ -56,6 +56,14 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Boss levels must use a 30 second timer and return to the previous level on failure.
 - Do not add elite enemies.
 - Scale enemy HP and gold reward by level with deterministic formulas.
+- Prestige lives inside `UpgradeSheet`; do not add a separate Prestige sheet or bottom bar button.
+- Prestige unlock level is 50. Reward formula: `floor(current_level / 50)` points.
+- Prestige confirmation dialog (`PrestigeConfirmDialog`) is an overlay child of `UpgradeSheet`; it blocks clicks only within the sheet, not the full screen.
+- Signal flow: UpgradePanel `prestige_requested` → UpgradeSheet `prestige_requested` → ClickerScreen calls `show_prestige_confirm(state)`; dialog `confirmed` → UpgradeSheet `prestige_confirmed` → ClickerScreen calls `perform_prestige()`.
+- `perform_prestige()` resets all normal progress except `prestige_points` and `total_prestiges`.
+- Apply prestige damage multiplier in `_update_character_state()` so `click_damage` always reflects effective damage.
+- Apply prestige damage multiplier in `get_partner_tick_damage()`.
+- Apply prestige gold multiplier in `attack_with_damage()` before the Gold Bonus x2 multiplier.
 - Zone data lives in `ZONE_DATA` const in `ClickerState.gd`; do not move it to separate files yet.
 - Zones group levels 1–10, 11–20, 21–30, 31–40. Level 41+ stays in Zone 4.
 - Zone HP multipliers: 1.0, 1.4, 1.9, 2.5. Zone reward multipliers: 1.0, 1.3, 1.7, 2.2.
@@ -205,6 +213,12 @@ After each patch, validate manually in Godot:
 - StatsPanel zone row shows zone name and level range.
 - HP and reward values are higher in later zones than the base formula alone.
 - Zone defeat feedback shows "New Zone!" flash when zone changes.
+- Prestige button is visible in UpgradeSheet and disabled before level 50.
+- At level 50 the Prestige button enables and shows the reward point count.
+- Pressing Prestige opens PrestigeConfirmDialog inside UpgradeSheet (not full-screen).
+- Confirming prestige resets normal progress; cancelling does nothing.
+- StatsPanel shows Prestige points and total runs.
+- After prestige, all timers (boss, autoclick, gold bonus, accumulators) are reset in ClickerScreen.
 
 ## Documentation Update Rules
 

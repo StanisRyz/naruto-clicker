@@ -75,11 +75,73 @@ var zone_level_end: int = 10
 var zone_hp_multiplier: float = 1.0
 var zone_reward_multiplier: float = 1.0
 
+var prestige_points: int = 0
+var total_prestiges: int = 0
+var prestige_required_level: int = 50
+var prestige_damage_bonus_per_point: float = 0.10
+var prestige_gold_bonus_per_point: float = 0.10
+
 
 func _init() -> void:
 	_update_character_state()
 	recalculate_character_level_cost()
 	setup_current_level()
+
+
+func can_prestige() -> bool:
+	return current_level >= prestige_required_level
+
+
+func get_prestige_reward() -> int:
+	return int(current_level / float(prestige_required_level))
+
+
+func get_prestige_damage_multiplier() -> float:
+	return 1.0 + prestige_points * prestige_damage_bonus_per_point
+
+
+func get_prestige_gold_multiplier() -> float:
+	return 1.0 + prestige_points * prestige_gold_bonus_per_point
+
+
+func perform_prestige() -> Dictionary:
+	if not can_prestige():
+		return _make_purchase_result("Prestige requires level %d" % prestige_required_level)
+
+	var reward: int = get_prestige_reward()
+	prestige_points += reward
+	total_prestiges += 1
+
+	gold = 0
+	character_level = 1
+	current_level = 1
+	enemies_defeated_on_level = 0
+	autoclick_purchased = false
+	autoclick_active = false
+	gold_bonus_purchased = false
+	gold_bonus_active = false
+
+	for i in partner_counts.size():
+		partner_counts[i] = 0
+	partner_purchase_costs = [10, 50, 150]
+
+	recalculate_character_level_cost()
+	_update_character_state()
+	setup_current_level()
+
+	return {
+		"defeated": false,
+		"level_up": false,
+		"reward_gold": 0,
+		"damage_dealt": 0,
+		"target_hp_before": target_hp,
+		"target_hp_after": target_hp,
+		"upgraded": true,
+		"not_enough_gold": false,
+		"status_text": "Prestige complete! +%d Prestige Points" % reward,
+		"zone_changed": false,
+		"zone_name": "",
+	}
 
 
 func attack() -> Dictionary:
@@ -97,7 +159,8 @@ func attack_with_damage(damage: int) -> Dictionary:
 	if target_hp > 0:
 		return _make_attack_result(false, false, 0, damage_dealt, target_hp_before, target_hp, "Tap the field to attack!")
 
-	var earned_gold: int = reward_gold * gold_bonus_multiplier if gold_bonus_active else reward_gold
+	var prestige_gold: int = int(reward_gold * get_prestige_gold_multiplier())
+	var earned_gold: int = prestige_gold * gold_bonus_multiplier if gold_bonus_active else prestige_gold
 	gold += earned_gold
 	enemies_defeated_on_level += 1
 
@@ -206,7 +269,11 @@ func get_partner_tick_damage() -> int:
 	if total_dps <= 0:
 		return 0
 
-	return total_dps / 10
+	var base_tick: int = int(total_dps / 10.0)
+	if base_tick <= 0:
+		return 0
+
+	return maxi(1, int(base_tick * get_prestige_damage_multiplier()))
 
 
 func buy_partner(partner_index: int) -> Dictionary:
@@ -343,7 +410,7 @@ func _update_zone() -> void:
 
 
 func _update_character_state() -> void:
-	click_damage = character_level
+	click_damage = maxi(1, int(character_level * get_prestige_damage_multiplier()))
 	update_ability_unlocks()
 
 
