@@ -9,13 +9,18 @@ var gold_bonus_time_left: float = 0.0
 var ability_duration: float = 30.0
 var autoclick_interval: float = 0.05
 var autoclick_interval_epsilon: float = 0.000001
+var partner_damage_accumulator: float = 0.0
+var partner_damage_interval: float = 0.1
+var partner_damage_interval_epsilon: float = 0.000001
 
 @onready var stats_panel: StatsPanel = $MainContent/VBoxContainer/StatsPanel
 @onready var game_field: GameField = $GameField
 @onready var ability_bar: AbilityBar = $AbilityBar
 @onready var status_label: Label = $MainContent/VBoxContainer/StatusLabel
-@onready var upgrades_button: Button = $BottomBar/MarginContainer/UpgradesButton
+@onready var upgrades_button: Button = $BottomBar/MarginContainer/HBoxContainer/UpgradesButton
+@onready var partners_button: Button = $BottomBar/MarginContainer/HBoxContainer/PartnersButton
 @onready var upgrade_sheet: UpgradeSheet = $UpgradeSheet
+@onready var partner_sheet: PartnerSheet = $PartnerSheet
 
 
 func _ready() -> void:
@@ -23,9 +28,11 @@ func _ready() -> void:
 	ability_bar.autoclick_requested.connect(_on_autoclick_requested)
 	ability_bar.gold_bonus_requested.connect(_on_gold_bonus_requested)
 	upgrades_button.pressed.connect(_on_upgrades_button_pressed)
+	partners_button.pressed.connect(_on_partners_button_pressed)
 	upgrade_sheet.character_level_upgrade_requested.connect(_on_character_level_upgrade_requested)
 	upgrade_sheet.autoclick_purchase_requested.connect(_on_autoclick_purchase_requested)
 	upgrade_sheet.gold_bonus_purchase_requested.connect(_on_gold_bonus_purchase_requested)
+	partner_sheet.partner_purchase_requested.connect(_on_partner_purchase_requested)
 	_update_ui()
 	_sync_boss_timer()
 
@@ -50,6 +57,15 @@ func _process(delta: float) -> void:
 	else:
 		autoclick_accumulator = 0.0
 
+	if state.get_total_partner_dps() > 0:
+		partner_damage_accumulator += delta
+
+		while partner_damage_accumulator + partner_damage_interval_epsilon >= partner_damage_interval:
+			partner_damage_accumulator -= partner_damage_interval
+			_run_partner_damage_tick()
+	else:
+		partner_damage_accumulator = 0.0
+
 
 func _update_ui() -> void:
 	stats_panel.update_view(state)
@@ -57,6 +73,7 @@ func _update_ui() -> void:
 	game_field.update_boss_timer(boss_time_left, boss_timer_active)
 	ability_bar.update_view(state, autoclick_time_left, gold_bonus_time_left)
 	upgrade_sheet.update_view(state)
+	partner_sheet.update_view(state)
 
 
 func _on_attack_requested() -> void:
@@ -82,8 +99,18 @@ func _on_gold_bonus_purchase_requested() -> void:
 	_update_ui()
 
 
+func _on_partner_purchase_requested(partner_index: int) -> void:
+	var result: Dictionary = state.buy_partner(partner_index)
+	status_label.text = result.get("status_text", "")
+	_update_ui()
+
+
 func _on_upgrades_button_pressed() -> void:
 	upgrade_sheet.show_sheet()
+
+
+func _on_partners_button_pressed() -> void:
+	partner_sheet.show_sheet()
 
 
 func _sync_boss_timer() -> void:
@@ -123,6 +150,15 @@ func _run_autoclick_attack() -> void:
 	_apply_attack_result(result, false)
 
 
+func _run_partner_damage_tick() -> void:
+	var tick_damage: int = state.get_partner_tick_damage()
+	if tick_damage <= 0:
+		return
+
+	var result: Dictionary = state.attack_with_damage(tick_damage)
+	_apply_passive_attack_result(result)
+
+
 func _on_autoclick_requested() -> void:
 	if not state.autoclick_purchased:
 		return
@@ -155,3 +191,12 @@ func _process_ability_timers(delta: float) -> void:
 			state.gold_bonus_active = false
 
 	ability_bar.update_view(state, autoclick_time_left, gold_bonus_time_left)
+
+
+func _apply_passive_attack_result(result: Dictionary) -> void:
+	if result.get("defeated", false):
+		game_field.play_defeat_feedback(result.get("level_up", false))
+		status_label.text = result.get("status_text", "")
+
+	_update_ui()
+	_sync_boss_timer()

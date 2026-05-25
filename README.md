@@ -44,6 +44,10 @@ The main scene contains the first local clicker loop:
 - Ability buttons are a separate left-middle overlay and must be purchased before activation.
 - Autoclick lasts 30 seconds and attacks once every 0.05 seconds while active.
 - Gold Bonus lasts 30 seconds and doubles gold rewards while active.
+- Partners provide passive DPS and are managed from a separate bottom-half sheet.
+- Partner DPS tiers are 10, 30, and 50.
+- Partner 2 requires Partner 1, and Partner 3 requires Partner 2.
+- Partner damage ticks every 0.1 seconds for `total_dps / 10` damage.
 
 The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes/game/ClickerScreen.gd` owns the gameplay flow and updates the UI components.
 
@@ -60,6 +64,8 @@ The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes
 - `scenes/ui/AbilityBar.tscn` - Left-side active ability buttons.
 - `scenes/ui/UpgradePanel.tscn` - Character level upgrade button.
 - `scenes/ui/UpgradeSheet.tscn` - Bottom-half upgrades sheet that hosts UpgradePanel.
+- `scenes/ui/PartnerPanel.tscn` - Partner hiring controls and DPS display.
+- `scenes/ui/PartnerSheet.tscn` - Bottom-half partners sheet that hosts PartnerPanel.
 - `scripts/game/ClickerState.gd` - Temporary prototype state and formulas.
 
 ## Web Export Notes

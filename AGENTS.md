@@ -34,6 +34,11 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Autoclick lasts 30 seconds and performs one attack every 0.05 seconds.
 - Gold Bonus lasts 30 seconds and doubles rewards while active.
 - Make sure ability buttons do not trigger attacks.
+- Partners provide passive DPS through `ClickerState` state and `ClickerScreen` ticking.
+- Partner DPS tiers are 10, 30, and 50.
+- Partner 2 requires at least one Partner 1; Partner 3 requires at least one Partner 2.
+- Partner damage ticks every 0.1 seconds for `total_dps / 10` damage.
+- Keep `PartnerSheet` as a separate bottom-half overlay from `UpgradeSheet`.
 - Character level replaces the old damage upgrade; character level must equal click damage.
 - Character level upgrades cost 1 gold until explicitly changed.
 - Autoclick unlocks at character level 15.
@@ -115,7 +120,9 @@ After each patch, validate manually in Godot:
 - Clicking/tapping `GameField` reduces enemy HP.
 - Clicking upgrade buttons does not attack the enemy.
 - `UpgradesButton` opens `UpgradeSheet`.
+- `PartnersButton` opens `PartnerSheet`.
 - `UpgradeSheet` is hidden by default and can be closed.
+- `PartnerSheet` is hidden by default and can be closed.
 - Character level upgrade works from inside `UpgradeSheet`.
 - Character level starts at 1 and damage starts at 1.
 - Buying character level upgrade costs 1 gold and increases character level and damage by 1.
@@ -127,6 +134,18 @@ After each patch, validate manually in Godot:
 - Ability button clicks do not attack the enemy.
 - Autoclick active performs automatic damage every second.
 - Gold Bonus active doubles enemy rewards.
+- BottomBar has `Upgrades` and `Partners` buttons on one row.
+- Partner 1 can be bought for 1 gold.
+- Partner 2 cannot be bought before at least one Partner 1.
+- Partner 3 cannot be bought before at least one Partner 2.
+- Partner counts update after purchase.
+- Total Partner DPS updates correctly.
+- Partner DPS damages enemy every 0.1 seconds.
+- One Partner 1 deals 1 damage per 0.1 seconds.
+- Partner 1 plus Partner 2 deals 4 damage per 0.1 seconds.
+- Partner kills give gold.
+- Gold Bonus doubles partner kill rewards.
+- Partners can damage and defeat bosses.
 - Visible `GameField` area still attacks while `UpgradeSheet` is open.
 - Clicking inside `UpgradeSheet` does not attack the enemy.
 - `AbilityBar` is a left-middle screen overlay.

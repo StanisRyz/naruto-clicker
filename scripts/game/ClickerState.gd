@@ -24,6 +24,9 @@ var gold_bonus_unlock_level: int = 30
 var autoclick_purchase_cost: int = 1
 var gold_bonus_purchase_cost: int = 1
 var gold_bonus_multiplier: int = 2
+var partner_counts: Array[int] = [0, 0, 0]
+var partner_dps_values: Array[int] = [10, 30, 50]
+var partner_purchase_costs: Array[int] = [1, 1, 1]
 
 
 func _init() -> void:
@@ -32,22 +35,19 @@ func _init() -> void:
 
 
 func attack() -> Dictionary:
+	return attack_with_damage(click_damage)
+
+
+func attack_with_damage(damage: int) -> Dictionary:
+	if damage <= 0:
+		return _make_attack_result(false, false, 0, 0, target_hp, target_hp, "Tap the field to attack!")
+
 	var target_hp_before: int = target_hp
-	target_hp = maxi(target_hp - click_damage, 0)
+	target_hp = maxi(target_hp - damage, 0)
 	var damage_dealt: int = target_hp_before - target_hp
 
 	if target_hp > 0:
-		return {
-			"defeated": false,
-			"level_up": false,
-			"reward_gold": 0,
-			"damage_dealt": damage_dealt,
-			"target_hp_before": target_hp_before,
-			"target_hp_after": target_hp,
-			"upgraded": false,
-			"not_enough_gold": false,
-			"status_text": "Tap the field to attack!",
-		}
+		return _make_attack_result(false, false, 0, damage_dealt, target_hp_before, target_hp, "Tap the field to attack!")
 
 	var earned_gold: int = reward_gold * gold_bonus_multiplier if gold_bonus_active else reward_gold
 	gold += earned_gold
@@ -65,17 +65,7 @@ func attack() -> Dictionary:
 	else:
 		reset_target()
 
-	return {
-		"defeated": true,
-		"level_up": did_level_up,
-		"reward_gold": earned_gold,
-		"damage_dealt": damage_dealt,
-		"target_hp_before": target_hp_before,
-		"target_hp_after": 0,
-		"upgraded": false,
-		"not_enough_gold": false,
-		"status_text": status_text,
-	}
+	return _make_attack_result(true, did_level_up, earned_gold, damage_dealt, target_hp_before, 0, status_text)
 
 
 func buy_character_level_upgrade() -> Dictionary:
@@ -137,6 +127,42 @@ func buy_gold_bonus_ability() -> Dictionary:
 	gold -= gold_bonus_purchase_cost
 	gold_bonus_purchased = true
 	return _make_purchase_result("Gold Bonus purchased!", false, true)
+
+
+func get_total_partner_dps() -> int:
+	var total_dps: int = 0
+
+	for index in partner_counts.size():
+		total_dps += partner_counts[index] * partner_dps_values[index]
+
+	return total_dps
+
+
+func get_partner_tick_damage() -> int:
+	var total_dps: int = get_total_partner_dps()
+	if total_dps <= 0:
+		return 0
+
+	return total_dps / 10
+
+
+func buy_partner(partner_index: int) -> Dictionary:
+	if partner_index < 0 or partner_index >= partner_counts.size():
+		return _make_purchase_result("Invalid partner")
+
+	if partner_index == 1 and partner_counts[0] <= 0:
+		return _make_purchase_result("Requires Partner 1")
+
+	if partner_index == 2 and partner_counts[1] <= 0:
+		return _make_purchase_result("Requires Partner 2")
+
+	var purchase_cost: int = partner_purchase_costs[partner_index]
+	if gold < purchase_cost:
+		return _make_purchase_result("Not enough gold", true)
+
+	gold -= purchase_cost
+	partner_counts[partner_index] += 1
+	return _make_purchase_result("Partner %d hired!" % (partner_index + 1), false, true)
 
 
 func is_current_level_boss() -> bool:
@@ -209,5 +235,27 @@ func _make_purchase_result(status_text: String, not_enough_gold: bool = false, u
 		"target_hp_after": target_hp,
 		"upgraded": upgraded,
 		"not_enough_gold": not_enough_gold,
+		"status_text": status_text,
+	}
+
+
+func _make_attack_result(
+	defeated: bool,
+	level_up: bool,
+	earned_gold: int,
+	damage_dealt: int,
+	target_hp_before: int,
+	target_hp_after: int,
+	status_text: String
+) -> Dictionary:
+	return {
+		"defeated": defeated,
+		"level_up": level_up,
+		"reward_gold": earned_gold,
+		"damage_dealt": damage_dealt,
+		"target_hp_before": target_hp_before,
+		"target_hp_after": target_hp_after,
+		"upgraded": false,
+		"not_enough_gold": false,
 		"status_text": status_text,
 	}

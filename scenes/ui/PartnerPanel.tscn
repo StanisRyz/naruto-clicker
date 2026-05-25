@@ -1,0 +1,56 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/PartnerPanel.gd" id="1_qxodb"]
+
+[node name="PartnerPanel" type="VBoxContainer"]
+theme_override_constants/separation = 12
+script = ExtResource("1_qxodb")
+
+[node name="TotalDpsLabel" type="Label" parent="."]
+layout_mode = 2
+text = "Total DPS: 0"
+horizontal_alignment = 1
+
+[node name="Partner1Row" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Partner1Label" type="Label" parent="Partner1Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Partner 1: 0 | DPS 10"
+
+[node name="Partner1Button" type="Button" parent="Partner1Row"]
+custom_minimum_size = Vector2(220, 56)
+layout_mode = 2
+text = "Hire Partner 1 - Cost: 1"
+
+[node name="Partner2Row" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Partner2Label" type="Label" parent="Partner2Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Partner 2: 0 | DPS 30"
+
+[node name="Partner2Button" type="Button" parent="Partner2Row"]
+custom_minimum_size = Vector2(220, 56)
+layout_mode = 2
+disabled = true
+text = "Requires Partner 1"
+
+[node name="Partner3Row" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Partner3Label" type="Label" parent="Partner3Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Partner 3: 0 | DPS 50"
+
+[node name="Partner3Button" type="Button" parent="Partner3Row"]
+custom_minimum_size = Vector2(220, 56)
+layout_mode = 2
+disabled = true
+text = "Requires Partner 2"

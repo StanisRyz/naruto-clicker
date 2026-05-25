@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scenes/game/ClickerScreen.gd" id="1_ymqc8"]
 [ext_resource type="PackedScene" path="res://scenes/ui/StatsPanel.tscn" id="2_yinr5"]
 [ext_resource type="PackedScene" path="res://scenes/ui/GameField.tscn" id="3_uv1kb"]
 [ext_resource type="PackedScene" path="res://scenes/ui/UpgradeSheet.tscn" id="4_vcx67"]
 [ext_resource type="PackedScene" path="res://scenes/ui/AbilityBar.tscn" id="5_3gfnf"]
+[ext_resource type="PackedScene" path="res://scenes/ui/PartnerSheet.tscn" id="6_lfl8p"]
 
 [node name="ClickerScreen" type="Control"]
 layout_mode = 3
@@ -80,10 +81,24 @@ theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 48
 theme_override_constants/margin_bottom = 16
 
-[node name="UpgradesButton" type="Button" parent="BottomBar/MarginContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="BottomBar/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="UpgradesButton" type="Button" parent="BottomBar/MarginContainer/HBoxContainer"]
 custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Upgrades"
 
+[node name="PartnersButton" type="Button" parent="BottomBar/MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Partners"
+
 [node name="UpgradeSheet" parent="." instance=ExtResource("4_vcx67")]
+layout_mode = 1
+
+[node name="PartnerSheet" parent="." instance=ExtResource("6_lfl8p")]
 layout_mode = 1
