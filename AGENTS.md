@@ -19,7 +19,10 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Keep the main scene stable and Control-based.
 - Preserve the 720x1280 portrait layout.
 - Keep YandexBridge as a future integration point.
-- Keep the current temporary gameplay state in `scenes/main/Main.gd`.
+- Keep `Main.tscn` as the app/root scene.
+- Keep `ClickerScreen` responsible for gameplay flow and UI updates.
+- Keep prototype state and formulas in `scripts/game/ClickerState.gd`.
+- Keep `StatsPanel`, `GameField`, and `UpgradePanel` as focused UI components.
 - Keep the main attack input on the `GameField` tap/click area, not a separate Attack button.
 - Keep level progression simple: 10 enemies defeated per level, then advance the level.
 - Scale enemy HP and gold reward by level with deterministic formulas.
@@ -34,7 +37,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Do not add external plugins.
 - Do not add external assets unless explicitly requested.
 - Do not introduce gameplay systems beyond the requested task.
-- Do not extract gameplay state into services until the prototype loop becomes larger or explicitly requested.
+- Do not extract gameplay state into broader services until the prototype loop becomes larger or explicitly requested.
 - Keep patches easy to review.
 
 ## Scene/UI Rules
@@ -77,6 +80,9 @@ After each patch, validate manually in Godot:
 - `scenes/main/Main.tscn` opens in the editor.
 - Main root node is `Control`.
 - `scenes/main/Main.gd` is attached to the Main root node.
+- `Main.tscn` contains the `ClickerScreen` instance.
+- `ClickerScreen` is visible and owns the clicker UI flow.
+- `ClickerState` preserves the current HP, reward, and upgrade formulas.
 - Clicker UI is visible.
 - There is no separate Attack button.
 - Clicking/tapping `GameField` reduces enemy HP.

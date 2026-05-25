@@ -33,14 +33,20 @@ The main scene contains the first local clicker loop:
 - Enemy HP and gold reward scale with the current level.
 - Gold can buy a single damage upgrade that increases click damage.
 
-This state is temporary and kept in `scenes/main/Main.gd` while the prototype is small.
+The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes/game/ClickerScreen.gd` owns the gameplay flow and updates the UI components.
 
 ## Project Structure
 
 - `project.godot` - Godot project settings, main scene, display, renderer, and autoload configuration.
 - `autoload/YandexBridge.gd` - Yandex Games integration placeholder/autoload.
-- `scenes/main/Main.tscn` - Main vertical UI scene.
-- `scenes/main/Main.gd` - Main scene startup script.
+- `scenes/main/Main.tscn` - App/root scene. It hosts the clicker screen and remains the project main scene.
+- `scenes/main/Main.gd` - Root startup script for YandexBridge ready/gameplay calls.
+- `scenes/game/ClickerScreen.tscn` - Main gameplay screen and layout.
+- `scenes/game/ClickerScreen.gd` - Owns gameplay flow, status messages, and UI updates.
+- `scenes/ui/StatsPanel.tscn` - Displays gold, damage, level, and enemy progress.
+- `scenes/ui/GameField.tscn` - Large tap/click attack field and enemy HP display.
+- `scenes/ui/UpgradePanel.tscn` - Damage upgrade button.
+- `scripts/game/ClickerState.gd` - Temporary prototype state and formulas.
 
 ## Web Export Notes
 

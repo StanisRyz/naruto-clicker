@@ -1,0 +1,51 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/game/ClickerScreen.gd" id="1_ymqc8"]
+[ext_resource type="PackedScene" path="res://scenes/ui/StatsPanel.tscn" id="2_yinr5"]
+[ext_resource type="PackedScene" path="res://scenes/ui/GameField.tscn" id="3_uv1kb"]
+[ext_resource type="PackedScene" path="res://scenes/ui/UpgradePanel.tscn" id="4_bwmtj"]
+
+[node name="ClickerScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ymqc8")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 48.0
+offset_top = 48.0
+offset_right = -48.0
+offset_bottom = -48.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Naruto Clicker"
+horizontal_alignment = 1
+
+[node name="StatsPanel" parent="MarginContainer/VBoxContainer" instance=ExtResource("2_yinr5")]
+layout_mode = 2
+
+[node name="GameField" parent="MarginContainer/VBoxContainer" instance=ExtResource("3_uv1kb")]
+layout_mode = 2
+
+[node name="UpgradePanel" parent="MarginContainer/VBoxContainer" instance=ExtResource("4_bwmtj")]
+layout_mode = 2
+
+[node name="StatusLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Tap the field to attack!"
+horizontal_alignment = 1
+autowrap_mode = 3
