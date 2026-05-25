@@ -6,7 +6,7 @@
 custom_minimum_size = Vector2(0, 72)
 script = ExtResource("1_x2nck")
 
-[node name="UpgradeDamageButton" type="Button" parent="."]
+[node name="UpgradeCharacterLevelButton" type="Button" parent="."]
 custom_minimum_size = Vector2(0, 72)
 layout_mode = 1
 anchors_preset = 15
@@ -14,4 +14,4 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-text = "Upgrade Damage - Cost: 10"
+text = "Upgrade Character Level - Cost: 1"

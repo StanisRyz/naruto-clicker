@@ -3,20 +3,27 @@ extends RefCounted
 
 var gold: int = 0
 var click_damage: int = 1
+var character_level: int = 1
 var current_level: int = 1
 var enemies_defeated_on_level: int = 0
 var enemies_required_per_level: int = 10
 var target_hp: int = 10
 var target_max_hp: int = 10
 var reward_gold: int = 5
-var damage_upgrade_level: int = 0
-var damage_upgrade_cost: int = 10
 var is_boss_level: bool = false
 var boss_time_limit: float = 30.0
 var enemy_name: String = "Enemy"
+var autoclick_unlocked: bool = false
+var gold_bonus_unlocked: bool = false
+var autoclick_active: bool = false
+var gold_bonus_active: bool = false
+var autoclick_unlock_level: int = 15
+var gold_bonus_unlock_level: int = 30
+var gold_bonus_multiplier: int = 2
 
 
 func _init() -> void:
+	_update_character_state()
 	setup_current_level()
 
 
@@ -38,7 +45,7 @@ func attack() -> Dictionary:
 			"status_text": "Tap the field to attack!",
 		}
 
-	var earned_gold: int = reward_gold
+	var earned_gold: int = reward_gold * gold_bonus_multiplier if gold_bonus_active else reward_gold
 	gold += earned_gold
 	enemies_defeated_on_level += 1
 
@@ -50,7 +57,7 @@ func attack() -> Dictionary:
 		current_level += 1
 		enemies_defeated_on_level = 0
 		setup_current_level()
-		status_text = "Boss defeated! Level %d" % current_level if defeated_boss else "Level up! Level %d" % current_level
+		status_text = "Boss defeated! +%d gold. Level %d" % [earned_gold, current_level] if defeated_boss else "Enemy defeated! +%d gold. Level %d" % [earned_gold, current_level]
 	else:
 		reset_target()
 
@@ -67,8 +74,8 @@ func attack() -> Dictionary:
 	}
 
 
-func buy_damage_upgrade() -> Dictionary:
-	if gold < damage_upgrade_cost:
+func buy_character_level_upgrade() -> Dictionary:
+	if gold < 1:
 		return {
 			"defeated": false,
 			"level_up": false,
@@ -81,10 +88,9 @@ func buy_damage_upgrade() -> Dictionary:
 			"status_text": "Not enough gold",
 		}
 
-	gold -= damage_upgrade_cost
-	damage_upgrade_level += 1
-	click_damage += 1
-	damage_upgrade_cost = 10 + damage_upgrade_level * 8
+	gold -= 1
+	character_level += 1
+	_update_character_state()
 
 	return {
 		"defeated": false,
@@ -95,7 +101,7 @@ func buy_damage_upgrade() -> Dictionary:
 		"target_hp_after": target_hp,
 		"upgraded": true,
 		"not_enough_gold": false,
-		"status_text": "Damage upgraded!",
+		"status_text": "Character level upgraded!",
 	}
 
 
@@ -109,6 +115,17 @@ func setup_current_level() -> void:
 	enemies_required_per_level = 1 if is_boss_level else 10
 	enemy_name = "Boss" if is_boss_level else "Enemy"
 	reset_target()
+
+
+func update_ability_unlocks() -> void:
+	autoclick_unlocked = character_level >= autoclick_unlock_level
+	gold_bonus_unlocked = character_level >= gold_bonus_unlock_level
+
+	if not autoclick_unlocked:
+		autoclick_active = false
+
+	if not gold_bonus_unlocked:
+		gold_bonus_active = false
 
 
 func fail_boss_level() -> Dictionary:
@@ -139,3 +156,8 @@ func recalculate_level_values() -> void:
 	var base_reward: int = 5 + (current_level - 1) * 3
 	target_max_hp = base_hp * 5 if is_boss_level else base_hp
 	reward_gold = base_reward * 5 if is_boss_level else base_reward
+
+
+func _update_character_state() -> void:
+	click_damage = character_level
+	update_ability_unlocks()

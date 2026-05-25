@@ -33,7 +33,11 @@ The main scene contains the first local clicker loop:
 - Enemy HP and gold reward scale with the current level.
 - Every 5th level is a boss level with one boss.
 - Bosses must be defeated within 30 seconds or the player returns to the previous level.
-- Gold can buy a single damage upgrade that increases click damage.
+- Gold can upgrade character level; character level always equals click damage.
+- Character level upgrades temporarily cost 1 gold.
+- Autoclick unlocks at character level 15.
+- Gold Bonus unlocks at character level 30 and doubles enemy rewards while active.
+- Ability buttons live on the left side of the game field.
 - The bottom `Upgrades` button opens a bottom-half upgrade sheet.
 - The visible upper game field remains clickable while the upgrade sheet is open.
 
@@ -47,9 +51,9 @@ The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes
 - `scenes/main/Main.gd` - Root startup script for YandexBridge ready/gameplay calls.
 - `scenes/game/ClickerScreen.tscn` - Main gameplay screen and layout.
 - `scenes/game/ClickerScreen.gd` - Owns gameplay flow, status messages, and UI updates.
-- `scenes/ui/StatsPanel.tscn` - Displays gold, damage, level, and enemy progress.
-- `scenes/ui/GameField.tscn` - Large tap/click attack field and enemy HP display.
-- `scenes/ui/UpgradePanel.tscn` - Damage upgrade button.
+- `scenes/ui/StatsPanel.tscn` - Displays gold, character level, damage, level, and enemy progress.
+- `scenes/ui/GameField.tscn` - Large tap/click attack field, ability buttons, and enemy HP display.
+- `scenes/ui/UpgradePanel.tscn` - Character level upgrade button.
 - `scenes/ui/UpgradeSheet.tscn` - Bottom-half upgrades sheet that hosts UpgradePanel.
 - `scripts/game/ClickerState.gd` - Temporary prototype state and formulas.
 

@@ -27,6 +27,11 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Use `BottomBar` to open `UpgradeSheet`; do not keep upgrade controls permanently in the main gameplay flow.
 - Keep `UpgradeSheet` to the bottom half of the screen so visible `GameField` space remains clickable while it is open.
 - Keep `GameField` responsible only for tap/click input and simple visual feedback.
+- Keep ability buttons on the left side of `GameField`, and make sure they do not trigger attacks.
+- Character level replaces the old damage upgrade; character level must equal click damage.
+- Character level upgrades cost 1 gold until explicitly changed.
+- Autoclick unlocks at character level 15.
+- Gold Bonus unlocks at character level 30 and doubles rewards while active.
 - Keep UI animation details out of `ClickerState`.
 - Let `ClickerScreen` coordinate state results into UI feedback calls.
 - Keep the main attack input on the `GameField` tap/click area, not a separate Attack button.
@@ -101,7 +106,17 @@ After each patch, validate manually in Godot:
 - Clicking upgrade buttons does not attack the enemy.
 - `UpgradesButton` opens `UpgradeSheet`.
 - `UpgradeSheet` is hidden by default and can be closed.
-- Damage upgrade works from inside `UpgradeSheet`.
+- Character level upgrade works from inside `UpgradeSheet`.
+- Character level starts at 1 and damage starts at 1.
+- Buying character level upgrade costs 1 gold and increases character level and damage by 1.
+- Old damage upgrade naming is not visible in UI.
+- Autoclick button is visible but locked before character level 15.
+- Gold Bonus button is visible but locked before character level 30.
+- Autoclick unlocks at character level 15.
+- Gold Bonus unlocks at character level 30.
+- Ability button clicks do not attack the enemy.
+- Autoclick active performs automatic damage every second.
+- Gold Bonus active doubles enemy rewards.
 - Visible `GameField` area still attacks while `UpgradeSheet` is open.
 - Clicking inside `UpgradeSheet` does not attack the enemy.
 - Target defeat gives gold.
@@ -115,7 +130,6 @@ After each patch, validate manually in Godot:
 - Defeating a boss before timeout advances to the next level.
 - Boss timeout returns the player to the previous level.
 - Normal levels work again after boss timeout.
-- Damage upgrade spends gold and increases damage.
 - Upgrade cannot be bought without enough gold.
 - Scene can be run from Godot.
 - No error appears because `Main.gd` extends `Control`.
