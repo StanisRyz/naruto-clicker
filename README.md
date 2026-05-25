@@ -34,6 +34,8 @@ The main scene contains the first local clicker loop:
 - Every 5th level is a boss level with one boss.
 - Bosses must be defeated within 30 seconds or the player returns to the previous level.
 - Gold can buy a single damage upgrade that increases click damage.
+- The bottom `Upgrades` button opens a bottom-half upgrade sheet.
+- The visible upper game field remains clickable while the upgrade sheet is open.
 
 The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes/game/ClickerScreen.gd` owns the gameplay flow and updates the UI components.
 
@@ -48,6 +50,7 @@ The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes
 - `scenes/ui/StatsPanel.tscn` - Displays gold, damage, level, and enemy progress.
 - `scenes/ui/GameField.tscn` - Large tap/click attack field and enemy HP display.
 - `scenes/ui/UpgradePanel.tscn` - Damage upgrade button.
+- `scenes/ui/UpgradeSheet.tscn` - Bottom-half upgrades sheet that hosts UpgradePanel.
 - `scripts/game/ClickerState.gd` - Temporary prototype state and formulas.
 
 ## Web Export Notes

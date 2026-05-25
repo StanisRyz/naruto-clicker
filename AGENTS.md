@@ -23,6 +23,9 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Keep `ClickerScreen` responsible for gameplay flow and UI updates.
 - Keep prototype state and formulas in `scripts/game/ClickerState.gd`.
 - Keep `StatsPanel`, `GameField`, and `UpgradePanel` as focused UI components.
+- Keep `UpgradePanel` responsible only for upgrade controls.
+- Use `BottomBar` to open `UpgradeSheet`; do not keep upgrade controls permanently in the main gameplay flow.
+- Keep `UpgradeSheet` to the bottom half of the screen so visible `GameField` space remains clickable while it is open.
 - Keep `GameField` responsible only for tap/click input and simple visual feedback.
 - Keep UI animation details out of `ClickerState`.
 - Let `ClickerScreen` coordinate state results into UI feedback calls.
@@ -93,6 +96,11 @@ After each patch, validate manually in Godot:
 - There is no separate Attack button.
 - Clicking/tapping `GameField` reduces enemy HP.
 - Clicking upgrade buttons does not attack the enemy.
+- `UpgradesButton` opens `UpgradeSheet`.
+- `UpgradeSheet` is hidden by default and can be closed.
+- Damage upgrade works from inside `UpgradeSheet`.
+- Visible `GameField` area still attacks while `UpgradeSheet` is open.
+- Clicking inside `UpgradeSheet` does not attack the enemy.
 - Target defeat gives gold.
 - Defeating 10 enemies advances to the next level.
 - Level text updates correctly.

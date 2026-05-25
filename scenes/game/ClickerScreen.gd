@@ -4,15 +4,17 @@ var state: ClickerState = ClickerState.new()
 var boss_time_left: float = 0.0
 var boss_timer_active: bool = false
 
-@onready var stats_panel: StatsPanel = $MarginContainer/VBoxContainer/StatsPanel
-@onready var game_field: GameField = $MarginContainer/VBoxContainer/GameField
-@onready var upgrade_panel: UpgradePanel = $MarginContainer/VBoxContainer/UpgradePanel
-@onready var status_label: Label = $MarginContainer/VBoxContainer/StatusLabel
+@onready var stats_panel: StatsPanel = $MainContent/VBoxContainer/StatsPanel
+@onready var game_field: GameField = $MainContent/VBoxContainer/GameField
+@onready var status_label: Label = $MainContent/VBoxContainer/StatusLabel
+@onready var upgrades_button: Button = $BottomBar/MarginContainer/UpgradesButton
+@onready var upgrade_sheet: UpgradeSheet = $UpgradeSheet
 
 
 func _ready() -> void:
 	game_field.attack_requested.connect(_on_attack_requested)
-	upgrade_panel.damage_upgrade_requested.connect(_on_damage_upgrade_requested)
+	upgrades_button.pressed.connect(_on_upgrades_button_pressed)
+	upgrade_sheet.damage_upgrade_requested.connect(_on_damage_upgrade_requested)
 	_update_ui()
 	_sync_boss_timer()
 
@@ -32,7 +34,7 @@ func _update_ui() -> void:
 	stats_panel.update_view(state)
 	game_field.update_view(state)
 	game_field.update_boss_timer(boss_time_left, boss_timer_active)
-	upgrade_panel.update_view(state)
+	upgrade_sheet.update_view(state)
 
 
 func _on_attack_requested() -> void:
@@ -49,6 +51,10 @@ func _on_damage_upgrade_requested() -> void:
 	var result: Dictionary = state.buy_damage_upgrade()
 	status_label.text = result.get("status_text", "")
 	_update_ui()
+
+
+func _on_upgrades_button_pressed() -> void:
+	upgrade_sheet.show_sheet()
 
 
 func _sync_boss_timer() -> void:
