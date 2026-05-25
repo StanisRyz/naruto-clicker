@@ -23,7 +23,7 @@ text = "Partner 1: 0 | DPS 10"
 [node name="Partner1Button" type="Button" parent="Partner1Row"]
 custom_minimum_size = Vector2(220, 56)
 layout_mode = 2
-text = "Hire Partner 1 - Cost: 1"
+text = "Hire Partner 1 - Cost: 10"
 
 [node name="Partner2Row" type="HBoxContainer" parent="."]
 layout_mode = 2

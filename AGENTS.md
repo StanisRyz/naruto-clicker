@@ -36,11 +36,16 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Make sure ability buttons do not trigger attacks.
 - Partners provide passive DPS through `ClickerState` state and `ClickerScreen` ticking.
 - Partner DPS tiers are 10, 30, and 50.
+- Partner initial costs are 10, 50, and 150 gold.
+- Partner costs scale as `10 + count * 10`, `50 + count * 30`, and `150 + count * 50`.
 - Partner 2 requires at least one Partner 1; Partner 3 requires at least one Partner 2.
 - Partner damage ticks every 0.1 seconds for `total_dps / 10` damage.
 - Keep `PartnerSheet` as a separate bottom-half overlay from `UpgradeSheet`.
 - Character level replaces the old damage upgrade; character level must equal click damage.
-- Character level upgrades cost 1 gold until explicitly changed.
+- Character level upgrade cost is `5 + (character_level - 1) * 3`.
+- Autoclick purchase costs 50 gold.
+- Gold Bonus purchase costs 150 gold.
+- Treat economy formulas as prototype balance values.
 - Autoclick unlocks at character level 15.
 - Gold Bonus unlocks at character level 30 and doubles rewards while active.
 - Keep UI animation details out of `ClickerState`.
@@ -125,7 +130,9 @@ After each patch, validate manually in Godot:
 - `PartnerSheet` is hidden by default and can be closed.
 - Character level upgrade works from inside `UpgradeSheet`.
 - Character level starts at 1 and damage starts at 1.
-- Buying character level upgrade costs 1 gold and increases character level and damage by 1.
+- Character level upgrade starts at 5 gold.
+- Buying character level upgrade subtracts the current cost and increases character level and damage by 1.
+- Character level cost increases after purchase.
 - Old damage upgrade naming is not visible in UI.
 - Autoclick button is visible but locked before character level 15.
 - Gold Bonus button is visible but locked before character level 30.
@@ -135,9 +142,12 @@ After each patch, validate manually in Godot:
 - Autoclick active performs automatic damage every second.
 - Gold Bonus active doubles enemy rewards.
 - BottomBar has `Upgrades` and `Partners` buttons on one row.
-- Partner 1 can be bought for 1 gold.
+- Partner 1 starts at 10 gold.
+- Partner 2 starts at 50 gold.
+- Partner 3 starts at 150 gold.
 - Partner 2 cannot be bought before at least one Partner 1.
 - Partner 3 cannot be bought before at least one Partner 2.
+- Partner costs increase after purchase.
 - Partner counts update after purchase.
 - Total Partner DPS updates correctly.
 - Partner DPS damages enemy every 0.1 seconds.
@@ -153,8 +163,8 @@ After each patch, validate manually in Godot:
 - Ability buttons do not attack the enemy.
 - Autoclick cannot activate before purchase.
 - Gold Bonus cannot activate before purchase.
-- Autoclick can be purchased at character level 15.
-- Gold Bonus can be purchased at character level 30.
+- Autoclick can be purchased for 50 gold at character level 15.
+- Gold Bonus can be purchased for 150 gold at character level 30.
 - Purchased abilities can be activated from `AbilityBar`.
 - Autoclick lasts 30 seconds.
 - Gold Bonus lasts 30 seconds.

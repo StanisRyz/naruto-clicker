@@ -17,7 +17,7 @@ func _ready() -> void:
 
 
 func update_view(state: ClickerState) -> void:
-	upgrade_character_level_button.text = "Upgrade Character Level - Cost: 1"
+	upgrade_character_level_button.text = "Upgrade Character Level - Cost: %d" % state.character_level_upgrade_cost
 	buy_autoclick_button.disabled = state.autoclick_purchased
 	buy_gold_bonus_button.disabled = state.gold_bonus_purchased
 

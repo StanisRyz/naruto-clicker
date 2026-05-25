@@ -4,6 +4,7 @@ extends RefCounted
 var gold: int = 0
 var click_damage: int = 1
 var character_level: int = 1
+var character_level_upgrade_cost: int = 5
 var current_level: int = 1
 var enemies_defeated_on_level: int = 0
 var enemies_required_per_level: int = 10
@@ -21,16 +22,17 @@ var autoclick_purchased: bool = false
 var gold_bonus_purchased: bool = false
 var autoclick_unlock_level: int = 15
 var gold_bonus_unlock_level: int = 30
-var autoclick_purchase_cost: int = 1
-var gold_bonus_purchase_cost: int = 1
+var autoclick_purchase_cost: int = 50
+var gold_bonus_purchase_cost: int = 150
 var gold_bonus_multiplier: int = 2
 var partner_counts: Array[int] = [0, 0, 0]
 var partner_dps_values: Array[int] = [10, 30, 50]
-var partner_purchase_costs: Array[int] = [1, 1, 1]
+var partner_purchase_costs: Array[int] = [10, 50, 150]
 
 
 func _init() -> void:
 	_update_character_state()
+	recalculate_character_level_cost()
 	setup_current_level()
 
 
@@ -69,7 +71,7 @@ func attack_with_damage(damage: int) -> Dictionary:
 
 
 func buy_character_level_upgrade() -> Dictionary:
-	if gold < 1:
+	if gold < character_level_upgrade_cost:
 		return {
 			"defeated": false,
 			"level_up": false,
@@ -82,9 +84,10 @@ func buy_character_level_upgrade() -> Dictionary:
 			"status_text": "Not enough gold",
 		}
 
-	gold -= 1
+	gold -= character_level_upgrade_cost
 	character_level += 1
 	_update_character_state()
+	recalculate_character_level_cost()
 
 	return {
 		"defeated": false,
@@ -150,6 +153,13 @@ func buy_partner(partner_index: int) -> Dictionary:
 	if partner_index < 0 or partner_index >= partner_counts.size():
 		return _make_purchase_result("Invalid partner")
 
+	if not can_buy_partner(partner_index):
+		if partner_index == 1:
+			return _make_purchase_result("Requires Partner 1")
+
+		if partner_index == 2:
+			return _make_purchase_result("Requires Partner 2")
+
 	if partner_index == 1 and partner_counts[0] <= 0:
 		return _make_purchase_result("Requires Partner 1")
 
@@ -162,7 +172,34 @@ func buy_partner(partner_index: int) -> Dictionary:
 
 	gold -= purchase_cost
 	partner_counts[partner_index] += 1
+	recalculate_partner_cost(partner_index)
 	return _make_purchase_result("Partner %d hired!" % (partner_index + 1), false, true)
+
+
+func recalculate_character_level_cost() -> void:
+	character_level_upgrade_cost = 5 + (character_level - 1) * 3
+
+
+func recalculate_partner_cost(partner_index: int) -> void:
+	if partner_index == 0:
+		partner_purchase_costs[0] = 10 + partner_counts[0] * 10
+	elif partner_index == 1:
+		partner_purchase_costs[1] = 50 + partner_counts[1] * 30
+	elif partner_index == 2:
+		partner_purchase_costs[2] = 150 + partner_counts[2] * 50
+
+
+func can_buy_partner(partner_index: int) -> bool:
+	if partner_index == 0:
+		return true
+
+	if partner_index == 1:
+		return partner_counts[0] > 0
+
+	if partner_index == 2:
+		return partner_counts[1] > 0
+
+	return false
 
 
 func is_current_level_boss() -> bool:

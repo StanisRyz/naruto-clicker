@@ -18,7 +18,7 @@ theme_override_constants/separation = 12
 [node name="UpgradeCharacterLevelButton" type="Button" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
-text = "Upgrade Character Level - Cost: 1"
+text = "Upgrade Character Level - Cost: 5"
 
 [node name="BuyAutoclickButton" type="Button" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 72)

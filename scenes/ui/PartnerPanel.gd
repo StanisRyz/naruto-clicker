@@ -27,8 +27,8 @@ func update_view(state: ClickerState) -> void:
 	partner_1_button.disabled = false
 	partner_1_button.text = "Hire Partner 1 - Cost: %d" % state.partner_purchase_costs[0]
 
-	partner_2_button.disabled = state.partner_counts[0] <= 0
+	partner_2_button.disabled = not state.can_buy_partner(1)
 	partner_2_button.text = "Requires Partner 1" if partner_2_button.disabled else "Hire Partner 2 - Cost: %d" % state.partner_purchase_costs[1]
 
-	partner_3_button.disabled = state.partner_counts[1] <= 0
+	partner_3_button.disabled = not state.can_buy_partner(2)
 	partner_3_button.text = "Requires Partner 2" if partner_3_button.disabled else "Hire Partner 3 - Cost: %d" % state.partner_purchase_costs[2]
