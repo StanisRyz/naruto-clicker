@@ -2,23 +2,17 @@ class_name GameField
 extends Button
 
 signal attack_requested
-signal autoclick_requested
-signal gold_bonus_requested
 
 @onready var enemy_name_label: Label = $GameFieldContent/EnemyNameLabel
 @onready var target_hp_label: Label = $GameFieldContent/TargetHpLabel
 @onready var target_progress_bar: ProgressBar = $GameFieldContent/TargetProgressBar
 @onready var boss_timer_label: Label = $GameFieldContent/BossTimerLabel
-@onready var autoclick_button: Button = $AbilityBar/AutoclickButton
-@onready var gold_bonus_button: Button = $AbilityBar/GoldBonusButton
 @onready var feedback_layer: Control = $FeedbackLayer
 @onready var defeat_feedback_label: Label = $FeedbackLayer/DefeatFeedbackLabel
 
 
 func _ready() -> void:
 	pressed.connect(_on_pressed)
-	autoclick_button.pressed.connect(_on_autoclick_button_pressed)
-	gold_bonus_button.pressed.connect(_on_gold_bonus_button_pressed)
 
 
 func update_view(state: ClickerState) -> void:
@@ -26,7 +20,6 @@ func update_view(state: ClickerState) -> void:
 	target_hp_label.text = "Enemy HP: %d / %d" % [state.target_hp, state.target_max_hp]
 	target_progress_bar.max_value = state.target_max_hp
 	target_progress_bar.value = state.target_hp
-	_update_ability_buttons(state)
 
 
 func update_boss_timer(time_left: float, is_active: bool) -> void:
@@ -76,26 +69,3 @@ func play_defeat_feedback(level_up: bool) -> void:
 
 func _on_pressed() -> void:
 	attack_requested.emit()
-
-
-func _update_ability_buttons(state: ClickerState) -> void:
-	autoclick_button.disabled = not state.autoclick_unlocked
-	gold_bonus_button.disabled = not state.gold_bonus_unlocked
-
-	if state.autoclick_unlocked:
-		autoclick_button.text = "Auto ON" if state.autoclick_active else "Auto"
-	else:
-		autoclick_button.text = "Auto\nLv %d" % state.autoclick_unlock_level
-
-	if state.gold_bonus_unlocked:
-		gold_bonus_button.text = "Gold ON" if state.gold_bonus_active else "Gold x2"
-	else:
-		gold_bonus_button.text = "Gold\nLv %d" % state.gold_bonus_unlock_level
-
-
-func _on_autoclick_button_pressed() -> void:
-	autoclick_requested.emit()
-
-
-func _on_gold_bonus_button_pressed() -> void:
-	gold_bonus_requested.emit()

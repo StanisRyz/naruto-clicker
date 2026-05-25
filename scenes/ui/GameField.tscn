@@ -56,33 +56,6 @@ text = "Tap anywhere here to attack"
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="AbilityBar" type="VBoxContainer" parent="."]
-layout_mode = 1
-anchors_preset = 4
-anchor_top = 0.5
-anchor_bottom = 0.5
-offset_left = 16.0
-offset_top = -76.0
-offset_right = 96.0
-offset_bottom = 76.0
-grow_vertical = 2
-mouse_filter = 1
-theme_override_constants/separation = 12
-
-[node name="AutoclickButton" type="Button" parent="AbilityBar"]
-custom_minimum_size = Vector2(80, 70)
-layout_mode = 2
-disabled = true
-text = "Auto
-Lv 15"
-
-[node name="GoldBonusButton" type="Button" parent="AbilityBar"]
-custom_minimum_size = Vector2(80, 70)
-layout_mode = 2
-disabled = true
-text = "Gold
-Lv 30"
-
 [node name="FeedbackLayer" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15

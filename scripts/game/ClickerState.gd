@@ -17,8 +17,12 @@ var autoclick_unlocked: bool = false
 var gold_bonus_unlocked: bool = false
 var autoclick_active: bool = false
 var gold_bonus_active: bool = false
+var autoclick_purchased: bool = false
+var gold_bonus_purchased: bool = false
 var autoclick_unlock_level: int = 15
 var gold_bonus_unlock_level: int = 30
+var autoclick_purchase_cost: int = 1
+var gold_bonus_purchase_cost: int = 1
 var gold_bonus_multiplier: int = 2
 
 
@@ -105,6 +109,36 @@ func buy_character_level_upgrade() -> Dictionary:
 	}
 
 
+func buy_autoclick_ability() -> Dictionary:
+	if autoclick_purchased:
+		return _make_purchase_result("Already purchased")
+
+	if not autoclick_unlocked:
+		return _make_purchase_result("Requires character level %d" % autoclick_unlock_level)
+
+	if gold < autoclick_purchase_cost:
+		return _make_purchase_result("Not enough gold", true)
+
+	gold -= autoclick_purchase_cost
+	autoclick_purchased = true
+	return _make_purchase_result("Autoclick purchased!", false, true)
+
+
+func buy_gold_bonus_ability() -> Dictionary:
+	if gold_bonus_purchased:
+		return _make_purchase_result("Already purchased")
+
+	if not gold_bonus_unlocked:
+		return _make_purchase_result("Requires character level %d" % gold_bonus_unlock_level)
+
+	if gold < gold_bonus_purchase_cost:
+		return _make_purchase_result("Not enough gold", true)
+
+	gold -= gold_bonus_purchase_cost
+	gold_bonus_purchased = true
+	return _make_purchase_result("Gold Bonus purchased!", false, true)
+
+
 func is_current_level_boss() -> bool:
 	return current_level % 5 == 0
 
@@ -123,9 +157,11 @@ func update_ability_unlocks() -> void:
 
 	if not autoclick_unlocked:
 		autoclick_active = false
+		autoclick_purchased = false
 
 	if not gold_bonus_unlocked:
 		gold_bonus_active = false
+		gold_bonus_purchased = false
 
 
 func fail_boss_level() -> Dictionary:
@@ -161,3 +197,17 @@ func recalculate_level_values() -> void:
 func _update_character_state() -> void:
 	click_damage = character_level
 	update_ability_unlocks()
+
+
+func _make_purchase_result(status_text: String, not_enough_gold: bool = false, upgraded: bool = false) -> Dictionary:
+	return {
+		"defeated": false,
+		"level_up": false,
+		"reward_gold": 0,
+		"damage_dealt": 0,
+		"target_hp_before": target_hp,
+		"target_hp_after": target_hp,
+		"upgraded": upgraded,
+		"not_enough_gold": not_enough_gold,
+		"status_text": status_text,
+	}

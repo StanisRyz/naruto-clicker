@@ -1,0 +1,29 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/AbilityBar.gd" id="1_pn5dq"]
+
+[node name="AbilityBar" type="VBoxContainer"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 16.0
+offset_top = -76.0
+offset_right = 96.0
+offset_bottom = 76.0
+grow_vertical = 2
+mouse_filter = 0
+theme_override_constants/separation = 12
+script = ExtResource("1_pn5dq")
+
+[node name="AutoclickButton" type="Button" parent="."]
+custom_minimum_size = Vector2(80, 70)
+layout_mode = 2
+disabled = true
+text = "Auto"
+
+[node name="GoldBonusButton" type="Button" parent="."]
+custom_minimum_size = Vector2(80, 70)
+layout_mode = 2
+disabled = true
+text = "Gold x2"

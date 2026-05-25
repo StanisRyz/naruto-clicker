@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scenes/ui/StatsPanel.gd" id="1_475bc"]
 
 [node name="StatsPanel" type="GridContainer"]
+mouse_filter = 2
 theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 8
 columns = 2
@@ -10,30 +11,35 @@ script = ExtResource("1_475bc")
 
 [node name="GoldLabel" type="Label" parent="."]
 layout_mode = 2
+mouse_filter = 2
 size_flags_horizontal = 3
 text = "Gold: 0"
 horizontal_alignment = 1
 
 [node name="CharacterLevelLabel" type="Label" parent="."]
 layout_mode = 2
+mouse_filter = 2
 size_flags_horizontal = 3
 text = "Character Level: 1"
 horizontal_alignment = 1
 
 [node name="DamageLabel" type="Label" parent="."]
 layout_mode = 2
+mouse_filter = 2
 size_flags_horizontal = 3
 text = "Damage: 1"
 horizontal_alignment = 1
 
 [node name="LevelLabel" type="Label" parent="."]
 layout_mode = 2
+mouse_filter = 2
 size_flags_horizontal = 3
 text = "Level: 1"
 horizontal_alignment = 1
 
 [node name="EnemiesDefeatedLabel" type="Label" parent="."]
 layout_mode = 2
+mouse_filter = 2
 size_flags_horizontal = 3
 text = "Enemies: 0 / 10"
 horizontal_alignment = 1

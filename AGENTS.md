@@ -26,8 +26,14 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Keep `UpgradePanel` responsible only for upgrade controls.
 - Use `BottomBar` to open `UpgradeSheet`; do not keep upgrade controls permanently in the main gameplay flow.
 - Keep `UpgradeSheet` to the bottom half of the screen so visible `GameField` space remains clickable while it is open.
+- Keep `GameField` as the fullscreen bottom clickable layer in `ClickerScreen`.
+- Keep visible UI overlays clickable above `GameField`, and make passive text/containers ignore mouse input.
 - Keep `GameField` responsible only for tap/click input and simple visual feedback.
-- Keep ability buttons on the left side of `GameField`, and make sure they do not trigger attacks.
+- Keep `AbilityBar` separate from `GameField` on the left-middle screen edge.
+- Abilities must be purchased in `UpgradeSheet` before activation.
+- Autoclick lasts 30 seconds and performs one attack every 0.05 seconds.
+- Gold Bonus lasts 30 seconds and doubles rewards while active.
+- Make sure ability buttons do not trigger attacks.
 - Character level replaces the old damage upgrade; character level must equal click damage.
 - Character level upgrades cost 1 gold until explicitly changed.
 - Autoclick unlocks at character level 15.
@@ -101,6 +107,10 @@ After each patch, validate manually in Godot:
 - `ClickerScreen` is visible and owns the clicker UI flow.
 - `ClickerState` preserves the current HP, reward, and upgrade formulas.
 - Clicker UI is visible.
+- `GameField` covers the whole screen as the bottom clickable layer.
+- Empty screen space clicks attack.
+- UI text and buttons remain visible above `GameField`.
+- `UpgradesButton` does not attack.
 - There is no separate Attack button.
 - Clicking/tapping `GameField` reduces enemy HP.
 - Clicking upgrade buttons does not attack the enemy.
@@ -119,6 +129,17 @@ After each patch, validate manually in Godot:
 - Gold Bonus active doubles enemy rewards.
 - Visible `GameField` area still attacks while `UpgradeSheet` is open.
 - Clicking inside `UpgradeSheet` does not attack the enemy.
+- `AbilityBar` is a left-middle screen overlay.
+- Ability buttons do not pulse with `GameField` feedback.
+- Ability buttons do not attack the enemy.
+- Autoclick cannot activate before purchase.
+- Gold Bonus cannot activate before purchase.
+- Autoclick can be purchased at character level 15.
+- Gold Bonus can be purchased at character level 30.
+- Purchased abilities can be activated from `AbilityBar`.
+- Autoclick lasts 30 seconds.
+- Gold Bonus lasts 30 seconds.
+- Autoclick performs separate attacks every 0.05 seconds.
 - Target defeat gives gold.
 - Defeating 10 enemies advances to the next level.
 - Level text updates correctly.
