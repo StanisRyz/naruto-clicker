@@ -54,6 +54,9 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Use Control-based UI for the main scene and other screen layouts.
 - Keep the game vertical and Web-export friendly.
 - Prefer containers and anchors over Node2D positioning for UI.
+- Test layout directly in `ClickerScreen.tscn` preview and by running `Main.tscn`.
+- `ClickerScreen/MainContent` must use top/full anchors with a bottom offset above `BottomBar`.
+- Do not use bottom-wide anchors for `ClickerScreen/MainContent`.
 - Keep upgrade buttons and future UI controls separate from `GameField` so they do not accidentally trigger attacks.
 - Preserve the main scene UID unless unavoidable.
 - Keep prototype UI simple until specific gameplay/UI work is requested.
