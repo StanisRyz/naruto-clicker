@@ -4,9 +4,9 @@ Naruto Clicker is a vertical idle/clicker game prototype for Yandex Games.
 
 ## Status
 
-Early setup/prototype. The project currently contains only a safe base scene, placeholder UI, and a YandexBridge autoload as a future integration point.
+Early setup/prototype. The project currently has a basic playable clicker loop and a YandexBridge autoload as a future integration point.
 
-Monetization and save systems are intentionally not implemented yet.
+Save systems, heroes, settlement features, and monetization are intentionally not implemented yet.
 
 ## Project Details
 
@@ -22,6 +22,17 @@ Monetization and save systems are intentionally not implemented yet.
 Open the project in Godot 4.5.1 and run the main scene from the editor. Keep changes small and verify the scene still opens and runs after each patch.
 
 Do not add external plugins or external assets without explicit approval.
+
+## Current Gameplay Prototype
+
+The main scene contains the first local clicker loop:
+
+- Press `Attack` to damage the current target.
+- Target HP is shown with a label and progress bar.
+- Defeating a target awards gold and creates a stronger next target.
+- Gold can buy a single damage upgrade that increases click damage.
+
+This state is temporary and kept in `scenes/main/Main.gd` while the prototype is small.
 
 ## Project Structure
 

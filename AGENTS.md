@@ -19,6 +19,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Keep the main scene stable and Control-based.
 - Preserve the 720x1280 portrait layout.
 - Keep YandexBridge as a future integration point.
+- Keep the current temporary gameplay state in `scenes/main/Main.gd`.
 - Prefer small, safe, isolated patches.
 - Preserve existing project settings unless the task requires a specific change.
 
@@ -30,6 +31,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Do not add external plugins.
 - Do not add external assets unless explicitly requested.
 - Do not introduce gameplay systems beyond the requested task.
+- Do not extract gameplay state into services until the prototype loop becomes larger or explicitly requested.
 - Keep patches easy to review.
 
 ## Scene/UI Rules
@@ -71,7 +73,11 @@ After each patch, validate manually in Godot:
 - `scenes/main/Main.tscn` opens in the editor.
 - Main root node is `Control`.
 - `scenes/main/Main.gd` is attached to the Main root node.
-- Placeholder Label and Button are visible.
+- Clicker UI is visible.
+- Attack button reduces target HP.
+- Target defeat gives gold.
+- Damage upgrade spends gold and increases damage.
+- Upgrade cannot be bought without enough gold.
 - Scene can be run from Godot.
 - No error appears because `Main.gd` extends `Control`.
 - YandexBridge calls do not crash in non-Web/editor runs.
