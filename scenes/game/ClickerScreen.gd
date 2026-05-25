@@ -138,7 +138,7 @@ func _apply_attack_result(result: Dictionary, show_hit_feedback: bool) -> void:
 		game_field.play_hit_feedback(result.get("damage_dealt", 0))
 
 	if result.get("defeated", false):
-		game_field.play_defeat_feedback(result.get("level_up", false))
+		game_field.play_defeat_feedback(result.get("level_up", false), result.get("zone_changed", false))
 
 	status_label.text = result.get("status_text", "")
 	_update_ui()
@@ -195,7 +195,7 @@ func _process_ability_timers(delta: float) -> void:
 
 func _apply_passive_attack_result(result: Dictionary) -> void:
 	if result.get("defeated", false):
-		game_field.play_defeat_feedback(result.get("level_up", false))
+		game_field.play_defeat_feedback(result.get("level_up", false), result.get("zone_changed", false))
 		status_label.text = result.get("status_text", "")
 
 	_update_ui()

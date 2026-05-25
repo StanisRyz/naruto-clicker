@@ -23,10 +23,16 @@ mouse_filter = 2
 theme_override_constants/separation = 18
 alignment = 1
 
+[node name="ZoneNameLabel" type="Label" parent="GameFieldContent"]
+layout_mode = 2
+mouse_filter = 2
+text = "Training Grounds"
+horizontal_alignment = 1
+
 [node name="EnemyNameLabel" type="Label" parent="GameFieldContent"]
 layout_mode = 2
 mouse_filter = 2
-text = "Enemy"
+text = "Rogue Ninja"
 horizontal_alignment = 1
 
 [node name="TargetHpLabel" type="Label" parent="GameFieldContent"]

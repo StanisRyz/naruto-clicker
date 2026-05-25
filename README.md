@@ -53,6 +53,24 @@ The main scene contains the first local clicker loop:
 - Partner damage ticks every 0.1 seconds for `total_dps / 10` damage.
 These formulas are prototype balance values.
 
+## Zone Progression
+
+Levels are grouped into zones. Each zone has named enemies and multipliers applied on top of the base HP and reward formulas.
+
+| Zone | Levels | Name | Enemy | Boss | HP Mult | Reward Mult |
+|------|--------|------|-------|------|---------|-------------|
+| 1 | 1–10 | Training Grounds | Rogue Ninja | Training Master | 1.0× | 1.0× |
+| 2 | 11–20 | Forest Path | Forest Bandit | Forest Guardian | 1.4× | 1.3× |
+| 3 | 21–30 | Stone Valley | Stone Warrior | Valley Warlord | 1.9× | 1.7× |
+| 4 | 31–40 | Shadow Camp | Shadow Fighter | Shadow Commander | 2.5× | 2.2× |
+
+- After level 40 the game continues using Zone 4 data indefinitely.
+- Base HP formula: `10 + (level - 1) * 8`. Zone HP multiplier is applied after.
+- Base reward formula: `5 + (level - 1) * 3`. Zone reward multiplier is applied after.
+- Boss levels (every 5th level) still multiply the zone-scaled HP and reward by 5.
+- Zone data is stored as a constant array in `scripts/game/ClickerState.gd`.
+- No background images or audio assets are used for zones.
+
 The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes/game/ClickerScreen.gd` owns the gameplay flow and updates the UI components.
 
 ## Project Structure

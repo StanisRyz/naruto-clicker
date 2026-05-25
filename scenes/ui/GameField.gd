@@ -3,6 +3,7 @@ extends Button
 
 signal attack_requested
 
+@onready var zone_name_label: Label = $GameFieldContent/ZoneNameLabel
 @onready var enemy_name_label: Label = $GameFieldContent/EnemyNameLabel
 @onready var target_hp_label: Label = $GameFieldContent/TargetHpLabel
 @onready var target_progress_bar: ProgressBar = $GameFieldContent/TargetProgressBar
@@ -16,6 +17,7 @@ func _ready() -> void:
 
 
 func update_view(state: ClickerState) -> void:
+	zone_name_label.text = state.zone_name
 	enemy_name_label.text = state.enemy_name
 	target_hp_label.text = "Enemy HP: %d / %d" % [state.target_hp, state.target_max_hp]
 	target_progress_bar.max_value = state.target_max_hp
@@ -56,8 +58,13 @@ func play_hit_feedback(damage: int) -> void:
 	popup_tween.chain().tween_callback(popup_label.queue_free)
 
 
-func play_defeat_feedback(level_up: bool) -> void:
-	defeat_feedback_label.text = "Level Up!" if level_up else "Defeated!"
+func play_defeat_feedback(level_up: bool, zone_changed: bool = false) -> void:
+	if zone_changed:
+		defeat_feedback_label.text = "New Zone!"
+	elif level_up:
+		defeat_feedback_label.text = "Level Up!"
+	else:
+		defeat_feedback_label.text = "Defeated!"
 	defeat_feedback_label.modulate.a = 1.0
 	defeat_feedback_label.scale = Vector2.ONE
 

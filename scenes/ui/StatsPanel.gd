@@ -7,6 +7,8 @@ extends GridContainer
 @onready var partner_dps_label: Label = $PartnerDpsLabel
 @onready var level_label: Label = $LevelLabel
 @onready var enemies_defeated_label: Label = $EnemiesDefeatedLabel
+@onready var zone_label: Label = $ZoneLabel
+@onready var zone_range_label: Label = $ZoneRangeLabel
 
 
 func update_view(state: ClickerState) -> void:
@@ -19,3 +21,5 @@ func update_view(state: ClickerState) -> void:
 		state.enemies_defeated_on_level,
 		state.enemies_required_per_level,
 	]
+	zone_label.text = "Zone: %s" % state.zone_name
+	zone_range_label.text = "Lv %d-%d" % [state.zone_level_start, state.zone_level_end]

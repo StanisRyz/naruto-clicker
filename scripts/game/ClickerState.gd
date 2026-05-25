@@ -1,6 +1,45 @@
 class_name ClickerState
 extends RefCounted
 
+const ZONE_DATA: Array = [
+	{
+		"name": "Training Grounds",
+		"level_start": 1,
+		"level_end": 10,
+		"enemy": "Rogue Ninja",
+		"boss": "Training Master",
+		"hp_multiplier": 1.0,
+		"reward_multiplier": 1.0,
+	},
+	{
+		"name": "Forest Path",
+		"level_start": 11,
+		"level_end": 20,
+		"enemy": "Forest Bandit",
+		"boss": "Forest Guardian",
+		"hp_multiplier": 1.4,
+		"reward_multiplier": 1.3,
+	},
+	{
+		"name": "Stone Valley",
+		"level_start": 21,
+		"level_end": 30,
+		"enemy": "Stone Warrior",
+		"boss": "Valley Warlord",
+		"hp_multiplier": 1.9,
+		"reward_multiplier": 1.7,
+	},
+	{
+		"name": "Shadow Camp",
+		"level_start": 31,
+		"level_end": 40,
+		"enemy": "Shadow Fighter",
+		"boss": "Shadow Commander",
+		"hp_multiplier": 2.5,
+		"reward_multiplier": 2.2,
+	},
+]
+
 var gold: int = 0
 var click_damage: int = 1
 var character_level: int = 1
@@ -28,6 +67,13 @@ var gold_bonus_multiplier: int = 2
 var partner_counts: Array[int] = [0, 0, 0]
 var partner_dps_values: Array[int] = [10, 30, 50]
 var partner_purchase_costs: Array[int] = [10, 50, 150]
+
+var current_zone_index: int = 0
+var zone_name: String = "Training Grounds"
+var zone_level_start: int = 1
+var zone_level_end: int = 10
+var zone_hp_multiplier: float = 1.0
+var zone_reward_multiplier: float = 1.0
 
 
 func _init() -> void:
@@ -58,16 +104,26 @@ func attack_with_damage(damage: int) -> Dictionary:
 	var did_level_up: bool = enemies_defeated_on_level >= enemies_required_per_level
 	var defeated_boss: bool = is_boss_level
 	var status_text: String = "Enemy defeated! +%d gold" % earned_gold
+	var zone_changed: bool = false
+	var new_zone_name: String = ""
 
 	if did_level_up:
+		var old_zone_index: int = current_zone_index
 		current_level += 1
 		enemies_defeated_on_level = 0
 		setup_current_level()
-		status_text = "Boss defeated! +%d gold. Level %d" % [earned_gold, current_level] if defeated_boss else "Enemy defeated! +%d gold. Level %d" % [earned_gold, current_level]
+		zone_changed = current_zone_index != old_zone_index
+		new_zone_name = zone_name
+		if zone_changed:
+			status_text = "New zone: %s" % zone_name
+		elif defeated_boss:
+			status_text = "Boss defeated! +%d gold. Level %d" % [earned_gold, current_level]
+		else:
+			status_text = "Level up! Level %d" % current_level
 	else:
 		reset_target()
 
-	return _make_attack_result(true, did_level_up, earned_gold, damage_dealt, target_hp_before, 0, status_text)
+	return _make_attack_result(true, did_level_up, earned_gold, damage_dealt, target_hp_before, 0, status_text, zone_changed, new_zone_name)
 
 
 func buy_character_level_upgrade() -> Dictionary:
@@ -82,6 +138,8 @@ func buy_character_level_upgrade() -> Dictionary:
 			"upgraded": false,
 			"not_enough_gold": true,
 			"status_text": "Not enough gold",
+			"zone_changed": false,
+			"zone_name": "",
 		}
 
 	gold -= character_level_upgrade_cost
@@ -99,6 +157,8 @@ func buy_character_level_upgrade() -> Dictionary:
 		"upgraded": true,
 		"not_enough_gold": false,
 		"status_text": "Character level upgraded!",
+		"zone_changed": false,
+		"zone_name": "",
 	}
 
 
@@ -208,9 +268,11 @@ func is_current_level_boss() -> bool:
 
 func setup_current_level() -> void:
 	is_boss_level = is_current_level_boss()
+	_update_zone()
 	recalculate_level_values()
 	enemies_required_per_level = 1 if is_boss_level else 10
-	enemy_name = "Boss" if is_boss_level else "Enemy"
+	var zone: Dictionary = ZONE_DATA[current_zone_index]
+	enemy_name = zone.boss if is_boss_level else zone.enemy
 	reset_target()
 
 
@@ -243,6 +305,8 @@ func fail_boss_level() -> Dictionary:
 		"not_enough_gold": false,
 		"boss_failed": true,
 		"status_text": "Boss failed! Returned to Level %d" % current_level,
+		"zone_changed": false,
+		"zone_name": "",
 	}
 
 
@@ -251,10 +315,31 @@ func reset_target() -> void:
 
 
 func recalculate_level_values() -> void:
+	var zone: Dictionary = ZONE_DATA[current_zone_index]
 	var base_hp: int = 10 + (current_level - 1) * 8
 	var base_reward: int = 5 + (current_level - 1) * 3
-	target_max_hp = base_hp * 5 if is_boss_level else base_hp
-	reward_gold = base_reward * 5 if is_boss_level else base_reward
+	var scaled_hp: int = int(base_hp * zone.hp_multiplier)
+	var scaled_reward: int = int(base_reward * zone.reward_multiplier)
+	target_max_hp = scaled_hp * 5 if is_boss_level else scaled_hp
+	reward_gold = scaled_reward * 5 if is_boss_level else scaled_reward
+
+
+func _get_zone_index_for_level(level: int) -> int:
+	for i in ZONE_DATA.size():
+		if level <= ZONE_DATA[i].level_end:
+			return i
+	return ZONE_DATA.size() - 1
+
+
+func _update_zone() -> void:
+	var idx: int = _get_zone_index_for_level(current_level)
+	var zone: Dictionary = ZONE_DATA[idx]
+	current_zone_index = idx
+	zone_name = zone.name
+	zone_level_start = zone.level_start
+	zone_level_end = zone.level_end
+	zone_hp_multiplier = zone.hp_multiplier
+	zone_reward_multiplier = zone.reward_multiplier
 
 
 func _update_character_state() -> void:
@@ -273,6 +358,8 @@ func _make_purchase_result(status_text: String, not_enough_gold: bool = false, u
 		"upgraded": upgraded,
 		"not_enough_gold": not_enough_gold,
 		"status_text": status_text,
+		"zone_changed": false,
+		"zone_name": "",
 	}
 
 
@@ -283,7 +370,9 @@ func _make_attack_result(
 	damage_dealt: int,
 	target_hp_before: int,
 	target_hp_after: int,
-	status_text: String
+	status_text: String,
+	zone_changed: bool = false,
+	new_zone_name: String = ""
 ) -> Dictionary:
 	return {
 		"defeated": defeated,
@@ -295,4 +384,6 @@ func _make_attack_result(
 		"upgraded": false,
 		"not_enough_gold": false,
 		"status_text": status_text,
+		"zone_changed": zone_changed,
+		"zone_name": new_zone_name,
 	}
