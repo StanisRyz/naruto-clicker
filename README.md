@@ -31,6 +31,8 @@ The main scene contains the first local clicker loop:
 - Enemy HP is shown with a label and progress bar.
 - Each level requires defeating 10 enemies.
 - Enemy HP and gold reward scale with the current level.
+- Every 5th level is a boss level with one boss.
+- Bosses must be defeated within 30 seconds or the player returns to the previous level.
 - Gold can buy a single damage upgrade that increases click damage.
 
 The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes/game/ClickerScreen.gd` owns the gameplay flow and updates the UI components.
@@ -52,4 +54,4 @@ The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes
 
 The project is intended for Yandex Games Web export. Keep the 720x1280 portrait setup, GL Compatibility renderer, and Web-friendly Control-based UI layout.
 
-YandexBridge is present for future platform integration, but ads, payments, saves, cloud features, and authentication should not be added until explicitly requested.
+YandexBridge is present for future platform integration, but ads, payments, saves, cloud features, authentication, heroes, settlement systems, and elite enemies should not be added until explicitly requested.

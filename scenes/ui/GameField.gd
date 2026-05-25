@@ -6,6 +6,7 @@ signal attack_requested
 @onready var enemy_name_label: Label = $GameFieldContent/EnemyNameLabel
 @onready var target_hp_label: Label = $GameFieldContent/TargetHpLabel
 @onready var target_progress_bar: ProgressBar = $GameFieldContent/TargetProgressBar
+@onready var boss_timer_label: Label = $GameFieldContent/BossTimerLabel
 @onready var feedback_layer: Control = $FeedbackLayer
 @onready var defeat_feedback_label: Label = $FeedbackLayer/DefeatFeedbackLabel
 
@@ -15,10 +16,16 @@ func _ready() -> void:
 
 
 func update_view(state: ClickerState) -> void:
-	enemy_name_label.text = "Enemy"
+	enemy_name_label.text = state.enemy_name
 	target_hp_label.text = "Enemy HP: %d / %d" % [state.target_hp, state.target_max_hp]
 	target_progress_bar.max_value = state.target_max_hp
 	target_progress_bar.value = state.target_hp
+
+
+func update_boss_timer(time_left: float, is_active: bool) -> void:
+	boss_timer_label.visible = is_active
+	if is_active:
+		boss_timer_label.text = "Boss Time: %.1fs" % maxf(time_left, 0.0)
 
 
 func play_hit_feedback(damage: int) -> void:

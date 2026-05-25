@@ -42,6 +42,13 @@ max_value = 10.0
 value = 10.0
 show_percentage = false
 
+[node name="BossTimerLabel" type="Label" parent="GameFieldContent"]
+visible = false
+layout_mode = 2
+mouse_filter = 2
+text = "Boss Time: 30.0s"
+horizontal_alignment = 1
+
 [node name="TapHintLabel" type="Label" parent="GameFieldContent"]
 layout_mode = 2
 mouse_filter = 2

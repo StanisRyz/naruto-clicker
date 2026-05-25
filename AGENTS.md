@@ -28,6 +28,9 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Let `ClickerScreen` coordinate state results into UI feedback calls.
 - Keep the main attack input on the `GameField` tap/click area, not a separate Attack button.
 - Keep level progression simple: 10 enemies defeated per level, then advance the level.
+- Keep every 5th level as a boss level with exactly one boss.
+- Boss levels must use a 30 second timer and return to the previous level on failure.
+- Do not add elite enemies.
 - Scale enemy HP and gold reward by level with deterministic formulas.
 - Prefer small, safe, isolated patches.
 - Preserve existing project settings unless the task requires a specific change.
@@ -95,6 +98,12 @@ After each patch, validate manually in Godot:
 - Level text updates correctly.
 - Enemies defeated counter updates correctly.
 - Enemy HP and reward increase after level up.
+- Levels 5, 10, 15, etc. are boss levels.
+- Boss levels have one boss with higher HP and reward.
+- Boss timer starts at 30 seconds and decreases.
+- Defeating a boss before timeout advances to the next level.
+- Boss timeout returns the player to the previous level.
+- Normal levels work again after boss timeout.
 - Damage upgrade spends gold and increases damage.
 - Upgrade cannot be bought without enough gold.
 - Scene can be run from Godot.
