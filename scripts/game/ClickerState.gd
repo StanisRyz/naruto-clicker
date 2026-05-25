@@ -14,13 +14,18 @@ var damage_upgrade_cost: int = 10
 
 
 func attack() -> Dictionary:
+	var target_hp_before: int = target_hp
 	target_hp = maxi(target_hp - click_damage, 0)
+	var damage_dealt: int = target_hp_before - target_hp
 
 	if target_hp > 0:
 		return {
 			"defeated": false,
 			"level_up": false,
 			"reward_gold": 0,
+			"damage_dealt": damage_dealt,
+			"target_hp_before": target_hp_before,
+			"target_hp_after": target_hp,
 			"upgraded": false,
 			"not_enough_gold": false,
 			"status_text": "Tap the field to attack!",
@@ -45,6 +50,9 @@ func attack() -> Dictionary:
 		"defeated": true,
 		"level_up": did_level_up,
 		"reward_gold": earned_gold,
+		"damage_dealt": damage_dealt,
+		"target_hp_before": target_hp_before,
+		"target_hp_after": 0,
 		"upgraded": false,
 		"not_enough_gold": false,
 		"status_text": status_text,
@@ -57,6 +65,9 @@ func buy_damage_upgrade() -> Dictionary:
 			"defeated": false,
 			"level_up": false,
 			"reward_gold": 0,
+			"damage_dealt": 0,
+			"target_hp_before": target_hp,
+			"target_hp_after": target_hp,
 			"upgraded": false,
 			"not_enough_gold": true,
 			"status_text": "Not enough gold",
@@ -71,6 +82,9 @@ func buy_damage_upgrade() -> Dictionary:
 		"defeated": false,
 		"level_up": false,
 		"reward_gold": 0,
+		"damage_dealt": 0,
+		"target_hp_before": target_hp,
+		"target_hp_after": target_hp,
 		"upgraded": true,
 		"not_enough_gold": false,
 		"status_text": "Damage upgraded!",

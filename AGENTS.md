@@ -23,6 +23,9 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Keep `ClickerScreen` responsible for gameplay flow and UI updates.
 - Keep prototype state and formulas in `scripts/game/ClickerState.gd`.
 - Keep `StatsPanel`, `GameField`, and `UpgradePanel` as focused UI components.
+- Keep `GameField` responsible only for tap/click input and simple visual feedback.
+- Keep UI animation details out of `ClickerState`.
+- Let `ClickerScreen` coordinate state results into UI feedback calls.
 - Keep the main attack input on the `GameField` tap/click area, not a separate Attack button.
 - Keep level progression simple: 10 enemies defeated per level, then advance the level.
 - Scale enemy HP and gold reward by level with deterministic formulas.

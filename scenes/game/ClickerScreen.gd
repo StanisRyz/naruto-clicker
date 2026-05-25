@@ -22,6 +22,9 @@ func _update_ui() -> void:
 
 func _on_attack_requested() -> void:
 	var result: Dictionary = state.attack()
+	game_field.play_hit_feedback(result.get("damage_dealt", 0))
+	if result.get("defeated", false):
+		game_field.play_defeat_feedback(result.get("level_up", false))
 	status_label.text = result.get("status_text", "")
 	_update_ui()
 
