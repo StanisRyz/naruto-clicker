@@ -43,14 +43,16 @@ The main scene contains the first local clicker loop:
 - The game field is the fullscreen bottom clickable layer.
 - Ability buttons are a separate left-middle overlay and must be purchased before activation.
 - Autoclick costs 50 gold, and Gold Bonus costs 150 gold.
-- Autoclick lasts 30 seconds and attacks once every 0.05 seconds while active.
-- Gold Bonus lasts 30 seconds and doubles gold rewards while active.
+- Autoclick lasts 15 seconds, attacks once every 0.05 seconds while active, then enters a 60 second cooldown.
+- Gold Bonus lasts 45 seconds, doubles gold rewards while active, then enters a 300 second cooldown.
 - Partners provide passive DPS and are managed from a separate bottom-half sheet.
 - Partner DPS tiers are 10, 30, and 50.
 - Partner initial costs are 10, 50, and 150 gold.
 - Partner costs scale as `10 + count * 10`, `50 + count * 30`, and `150 + count * 50`.
 - Partner 2 requires Partner 1, and Partner 3 requires Partner 2.
 - Partner damage ticks every 0.1 seconds for `total_dps / 10` damage.
+- Character level upgrades and partner hires support bulk modes: `x1`, `x10`, `x100`, and `Max`.
+- Bulk purchases are sequential, use the normal scaling costs, and stop when gold runs out.
 These formulas are prototype balance values.
 
 ## Prestige

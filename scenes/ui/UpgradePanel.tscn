@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scenes/ui/UpgradePanel.gd" id="1_x2nck"]
 
 [node name="UpgradePanel" type="Control"]
-custom_minimum_size = Vector2(0, 220)
+custom_minimum_size = Vector2(0, 292)
 script = ExtResource("1_x2nck")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
@@ -14,6 +14,20 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 12
+
+[node name="BuyModeRow" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BuyModeLabel" type="Label" parent="VBoxContainer/BuyModeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Buy mode"
+vertical_alignment = 1
+
+[node name="BuyModeOption" type="OptionButton" parent="VBoxContainer/BuyModeRow"]
+custom_minimum_size = Vector2(180, 56)
+layout_mode = 2
 
 [node name="UpgradeCharacterLevelButton" type="Button" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 72)

@@ -1,7 +1,7 @@
 class_name UpgradeSheet
 extends Control
 
-signal character_level_upgrade_requested
+signal character_level_upgrade_requested(mode: String)
 signal autoclick_purchase_requested
 signal gold_bonus_purchase_requested
 
@@ -29,8 +29,8 @@ func update_view(state: ClickerState) -> void:
 	upgrade_panel.update_view(state)
 
 
-func _on_character_level_upgrade_requested() -> void:
-	character_level_upgrade_requested.emit()
+func _on_character_level_upgrade_requested(mode: String) -> void:
+	character_level_upgrade_requested.emit(mode)
 
 
 func _on_autoclick_purchase_requested() -> void:

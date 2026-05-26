@@ -1,7 +1,7 @@
 class_name PartnerSheet
 extends Control
 
-signal partner_purchase_requested(partner_index: int)
+signal partner_purchase_requested(partner_index: int, mode: String)
 
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
 @onready var partner_panel: PartnerPanel = $PanelContainer/MarginContainer/VBoxContainer/PartnerPanel
@@ -25,5 +25,5 @@ func update_view(state: ClickerState) -> void:
 	partner_panel.update_view(state)
 
 
-func _on_partner_purchase_requested(partner_index: int) -> void:
-	partner_purchase_requested.emit(partner_index)
+func _on_partner_purchase_requested(partner_index: int, mode: String) -> void:
+	partner_purchase_requested.emit(partner_index, mode)

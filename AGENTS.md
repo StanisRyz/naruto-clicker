@@ -31,8 +31,8 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Keep `GameField` responsible only for tap/click input and simple visual feedback.
 - Keep `AbilityBar` separate from `GameField` on the left-middle screen edge.
 - Abilities must be purchased in `UpgradeSheet` before activation.
-- Autoclick lasts 30 seconds and performs one attack every 0.05 seconds.
-- Gold Bonus lasts 30 seconds and doubles rewards while active.
+- Autoclick lasts 15 seconds, performs one attack every 0.05 seconds, then enters a 60 second cooldown.
+- Gold Bonus lasts 45 seconds, doubles rewards while active, then enters a 300 second cooldown.
 - Make sure ability buttons do not trigger attacks.
 - Partners provide passive DPS through `ClickerState` state and `ClickerScreen` ticking.
 - Partner DPS tiers are 10, 30, and 50.
@@ -40,9 +40,11 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Partner costs scale as `10 + count * 10`, `50 + count * 30`, and `150 + count * 50`.
 - Partner 2 requires at least one Partner 1; Partner 3 requires at least one Partner 2.
 - Partner damage ticks every 0.1 seconds for `total_dps / 10` damage.
+- Partner purchases support bulk modes `x1`, `x10`, `x100`, and `Max`; purchases are sequential and stop when gold runs out.
 - Keep `PartnerSheet` and `PrestigeSheet` as separate bottom-half overlays from `UpgradeSheet`.
 - Character level replaces the old damage upgrade; character level must equal click damage.
 - Character level upgrade cost is `5 + (character_level - 1) * 3`.
+- Character level upgrades support bulk modes `x1`, `x10`, `x100`, and `Max`; purchases are sequential and stop when gold runs out.
 - Autoclick purchase costs 50 gold.
 - Gold Bonus purchase costs 150 gold.
 - Treat economy formulas as prototype balance values.
@@ -184,9 +186,18 @@ After each patch, validate manually in Godot:
 - Autoclick can be purchased for 50 gold at character level 15.
 - Gold Bonus can be purchased for 150 gold at character level 30.
 - Purchased abilities can be activated from `AbilityBar`.
-- Autoclick lasts 30 seconds.
-- Gold Bonus lasts 30 seconds.
+- Autoclick lasts 15 seconds.
+- Autoclick enters a 60 second cooldown after ending.
+- Gold Bonus lasts 45 seconds.
+- Gold Bonus enters a 300 second cooldown after ending.
+- Ability buttons show active, cooldown, and ready states.
+- Abilities cannot activate while active or on cooldown.
 - Autoclick performs separate attacks every 0.05 seconds.
+- Upgrade x1 buys 1 character level.
+- Upgrade x10 buys up to 10 character levels.
+- Upgrade x100 buys up to 100 character levels.
+- Upgrade Max buys as many character levels as current gold allows.
+- Partner x1, x10, x100, and Max modes buy sequentially and preserve prerequisites.
 - Target defeat gives gold.
 - Defeating 10 enemies advances to the next level.
 - Level text updates correctly.
@@ -226,7 +237,7 @@ After each patch, validate manually in Godot:
 - No closes the prestige dialog and does not reset progress.
 - Confirming prestige resets normal progress; cancelling does nothing.
 - StatsPanel shows Prestige points and total runs.
-- After prestige, all timers (boss, autoclick, gold bonus, accumulators) are reset in ClickerScreen.
+- After prestige, all timers (boss, autoclick, gold bonus, ability cooldowns, accumulators) are reset in ClickerScreen.
 
 ## Documentation Update Rules
 

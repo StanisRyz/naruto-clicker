@@ -13,17 +13,35 @@ func _ready() -> void:
 	gold_bonus_button.pressed.connect(_on_gold_bonus_button_pressed)
 
 
-func update_view(state: ClickerState, autoclick_time_left: float, gold_bonus_time_left: float) -> void:
-	autoclick_button.disabled = not state.autoclick_purchased
-	gold_bonus_button.disabled = not state.gold_bonus_purchased
+func update_view(
+	state: ClickerState,
+	autoclick_time_left: float,
+	gold_bonus_time_left: float,
+	autoclick_cooldown_left: float,
+	gold_bonus_cooldown_left: float
+) -> void:
+	autoclick_button.disabled = (
+		not state.autoclick_purchased
+		or state.autoclick_active
+		or autoclick_cooldown_left > 0.0
+	)
+	gold_bonus_button.disabled = (
+		not state.gold_bonus_purchased
+		or state.gold_bonus_active
+		or gold_bonus_cooldown_left > 0.0
+	)
 
 	if state.autoclick_active:
-		autoclick_button.text = "Auto %.0fs" % ceili(autoclick_time_left)
+		autoclick_button.text = "Auto %ds" % ceili(autoclick_time_left)
+	elif autoclick_cooldown_left > 0.0:
+		autoclick_button.text = "Auto CD %ds" % ceili(autoclick_cooldown_left)
 	else:
 		autoclick_button.text = "Auto"
 
 	if state.gold_bonus_active:
-		gold_bonus_button.text = "Gold %.0fs" % ceili(gold_bonus_time_left)
+		gold_bonus_button.text = "Gold %ds" % ceili(gold_bonus_time_left)
+	elif gold_bonus_cooldown_left > 0.0:
+		gold_bonus_button.text = "Gold CD %ds" % ceili(gold_bonus_cooldown_left)
 	else:
 		gold_bonus_button.text = "Gold x2"
 

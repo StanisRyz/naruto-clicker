@@ -198,39 +198,24 @@ func attack_with_damage(damage: int) -> Dictionary:
 
 
 func buy_character_level_upgrade() -> Dictionary:
-	if gold < character_level_upgrade_cost:
-		return {
-			"defeated": false,
-			"level_up": false,
-			"reward_gold": 0,
-			"damage_dealt": 0,
-			"target_hp_before": target_hp,
-			"target_hp_after": target_hp,
-			"upgraded": false,
-			"not_enough_gold": true,
-			"status_text": "Not enough gold",
-			"zone_changed": false,
-			"zone_name": "",
-		}
+	return buy_character_level_upgrades("x1")
 
-	gold -= character_level_upgrade_cost
-	character_level += 1
+
+func buy_character_level_upgrades(mode: String) -> Dictionary:
+	var purchase_limit: int = _get_buy_mode_limit(mode)
+	var bought: int = 0
+
+	while (purchase_limit < 0 or bought < purchase_limit) and gold >= character_level_upgrade_cost:
+		gold -= character_level_upgrade_cost
+		character_level += 1
+		bought += 1
+		recalculate_character_level_cost()
+
+	if bought <= 0:
+		return _make_purchase_result("Not enough gold", true)
+
 	_update_character_state()
-	recalculate_character_level_cost()
-
-	return {
-		"defeated": false,
-		"level_up": false,
-		"reward_gold": 0,
-		"damage_dealt": 0,
-		"target_hp_before": target_hp,
-		"target_hp_after": target_hp,
-		"upgraded": true,
-		"not_enough_gold": false,
-		"status_text": "Character level upgraded!",
-		"zone_changed": false,
-		"zone_name": "",
-	}
+	return _make_purchase_result("Character level upgraded x%d!" % bought, false, true)
 
 
 func buy_autoclick_ability() -> Dictionary:
@@ -285,6 +270,10 @@ func get_partner_tick_damage() -> int:
 
 
 func buy_partner(partner_index: int) -> Dictionary:
+	return buy_partners(partner_index, "x1")
+
+
+func buy_partners(partner_index: int, mode: String) -> Dictionary:
 	if partner_index < 0 or partner_index >= partner_counts.size():
 		return _make_purchase_result("Invalid partner")
 
@@ -301,14 +290,23 @@ func buy_partner(partner_index: int) -> Dictionary:
 	if partner_index == 2 and partner_counts[1] <= 0:
 		return _make_purchase_result("Requires Partner 2")
 
-	var purchase_cost: int = partner_purchase_costs[partner_index]
-	if gold < purchase_cost:
+	var purchase_limit: int = _get_buy_mode_limit(mode)
+	var bought: int = 0
+
+	while purchase_limit < 0 or bought < purchase_limit:
+		var purchase_cost: int = partner_purchase_costs[partner_index]
+		if gold < purchase_cost:
+			break
+
+		gold -= purchase_cost
+		partner_counts[partner_index] += 1
+		bought += 1
+		recalculate_partner_cost(partner_index)
+
+	if bought <= 0:
 		return _make_purchase_result("Not enough gold", true)
 
-	gold -= purchase_cost
-	partner_counts[partner_index] += 1
-	recalculate_partner_cost(partner_index)
-	return _make_purchase_result("Partner %d hired!" % (partner_index + 1), false, true)
+	return _make_purchase_result("Partner %d hired x%d!" % [partner_index + 1, bought], false, true)
 
 
 func recalculate_character_level_cost() -> void:
@@ -335,6 +333,19 @@ func can_buy_partner(partner_index: int) -> bool:
 		return partner_counts[1] > 0
 
 	return false
+
+
+func _get_buy_mode_limit(mode: String) -> int:
+	if mode == "x10":
+		return 10
+
+	if mode == "x100":
+		return 100
+
+	if mode == "max":
+		return -1
+
+	return 1
 
 
 func is_current_level_boss() -> bool:

@@ -6,7 +6,12 @@ var boss_timer_active: bool = false
 var autoclick_accumulator: float = 0.0
 var autoclick_time_left: float = 0.0
 var gold_bonus_time_left: float = 0.0
-var ability_duration: float = 30.0
+var autoclick_duration: float = 15.0
+var autoclick_cooldown_duration: float = 60.0
+var autoclick_cooldown_left: float = 0.0
+var gold_bonus_duration: float = 45.0
+var gold_bonus_cooldown_duration: float = 300.0
+var gold_bonus_cooldown_left: float = 0.0
 var autoclick_interval: float = 0.05
 var autoclick_interval_epsilon: float = 0.000001
 var partner_damage_accumulator: float = 0.0
@@ -78,7 +83,13 @@ func _update_ui() -> void:
 	stats_panel.update_view(state)
 	game_field.update_view(state)
 	game_field.update_boss_timer(boss_time_left, boss_timer_active)
-	ability_bar.update_view(state, autoclick_time_left, gold_bonus_time_left)
+	ability_bar.update_view(
+		state,
+		autoclick_time_left,
+		gold_bonus_time_left,
+		autoclick_cooldown_left,
+		gold_bonus_cooldown_left
+	)
 	upgrade_sheet.update_view(state)
 	partner_sheet.update_view(state)
 	prestige_sheet.update_view(state)
@@ -89,8 +100,8 @@ func _on_attack_requested() -> void:
 	_apply_attack_result(result, true)
 
 
-func _on_character_level_upgrade_requested() -> void:
-	var result: Dictionary = state.buy_character_level_upgrade()
+func _on_character_level_upgrade_requested(mode: String) -> void:
+	var result: Dictionary = state.buy_character_level_upgrades(mode)
 	status_label.text = result.get("status_text", "")
 	_update_ui()
 
@@ -107,8 +118,8 @@ func _on_gold_bonus_purchase_requested() -> void:
 	_update_ui()
 
 
-func _on_partner_purchase_requested(partner_index: int) -> void:
-	var result: Dictionary = state.buy_partner(partner_index)
+func _on_partner_purchase_requested(partner_index: int, mode: String) -> void:
+	var result: Dictionary = state.buy_partners(partner_index, mode)
 	status_label.text = result.get("status_text", "")
 	_update_ui()
 
@@ -141,6 +152,8 @@ func _on_prestige_confirmed() -> void:
 	boss_timer_active = false
 	autoclick_time_left = 0.0
 	gold_bonus_time_left = 0.0
+	autoclick_cooldown_left = 0.0
+	gold_bonus_cooldown_left = 0.0
 	autoclick_accumulator = 0.0
 	partner_damage_accumulator = 0.0
 	status_label.text = result.get("status_text", "")
@@ -199,21 +212,21 @@ func _run_partner_damage_tick() -> void:
 
 
 func _on_autoclick_requested() -> void:
-	if not state.autoclick_purchased:
+	if not state.autoclick_purchased or state.autoclick_active or autoclick_cooldown_left > 0.0:
 		return
 
 	state.autoclick_active = true
-	autoclick_time_left = ability_duration
+	autoclick_time_left = autoclick_duration
 	autoclick_accumulator = 0.0
 	_update_ui()
 
 
 func _on_gold_bonus_requested() -> void:
-	if not state.gold_bonus_purchased:
+	if not state.gold_bonus_purchased or state.gold_bonus_active or gold_bonus_cooldown_left > 0.0:
 		return
 
 	state.gold_bonus_active = true
-	gold_bonus_time_left = ability_duration
+	gold_bonus_time_left = gold_bonus_duration
 	_update_ui()
 
 
@@ -223,13 +236,27 @@ func _process_ability_timers(delta: float) -> void:
 		if autoclick_time_left <= 0.0:
 			state.autoclick_active = false
 			autoclick_accumulator = 0.0
+			autoclick_cooldown_left = autoclick_cooldown_duration
 
 	if state.gold_bonus_active:
 		gold_bonus_time_left = maxf(gold_bonus_time_left - delta, 0.0)
 		if gold_bonus_time_left <= 0.0:
 			state.gold_bonus_active = false
+			gold_bonus_cooldown_left = gold_bonus_cooldown_duration
 
-	ability_bar.update_view(state, autoclick_time_left, gold_bonus_time_left)
+	if autoclick_cooldown_left > 0.0:
+		autoclick_cooldown_left = maxf(autoclick_cooldown_left - delta, 0.0)
+
+	if gold_bonus_cooldown_left > 0.0:
+		gold_bonus_cooldown_left = maxf(gold_bonus_cooldown_left - delta, 0.0)
+
+	ability_bar.update_view(
+		state,
+		autoclick_time_left,
+		gold_bonus_time_left,
+		autoclick_cooldown_left,
+		gold_bonus_cooldown_left
+	)
 
 
 func _apply_passive_attack_result(result: Dictionary) -> void:

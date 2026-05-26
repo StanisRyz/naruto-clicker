@@ -11,6 +11,20 @@ layout_mode = 2
 text = "Total DPS: 0"
 horizontal_alignment = 1
 
+[node name="BuyModeRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BuyModeLabel" type="Label" parent="BuyModeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Buy mode"
+vertical_alignment = 1
+
+[node name="BuyModeOption" type="OptionButton" parent="BuyModeRow"]
+custom_minimum_size = Vector2(180, 56)
+layout_mode = 2
+
 [node name="Partner1Row" type="HBoxContainer" parent="."]
 layout_mode = 2
 theme_override_constants/separation = 12
