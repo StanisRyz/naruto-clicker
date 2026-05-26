@@ -8,8 +8,9 @@ script = ExtResource("1_setpanel")
 
 [node name="BonusesLabel" type="Label" parent="."]
 layout_mode = 2
-text = "DPS +0% | Gold +0% | Click +0%"
+text = "DPS +0% | Gold +0% | Click +0% | Dur +0% | CD -0% | Boss Gold +0%"
 horizontal_alignment = 1
+autowrap_mode = 3
 
 [node name="BuyModeRow" type="HBoxContainer" parent="."]
 layout_mode = 2
@@ -40,49 +41,6 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Max"
 
-[node name="Building1Row" type="HBoxContainer" parent="."]
+[node name="RowsContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
 theme_override_constants/separation = 12
-
-[node name="Building1Label" type="Label" parent="Building1Row"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Training Camp: 0 | +1% each | +0% total"
-autowrap_mode = 3
-
-[node name="Building1Button" type="Button" parent="Building1Row"]
-custom_minimum_size = Vector2(260, 58)
-layout_mode = 2
-text = "Build Training Camp x1 - Cost: 25"
-
-[node name="Building2Row" type="HBoxContainer" parent="."]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="Building2Label" type="Label" parent="Building2Row"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Market: 0 | +1% each | +0% total"
-autowrap_mode = 3
-
-[node name="Building2Button" type="Button" parent="Building2Row"]
-custom_minimum_size = Vector2(260, 58)
-layout_mode = 2
-disabled = true
-text = "Requires Training Camp"
-
-[node name="Building3Row" type="HBoxContainer" parent="."]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="Building3Label" type="Label" parent="Building3Row"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Knight Hut: 0 | +1% each | +0% total"
-autowrap_mode = 3
-
-[node name="Building3Button" type="Button" parent="Building3Row"]
-custom_minimum_size = Vector2(260, 58)
-layout_mode = 2
-disabled = true
-text = "Requires Market"

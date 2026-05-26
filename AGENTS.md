@@ -37,20 +37,24 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Abilities must be purchased in `UpgradeSheet` before activation.
 - Autoclick lasts 15 seconds, performs one attack every 0.05 seconds, then enters a 60 second cooldown.
 - Gold Bonus lasts 45 seconds, doubles rewards while active, then enters a 300 second cooldown.
+- Focus Burst unlocks at character level 60, costs 500 gold, lasts 20 seconds, doubles final click/autoclick damage, and enters a 120 second cooldown.
+- Rally unlocks at character level 80, costs 1000 gold, lasts 30 seconds, doubles final partner DPS, and enters a 180 second cooldown.
 - Make sure ability buttons do not trigger attacks.
 - Partners provide passive DPS through `ClickerState` state and `ClickerScreen` ticking.
-- Partner DPS tiers are 10, 30, and 50.
-- Partner initial costs are 10, 50, and 150 gold.
-- Partner costs scale as `10 + count * 10`, `50 + count * 30`, and `150 + count * 50`.
-- Partner 2 requires at least one Partner 1; Partner 3 requires at least one Partner 2.
+- Partner tiers are data-driven: Partner 1 (10 DPS), Partner 2 (30), Partner 3 (50), Field Scout (100), Spear Guard (175), Iron Defender (300), Battle Monk (500), Elite Samurai (850), Shadow Captain (1400), War Sage (2300), Beast Tamer (3800), Blade Master (6200), and Legendary Commander (10000).
+- Partner initial costs are `[10, 50, 150, 400, 900, 1800, 3500, 7000, 14000, 28000, 56000, 110000, 220000]`.
+- Partner costs scale by adding `[10, 30, 50, 100, 180, 300, 500, 900, 1600, 2800, 5000, 9000, 16000]` per owned partner.
+- Each partner tier requires at least one of the previous tier.
 - Partner damage ticks every 0.1 seconds for `total_dps / 10` damage.
 - Partner purchases use horizontal bulk mode buttons `x1`, `x10`, `x100`, and `Max`; displayed costs must show total package cost.
 - Partner `x10` and `x100` purchases are strict all-or-nothing packages; `Max` buys as many as current gold allows.
 - PartnerPanel should always show the required package cost when prerequisites are met; "Not enough gold" belongs in StatusLabel after a failed purchase, not in partner button text.
 - Keep `PartnerSheet`, `SettlementSheet`, and `PrestigeSheet` as separate bottom-half overlays from `UpgradeSheet`.
 - Settlement tab sits between `Partners` and `Prestige` in the bottom bar.
-- Settlement buildings are Training Camp (+1% final partner DPS per level), Market (+1% final gold gain per level), and Knight Hut (+1% final click damage per level).
-- Market requires at least one Training Camp; Knight Hut requires at least one Market.
+- Settlement buildings are Training Camp (+1% final partner DPS per level), Market (+1% final gold gain per level), Knight Hut (+1% final click damage per level), War Banner (+1% Focus Burst/Rally duration per level), Clock Tower (-1% ability cooldown per level, capped at 50%), and Boss Shrine (+1% boss reward gold per level).
+- Each settlement building requires at least one of the previous building.
+- Settlement initial costs are `[25, 75, 150, 500, 1200, 3000]`.
+- Settlement costs scale by adding `[25, 50, 100, 250, 600, 1500]` per owned building.
 - Settlement purchases use bulk modes `x1`, `x10`, `x100`, and `Max` with the same strict all-or-nothing behavior as partners for `x10` and `x100`.
 - Settlement buildings reset on prestige.
 - Character level replaces the old damage upgrade; character level must equal click damage.
@@ -77,7 +81,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Signal flow: PrestigePanel `prestige_requested` -> PrestigeSheet `prestige_requested` -> ClickerScreen calls `show_prestige_confirm(state)`; dialog `confirmed` -> ClickerScreen calls `perform_prestige()`.
 - `perform_prestige()` resets all normal progress except available prestige points, total earned prestige points, prestige talents, and `total_prestiges`.
 - Prestige points are split into available points and total earned points; spending talents subtracts only from available points.
-- Prestige talents are Focus Training (+5% click/autoclick damage per level), Trade Routes (+5% gold gain per level), and Command Aura (+5% partner DPS per level).
+- Prestige talents are Focus Training (+5% click/autoclick damage per level), Trade Routes (+5% gold gain per level), Command Aura (+5% partner DPS per level), Quick Hands (+5% Autoclick attack rate per level, minimum interval 0.02 seconds), Builder Wisdom (+5% settlement bonus effectiveness per level), and Boss Hunter (+5% boss damage per level).
 - Prestige talent next cost is `1 + current talent level`.
 - Prestige reset does not reset prestige talents.
 - Apply prestige damage multiplier in `_update_character_state()` so `click_damage` always reflects effective damage.
@@ -171,10 +175,14 @@ After each patch, validate manually in Godot:
 - Old damage upgrade naming is not visible in UI.
 - Autoclick button is visible but locked before character level 15.
 - Gold Bonus button is visible but locked before character level 30.
+- Focus Burst button is visible but locked before character level 60.
+- Rally button is visible but locked before character level 80.
 - Autoclick unlocks at character level 15.
 - Gold Bonus unlocks at character level 30.
+- Focus Burst unlocks at character level 60.
+- Rally unlocks at character level 80.
 - Ability button clicks do not attack the enemy.
-- Autoclick active performs automatic damage every second.
+- Autoclick active performs automatic damage every 0.05 seconds.
 - Gold Bonus active doubles enemy rewards.
 - BottomBar has `Upgrades`, `Partners`, `Settlement`, and `Prestige` buttons on one row.
 - Partner 1 starts at 10 gold.
@@ -182,6 +190,7 @@ After each patch, validate manually in Godot:
 - Partner 3 starts at 150 gold.
 - Partner 2 cannot be bought before at least one Partner 1.
 - Partner 3 cannot be bought before at least one Partner 2.
+- All 13 partner tiers are visible through scrolling and each tier requires the previous tier.
 - Partner costs increase after purchase.
 - Partner counts update after purchase.
 - Total Partner DPS updates correctly.
@@ -204,11 +213,15 @@ After each patch, validate manually in Godot:
 - Gold Bonus cannot activate before purchase.
 - Autoclick can be purchased for 50 gold at character level 15.
 - Gold Bonus can be purchased for 150 gold at character level 30.
+- Focus Burst can be purchased for 500 gold at character level 60.
+- Rally can be purchased for 1000 gold at character level 80.
 - Purchased abilities can be activated from `AbilityBar`.
 - Autoclick lasts 15 seconds.
 - Autoclick enters a 60 second cooldown after ending.
 - Gold Bonus lasts 45 seconds.
 - Gold Bonus enters a 300 second cooldown after ending.
+- Focus Burst doubles click/autoclick damage while active and enters a 120 second cooldown after ending.
+- Rally doubles partner DPS while active and enters a 180 second cooldown after ending.
 - Ability buttons show active, cooldown, and ready states.
 - Abilities cannot activate while active or on cooldown.
 - Autoclick performs separate attacks every 0.05 seconds.
@@ -223,11 +236,15 @@ After each patch, validate manually in Godot:
 - Training Camp can be bought when enough gold.
 - Market requires at least one Training Camp.
 - Knight Hut requires at least one Market.
+- War Banner, Clock Tower, and Boss Shrine are visible through scrolling and follow the building chain requirement.
 - Settlement x1, x10, x100, and Max modes work like partners.
 - Settlement buttons always show required cost when prerequisites are met.
 - Training Camp increases partner DPS/tick damage.
 - Market increases gold rewards.
 - Knight Hut increases manual click and autoclick damage.
+- War Banner increases Focus Burst and Rally duration.
+- Clock Tower reduces ability cooldowns up to the 50% cap.
+- Boss Shrine increases boss reward gold.
 - Target defeat gives gold.
 - Defeating 10 enemies advances to the next level.
 - Level text updates correctly.
@@ -267,6 +284,9 @@ After each patch, validate manually in Godot:
 - No closes the prestige dialog and does not reset progress.
 - Confirming prestige resets normal progress; cancelling does nothing.
 - Prestige resets settlement buildings and costs.
+- Quick Hands affects Autoclick attack interval without going below 0.02 seconds.
+- Builder Wisdom increases settlement percentage bonus effectiveness.
+- Boss Hunter increases manual, autoclick, and partner damage against bosses.
 - StatsPanel shows available / total earned Prestige points and total runs.
 - After prestige, all timers (boss, autoclick, gold bonus, ability cooldowns, accumulators) are reset in ClickerScreen.
 

@@ -7,6 +7,7 @@ const BUY_MODES: Array[String] = ["x1", "x10", "x100", "max"]
 
 var selected_buy_mode: String = "x1"
 var current_state: ClickerState = null
+var building_rows: Array[Dictionary] = []
 
 @onready var bonuses_label: Label = $BonusesLabel
 @onready var buy_mode_buttons: Array[Button] = [
@@ -15,12 +16,7 @@ var current_state: ClickerState = null
 	$BuyModeRow/X100Button,
 	$BuyModeRow/MaxButton,
 ]
-@onready var building_1_label: Label = $Building1Row/Building1Label
-@onready var building_1_button: Button = $Building1Row/Building1Button
-@onready var building_2_label: Label = $Building2Row/Building2Label
-@onready var building_2_button: Button = $Building2Row/Building2Button
-@onready var building_3_label: Label = $Building3Row/Building3Label
-@onready var building_3_button: Button = $Building3Row/Building3Button
+@onready var rows_container: VBoxContainer = $RowsContainer
 
 
 func _ready() -> void:
@@ -28,29 +24,57 @@ func _ready() -> void:
 	buy_mode_buttons[1].pressed.connect(func() -> void: _select_buy_mode("x10"))
 	buy_mode_buttons[2].pressed.connect(func() -> void: _select_buy_mode("x100"))
 	buy_mode_buttons[3].pressed.connect(func() -> void: _select_buy_mode("max"))
-	building_1_button.pressed.connect(func() -> void: building_purchase_requested.emit(0, selected_buy_mode))
-	building_2_button.pressed.connect(func() -> void: building_purchase_requested.emit(1, selected_buy_mode))
-	building_3_button.pressed.connect(func() -> void: building_purchase_requested.emit(2, selected_buy_mode))
 	_update_buy_mode_buttons()
 
 
 func update_view(state: ClickerState) -> void:
 	current_state = state
+	_ensure_building_rows(state)
 	_update_buy_mode_buttons()
-	bonuses_label.text = "DPS +%d%% | Gold +%d%% | Click +%d%%" % [
+	bonuses_label.text = "DPS +%d%% | Gold +%d%% | Click +%d%% | Dur +%d%% | CD -%d%% | Boss Gold +%d%%" % [
 		state.get_settlement_partner_dps_bonus_percent(),
 		state.get_settlement_gold_bonus_percent(),
 		state.get_settlement_click_damage_bonus_percent(),
+		state.get_settlement_ability_duration_bonus_percent(),
+		state.get_settlement_cooldown_reduction_percent(),
+		state.get_settlement_boss_gold_bonus_percent(),
 	]
-	_update_building_row(state, 0, building_1_label, building_1_button)
-	_update_building_row(state, 1, building_2_label, building_2_button)
-	_update_building_row(state, 2, building_3_label, building_3_button)
+
+	for building_index in range(building_rows.size()):
+		_update_building_row(state, building_index, building_rows[building_index])
 
 
-func _update_building_row(state: ClickerState, building_index: int, label: Label, button: Button) -> void:
+func _ensure_building_rows(state: ClickerState) -> void:
+	while building_rows.size() < state.building_names.size():
+		var building_index: int = building_rows.size()
+		building_rows.append(_create_building_row(building_index))
+
+
+func _create_building_row(building_index: int) -> Dictionary:
+	var row := HBoxContainer.new()
+	row.name = "Building%dRow" % (building_index + 1)
+	row.add_theme_constant_override("separation", 12)
+	rows_container.add_child(row)
+
+	var label := Label.new()
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	row.add_child(label)
+
+	var button := Button.new()
+	button.custom_minimum_size = Vector2(330, 58)
+	button.pressed.connect(func() -> void: building_purchase_requested.emit(building_index, selected_buy_mode))
+	row.add_child(button)
+
+	return {"label": label, "button": button}
+
+
+func _update_building_row(state: ClickerState, building_index: int, row: Dictionary) -> void:
+	var label: Label = row["label"]
+	var button: Button = row["button"]
 	var building_name: String = state.building_names[building_index]
 	var owned_count: int = state.building_counts[building_index]
-	var total_bonus: int = owned_count * state.building_bonus_percent_per_level
+	var total_bonus: int = state.get_building_bonus_percent(building_index)
 	label.text = "%s: %d | +%d%% each | +%d%% total" % [
 		building_name,
 		owned_count,

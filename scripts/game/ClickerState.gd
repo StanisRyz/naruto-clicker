@@ -55,23 +55,52 @@ var boss_time_limit: float = 30.0
 var enemy_name: String = "Enemy"
 var autoclick_unlocked: bool = false
 var gold_bonus_unlocked: bool = false
+var focus_burst_unlocked: bool = false
+var rally_unlocked: bool = false
 var autoclick_active: bool = false
 var gold_bonus_active: bool = false
+var focus_burst_active: bool = false
+var rally_active: bool = false
 var autoclick_purchased: bool = false
 var gold_bonus_purchased: bool = false
+var focus_burst_purchased: bool = false
+var rally_purchased: bool = false
 var autoclick_unlock_level: int = 15
 var gold_bonus_unlock_level: int = 30
+var focus_burst_unlock_level: int = 60
+var rally_unlock_level: int = 80
 var autoclick_purchase_cost: int = 50
 var gold_bonus_purchase_cost: int = 150
+var focus_burst_purchase_cost: int = 500
+var rally_purchase_cost: int = 1000
 var gold_bonus_multiplier: int = 2
-var partner_counts: Array[int] = [0, 0, 0]
-var partner_dps_values: Array[int] = [10, 30, 50]
-var partner_purchase_costs: Array[int] = [10, 50, 150]
-var building_counts: Array[int] = [0, 0, 0]
-var building_names: Array[String] = ["Training Camp", "Market", "Knight Hut"]
-var building_bonus_types: Array[String] = ["partner_dps", "gold", "click_damage"]
+var partner_names: Array[String] = [
+	"Partner 1",
+	"Partner 2",
+	"Partner 3",
+	"Field Scout",
+	"Spear Guard",
+	"Iron Defender",
+	"Battle Monk",
+	"Elite Samurai",
+	"Shadow Captain",
+	"War Sage",
+	"Beast Tamer",
+	"Blade Master",
+	"Legendary Commander",
+]
+var partner_dps_values: Array[int] = [10, 30, 50, 100, 175, 300, 500, 850, 1400, 2300, 3800, 6200, 10000]
+var partner_base_costs: Array[int] = [10, 50, 150, 400, 900, 1800, 3500, 7000, 14000, 28000, 56000, 110000, 220000]
+var partner_cost_steps: Array[int] = [10, 30, 50, 100, 180, 300, 500, 900, 1600, 2800, 5000, 9000, 16000]
+var partner_counts: Array[int] = []
+var partner_purchase_costs: Array[int] = []
+var building_names: Array[String] = ["Training Camp", "Market", "Knight Hut", "War Banner", "Clock Tower", "Boss Shrine"]
+var building_bonus_types: Array[String] = ["partner_dps", "gold", "click_damage", "ability_duration", "ability_cooldown", "boss_gold"]
+var building_base_costs: Array[int] = [25, 75, 150, 500, 1200, 3000]
+var building_cost_steps: Array[int] = [25, 50, 100, 250, 600, 1500]
+var building_counts: Array[int] = []
 var building_bonus_percent_per_level: int = 1
-var building_purchase_costs: Array[int] = [25, 75, 150]
+var building_purchase_costs: Array[int] = []
 
 var current_zone_index: int = 0
 var zone_name: String = "Training Grounds"
@@ -86,9 +115,9 @@ var total_prestiges: int = 0
 var prestige_required_level: int = 50
 var prestige_damage_bonus_per_point: float = 0.10
 var prestige_gold_bonus_per_point: float = 0.10
-var prestige_talent_levels: Array[int] = [0, 0, 0]
-var prestige_talent_names: Array[String] = ["Focus Training", "Trade Routes", "Command Aura"]
-var prestige_talent_bonus_types: Array[String] = ["click_damage", "gold", "partner_dps"]
+var prestige_talent_levels: Array[int] = [0, 0, 0, 0, 0, 0]
+var prestige_talent_names: Array[String] = ["Focus Training", "Trade Routes", "Command Aura", "Quick Hands", "Builder Wisdom", "Boss Hunter"]
+var prestige_talent_bonus_types: Array[String] = ["click_damage", "gold", "partner_dps", "autoclick_rate", "settlement_effect", "boss_damage"]
 var prestige_talent_bonus_percent_per_level: int = 5
 
 var prestige_points: int:
@@ -100,6 +129,8 @@ var prestige_points: int:
 
 
 func _init() -> void:
+	_reset_partner_state()
+	_reset_building_state()
 	_update_character_state()
 	recalculate_character_level_cost()
 	setup_current_level()
@@ -153,6 +184,42 @@ func get_command_aura_bonus_percent() -> int:
 	return prestige_talent_levels[2] * prestige_talent_bonus_percent_per_level
 
 
+func get_quick_hands_bonus_percent() -> int:
+	return prestige_talent_levels[3] * prestige_talent_bonus_percent_per_level
+
+
+func get_builder_wisdom_bonus_percent() -> int:
+	return prestige_talent_levels[4] * prestige_talent_bonus_percent_per_level
+
+
+func get_boss_hunter_bonus_percent() -> int:
+	return prestige_talent_levels[5] * prestige_talent_bonus_percent_per_level
+
+
+func get_quick_hands_multiplier() -> float:
+	return 1.0 + get_quick_hands_bonus_percent() / 100.0
+
+
+func get_boss_hunter_multiplier() -> float:
+	return 1.0 + get_boss_hunter_bonus_percent() / 100.0
+
+
+func get_settlement_effectiveness_multiplier() -> float:
+	return 1.0 + get_builder_wisdom_bonus_percent() / 100.0
+
+
+func get_focus_burst_multiplier() -> float:
+	return 2.0 if focus_burst_active else 1.0
+
+
+func get_rally_multiplier() -> float:
+	return 2.0 if rally_active else 1.0
+
+
+func get_boss_damage_multiplier() -> float:
+	return get_boss_hunter_multiplier() if is_boss_level else 1.0
+
+
 func get_prestige_talent_cost(talent_index: int) -> int:
 	if talent_index < 0 or talent_index >= prestige_talent_levels.size():
 		return 0
@@ -191,13 +258,13 @@ func perform_prestige() -> Dictionary:
 	autoclick_active = false
 	gold_bonus_purchased = false
 	gold_bonus_active = false
+	focus_burst_purchased = false
+	focus_burst_active = false
+	rally_purchased = false
+	rally_active = false
 
-	for i in range(partner_counts.size()):
-		partner_counts[i] = 0
-	partner_purchase_costs = [10, 50, 150]
-	for i in range(building_counts.size()):
-		building_counts[i] = 0
-	building_purchase_costs = [25, 75, 150]
+	_reset_partner_state()
+	_reset_building_state()
 
 	recalculate_character_level_cost()
 	_update_character_state()
@@ -219,7 +286,7 @@ func perform_prestige() -> Dictionary:
 
 
 func attack() -> Dictionary:
-	return attack_with_damage(click_damage)
+	return attack_with_damage(get_current_click_damage())
 
 
 func attack_with_damage(damage: int) -> Dictionary:
@@ -233,7 +300,9 @@ func attack_with_damage(damage: int) -> Dictionary:
 	if target_hp > 0:
 		return _make_attack_result(false, false, 0, damage_dealt, target_hp_before, target_hp, "Tap the field to attack!")
 
-	var prestige_gold: int = int(reward_gold * get_prestige_gold_multiplier())
+	var defeated_boss: bool = is_boss_level
+	var boss_reward: int = int(reward_gold * get_boss_reward_multiplier()) if defeated_boss else reward_gold
+	var prestige_gold: int = int(boss_reward * get_prestige_gold_multiplier())
 	var talent_gold: int = int(prestige_gold * get_trade_routes_multiplier())
 	var settlement_gold: int = int(talent_gold * get_settlement_gold_multiplier())
 	var earned_gold: int = settlement_gold * gold_bonus_multiplier if gold_bonus_active else settlement_gold
@@ -241,7 +310,6 @@ func attack_with_damage(damage: int) -> Dictionary:
 	enemies_defeated_on_level += 1
 
 	var did_level_up: bool = enemies_defeated_on_level >= enemies_required_per_level
-	var defeated_boss: bool = is_boss_level
 	var status_text: String = "Enemy defeated! +%d gold" % earned_gold
 	var zone_changed: bool = false
 	var new_zone_name: String = ""
@@ -355,10 +423,40 @@ func buy_gold_bonus_ability() -> Dictionary:
 	return _make_purchase_result("Gold Bonus purchased!", false, true)
 
 
+func buy_focus_burst_ability() -> Dictionary:
+	if focus_burst_purchased:
+		return _make_purchase_result("Already purchased")
+
+	if not focus_burst_unlocked:
+		return _make_purchase_result("Requires character level %d" % focus_burst_unlock_level)
+
+	if gold < focus_burst_purchase_cost:
+		return _make_purchase_result("Not enough gold", true)
+
+	gold -= focus_burst_purchase_cost
+	focus_burst_purchased = true
+	return _make_purchase_result("Focus Burst purchased!", false, true)
+
+
+func buy_rally_ability() -> Dictionary:
+	if rally_purchased:
+		return _make_purchase_result("Already purchased")
+
+	if not rally_unlocked:
+		return _make_purchase_result("Requires character level %d" % rally_unlock_level)
+
+	if gold < rally_purchase_cost:
+		return _make_purchase_result("Not enough gold", true)
+
+	gold -= rally_purchase_cost
+	rally_purchased = true
+	return _make_purchase_result("Rally purchased!", false, true)
+
+
 func get_total_partner_dps() -> int:
 	var total_dps: int = 0
 
-	for index in partner_counts.size():
+	for index in range(partner_counts.size()):
 		total_dps += partner_counts[index] * partner_dps_values[index]
 
 	return total_dps
@@ -378,6 +476,8 @@ func get_partner_tick_damage() -> int:
 		* get_prestige_damage_multiplier()
 		* get_command_aura_multiplier()
 		* get_settlement_partner_dps_multiplier()
+		* get_rally_multiplier()
+		* get_boss_damage_multiplier()
 	)
 	return maxi(1, final_tick)
 
@@ -391,17 +491,7 @@ func buy_partners(partner_index: int, mode: String) -> Dictionary:
 		return _make_purchase_result("Invalid partner")
 
 	if not can_buy_partner(partner_index):
-		if partner_index == 1:
-			return _make_purchase_result("Requires Partner 1")
-
-		if partner_index == 2:
-			return _make_purchase_result("Requires Partner 2")
-
-	if partner_index == 1 and partner_counts[0] <= 0:
-		return _make_purchase_result("Requires Partner 1")
-
-	if partner_index == 2 and partner_counts[1] <= 0:
-		return _make_purchase_result("Requires Partner 2")
+		return _make_purchase_result("Requires %s" % partner_names[partner_index - 1])
 
 	var bought: int = get_partner_bulk_count(partner_index, mode)
 	var total_cost: int = get_partner_bulk_cost(partner_index, mode)
@@ -412,7 +502,7 @@ func buy_partners(partner_index: int, mode: String) -> Dictionary:
 	gold -= total_cost
 	partner_counts[partner_index] += bought
 	recalculate_partner_cost(partner_index)
-	return _make_purchase_result("Partner %d hired x%d!" % [partner_index + 1, bought], false, true)
+	return _make_purchase_result("%s hired x%d!" % [partner_names[partner_index], bought], false, true)
 
 
 func get_partner_bulk_count(partner_index: int, mode: String) -> int:
@@ -480,11 +570,8 @@ func can_buy_building(building_index: int) -> bool:
 	if building_index == 0:
 		return true
 
-	if building_index == 1:
-		return building_counts[0] > 0
-
-	if building_index == 2:
-		return building_counts[1] > 0
+	if building_index > 0 and building_index < building_counts.size():
+		return building_counts[building_index - 1] > 0
 
 	return false
 
@@ -498,11 +585,7 @@ func buy_buildings(building_index: int, mode: String) -> Dictionary:
 		return _make_purchase_result("Invalid building")
 
 	if not can_buy_building(building_index):
-		if building_index == 1:
-			return _make_purchase_result("Requires Training Camp")
-
-		if building_index == 2:
-			return _make_purchase_result("Requires Market")
+		return _make_purchase_result("Requires %s" % building_names[building_index - 1])
 
 	var bought: int = get_building_bulk_count(building_index, mode)
 	var total_cost: int = get_building_bulk_cost(building_index, mode)
@@ -586,15 +669,31 @@ func recalculate_building_cost(building_index: int) -> void:
 
 
 func get_settlement_partner_dps_bonus_percent() -> int:
-	return building_counts[0] * building_bonus_percent_per_level
+	return get_building_bonus_percent(0)
 
 
 func get_settlement_gold_bonus_percent() -> int:
-	return building_counts[1] * building_bonus_percent_per_level
+	return get_building_bonus_percent(1)
 
 
 func get_settlement_click_damage_bonus_percent() -> int:
-	return building_counts[2] * building_bonus_percent_per_level
+	return get_building_bonus_percent(2)
+
+
+func get_settlement_ability_duration_bonus_percent() -> int:
+	return get_building_bonus_percent(3)
+
+
+func get_settlement_cooldown_reduction_percent() -> int:
+	return mini(50, get_building_bonus_percent(4))
+
+
+func get_settlement_boss_gold_bonus_percent() -> int:
+	return get_building_bonus_percent(5)
+
+
+func get_building_bonus_percent(building_index: int) -> int:
+	return _get_effective_settlement_bonus_percent(building_index)
 
 
 func get_settlement_partner_dps_multiplier() -> float:
@@ -609,28 +708,38 @@ func get_settlement_click_damage_multiplier() -> float:
 	return 1.0 + get_settlement_click_damage_bonus_percent() / 100.0
 
 
+func get_ability_duration_multiplier() -> float:
+	return 1.0 + get_settlement_ability_duration_bonus_percent() / 100.0
+
+
+func get_ability_cooldown_multiplier() -> float:
+	return 1.0 - get_settlement_cooldown_reduction_percent() / 100.0
+
+
+func get_boss_reward_multiplier() -> float:
+	return 1.0 + get_settlement_boss_gold_bonus_percent() / 100.0
+
+
 func recalculate_character_level_cost() -> void:
 	character_level_upgrade_cost = 5 + (character_level - 1) * 3
 
 
 func recalculate_partner_cost(partner_index: int) -> void:
-	if partner_index == 0:
-		partner_purchase_costs[0] = 10 + partner_counts[0] * 10
-	elif partner_index == 1:
-		partner_purchase_costs[1] = 50 + partner_counts[1] * 30
-	elif partner_index == 2:
-		partner_purchase_costs[2] = 150 + partner_counts[2] * 50
+	if partner_index < 0 or partner_index >= partner_purchase_costs.size():
+		return
+
+	partner_purchase_costs[partner_index] = _get_partner_cost_for_count(
+		partner_index,
+		partner_counts[partner_index]
+	)
 
 
 func can_buy_partner(partner_index: int) -> bool:
 	if partner_index == 0:
 		return true
 
-	if partner_index == 1:
-		return partner_counts[0] > 0
-
-	if partner_index == 2:
-		return partner_counts[1] > 0
+	if partner_index > 0 and partner_index < partner_counts.size():
+		return partner_counts[partner_index - 1] > 0
 
 	return false
 
@@ -679,14 +788,8 @@ func _get_partner_bulk_cost_for_count(partner_index: int, count: int) -> int:
 
 
 func _get_partner_cost_for_count(partner_index: int, count: int) -> int:
-	if partner_index == 0:
-		return 10 + count * 10
-
-	if partner_index == 1:
-		return 50 + count * 30
-
-	if partner_index == 2:
-		return 150 + count * 50
+	if partner_index >= 0 and partner_index < partner_base_costs.size():
+		return partner_base_costs[partner_index] + count * partner_cost_steps[partner_index]
 
 	return 0
 
@@ -705,16 +808,34 @@ func _get_building_bulk_cost_for_count(building_index: int, count: int) -> int:
 
 
 func _get_building_cost_for_count(building_index: int, count: int) -> int:
-	if building_index == 0:
-		return 25 + count * 25
-
-	if building_index == 1:
-		return 75 + count * 50
-
-	if building_index == 2:
-		return 150 + count * 100
+	if building_index >= 0 and building_index < building_base_costs.size():
+		return building_base_costs[building_index] + count * building_cost_steps[building_index]
 
 	return 0
+
+
+func _get_effective_settlement_bonus_percent(building_index: int) -> int:
+	if building_index < 0 or building_index >= building_counts.size():
+		return 0
+
+	var base_bonus: int = building_counts[building_index] * building_bonus_percent_per_level
+	return int(base_bonus * get_settlement_effectiveness_multiplier())
+
+
+func _reset_partner_state() -> void:
+	partner_counts.clear()
+	partner_purchase_costs.clear()
+	for i in range(partner_base_costs.size()):
+		partner_counts.append(0)
+		partner_purchase_costs.append(partner_base_costs[i])
+
+
+func _reset_building_state() -> void:
+	building_counts.clear()
+	building_purchase_costs.clear()
+	for i in range(building_base_costs.size()):
+		building_counts.append(0)
+		building_purchase_costs.append(building_base_costs[i])
 
 
 func is_current_level_boss() -> bool:
@@ -734,6 +855,8 @@ func setup_current_level() -> void:
 func update_ability_unlocks() -> void:
 	autoclick_unlocked = character_level >= autoclick_unlock_level
 	gold_bonus_unlocked = character_level >= gold_bonus_unlock_level
+	focus_burst_unlocked = character_level >= focus_burst_unlock_level
+	rally_unlocked = character_level >= rally_unlock_level
 
 	if not autoclick_unlocked:
 		autoclick_active = false
@@ -742,6 +865,14 @@ func update_ability_unlocks() -> void:
 	if not gold_bonus_unlocked:
 		gold_bonus_active = false
 		gold_bonus_purchased = false
+
+	if not focus_burst_unlocked:
+		focus_burst_active = false
+		focus_burst_purchased = false
+
+	if not rally_unlocked:
+		rally_active = false
+		rally_purchased = false
 
 
 func fail_boss_level() -> Dictionary:
@@ -780,7 +911,7 @@ func recalculate_level_values() -> void:
 
 
 func _get_zone_index_for_level(level: int) -> int:
-	for i in ZONE_DATA.size():
+	for i in range(ZONE_DATA.size()):
 		if level <= ZONE_DATA[i].level_end:
 			return i
 	return ZONE_DATA.size() - 1
@@ -804,10 +935,23 @@ func _update_character_state() -> void:
 			character_level
 			* get_prestige_damage_multiplier()
 			* get_focus_training_multiplier()
+			* get_focus_burst_multiplier()
 			* get_settlement_click_damage_multiplier()
 		)
 	)
 	update_ability_unlocks()
+
+
+func get_current_click_damage() -> int:
+	var base_damage: int = click_damage
+	if base_damage <= 0:
+		return 0
+
+	return maxi(1, int(base_damage * get_boss_damage_multiplier()))
+
+
+func refresh_derived_stats() -> void:
+	_update_character_state()
 
 
 func _make_purchase_result(status_text: String, not_enough_gold: bool = false, upgraded: bool = false) -> Dictionary:

@@ -6,12 +6,20 @@ var boss_timer_active: bool = false
 var autoclick_accumulator: float = 0.0
 var autoclick_time_left: float = 0.0
 var gold_bonus_time_left: float = 0.0
+var focus_burst_time_left: float = 0.0
+var rally_time_left: float = 0.0
 var autoclick_duration: float = 15.0
 var autoclick_cooldown_duration: float = 60.0
 var autoclick_cooldown_left: float = 0.0
 var gold_bonus_duration: float = 45.0
 var gold_bonus_cooldown_duration: float = 300.0
 var gold_bonus_cooldown_left: float = 0.0
+var focus_burst_duration: float = 20.0
+var focus_burst_cooldown_duration: float = 120.0
+var focus_burst_cooldown_left: float = 0.0
+var rally_duration: float = 30.0
+var rally_cooldown_duration: float = 180.0
+var rally_cooldown_left: float = 0.0
 var autoclick_interval: float = 0.05
 var autoclick_interval_epsilon: float = 0.000001
 var partner_damage_accumulator: float = 0.0
@@ -38,6 +46,8 @@ func _ready() -> void:
 	game_field.attack_requested.connect(_on_attack_requested)
 	ability_bar.autoclick_requested.connect(_on_autoclick_requested)
 	ability_bar.gold_bonus_requested.connect(_on_gold_bonus_requested)
+	ability_bar.focus_burst_requested.connect(_on_focus_burst_requested)
+	ability_bar.rally_requested.connect(_on_rally_requested)
 	upgrades_button.pressed.connect(_on_upgrades_button_pressed)
 	partners_button.pressed.connect(_on_partners_button_pressed)
 	settlement_button.pressed.connect(_on_settlement_button_pressed)
@@ -45,6 +55,8 @@ func _ready() -> void:
 	upgrade_sheet.character_level_upgrade_requested.connect(_on_character_level_upgrade_requested)
 	upgrade_sheet.autoclick_purchase_requested.connect(_on_autoclick_purchase_requested)
 	upgrade_sheet.gold_bonus_purchase_requested.connect(_on_gold_bonus_purchase_requested)
+	upgrade_sheet.focus_burst_purchase_requested.connect(_on_focus_burst_purchase_requested)
+	upgrade_sheet.rally_purchase_requested.connect(_on_rally_purchase_requested)
 	partner_sheet.partner_purchase_requested.connect(_on_partner_purchase_requested)
 	settlement_sheet.building_purchase_requested.connect(_on_building_purchase_requested)
 	prestige_sheet.prestige_requested.connect(_on_prestige_requested)
@@ -73,8 +85,9 @@ func _process(delta: float) -> void:
 	if state.autoclick_active:
 		autoclick_accumulator += delta
 
-		while autoclick_accumulator + autoclick_interval_epsilon >= autoclick_interval and state.autoclick_active:
-			autoclick_accumulator -= autoclick_interval
+		var current_autoclick_interval: float = _get_current_autoclick_interval()
+		while autoclick_accumulator + autoclick_interval_epsilon >= current_autoclick_interval and state.autoclick_active:
+			autoclick_accumulator -= current_autoclick_interval
 			_run_autoclick_attack()
 	else:
 		autoclick_accumulator = 0.0
@@ -99,7 +112,11 @@ func _update_ui() -> void:
 		autoclick_time_left,
 		gold_bonus_time_left,
 		autoclick_cooldown_left,
-		gold_bonus_cooldown_left
+		gold_bonus_cooldown_left,
+		focus_burst_time_left,
+		rally_time_left,
+		focus_burst_cooldown_left,
+		rally_cooldown_left
 	)
 	upgrade_sheet.update_view(state)
 	partner_sheet.update_view(state)
@@ -126,6 +143,18 @@ func _on_autoclick_purchase_requested() -> void:
 
 func _on_gold_bonus_purchase_requested() -> void:
 	var result: Dictionary = state.buy_gold_bonus_ability()
+	status_label.text = result.get("status_text", "")
+	_update_ui()
+
+
+func _on_focus_burst_purchase_requested() -> void:
+	var result: Dictionary = state.buy_focus_burst_ability()
+	status_label.text = result.get("status_text", "")
+	_update_ui()
+
+
+func _on_rally_purchase_requested() -> void:
+	var result: Dictionary = state.buy_rally_ability()
 	status_label.text = result.get("status_text", "")
 	_update_ui()
 
@@ -194,8 +223,12 @@ func _on_prestige_confirmed() -> void:
 	boss_timer_active = false
 	autoclick_time_left = 0.0
 	gold_bonus_time_left = 0.0
+	focus_burst_time_left = 0.0
+	rally_time_left = 0.0
 	autoclick_cooldown_left = 0.0
 	gold_bonus_cooldown_left = 0.0
+	focus_burst_cooldown_left = 0.0
+	rally_cooldown_left = 0.0
 	autoclick_accumulator = 0.0
 	partner_damage_accumulator = 0.0
 	status_label.text = result.get("status_text", "")
@@ -270,7 +303,7 @@ func _on_autoclick_requested() -> void:
 		return
 
 	state.autoclick_active = true
-	autoclick_time_left = autoclick_duration
+	autoclick_time_left = _get_scaled_duration(autoclick_duration, false)
 	autoclick_accumulator = 0.0
 	_update_ui()
 
@@ -280,23 +313,58 @@ func _on_gold_bonus_requested() -> void:
 		return
 
 	state.gold_bonus_active = true
-	gold_bonus_time_left = gold_bonus_duration
+	gold_bonus_time_left = _get_scaled_duration(gold_bonus_duration, false)
+	_update_ui()
+
+
+func _on_focus_burst_requested() -> void:
+	if not state.focus_burst_purchased or state.focus_burst_active or focus_burst_cooldown_left > 0.0:
+		return
+
+	state.focus_burst_active = true
+	focus_burst_time_left = _get_scaled_duration(focus_burst_duration, true)
+	state.refresh_derived_stats()
+	_update_ui()
+
+
+func _on_rally_requested() -> void:
+	if not state.rally_purchased or state.rally_active or rally_cooldown_left > 0.0:
+		return
+
+	state.rally_active = true
+	rally_time_left = _get_scaled_duration(rally_duration, true)
 	_update_ui()
 
 
 func _process_ability_timers(delta: float) -> void:
+	var needs_full_ui_update: bool = false
+
 	if state.autoclick_active:
 		autoclick_time_left = maxf(autoclick_time_left - delta, 0.0)
 		if autoclick_time_left <= 0.0:
 			state.autoclick_active = false
 			autoclick_accumulator = 0.0
-			autoclick_cooldown_left = autoclick_cooldown_duration
+			autoclick_cooldown_left = _get_scaled_cooldown(autoclick_cooldown_duration)
 
 	if state.gold_bonus_active:
 		gold_bonus_time_left = maxf(gold_bonus_time_left - delta, 0.0)
 		if gold_bonus_time_left <= 0.0:
 			state.gold_bonus_active = false
-			gold_bonus_cooldown_left = gold_bonus_cooldown_duration
+			gold_bonus_cooldown_left = _get_scaled_cooldown(gold_bonus_cooldown_duration)
+
+	if state.focus_burst_active:
+		focus_burst_time_left = maxf(focus_burst_time_left - delta, 0.0)
+		if focus_burst_time_left <= 0.0:
+			state.focus_burst_active = false
+			focus_burst_cooldown_left = _get_scaled_cooldown(focus_burst_cooldown_duration)
+			state.refresh_derived_stats()
+			needs_full_ui_update = true
+
+	if state.rally_active:
+		rally_time_left = maxf(rally_time_left - delta, 0.0)
+		if rally_time_left <= 0.0:
+			state.rally_active = false
+			rally_cooldown_left = _get_scaled_cooldown(rally_cooldown_duration)
 
 	if autoclick_cooldown_left > 0.0:
 		autoclick_cooldown_left = maxf(autoclick_cooldown_left - delta, 0.0)
@@ -304,13 +372,42 @@ func _process_ability_timers(delta: float) -> void:
 	if gold_bonus_cooldown_left > 0.0:
 		gold_bonus_cooldown_left = maxf(gold_bonus_cooldown_left - delta, 0.0)
 
+	if focus_burst_cooldown_left > 0.0:
+		focus_burst_cooldown_left = maxf(focus_burst_cooldown_left - delta, 0.0)
+
+	if rally_cooldown_left > 0.0:
+		rally_cooldown_left = maxf(rally_cooldown_left - delta, 0.0)
+
+	if needs_full_ui_update:
+		_update_ui()
+		return
+
 	ability_bar.update_view(
 		state,
 		autoclick_time_left,
 		gold_bonus_time_left,
 		autoclick_cooldown_left,
-		gold_bonus_cooldown_left
+		gold_bonus_cooldown_left,
+		focus_burst_time_left,
+		rally_time_left,
+		focus_burst_cooldown_left,
+		rally_cooldown_left
 	)
+
+
+func _get_current_autoclick_interval() -> float:
+	return maxf(0.02, autoclick_interval / state.get_quick_hands_multiplier())
+
+
+func _get_scaled_duration(base_duration: float, uses_war_banner: bool) -> float:
+	if not uses_war_banner:
+		return base_duration
+
+	return base_duration * state.get_ability_duration_multiplier()
+
+
+func _get_scaled_cooldown(base_cooldown: float) -> float:
+	return base_cooldown * state.get_ability_cooldown_multiplier()
 
 
 func _apply_passive_attack_result(result: Dictionary) -> void:
