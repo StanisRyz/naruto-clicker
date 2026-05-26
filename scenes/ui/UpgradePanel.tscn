@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scenes/ui/UpgradePanel.gd" id="1_x2nck"]
 
 [node name="UpgradePanel" type="Control"]
-custom_minimum_size = Vector2(0, 228)
+custom_minimum_size = Vector2(0, 220)
 script = ExtResource("1_x2nck")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
@@ -29,9 +29,3 @@ text = "Autoclick - Requires Level 15"
 custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 text = "Gold Bonus - Requires Level 30"
-
-[node name="PrestigeButton" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 72)
-layout_mode = 2
-disabled = true
-text = "Prestige - Requires Level 50"

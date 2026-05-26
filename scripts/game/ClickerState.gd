@@ -89,11 +89,19 @@ func _init() -> void:
 
 
 func can_prestige() -> bool:
-	return current_level >= prestige_required_level
+	return get_prestige_reward() > 0
+
+
+func get_prestige_stage_points() -> int:
+	return int(current_level / float(prestige_required_level))
+
+
+func get_prestige_character_points() -> int:
+	return int(character_level / 100.0)
 
 
 func get_prestige_reward() -> int:
-	return int(current_level / float(prestige_required_level))
+	return get_prestige_stage_points() + get_prestige_character_points()
 
 
 func get_prestige_damage_multiplier() -> float:
@@ -105,10 +113,10 @@ func get_prestige_gold_multiplier() -> float:
 
 
 func perform_prestige() -> Dictionary:
-	if not can_prestige():
-		return _make_purchase_result("Prestige requires level %d" % prestige_required_level)
-
 	var reward: int = get_prestige_reward()
+	if reward <= 0:
+		return _make_purchase_result("Prestige requires stage level %d or character level 100" % prestige_required_level)
+
 	prestige_points += reward
 	total_prestiges += 1
 

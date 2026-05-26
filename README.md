@@ -38,8 +38,8 @@ The main scene contains the first local clicker loop:
 - Autoclick unlocks at character level 15.
 - Gold Bonus unlocks at character level 30 and doubles enemy rewards while active.
 - Ability buttons live on the left side of the game field.
-- The bottom `Upgrades` button opens a bottom-half upgrade sheet.
-- The visible upper game field remains clickable while the upgrade sheet is open.
+- The bottom bar opens bottom-half `Upgrades`, `Partners`, and `Prestige` sheets.
+- The visible upper game field remains clickable while bottom-half sheets are open.
 - The game field is the fullscreen bottom clickable layer.
 - Ability buttons are a separate left-middle overlay and must be purchased before activation.
 - Autoclick costs 50 gold, and Gold Bonus costs 150 gold.
@@ -55,13 +55,15 @@ These formulas are prototype balance values.
 
 ## Prestige
 
-Prestige is an unlockable reset inside the Upgrades sheet.
+Prestige is an unlockable reset in its own bottom `Prestige` tab.
 
-- The Prestige button appears in `UpgradeSheet` alongside other upgrades.
-- It is locked (disabled) until `current_level >= 50`.
-- Reward: `floor(current_level / 50)` prestige points per prestige action.
-  - Level 50 → +1 point, level 100 → +2 points, level 150 → +3 points.
-- Pressing the button opens a confirmation dialog inside the sheet showing the current level, points to gain, and resulting bonuses.
+- The bottom bar has `Upgrades`, `Partners`, and `Prestige` buttons on one row.
+- `UpgradeSheet` only contains character level, Autoclick, and Gold Bonus purchases.
+- Reward: `floor(current_level / 50) + floor(character_level / 100)` prestige points per prestige action.
+- Stage level 52 and character level 102 gives 2 points.
+- Stage level 101 and character level 301 gives 5 points.
+- The Prestige button is disabled when the reward is 0 and enabled when the reward is greater than 0.
+- Pressing the button opens a fully opaque confirmation dialog inside `PrestigeSheet` showing stage points, character points, total points, and resulting bonuses.
 - Confirming resets all normal progress (gold, character level, game level, abilities, partners, zone) but keeps `prestige_points` and `total_prestiges`.
 - Each prestige point permanently adds +10% to click damage and +10% to gold rewards.
 - Gold Bonus still doubles rewards on top of the prestige gold multiplier.
@@ -98,10 +100,12 @@ The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes
 - `scenes/ui/StatsPanel.tscn` - Displays gold, character level, damage, level, and enemy progress.
 - `scenes/ui/GameField.tscn` - Fullscreen tap/click attack field and enemy HP display.
 - `scenes/ui/AbilityBar.tscn` - Left-side active ability buttons.
-- `scenes/ui/UpgradePanel.tscn` - Character level upgrade button.
+- `scenes/ui/UpgradePanel.tscn` - Character level and ability purchase buttons.
 - `scenes/ui/UpgradeSheet.tscn` - Bottom-half upgrades sheet that hosts UpgradePanel.
 - `scenes/ui/PartnerPanel.tscn` - Partner hiring controls and DPS display.
 - `scenes/ui/PartnerSheet.tscn` - Bottom-half partners sheet that hosts PartnerPanel.
+- `scenes/ui/PrestigePanel.tscn` - Prestige summary and prestige request button.
+- `scenes/ui/PrestigeSheet.tscn` - Bottom-half prestige sheet with the opaque confirmation dialog.
 - `scripts/game/ClickerState.gd` - Temporary prototype state and formulas.
 
 ## Web Export Notes

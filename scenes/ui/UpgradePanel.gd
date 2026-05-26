@@ -4,19 +4,16 @@ extends Control
 signal character_level_upgrade_requested
 signal autoclick_purchase_requested
 signal gold_bonus_purchase_requested
-signal prestige_requested
 
 @onready var upgrade_character_level_button: Button = $VBoxContainer/UpgradeCharacterLevelButton
 @onready var buy_autoclick_button: Button = $VBoxContainer/BuyAutoclickButton
 @onready var buy_gold_bonus_button: Button = $VBoxContainer/BuyGoldBonusButton
-@onready var prestige_button: Button = $VBoxContainer/PrestigeButton
 
 
 func _ready() -> void:
 	upgrade_character_level_button.pressed.connect(_on_upgrade_character_level_button_pressed)
 	buy_autoclick_button.pressed.connect(_on_buy_autoclick_button_pressed)
 	buy_gold_bonus_button.pressed.connect(_on_buy_gold_bonus_button_pressed)
-	prestige_button.pressed.connect(_on_prestige_button_pressed)
 
 
 func update_view(state: ClickerState) -> void:
@@ -38,12 +35,6 @@ func update_view(state: ClickerState) -> void:
 	else:
 		buy_gold_bonus_button.text = "Gold Bonus - Requires Level %d" % state.gold_bonus_unlock_level
 
-	prestige_button.disabled = not state.can_prestige()
-	if state.can_prestige():
-		prestige_button.text = "Prestige - Gain %d Points" % state.get_prestige_reward()
-	else:
-		prestige_button.text = "Prestige - Requires Level %d" % state.prestige_required_level
-
 
 func _on_upgrade_character_level_button_pressed() -> void:
 	character_level_upgrade_requested.emit()
@@ -55,7 +46,3 @@ func _on_buy_autoclick_button_pressed() -> void:
 
 func _on_buy_gold_bonus_button_pressed() -> void:
 	gold_bonus_purchase_requested.emit()
-
-
-func _on_prestige_button_pressed() -> void:
-	prestige_requested.emit()

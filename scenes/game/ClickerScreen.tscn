@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scenes/game/ClickerScreen.gd" id="1_ymqc8"]
 [ext_resource type="PackedScene" path="res://scenes/ui/StatsPanel.tscn" id="2_yinr5"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/UpgradeSheet.tscn" id="4_vcx67"]
 [ext_resource type="PackedScene" path="res://scenes/ui/AbilityBar.tscn" id="5_3gfnf"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PartnerSheet.tscn" id="6_lfl8p"]
+[ext_resource type="PackedScene" path="res://scenes/ui/PrestigeSheet.tscn" id="7_4qosh"]
 
 [node name="ClickerScreen" type="Control"]
 layout_mode = 3
@@ -97,8 +98,17 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Partners"
 
+[node name="PrestigeButton" type="Button" parent="BottomBar/MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Prestige"
+
 [node name="UpgradeSheet" parent="." instance=ExtResource("4_vcx67")]
 layout_mode = 1
 
 [node name="PartnerSheet" parent="." instance=ExtResource("6_lfl8p")]
+layout_mode = 1
+
+[node name="PrestigeSheet" parent="." instance=ExtResource("7_4qosh")]
 layout_mode = 1

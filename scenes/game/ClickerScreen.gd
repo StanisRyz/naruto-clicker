@@ -19,8 +19,11 @@ var partner_damage_interval_epsilon: float = 0.000001
 @onready var status_label: Label = $MainContent/VBoxContainer/StatusLabel
 @onready var upgrades_button: Button = $BottomBar/MarginContainer/HBoxContainer/UpgradesButton
 @onready var partners_button: Button = $BottomBar/MarginContainer/HBoxContainer/PartnersButton
+@onready var prestige_button: Button = $BottomBar/MarginContainer/HBoxContainer/PrestigeButton
 @onready var upgrade_sheet: UpgradeSheet = $UpgradeSheet
 @onready var partner_sheet: PartnerSheet = $PartnerSheet
+@onready var prestige_sheet: PrestigeSheet = $PrestigeSheet
+@onready var prestige_confirm_dialog: PrestigeConfirmDialog = $PrestigeSheet/PrestigeConfirmDialog
 
 
 func _ready() -> void:
@@ -29,12 +32,14 @@ func _ready() -> void:
 	ability_bar.gold_bonus_requested.connect(_on_gold_bonus_requested)
 	upgrades_button.pressed.connect(_on_upgrades_button_pressed)
 	partners_button.pressed.connect(_on_partners_button_pressed)
+	prestige_button.pressed.connect(_on_prestige_button_pressed)
 	upgrade_sheet.character_level_upgrade_requested.connect(_on_character_level_upgrade_requested)
 	upgrade_sheet.autoclick_purchase_requested.connect(_on_autoclick_purchase_requested)
 	upgrade_sheet.gold_bonus_purchase_requested.connect(_on_gold_bonus_purchase_requested)
-	upgrade_sheet.prestige_requested.connect(_on_prestige_requested)
-	upgrade_sheet.prestige_confirmed.connect(_on_prestige_confirmed)
 	partner_sheet.partner_purchase_requested.connect(_on_partner_purchase_requested)
+	prestige_sheet.prestige_requested.connect(_on_prestige_requested)
+	prestige_confirm_dialog.confirmed.connect(_on_prestige_confirmed)
+	prestige_confirm_dialog.cancelled.connect(_on_prestige_cancelled)
 	_update_ui()
 	_sync_boss_timer()
 
@@ -76,6 +81,7 @@ func _update_ui() -> void:
 	ability_bar.update_view(state, autoclick_time_left, gold_bonus_time_left)
 	upgrade_sheet.update_view(state)
 	partner_sheet.update_view(state)
+	prestige_sheet.update_view(state)
 
 
 func _on_attack_requested() -> void:
@@ -108,15 +114,25 @@ func _on_partner_purchase_requested(partner_index: int) -> void:
 
 
 func _on_upgrades_button_pressed() -> void:
+	partner_sheet.hide_sheet()
+	prestige_sheet.hide_sheet()
 	upgrade_sheet.show_sheet()
 
 
 func _on_partners_button_pressed() -> void:
+	upgrade_sheet.hide_sheet()
+	prestige_sheet.hide_sheet()
 	partner_sheet.show_sheet()
 
 
+func _on_prestige_button_pressed() -> void:
+	upgrade_sheet.hide_sheet()
+	partner_sheet.hide_sheet()
+	prestige_sheet.show_sheet()
+
+
 func _on_prestige_requested() -> void:
-	upgrade_sheet.show_prestige_confirm(state)
+	prestige_sheet.show_prestige_confirm(state)
 
 
 func _on_prestige_confirmed() -> void:
@@ -130,6 +146,10 @@ func _on_prestige_confirmed() -> void:
 	status_label.text = result.get("status_text", "")
 	_update_ui()
 	_sync_boss_timer()
+
+
+func _on_prestige_cancelled() -> void:
+	prestige_confirm_dialog.hide()
 
 
 func _sync_boss_timer() -> void:

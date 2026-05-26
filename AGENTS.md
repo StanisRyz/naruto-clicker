@@ -24,7 +24,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Keep prototype state and formulas in `scripts/game/ClickerState.gd`.
 - Keep `StatsPanel`, `GameField`, and `UpgradePanel` as focused UI components.
 - Keep `UpgradePanel` responsible only for upgrade controls.
-- Use `BottomBar` to open `UpgradeSheet`; do not keep upgrade controls permanently in the main gameplay flow.
+- Use `BottomBar` to open `UpgradeSheet`, `PartnerSheet`, and `PrestigeSheet`; do not keep sheet controls permanently in the main gameplay flow.
 - Keep `UpgradeSheet` to the bottom half of the screen so visible `GameField` space remains clickable while it is open.
 - Keep `GameField` as the fullscreen bottom clickable layer in `ClickerScreen`.
 - Keep visible UI overlays clickable above `GameField`, and make passive text/containers ignore mouse input.
@@ -40,7 +40,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Partner costs scale as `10 + count * 10`, `50 + count * 30`, and `150 + count * 50`.
 - Partner 2 requires at least one Partner 1; Partner 3 requires at least one Partner 2.
 - Partner damage ticks every 0.1 seconds for `total_dps / 10` damage.
-- Keep `PartnerSheet` as a separate bottom-half overlay from `UpgradeSheet`.
+- Keep `PartnerSheet` and `PrestigeSheet` as separate bottom-half overlays from `UpgradeSheet`.
 - Character level replaces the old damage upgrade; character level must equal click damage.
 - Character level upgrade cost is `5 + (character_level - 1) * 3`.
 - Autoclick purchase costs 50 gold.
@@ -56,10 +56,10 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Boss levels must use a 30 second timer and return to the previous level on failure.
 - Do not add elite enemies.
 - Scale enemy HP and gold reward by level with deterministic formulas.
-- Prestige lives inside `UpgradeSheet`; do not add a separate Prestige sheet or bottom bar button.
-- Prestige unlock level is 50. Reward formula: `floor(current_level / 50)` points.
-- Prestige confirmation dialog (`PrestigeConfirmDialog`) is an overlay child of `UpgradeSheet`; it blocks clicks only within the sheet, not the full screen.
-- Signal flow: UpgradePanel `prestige_requested` → UpgradeSheet `prestige_requested` → ClickerScreen calls `show_prestige_confirm(state)`; dialog `confirmed` → UpgradeSheet `prestige_confirmed` → ClickerScreen calls `perform_prestige()`.
+- Prestige lives in a separate `PrestigeSheet` opened by the `PrestigeButton` bottom tab; do not keep prestige controls inside `UpgradeSheet`.
+- Prestige reward formula is `floor(current_level / 50) + floor(character_level / 100)` points.
+- Prestige confirmation dialog (`PrestigeConfirmDialog`) is an overlay child of `PrestigeSheet` and must be fully opaque so underlying UI text is not visible through it.
+- Signal flow: PrestigePanel `prestige_requested` -> PrestigeSheet `prestige_requested` -> ClickerScreen calls `show_prestige_confirm(state)`; dialog `confirmed` -> ClickerScreen calls `perform_prestige()`.
 - `perform_prestige()` resets all normal progress except `prestige_points` and `total_prestiges`.
 - Apply prestige damage multiplier in `_update_character_state()` so `click_damage` always reflects effective damage.
 - Apply prestige damage multiplier in `get_partner_tick_damage()`.
@@ -157,7 +157,7 @@ After each patch, validate manually in Godot:
 - Ability button clicks do not attack the enemy.
 - Autoclick active performs automatic damage every second.
 - Gold Bonus active doubles enemy rewards.
-- BottomBar has `Upgrades` and `Partners` buttons on one row.
+- BottomBar has `Upgrades`, `Partners`, and `Prestige` buttons on one row.
 - Partner 1 starts at 10 gold.
 - Partner 2 starts at 50 gold.
 - Partner 3 starts at 150 gold.
@@ -174,6 +174,8 @@ After each patch, validate manually in Godot:
 - Partners can damage and defeat bosses.
 - Visible `GameField` area still attacks while `UpgradeSheet` is open.
 - Clicking inside `UpgradeSheet` does not attack the enemy.
+- Visible `GameField` area still attacks while `PrestigeSheet` is open.
+- Clicking inside `PrestigeSheet` does not attack the enemy.
 - `AbilityBar` is a left-middle screen overlay.
 - Ability buttons do not pulse with `GameField` feedback.
 - Ability buttons do not attack the enemy.
@@ -213,9 +215,15 @@ After each patch, validate manually in Godot:
 - StatsPanel zone row shows zone name and level range.
 - HP and reward values are higher in later zones than the base formula alone.
 - Zone defeat feedback shows "New Zone!" flash when zone changes.
-- Prestige button is visible in UpgradeSheet and disabled before level 50.
-- At level 50 the Prestige button enables and shows the reward point count.
-- Pressing Prestige opens PrestigeConfirmDialog inside UpgradeSheet (not full-screen).
+- Prestige button is not visible inside UpgradeSheet.
+- `PrestigeButton` opens `PrestigeSheet`.
+- PrestigeSheet is hidden by default and can be closed.
+- Prestige button is disabled when total points to gain is 0.
+- Prestige button enables and shows the reward point count when total points to gain is greater than 0.
+- Prestige reward at current_level 52 and character_level 102 is 2.
+- Prestige reward at current_level 101 and character_level 301 is 5.
+- Pressing Prestige opens a fully opaque PrestigeConfirmDialog inside PrestigeSheet.
+- No closes the prestige dialog and does not reset progress.
 - Confirming prestige resets normal progress; cancelling does nothing.
 - StatsPanel shows Prestige points and total runs.
 - After prestige, all timers (boss, autoclick, gold bonus, accumulators) are reset in ClickerScreen.
