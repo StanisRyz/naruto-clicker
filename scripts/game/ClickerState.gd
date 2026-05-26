@@ -67,6 +67,11 @@ var gold_bonus_multiplier: int = 2
 var partner_counts: Array[int] = [0, 0, 0]
 var partner_dps_values: Array[int] = [10, 30, 50]
 var partner_purchase_costs: Array[int] = [10, 50, 150]
+var building_counts: Array[int] = [0, 0, 0]
+var building_names: Array[String] = ["Training Camp", "Market", "Knight Hut"]
+var building_bonus_types: Array[String] = ["partner_dps", "gold", "click_damage"]
+var building_bonus_percent_per_level: int = 1
+var building_purchase_costs: Array[int] = [25, 75, 150]
 
 var current_zone_index: int = 0
 var zone_name: String = "Training Grounds"
@@ -129,9 +134,12 @@ func perform_prestige() -> Dictionary:
 	gold_bonus_purchased = false
 	gold_bonus_active = false
 
-	for i in partner_counts.size():
+	for i in range(partner_counts.size()):
 		partner_counts[i] = 0
 	partner_purchase_costs = [10, 50, 150]
+	for i in range(building_counts.size()):
+		building_counts[i] = 0
+	building_purchase_costs = [25, 75, 150]
 
 	recalculate_character_level_cost()
 	_update_character_state()
@@ -168,7 +176,8 @@ func attack_with_damage(damage: int) -> Dictionary:
 		return _make_attack_result(false, false, 0, damage_dealt, target_hp_before, target_hp, "Tap the field to attack!")
 
 	var prestige_gold: int = int(reward_gold * get_prestige_gold_multiplier())
-	var earned_gold: int = prestige_gold * gold_bonus_multiplier if gold_bonus_active else prestige_gold
+	var settlement_gold: int = int(prestige_gold * get_settlement_gold_multiplier())
+	var earned_gold: int = settlement_gold * gold_bonus_multiplier if gold_bonus_active else settlement_gold
 	gold += earned_gold
 	enemies_defeated_on_level += 1
 
@@ -305,7 +314,12 @@ func get_partner_tick_damage() -> int:
 	if base_tick <= 0:
 		return 0
 
-	return maxi(1, int(base_tick * get_prestige_damage_multiplier()))
+	var final_tick: int = int(
+		base_tick
+		* get_settlement_partner_dps_multiplier()
+		* get_prestige_damage_multiplier()
+	)
+	return maxi(1, final_tick)
 
 
 func buy_partner(partner_index: int) -> Dictionary:
@@ -402,6 +416,139 @@ func get_partner_bulk_display_cost(partner_index: int, mode: String) -> int:
 	return partner_purchase_costs[partner_index]
 
 
+func can_buy_building(building_index: int) -> bool:
+	if building_index == 0:
+		return true
+
+	if building_index == 1:
+		return building_counts[0] > 0
+
+	if building_index == 2:
+		return building_counts[1] > 0
+
+	return false
+
+
+func buy_building(building_index: int) -> Dictionary:
+	return buy_buildings(building_index, "x1")
+
+
+func buy_buildings(building_index: int, mode: String) -> Dictionary:
+	if building_index < 0 or building_index >= building_counts.size():
+		return _make_purchase_result("Invalid building")
+
+	if not can_buy_building(building_index):
+		if building_index == 1:
+			return _make_purchase_result("Requires Training Camp")
+
+		if building_index == 2:
+			return _make_purchase_result("Requires Market")
+
+	var bought: int = get_building_bulk_count(building_index, mode)
+	var total_cost: int = get_building_bulk_cost(building_index, mode)
+
+	if bought <= 0 or total_cost <= 0 or gold < total_cost:
+		return _make_purchase_result("Not enough gold", true)
+
+	gold -= total_cost
+	building_counts[building_index] += bought
+	recalculate_building_cost(building_index)
+	_update_character_state()
+	return _make_purchase_result("%s built x%d!" % [building_names[building_index], bought], false, true)
+
+
+func get_building_bulk_count(building_index: int, mode: String) -> int:
+	if building_index < 0 or building_index >= building_counts.size():
+		return 0
+
+	if not can_buy_building(building_index):
+		return 0
+
+	var fixed_count: int = _get_fixed_buy_count(mode)
+	if fixed_count > 0:
+		var fixed_cost: int = _get_building_bulk_cost_for_count(building_index, fixed_count)
+		return fixed_count if gold >= fixed_cost else 0
+
+	var simulated_gold: int = gold
+	var simulated_count: int = building_counts[building_index]
+	var count: int = 0
+	var simulated_cost: int = building_purchase_costs[building_index]
+
+	while simulated_gold >= simulated_cost:
+		simulated_gold -= simulated_cost
+		simulated_count += 1
+		count += 1
+		simulated_cost = _get_building_cost_for_count(building_index, simulated_count)
+
+	return count
+
+
+func get_building_bulk_cost(building_index: int, mode: String) -> int:
+	var count: int = get_building_bulk_count(building_index, mode)
+	if count <= 0:
+		return 0
+
+	return _get_building_bulk_cost_for_count(building_index, count)
+
+
+func get_building_bulk_display_count(building_index: int, mode: String) -> int:
+	if building_index < 0 or building_index >= building_counts.size():
+		return 0
+
+	if not can_buy_building(building_index):
+		return 0
+
+	if mode == "max":
+		return get_building_bulk_count(building_index, mode)
+
+	return _get_fixed_buy_count(mode)
+
+
+func get_building_bulk_display_cost(building_index: int, mode: String) -> int:
+	if building_index < 0 or building_index >= building_counts.size():
+		return 0
+
+	if not can_buy_building(building_index):
+		return 0
+
+	var display_count: int = get_building_bulk_display_count(building_index, mode)
+	if display_count > 0:
+		return _get_building_bulk_cost_for_count(building_index, display_count)
+
+	return building_purchase_costs[building_index]
+
+
+func recalculate_building_cost(building_index: int) -> void:
+	building_purchase_costs[building_index] = _get_building_cost_for_count(
+		building_index,
+		building_counts[building_index]
+	)
+
+
+func get_settlement_partner_dps_bonus_percent() -> int:
+	return building_counts[0] * building_bonus_percent_per_level
+
+
+func get_settlement_gold_bonus_percent() -> int:
+	return building_counts[1] * building_bonus_percent_per_level
+
+
+func get_settlement_click_damage_bonus_percent() -> int:
+	return building_counts[2] * building_bonus_percent_per_level
+
+
+func get_settlement_partner_dps_multiplier() -> float:
+	return 1.0 + get_settlement_partner_dps_bonus_percent() / 100.0
+
+
+func get_settlement_gold_multiplier() -> float:
+	return 1.0 + get_settlement_gold_bonus_percent() / 100.0
+
+
+func get_settlement_click_damage_multiplier() -> float:
+	return 1.0 + get_settlement_click_damage_bonus_percent() / 100.0
+
+
 func recalculate_character_level_cost() -> void:
 	character_level_upgrade_cost = 5 + (character_level - 1) * 3
 
@@ -480,6 +627,32 @@ func _get_partner_cost_for_count(partner_index: int, count: int) -> int:
 
 	if partner_index == 2:
 		return 150 + count * 50
+
+	return 0
+
+
+func _get_building_bulk_cost_for_count(building_index: int, count: int) -> int:
+	var simulated_count: int = building_counts[building_index]
+	var simulated_cost: int = building_purchase_costs[building_index]
+	var total_cost: int = 0
+
+	for i in range(count):
+		total_cost += simulated_cost
+		simulated_count += 1
+		simulated_cost = _get_building_cost_for_count(building_index, simulated_count)
+
+	return total_cost
+
+
+func _get_building_cost_for_count(building_index: int, count: int) -> int:
+	if building_index == 0:
+		return 25 + count * 25
+
+	if building_index == 1:
+		return 75 + count * 50
+
+	if building_index == 2:
+		return 150 + count * 100
 
 	return 0
 
@@ -565,7 +738,14 @@ func _update_zone() -> void:
 
 
 func _update_character_state() -> void:
-	click_damage = maxi(1, int(character_level * get_prestige_damage_multiplier()))
+	click_damage = maxi(
+		1,
+		int(
+			character_level
+			* get_prestige_damage_multiplier()
+			* get_settlement_click_damage_multiplier()
+		)
+	)
 	update_ability_unlocks()
 
 

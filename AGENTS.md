@@ -24,7 +24,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Keep prototype state and formulas in `scripts/game/ClickerState.gd`.
 - Keep `StatsPanel`, `GameField`, and `UpgradePanel` as focused UI components.
 - Keep `UpgradePanel` responsible only for upgrade controls.
-- Use `BottomBar` to open `UpgradeSheet`, `PartnerSheet`, and `PrestigeSheet`; do not keep sheet controls permanently in the main gameplay flow.
+- Use `BottomBar` to open `UpgradeSheet`, `PartnerSheet`, `SettlementSheet`, and `PrestigeSheet`; do not keep sheet controls permanently in the main gameplay flow.
 - Keep `UpgradeSheet` to the bottom half of the screen so visible `GameField` space remains clickable while it is open.
 - Keep `GameField` as the fullscreen bottom clickable layer in `ClickerScreen`.
 - Keep visible UI overlays clickable above `GameField`, and make passive text/containers ignore mouse input.
@@ -43,7 +43,12 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Partner purchases use horizontal bulk mode buttons `x1`, `x10`, `x100`, and `Max`; displayed costs must show total package cost.
 - Partner `x10` and `x100` purchases are strict all-or-nothing packages; `Max` buys as many as current gold allows.
 - PartnerPanel should always show the required package cost when prerequisites are met; "Not enough gold" belongs in StatusLabel after a failed purchase, not in partner button text.
-- Keep `PartnerSheet` and `PrestigeSheet` as separate bottom-half overlays from `UpgradeSheet`.
+- Keep `PartnerSheet`, `SettlementSheet`, and `PrestigeSheet` as separate bottom-half overlays from `UpgradeSheet`.
+- Settlement tab sits between `Partners` and `Prestige` in the bottom bar.
+- Settlement buildings are Training Camp (+1% final partner DPS per level), Market (+1% final gold gain per level), and Knight Hut (+1% final click damage per level).
+- Market requires at least one Training Camp; Knight Hut requires at least one Market.
+- Settlement purchases use bulk modes `x1`, `x10`, `x100`, and `Max` with the same strict all-or-nothing behavior as partners for `x10` and `x100`.
+- Settlement buildings reset on prestige.
 - Character level replaces the old damage upgrade; character level must equal click damage.
 - Character level upgrade cost is `5 + (character_level - 1) * 3`.
 - Character level upgrades use horizontal bulk mode buttons `x1`, `x10`, `x100`, and `Max`; displayed costs must show total package cost.
@@ -162,7 +167,7 @@ After each patch, validate manually in Godot:
 - Ability button clicks do not attack the enemy.
 - Autoclick active performs automatic damage every second.
 - Gold Bonus active doubles enemy rewards.
-- BottomBar has `Upgrades`, `Partners`, and `Prestige` buttons on one row.
+- BottomBar has `Upgrades`, `Partners`, `Settlement`, and `Prestige` buttons on one row.
 - Partner 1 starts at 10 gold.
 - Partner 2 starts at 50 gold.
 - Partner 3 starts at 150 gold.
@@ -203,6 +208,15 @@ After each patch, validate manually in Godot:
 - Partner x10 and x100 modes buy the full package or buy nothing if gold is insufficient.
 - Partner Max buys as many partners as current gold allows.
 - Bulk mode UI uses horizontal buttons, not dropdowns.
+- Settlement opens `SettlementSheet`.
+- Training Camp can be bought when enough gold.
+- Market requires at least one Training Camp.
+- Knight Hut requires at least one Market.
+- Settlement x1, x10, x100, and Max modes work like partners.
+- Settlement buttons always show required cost when prerequisites are met.
+- Training Camp increases partner DPS/tick damage.
+- Market increases gold rewards.
+- Knight Hut increases manual click and autoclick damage.
 - Target defeat gives gold.
 - Defeating 10 enemies advances to the next level.
 - Level text updates correctly.
@@ -241,6 +255,7 @@ After each patch, validate manually in Godot:
 - Pressing Prestige opens a fully opaque PrestigeConfirmDialog inside PrestigeSheet.
 - No closes the prestige dialog and does not reset progress.
 - Confirming prestige resets normal progress; cancelling does nothing.
+- Prestige resets settlement buildings and costs.
 - StatsPanel shows Prestige points and total runs.
 - After prestige, all timers (boss, autoclick, gold bonus, ability cooldowns, accumulators) are reset in ClickerScreen.
 

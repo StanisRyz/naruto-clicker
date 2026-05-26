@@ -11,6 +11,9 @@ extends GridContainer
 @onready var zone_range_label: Label = $ZoneRangeLabel
 @onready var prestige_points_label: Label = $PrestigePointsLabel
 @onready var prestige_runs_label: Label = $PrestigeRunsLabel
+@onready var settlement_dps_label: Label = $SettlementDpsLabel
+@onready var settlement_gold_label: Label = $SettlementGoldLabel
+@onready var settlement_click_label: Label = $SettlementClickLabel
 
 
 func update_view(state: ClickerState) -> void:
@@ -27,3 +30,6 @@ func update_view(state: ClickerState) -> void:
 	zone_range_label.text = "Lv %d-%d" % [state.zone_level_start, state.zone_level_end]
 	prestige_points_label.text = "Prestige Points: %d" % state.prestige_points
 	prestige_runs_label.text = "Runs: %d" % state.total_prestiges
+	settlement_dps_label.text = "Settlement DPS: +%d%%" % state.get_settlement_partner_dps_bonus_percent()
+	settlement_gold_label.text = "Settlement Gold: +%d%%" % state.get_settlement_gold_bonus_percent()
+	settlement_click_label.text = "Settlement Click: +%d%%" % state.get_settlement_click_damage_bonus_percent()

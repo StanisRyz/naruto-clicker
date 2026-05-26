@@ -24,9 +24,11 @@ var partner_damage_interval_epsilon: float = 0.000001
 @onready var status_label: Label = $MainContent/VBoxContainer/StatusLabel
 @onready var upgrades_button: Button = $BottomBar/MarginContainer/HBoxContainer/UpgradesButton
 @onready var partners_button: Button = $BottomBar/MarginContainer/HBoxContainer/PartnersButton
+@onready var settlement_button: Button = $BottomBar/MarginContainer/HBoxContainer/SettlementButton
 @onready var prestige_button: Button = $BottomBar/MarginContainer/HBoxContainer/PrestigeButton
 @onready var upgrade_sheet: UpgradeSheet = $UpgradeSheet
 @onready var partner_sheet: PartnerSheet = $PartnerSheet
+@onready var settlement_sheet: SettlementSheet = $SettlementSheet
 @onready var prestige_sheet: PrestigeSheet = $PrestigeSheet
 @onready var prestige_confirm_dialog: PrestigeConfirmDialog = $PrestigeSheet/PrestigeConfirmDialog
 
@@ -37,11 +39,13 @@ func _ready() -> void:
 	ability_bar.gold_bonus_requested.connect(_on_gold_bonus_requested)
 	upgrades_button.pressed.connect(_on_upgrades_button_pressed)
 	partners_button.pressed.connect(_on_partners_button_pressed)
+	settlement_button.pressed.connect(_on_settlement_button_pressed)
 	prestige_button.pressed.connect(_on_prestige_button_pressed)
 	upgrade_sheet.character_level_upgrade_requested.connect(_on_character_level_upgrade_requested)
 	upgrade_sheet.autoclick_purchase_requested.connect(_on_autoclick_purchase_requested)
 	upgrade_sheet.gold_bonus_purchase_requested.connect(_on_gold_bonus_purchase_requested)
 	partner_sheet.partner_purchase_requested.connect(_on_partner_purchase_requested)
+	settlement_sheet.building_purchase_requested.connect(_on_building_purchase_requested)
 	prestige_sheet.prestige_requested.connect(_on_prestige_requested)
 	prestige_confirm_dialog.confirmed.connect(_on_prestige_confirmed)
 	prestige_confirm_dialog.cancelled.connect(_on_prestige_cancelled)
@@ -92,6 +96,7 @@ func _update_ui() -> void:
 	)
 	upgrade_sheet.update_view(state)
 	partner_sheet.update_view(state)
+	settlement_sheet.update_view(state)
 	prestige_sheet.update_view(state)
 
 
@@ -124,21 +129,37 @@ func _on_partner_purchase_requested(partner_index: int, mode: String) -> void:
 	_update_ui()
 
 
+func _on_building_purchase_requested(building_index: int, mode: String) -> void:
+	var result: Dictionary = state.buy_buildings(building_index, mode)
+	status_label.text = result.get("status_text", "")
+	_update_ui()
+
+
 func _on_upgrades_button_pressed() -> void:
 	partner_sheet.hide_sheet()
+	settlement_sheet.hide_sheet()
 	prestige_sheet.hide_sheet()
 	upgrade_sheet.show_sheet()
 
 
 func _on_partners_button_pressed() -> void:
 	upgrade_sheet.hide_sheet()
+	settlement_sheet.hide_sheet()
 	prestige_sheet.hide_sheet()
 	partner_sheet.show_sheet()
+
+
+func _on_settlement_button_pressed() -> void:
+	upgrade_sheet.hide_sheet()
+	partner_sheet.hide_sheet()
+	prestige_sheet.hide_sheet()
+	settlement_sheet.show_sheet()
 
 
 func _on_prestige_button_pressed() -> void:
 	upgrade_sheet.hide_sheet()
 	partner_sheet.hide_sheet()
+	settlement_sheet.hide_sheet()
 	prestige_sheet.show_sheet()
 
 

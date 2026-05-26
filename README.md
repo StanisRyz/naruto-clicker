@@ -38,7 +38,7 @@ The main scene contains the first local clicker loop:
 - Autoclick unlocks at character level 15.
 - Gold Bonus unlocks at character level 30 and doubles enemy rewards while active.
 - Ability buttons live on the left side of the game field.
-- The bottom bar opens bottom-half `Upgrades`, `Partners`, and `Prestige` sheets.
+- The bottom bar opens bottom-half `Upgrades`, `Partners`, `Settlement`, and `Prestige` sheets.
 - The visible upper game field remains clickable while bottom-half sheets are open.
 - The game field is the fullscreen bottom clickable layer.
 - Ability buttons are a separate left-middle overlay and must be purchased before activation.
@@ -55,6 +55,19 @@ The main scene contains the first local clicker loop:
 - Bulk cost displays show the total package cost. `x10` and `x100` are strict all-or-nothing purchases; `Max` buys as many as current gold allows.
 - Partner buttons always show the required package cost when prerequisites are met; failed unaffordable purchases report "Not enough gold" in the status text.
 These formulas are prototype balance values.
+
+## Settlement
+
+Settlement is a separate bottom tab between `Partners` and `Prestige`.
+
+- Training Camp gives +1% final partner DPS per level.
+- Market gives +1% final gold gain per level.
+- Knight Hut gives +1% final click damage per level.
+- Market requires at least one Training Camp, and Knight Hut requires at least one Market.
+- Buildings use the same bulk modes as partners: `x1`, `x10`, `x100`, and `Max`.
+- `x10` and `x100` are strict all-or-nothing purchases; `Max` buys as many as current gold allows.
+- Settlement buildings reset on prestige, while `prestige_points` and `total_prestiges` are kept.
+- No save system is implemented; settlement state is lost on page reload.
 
 ## Prestige
 
@@ -107,6 +120,8 @@ The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes
 - `scenes/ui/UpgradeSheet.tscn` - Bottom-half upgrades sheet that hosts UpgradePanel.
 - `scenes/ui/PartnerPanel.tscn` - Partner hiring controls and DPS display.
 - `scenes/ui/PartnerSheet.tscn` - Bottom-half partners sheet that hosts PartnerPanel.
+- `scenes/ui/SettlementPanel.tscn` - Settlement building controls and bonus display.
+- `scenes/ui/SettlementSheet.tscn` - Bottom-half settlement sheet that hosts SettlementPanel.
 - `scenes/ui/PrestigePanel.tscn` - Prestige summary and prestige request button.
 - `scenes/ui/PrestigeSheet.tscn` - Bottom-half prestige sheet with the opaque confirmation dialog.
 - `scripts/game/ClickerState.gd` - Temporary prototype state and formulas.

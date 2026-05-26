@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scenes/game/ClickerScreen.gd" id="1_ymqc8"]
 [ext_resource type="PackedScene" path="res://scenes/ui/StatsPanel.tscn" id="2_yinr5"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/AbilityBar.tscn" id="5_3gfnf"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PartnerSheet.tscn" id="6_lfl8p"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PrestigeSheet.tscn" id="7_4qosh"]
+[ext_resource type="PackedScene" path="res://scenes/ui/SettlementSheet.tscn" id="8_3qslc"]
 
 [node name="ClickerScreen" type="Control"]
 layout_mode = 3
@@ -98,6 +99,12 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Partners"
 
+[node name="SettlementButton" type="Button" parent="BottomBar/MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Settlement"
+
 [node name="PrestigeButton" type="Button" parent="BottomBar/MarginContainer/HBoxContainer"]
 custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
@@ -108,6 +115,9 @@ text = "Prestige"
 layout_mode = 1
 
 [node name="PartnerSheet" parent="." instance=ExtResource("6_lfl8p")]
+layout_mode = 1
+
+[node name="SettlementSheet" parent="." instance=ExtResource("8_3qslc")]
 layout_mode = 1
 
 [node name="PrestigeSheet" parent="." instance=ExtResource("7_4qosh")]

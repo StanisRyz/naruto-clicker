@@ -78,3 +78,24 @@ mouse_filter = 2
 size_flags_horizontal = 3
 text = "Runs: 0"
 horizontal_alignment = 1
+
+[node name="SettlementDpsLabel" type="Label" parent="."]
+layout_mode = 2
+mouse_filter = 2
+size_flags_horizontal = 3
+text = "Settlement DPS: +0%"
+horizontal_alignment = 1
+
+[node name="SettlementGoldLabel" type="Label" parent="."]
+layout_mode = 2
+mouse_filter = 2
+size_flags_horizontal = 3
+text = "Settlement Gold: +0%"
+horizontal_alignment = 1
+
+[node name="SettlementClickLabel" type="Label" parent="."]
+layout_mode = 2
+mouse_filter = 2
+size_flags_horizontal = 3
+text = "Settlement Click: +0%"
+horizontal_alignment = 1
