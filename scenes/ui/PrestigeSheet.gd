@@ -2,6 +2,7 @@ class_name PrestigeSheet
 extends Control
 
 signal prestige_requested
+signal prestige_talent_purchase_requested(talent_index: int)
 signal closed
 
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
@@ -12,6 +13,7 @@ signal closed
 func _ready() -> void:
 	close_button.pressed.connect(hide_sheet)
 	prestige_panel.prestige_requested.connect(_on_panel_prestige_requested)
+	prestige_panel.prestige_talent_purchase_requested.connect(_on_panel_prestige_talent_purchase_requested)
 	hide()
 
 
@@ -35,3 +37,7 @@ func show_prestige_confirm(state: ClickerState) -> void:
 
 func _on_panel_prestige_requested() -> void:
 	prestige_requested.emit()
+
+
+func _on_panel_prestige_talent_purchase_requested(talent_index: int) -> void:
+	prestige_talent_purchase_requested.emit(talent_index)

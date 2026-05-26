@@ -19,18 +19,18 @@ func show_dialog(state: ClickerState) -> void:
 	var stage_points: int = state.get_prestige_stage_points()
 	var character_points: int = state.get_prestige_character_points()
 	var reward: int = state.get_prestige_reward()
-	var new_points: int = state.prestige_points + reward
-	var dmg_pct: int = int(new_points * state.prestige_damage_bonus_per_point * 100.0)
-	var gold_pct: int = int(new_points * state.prestige_gold_bonus_per_point * 100.0)
+	var available_after: int = state.prestige_points_available + reward
+	var total_earned_after: int = state.prestige_points_total_earned + reward
 	info_label.text = (
 		"Stage level: %d\n" % state.current_level
 		+ "Character level: %d\n" % state.character_level
 		+ "Stage points: +%d\n" % stage_points
 		+ "Character points: +%d\n" % character_points
-		+ "Total points: +%d\n" % reward
-		+ "Damage bonus after: +%d%%\n" % dmg_pct
-		+ "Gold bonus after: +%d%%\n\n" % gold_pct
-		+ "All normal progress will reset!"
+		+ "Points to gain: +%d\n" % reward
+		+ "Available after: %d\n" % available_after
+		+ "Total earned after: %d\n\n" % total_earned_after
+		+ "All normal progress will reset.\n"
+		+ "Purchased prestige talents remain."
 	)
 	show()
 

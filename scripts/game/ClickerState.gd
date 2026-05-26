@@ -80,11 +80,23 @@ var zone_level_end: int = 10
 var zone_hp_multiplier: float = 1.0
 var zone_reward_multiplier: float = 1.0
 
-var prestige_points: int = 0
+var prestige_points_available: int = 0
+var prestige_points_total_earned: int = 0
 var total_prestiges: int = 0
 var prestige_required_level: int = 50
 var prestige_damage_bonus_per_point: float = 0.10
 var prestige_gold_bonus_per_point: float = 0.10
+var prestige_talent_levels: Array[int] = [0, 0, 0]
+var prestige_talent_names: Array[String] = ["Focus Training", "Trade Routes", "Command Aura"]
+var prestige_talent_bonus_types: Array[String] = ["click_damage", "gold", "partner_dps"]
+var prestige_talent_bonus_percent_per_level: int = 5
+
+var prestige_points: int:
+	get:
+		return prestige_points_available
+	set(value):
+		prestige_points_available = value
+		prestige_points_total_earned = maxi(prestige_points_total_earned, value)
 
 
 func _init() -> void:
@@ -110,11 +122,56 @@ func get_prestige_reward() -> int:
 
 
 func get_prestige_damage_multiplier() -> float:
-	return 1.0 + prestige_points * prestige_damage_bonus_per_point
+	return 1.0 + prestige_points_total_earned * prestige_damage_bonus_per_point
 
 
 func get_prestige_gold_multiplier() -> float:
-	return 1.0 + prestige_points * prestige_gold_bonus_per_point
+	return 1.0 + prestige_points_total_earned * prestige_gold_bonus_per_point
+
+
+func get_focus_training_multiplier() -> float:
+	return 1.0 + get_focus_training_bonus_percent() / 100.0
+
+
+func get_trade_routes_multiplier() -> float:
+	return 1.0 + get_trade_routes_bonus_percent() / 100.0
+
+
+func get_command_aura_multiplier() -> float:
+	return 1.0 + get_command_aura_bonus_percent() / 100.0
+
+
+func get_focus_training_bonus_percent() -> int:
+	return prestige_talent_levels[0] * prestige_talent_bonus_percent_per_level
+
+
+func get_trade_routes_bonus_percent() -> int:
+	return prestige_talent_levels[1] * prestige_talent_bonus_percent_per_level
+
+
+func get_command_aura_bonus_percent() -> int:
+	return prestige_talent_levels[2] * prestige_talent_bonus_percent_per_level
+
+
+func get_prestige_talent_cost(talent_index: int) -> int:
+	if talent_index < 0 or talent_index >= prestige_talent_levels.size():
+		return 0
+
+	return 1 + prestige_talent_levels[talent_index]
+
+
+func buy_prestige_talent(talent_index: int) -> Dictionary:
+	if talent_index < 0 or talent_index >= prestige_talent_levels.size():
+		return _make_purchase_result("Invalid prestige talent")
+
+	var cost: int = get_prestige_talent_cost(talent_index)
+	if prestige_points_available < cost:
+		return _make_purchase_result("Not enough Prestige Points")
+
+	prestige_points_available -= cost
+	prestige_talent_levels[talent_index] += 1
+	_update_character_state()
+	return _make_purchase_result("Prestige talent upgraded!", false, true)
 
 
 func perform_prestige() -> Dictionary:
@@ -122,7 +179,8 @@ func perform_prestige() -> Dictionary:
 	if reward <= 0:
 		return _make_purchase_result("Prestige requires stage level %d or character level 100" % prestige_required_level)
 
-	prestige_points += reward
+	prestige_points_available += reward
+	prestige_points_total_earned += reward
 	total_prestiges += 1
 
 	gold = 0
@@ -176,7 +234,8 @@ func attack_with_damage(damage: int) -> Dictionary:
 		return _make_attack_result(false, false, 0, damage_dealt, target_hp_before, target_hp, "Tap the field to attack!")
 
 	var prestige_gold: int = int(reward_gold * get_prestige_gold_multiplier())
-	var settlement_gold: int = int(prestige_gold * get_settlement_gold_multiplier())
+	var talent_gold: int = int(prestige_gold * get_trade_routes_multiplier())
+	var settlement_gold: int = int(talent_gold * get_settlement_gold_multiplier())
 	var earned_gold: int = settlement_gold * gold_bonus_multiplier if gold_bonus_active else settlement_gold
 	gold += earned_gold
 	enemies_defeated_on_level += 1
@@ -316,8 +375,9 @@ func get_partner_tick_damage() -> int:
 
 	var final_tick: int = int(
 		base_tick
-		* get_settlement_partner_dps_multiplier()
 		* get_prestige_damage_multiplier()
+		* get_command_aura_multiplier()
+		* get_settlement_partner_dps_multiplier()
 	)
 	return maxi(1, final_tick)
 
@@ -743,6 +803,7 @@ func _update_character_state() -> void:
 		int(
 			character_level
 			* get_prestige_damage_multiplier()
+			* get_focus_training_multiplier()
 			* get_settlement_click_damage_multiplier()
 		)
 	)

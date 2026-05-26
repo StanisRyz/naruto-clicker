@@ -73,7 +73,11 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Prestige reward formula is `floor(current_level / 50) + floor(character_level / 100)` points.
 - Prestige confirmation dialog (`PrestigeConfirmDialog`) is an overlay child of `PrestigeSheet` and must be fully opaque so underlying UI text is not visible through it.
 - Signal flow: PrestigePanel `prestige_requested` -> PrestigeSheet `prestige_requested` -> ClickerScreen calls `show_prestige_confirm(state)`; dialog `confirmed` -> ClickerScreen calls `perform_prestige()`.
-- `perform_prestige()` resets all normal progress except `prestige_points` and `total_prestiges`.
+- `perform_prestige()` resets all normal progress except available prestige points, total earned prestige points, prestige talents, and `total_prestiges`.
+- Prestige points are split into available points and total earned points; spending talents subtracts only from available points.
+- Prestige talents are Focus Training (+5% click/autoclick damage per level), Trade Routes (+5% gold gain per level), and Command Aura (+5% partner DPS per level).
+- Prestige talent next cost is `1 + current talent level`.
+- Prestige reset does not reset prestige talents.
 - Apply prestige damage multiplier in `_update_character_state()` so `click_damage` always reflects effective damage.
 - Apply prestige damage multiplier in `get_partner_tick_damage()`.
 - Apply prestige gold multiplier in `attack_with_damage()` before the Gold Bonus x2 multiplier.
@@ -261,7 +265,7 @@ After each patch, validate manually in Godot:
 - No closes the prestige dialog and does not reset progress.
 - Confirming prestige resets normal progress; cancelling does nothing.
 - Prestige resets settlement buildings and costs.
-- StatsPanel shows Prestige points and total runs.
+- StatsPanel shows available / total earned Prestige points and total runs.
 - After prestige, all timers (boss, autoclick, gold bonus, ability cooldowns, accumulators) are reset in ClickerScreen.
 
 ## Documentation Update Rules

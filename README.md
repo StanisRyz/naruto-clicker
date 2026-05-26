@@ -68,7 +68,7 @@ Settlement is a separate bottom tab between `Partners` and `Prestige`.
 - Market requires at least one Training Camp, and Knight Hut requires at least one Market.
 - Buildings use the same bulk modes as partners: `x1`, `x10`, `x100`, and `Max`.
 - `x10` and `x100` are strict all-or-nothing purchases; `Max` buys as many as current gold allows.
-- Settlement buildings reset on prestige, while `prestige_points` and `total_prestiges` are kept.
+- Settlement buildings reset on prestige, while prestige points, prestige talents, and `total_prestiges` are kept.
 - No save system is implemented; settlement state is lost on page reload.
 
 ## Prestige
@@ -82,10 +82,15 @@ Prestige is an unlockable reset in its own bottom `Prestige` tab.
 - Stage level 101 and character level 301 gives 5 points.
 - The Prestige button is disabled when the reward is 0 and enabled when the reward is greater than 0.
 - Pressing the button opens a fully opaque confirmation dialog inside `PrestigeSheet` showing stage points, character points, total points, and resulting bonuses.
-- Confirming resets all normal progress (gold, character level, game level, abilities, partners, zone) but keeps `prestige_points` and `total_prestiges`.
-- Each prestige point permanently adds +10% to click damage and +10% to gold rewards.
+- Confirming resets all normal progress (gold, character level, game level, abilities, partners, settlement, zone) but keeps available prestige points, total earned prestige points, prestige talents, and `total_prestiges`.
+- Each total earned prestige point permanently adds +10% to click damage and +10% to gold rewards.
+- Available prestige points can be spent on prestige talents and total earned prestige points do not decrease.
+- Focus Training adds +5% click/autoclick damage per level.
+- Trade Routes adds +5% gold gain per level.
+- Command Aura adds +5% partner DPS per level.
+- Each talent's next cost is `1 + current talent level` available prestige points.
 - Gold Bonus still doubles rewards on top of the prestige gold multiplier.
-- No save system is implemented; prestige state is lost on page reload.
+- No save system is implemented; prestige state and talents are lost on page reload.
 
 ## Zone Progression
 

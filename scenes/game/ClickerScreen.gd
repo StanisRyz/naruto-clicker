@@ -48,6 +48,7 @@ func _ready() -> void:
 	partner_sheet.partner_purchase_requested.connect(_on_partner_purchase_requested)
 	settlement_sheet.building_purchase_requested.connect(_on_building_purchase_requested)
 	prestige_sheet.prestige_requested.connect(_on_prestige_requested)
+	prestige_sheet.prestige_talent_purchase_requested.connect(_on_prestige_talent_purchase_requested)
 	prestige_confirm_dialog.confirmed.connect(_on_prestige_confirmed)
 	prestige_confirm_dialog.cancelled.connect(_on_prestige_cancelled)
 	upgrade_sheet.closed.connect(_on_sheet_closed)
@@ -179,6 +180,12 @@ func _on_prestige_button_pressed() -> void:
 
 func _on_prestige_requested() -> void:
 	prestige_sheet.show_prestige_confirm(state)
+
+
+func _on_prestige_talent_purchase_requested(talent_index: int) -> void:
+	var result: Dictionary = state.buy_prestige_talent(talent_index)
+	status_label.text = result.get("status_text", "")
+	_update_ui()
 
 
 func _on_prestige_confirmed() -> void:

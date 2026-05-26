@@ -28,7 +28,10 @@ func update_view(state: ClickerState) -> void:
 	]
 	zone_label.text = "Zone: %s" % state.zone_name
 	zone_range_label.text = "Lv %d-%d" % [state.zone_level_start, state.zone_level_end]
-	prestige_points_label.text = "Prestige Points: %d" % state.prestige_points
+	prestige_points_label.text = "Prestige Points: %d / %d" % [
+		state.prestige_points_available,
+		state.prestige_points_total_earned,
+	]
 	prestige_runs_label.text = "Runs: %d" % state.total_prestiges
 	settlement_dps_label.text = "Settlement DPS: +%d%%" % state.get_settlement_partner_dps_bonus_percent()
 	settlement_gold_label.text = "Settlement Gold: +%d%%" % state.get_settlement_gold_bonus_percent()
