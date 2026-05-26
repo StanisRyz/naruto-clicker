@@ -24,65 +24,6 @@ size_flags_horizontal = 3
 text = "Total Earned: 0"
 horizontal_alignment = 1
 
-[node name="TotalPrestigesLabel" type="Label" parent="InfoGrid"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Total Prestiges: 0"
-horizontal_alignment = 1
-
-[node name="CurrentLevelLabel" type="Label" parent="InfoGrid"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Stage Level: 1"
-horizontal_alignment = 1
-
-[node name="CharacterLevelLabel" type="Label" parent="InfoGrid"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Character Level: 1"
-horizontal_alignment = 1
-
-[node name="StagePointsLabel" type="Label" parent="InfoGrid"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Stage Points: +0"
-horizontal_alignment = 1
-
-[node name="CharacterPointsLabel" type="Label" parent="InfoGrid"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Character Points: +0"
-horizontal_alignment = 1
-
-[node name="TotalPointsLabel" type="Label" parent="InfoGrid"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Total Points: +0"
-horizontal_alignment = 1
-
-[node name="DamageBonusLabel" type="Label" parent="InfoGrid"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Damage Bonus: +0%"
-horizontal_alignment = 1
-
-[node name="GoldBonusLabel" type="Label" parent="InfoGrid"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Gold Bonus: +0%"
-horizontal_alignment = 1
-
-[node name="SpacerLabel" type="Label" parent="InfoGrid"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = ""
-
-[node name="NextBonusLabel" type="Label" parent="."]
-layout_mode = 2
-text = "After Prestige: Damage +0% | Gold +0%"
-horizontal_alignment = 1
-autowrap_mode = 3
-
 [node name="PrestigeButton" type="Button" parent="."]
 custom_minimum_size = Vector2(0, 64)
 layout_mode = 2

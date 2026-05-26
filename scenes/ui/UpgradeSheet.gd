@@ -7,7 +7,7 @@ signal gold_bonus_purchase_requested
 signal closed
 
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
-@onready var upgrade_panel: UpgradePanel = $PanelContainer/MarginContainer/VBoxContainer/UpgradePanel
+@onready var upgrade_panel: UpgradePanel = $PanelContainer/MarginContainer/VBoxContainer/ScrollContainer/UpgradePanel
 
 
 func _ready() -> void:

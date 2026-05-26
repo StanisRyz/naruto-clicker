@@ -6,7 +6,7 @@ signal prestige_talent_purchase_requested(talent_index: int)
 signal closed
 
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
-@onready var prestige_panel: PrestigePanel = $PanelContainer/MarginContainer/VBoxContainer/PrestigePanel
+@onready var prestige_panel: PrestigePanel = $PanelContainer/MarginContainer/VBoxContainer/ScrollContainer/PrestigePanel
 @onready var prestige_confirm_dialog: PrestigeConfirmDialog = $PrestigeConfirmDialog
 
 

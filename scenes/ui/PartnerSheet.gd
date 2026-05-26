@@ -5,7 +5,7 @@ signal partner_purchase_requested(partner_index: int, mode: String)
 signal closed
 
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
-@onready var partner_panel: PartnerPanel = $PanelContainer/MarginContainer/VBoxContainer/PartnerPanel
+@onready var partner_panel: PartnerPanel = $PanelContainer/MarginContainer/VBoxContainer/ScrollContainer/PartnerPanel
 
 
 func _ready() -> void:

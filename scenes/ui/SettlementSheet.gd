@@ -5,7 +5,7 @@ signal building_purchase_requested(building_index: int, mode: String)
 signal closed
 
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
-@onready var settlement_panel: SettlementPanel = $PanelContainer/MarginContainer/VBoxContainer/SettlementPanel
+@onready var settlement_panel: SettlementPanel = $PanelContainer/MarginContainer/VBoxContainer/ScrollContainer/SettlementPanel
 
 
 func _ready() -> void:

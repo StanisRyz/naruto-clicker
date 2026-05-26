@@ -41,6 +41,7 @@ The main scene contains the first local clicker loop:
 - The bottom bar opens bottom-half `Upgrades`, `Partners`, `Settlement`, and `Prestige` sheets.
 - The bottom bar remains visible and clickable while sheets are open, and tabs switch directly between sheets.
 - Bottom-half sheets stop above the bottom bar so the visible upper game field remains clickable.
+- Bottom sheet headers and close buttons stay fixed while sheet content scrolls vertically.
 - The visible upper game field remains clickable while bottom-half sheets are open.
 - The game field is the fullscreen bottom clickable layer.
 - Ability buttons are a separate left-middle overlay and must be purchased before activation.
@@ -82,6 +83,7 @@ Prestige is an unlockable reset in its own bottom `Prestige` tab.
 - Stage level 101 and character level 301 gives 5 points.
 - The Prestige button is disabled when the reward is 0 and enabled when the reward is greater than 0.
 - Pressing the button opens a fully opaque confirmation dialog inside `PrestigeSheet` showing stage points, character points, total points, and resulting bonuses.
+- The main Prestige panel stays compact; detailed prestige calculations live in the confirmation dialog.
 - Confirming resets all normal progress (gold, character level, game level, abilities, partners, settlement, zone) but keeps available prestige points, total earned prestige points, prestige talents, and `total_prestiges`.
 - Each total earned prestige point permanently adds +10% to click damage and +10% to gold rewards.
 - Available prestige points can be spent on prestige talents and total earned prestige points do not decrease.

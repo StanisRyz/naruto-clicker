@@ -29,6 +29,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Opening a BottomBar tab should switch directly to that sheet without requiring the current sheet to close first.
 - Keep `UpgradeSheet` to the bottom half of the screen so visible `GameField` space remains clickable while it is open.
 - Bottom sheets must not cover BottomBar; they should end above it.
+- Bottom sheet headers and close buttons should remain fixed while content scrolls vertically.
 - Keep `GameField` as the fullscreen bottom clickable layer in `ClickerScreen`.
 - Keep visible UI overlays clickable above `GameField`, and make passive text/containers ignore mouse input.
 - Keep `GameField` responsible only for tap/click input and simple visual feedback.
@@ -70,6 +71,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Do not add elite enemies.
 - Scale enemy HP and gold reward by level with deterministic formulas.
 - Prestige lives in a separate `PrestigeSheet` opened by the `PrestigeButton` bottom tab; do not keep prestige controls inside `UpgradeSheet`.
+- PrestigePanel should stay compact; detailed prestige calculation belongs in the confirmation dialog, not the main PrestigePanel.
 - Prestige reward formula is `floor(current_level / 50) + floor(character_level / 100)` points.
 - Prestige confirmation dialog (`PrestigeConfirmDialog`) is an overlay child of `PrestigeSheet` and must be fully opaque so underlying UI text is not visible through it.
 - Signal flow: PrestigePanel `prestige_requested` -> PrestigeSheet `prestige_requested` -> ClickerScreen calls `show_prestige_confirm(state)`; dialog `confirmed` -> ClickerScreen calls `perform_prestige()`.

@@ -54,5 +54,11 @@ custom_minimum_size = Vector2(72, 56)
 layout_mode = 2
 text = "Close"
 
-[node name="PartnerPanel" parent="PanelContainer/MarginContainer/VBoxContainer" instance=ExtResource("2_vu4ke")]
+[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="PartnerPanel" parent="PanelContainer/MarginContainer/VBoxContainer/ScrollContainer" instance=ExtResource("2_vu4ke")]
+layout_mode = 2
+size_flags_horizontal = 3
