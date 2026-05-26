@@ -35,12 +35,9 @@ func _ready() -> void:
 func update_view(state: ClickerState) -> void:
 	current_state = state
 	_update_buy_mode_buttons()
-	var bulk_count: int = state.get_character_level_bulk_count(selected_buy_mode)
-	var bulk_cost: int = state.get_character_level_bulk_cost(selected_buy_mode)
-	if bulk_count <= 0:
-		upgrade_character_level_button.text = "Upgrade Character Level x0 - Not enough gold"
-	else:
-		upgrade_character_level_button.text = "Upgrade Character Level x%d - Cost: %d" % [bulk_count, bulk_cost]
+	var bulk_count: int = state.get_character_level_bulk_display_count(selected_buy_mode)
+	var bulk_cost: int = state.get_character_level_bulk_display_cost(selected_buy_mode)
+	upgrade_character_level_button.text = "Upgrade Character Level x%d - Cost: %d" % [bulk_count, bulk_cost]
 
 	buy_autoclick_button.disabled = state.autoclick_purchased
 	buy_gold_bonus_button.disabled = state.gold_bonus_purchased

@@ -242,6 +242,21 @@ func get_character_level_bulk_cost(mode: String) -> int:
 	return _get_character_level_bulk_cost_for_count(count)
 
 
+func get_character_level_bulk_display_count(mode: String) -> int:
+	if mode == "max":
+		return get_character_level_bulk_count(mode)
+
+	return _get_fixed_buy_count(mode)
+
+
+func get_character_level_bulk_display_cost(mode: String) -> int:
+	var display_count: int = get_character_level_bulk_display_count(mode)
+	if display_count > 0:
+		return _get_character_level_bulk_cost_for_count(display_count)
+
+	return character_level_upgrade_cost
+
+
 func buy_autoclick_ability() -> Dictionary:
 	if autoclick_purchased:
 		return _make_purchase_result("Already purchased")
@@ -358,6 +373,33 @@ func get_partner_bulk_cost(partner_index: int, mode: String) -> int:
 		return 0
 
 	return _get_partner_bulk_cost_for_count(partner_index, count)
+
+
+func get_partner_bulk_display_count(partner_index: int, mode: String) -> int:
+	if partner_index < 0 or partner_index >= partner_counts.size():
+		return 0
+
+	if not can_buy_partner(partner_index):
+		return 0
+
+	if mode == "max":
+		return get_partner_bulk_count(partner_index, mode)
+
+	return _get_fixed_buy_count(mode)
+
+
+func get_partner_bulk_display_cost(partner_index: int, mode: String) -> int:
+	if partner_index < 0 or partner_index >= partner_counts.size():
+		return 0
+
+	if not can_buy_partner(partner_index):
+		return 0
+
+	var display_count: int = get_partner_bulk_display_count(partner_index, mode)
+	if display_count > 0:
+		return _get_partner_bulk_cost_for_count(partner_index, display_count)
+
+	return partner_purchase_costs[partner_index]
 
 
 func recalculate_character_level_cost() -> void:

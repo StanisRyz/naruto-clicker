@@ -53,6 +53,7 @@ The main scene contains the first local clicker loop:
 - Partner damage ticks every 0.1 seconds for `total_dps / 10` damage.
 - Character level upgrades and partner hires use horizontal bulk mode buttons: `x1`, `x10`, `x100`, and `Max`.
 - Bulk cost displays show the total package cost. `x10` and `x100` are strict all-or-nothing purchases; `Max` buys as many as current gold allows.
+- Partner buttons always show the required package cost when prerequisites are met; failed unaffordable purchases report "Not enough gold" in the status text.
 These formulas are prototype balance values.
 
 ## Prestige

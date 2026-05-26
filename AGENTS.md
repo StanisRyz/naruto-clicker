@@ -42,6 +42,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Partner damage ticks every 0.1 seconds for `total_dps / 10` damage.
 - Partner purchases use horizontal bulk mode buttons `x1`, `x10`, `x100`, and `Max`; displayed costs must show total package cost.
 - Partner `x10` and `x100` purchases are strict all-or-nothing packages; `Max` buys as many as current gold allows.
+- PartnerPanel should always show the required package cost when prerequisites are met; "Not enough gold" belongs in StatusLabel after a failed purchase, not in partner button text.
 - Keep `PartnerSheet` and `PrestigeSheet` as separate bottom-half overlays from `UpgradeSheet`.
 - Character level replaces the old damage upgrade; character level must equal click damage.
 - Character level upgrade cost is `5 + (character_level - 1) * 3`.

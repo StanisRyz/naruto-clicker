@@ -51,16 +51,13 @@ func _update_partner_button(state: ClickerState, partner_index: int, button: But
 	var label_index: int = partner_index + 1
 	if not state.can_buy_partner(partner_index):
 		button.disabled = true
-		button.text = "Hire Partner %d x0 - Requires Partner %d" % [label_index, partner_index]
+		button.text = "Requires Partner %d" % partner_index
 		return
 
-	var bulk_count: int = state.get_partner_bulk_count(partner_index, selected_buy_mode)
-	var bulk_cost: int = state.get_partner_bulk_cost(partner_index, selected_buy_mode)
+	var bulk_count: int = state.get_partner_bulk_display_count(partner_index, selected_buy_mode)
+	var bulk_cost: int = state.get_partner_bulk_display_cost(partner_index, selected_buy_mode)
 	button.disabled = false
-	if bulk_count <= 0:
-		button.text = "Hire Partner %d x0 - Not enough gold" % label_index
-	else:
-		button.text = "Hire Partner %d x%d - Cost: %d" % [label_index, bulk_count, bulk_cost]
+	button.text = "Hire Partner %d x%d - Cost: %d" % [label_index, bulk_count, bulk_cost]
 
 
 func _select_buy_mode(mode: String) -> void:
