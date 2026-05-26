@@ -202,20 +202,44 @@ func buy_character_level_upgrade() -> Dictionary:
 
 
 func buy_character_level_upgrades(mode: String) -> Dictionary:
-	var purchase_limit: int = _get_buy_mode_limit(mode)
-	var bought: int = 0
+	var bought: int = get_character_level_bulk_count(mode)
+	var total_cost: int = get_character_level_bulk_cost(mode)
 
-	while (purchase_limit < 0 or bought < purchase_limit) and gold >= character_level_upgrade_cost:
-		gold -= character_level_upgrade_cost
-		character_level += 1
-		bought += 1
-		recalculate_character_level_cost()
-
-	if bought <= 0:
+	if bought <= 0 or total_cost <= 0 or gold < total_cost:
 		return _make_purchase_result("Not enough gold", true)
 
+	gold -= total_cost
+	character_level += bought
+	recalculate_character_level_cost()
 	_update_character_state()
 	return _make_purchase_result("Character level upgraded x%d!" % bought, false, true)
+
+
+func get_character_level_bulk_count(mode: String) -> int:
+	var fixed_count: int = _get_fixed_buy_count(mode)
+	if fixed_count > 0:
+		return fixed_count
+
+	var simulated_gold: int = gold
+	var simulated_level: int = character_level
+	var simulated_cost: int = character_level_upgrade_cost
+	var count: int = 0
+
+	while simulated_gold >= simulated_cost:
+		simulated_gold -= simulated_cost
+		simulated_level += 1
+		count += 1
+		simulated_cost = _get_character_level_cost_for_level(simulated_level)
+
+	return count
+
+
+func get_character_level_bulk_cost(mode: String) -> int:
+	var count: int = get_character_level_bulk_count(mode)
+	if count <= 0:
+		return 0
+
+	return _get_character_level_bulk_cost_for_count(count)
 
 
 func buy_autoclick_ability() -> Dictionary:
@@ -290,23 +314,50 @@ func buy_partners(partner_index: int, mode: String) -> Dictionary:
 	if partner_index == 2 and partner_counts[1] <= 0:
 		return _make_purchase_result("Requires Partner 2")
 
-	var purchase_limit: int = _get_buy_mode_limit(mode)
-	var bought: int = 0
+	var bought: int = get_partner_bulk_count(partner_index, mode)
+	var total_cost: int = get_partner_bulk_cost(partner_index, mode)
 
-	while purchase_limit < 0 or bought < purchase_limit:
-		var purchase_cost: int = partner_purchase_costs[partner_index]
-		if gold < purchase_cost:
-			break
-
-		gold -= purchase_cost
-		partner_counts[partner_index] += 1
-		bought += 1
-		recalculate_partner_cost(partner_index)
-
-	if bought <= 0:
+	if bought <= 0 or total_cost <= 0 or gold < total_cost:
 		return _make_purchase_result("Not enough gold", true)
 
+	gold -= total_cost
+	partner_counts[partner_index] += bought
+	recalculate_partner_cost(partner_index)
 	return _make_purchase_result("Partner %d hired x%d!" % [partner_index + 1, bought], false, true)
+
+
+func get_partner_bulk_count(partner_index: int, mode: String) -> int:
+	if partner_index < 0 or partner_index >= partner_counts.size():
+		return 0
+
+	if not can_buy_partner(partner_index):
+		return 0
+
+	var fixed_count: int = _get_fixed_buy_count(mode)
+	if fixed_count > 0:
+		var fixed_cost: int = _get_partner_bulk_cost_for_count(partner_index, fixed_count)
+		return fixed_count if gold >= fixed_cost else 0
+
+	var simulated_gold: int = gold
+	var simulated_count: int = partner_counts[partner_index]
+	var count: int = 0
+	var simulated_cost: int = partner_purchase_costs[partner_index]
+
+	while simulated_gold >= simulated_cost:
+		simulated_gold -= simulated_cost
+		simulated_count += 1
+		count += 1
+		simulated_cost = _get_partner_cost_for_count(partner_index, simulated_count)
+
+	return count
+
+
+func get_partner_bulk_cost(partner_index: int, mode: String) -> int:
+	var count: int = get_partner_bulk_count(partner_index, mode)
+	if count <= 0:
+		return 0
+
+	return _get_partner_bulk_cost_for_count(partner_index, count)
 
 
 func recalculate_character_level_cost() -> void:
@@ -335,17 +386,60 @@ func can_buy_partner(partner_index: int) -> bool:
 	return false
 
 
-func _get_buy_mode_limit(mode: String) -> int:
+func _get_fixed_buy_count(mode: String) -> int:
+	if mode == "max":
+		return 0
+
 	if mode == "x10":
 		return 10
 
 	if mode == "x100":
 		return 100
 
-	if mode == "max":
-		return -1
-
 	return 1
+
+
+func _get_character_level_bulk_cost_for_count(count: int) -> int:
+	var simulated_level: int = character_level
+	var simulated_cost: int = character_level_upgrade_cost
+	var total_cost: int = 0
+
+	for i in range(count):
+		total_cost += simulated_cost
+		simulated_level += 1
+		simulated_cost = _get_character_level_cost_for_level(simulated_level)
+
+	return total_cost
+
+
+func _get_character_level_cost_for_level(level: int) -> int:
+	return 5 + (level - 1) * 3
+
+
+func _get_partner_bulk_cost_for_count(partner_index: int, count: int) -> int:
+	var simulated_count: int = partner_counts[partner_index]
+	var simulated_cost: int = partner_purchase_costs[partner_index]
+	var total_cost: int = 0
+
+	for i in range(count):
+		total_cost += simulated_cost
+		simulated_count += 1
+		simulated_cost = _get_partner_cost_for_count(partner_index, simulated_count)
+
+	return total_cost
+
+
+func _get_partner_cost_for_count(partner_index: int, count: int) -> int:
+	if partner_index == 0:
+		return 10 + count * 10
+
+	if partner_index == 1:
+		return 50 + count * 30
+
+	if partner_index == 2:
+		return 150 + count * 50
+
+	return 0
 
 
 func is_current_level_boss() -> bool:

@@ -51,8 +51,8 @@ The main scene contains the first local clicker loop:
 - Partner costs scale as `10 + count * 10`, `50 + count * 30`, and `150 + count * 50`.
 - Partner 2 requires Partner 1, and Partner 3 requires Partner 2.
 - Partner damage ticks every 0.1 seconds for `total_dps / 10` damage.
-- Character level upgrades and partner hires support bulk modes: `x1`, `x10`, `x100`, and `Max`.
-- Bulk purchases are sequential, use the normal scaling costs, and stop when gold runs out.
+- Character level upgrades and partner hires use horizontal bulk mode buttons: `x1`, `x10`, `x100`, and `Max`.
+- Bulk cost displays show the total package cost. `x10` and `x100` are strict all-or-nothing purchases; `Max` buys as many as current gold allows.
 These formulas are prototype balance values.
 
 ## Prestige

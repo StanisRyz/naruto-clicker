@@ -40,11 +40,13 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Partner costs scale as `10 + count * 10`, `50 + count * 30`, and `150 + count * 50`.
 - Partner 2 requires at least one Partner 1; Partner 3 requires at least one Partner 2.
 - Partner damage ticks every 0.1 seconds for `total_dps / 10` damage.
-- Partner purchases support bulk modes `x1`, `x10`, `x100`, and `Max`; purchases are sequential and stop when gold runs out.
+- Partner purchases use horizontal bulk mode buttons `x1`, `x10`, `x100`, and `Max`; displayed costs must show total package cost.
+- Partner `x10` and `x100` purchases are strict all-or-nothing packages; `Max` buys as many as current gold allows.
 - Keep `PartnerSheet` and `PrestigeSheet` as separate bottom-half overlays from `UpgradeSheet`.
 - Character level replaces the old damage upgrade; character level must equal click damage.
 - Character level upgrade cost is `5 + (character_level - 1) * 3`.
-- Character level upgrades support bulk modes `x1`, `x10`, `x100`, and `Max`; purchases are sequential and stop when gold runs out.
+- Character level upgrades use horizontal bulk mode buttons `x1`, `x10`, `x100`, and `Max`; displayed costs must show total package cost.
+- Character level `x10` and `x100` purchases are strict all-or-nothing packages; `Max` buys as many as current gold allows.
 - Autoclick purchase costs 50 gold.
 - Gold Bonus purchase costs 150 gold.
 - Treat economy formulas as prototype balance values.
@@ -194,10 +196,12 @@ After each patch, validate manually in Godot:
 - Abilities cannot activate while active or on cooldown.
 - Autoclick performs separate attacks every 0.05 seconds.
 - Upgrade x1 buys 1 character level.
-- Upgrade x10 buys up to 10 character levels.
-- Upgrade x100 buys up to 100 character levels.
+- Upgrade x10 buys exactly 10 character levels or buys nothing if gold is insufficient.
+- Upgrade x100 buys exactly 100 character levels or buys nothing if gold is insufficient.
 - Upgrade Max buys as many character levels as current gold allows.
-- Partner x1, x10, x100, and Max modes buy sequentially and preserve prerequisites.
+- Partner x10 and x100 modes buy the full package or buy nothing if gold is insufficient.
+- Partner Max buys as many partners as current gold allows.
+- Bulk mode UI uses horizontal buttons, not dropdowns.
 - Target defeat gives gold.
 - Defeating 10 enemies advances to the next level.
 - Level text updates correctly.

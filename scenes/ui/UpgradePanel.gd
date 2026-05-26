@@ -7,21 +7,41 @@ signal gold_bonus_purchase_requested
 
 const BUY_MODES: Array[String] = ["x1", "x10", "x100", "max"]
 
-@onready var buy_mode_option: OptionButton = $VBoxContainer/BuyModeRow/BuyModeOption
+var selected_buy_mode: String = "x1"
+var current_state: ClickerState = null
+
+@onready var buy_mode_buttons: Array[Button] = [
+	$VBoxContainer/BuyModeRow/X1Button,
+	$VBoxContainer/BuyModeRow/X10Button,
+	$VBoxContainer/BuyModeRow/X100Button,
+	$VBoxContainer/BuyModeRow/MaxButton,
+]
 @onready var upgrade_character_level_button: Button = $VBoxContainer/UpgradeCharacterLevelButton
 @onready var buy_autoclick_button: Button = $VBoxContainer/BuyAutoclickButton
 @onready var buy_gold_bonus_button: Button = $VBoxContainer/BuyGoldBonusButton
 
 
 func _ready() -> void:
-	_setup_buy_mode_option()
+	buy_mode_buttons[0].pressed.connect(func() -> void: _select_buy_mode("x1"))
+	buy_mode_buttons[1].pressed.connect(func() -> void: _select_buy_mode("x10"))
+	buy_mode_buttons[2].pressed.connect(func() -> void: _select_buy_mode("x100"))
+	buy_mode_buttons[3].pressed.connect(func() -> void: _select_buy_mode("max"))
 	upgrade_character_level_button.pressed.connect(_on_upgrade_character_level_button_pressed)
 	buy_autoclick_button.pressed.connect(_on_buy_autoclick_button_pressed)
 	buy_gold_bonus_button.pressed.connect(_on_buy_gold_bonus_button_pressed)
+	_update_buy_mode_buttons()
 
 
 func update_view(state: ClickerState) -> void:
-	upgrade_character_level_button.text = "Upgrade Character Level - Cost: %d" % state.character_level_upgrade_cost
+	current_state = state
+	_update_buy_mode_buttons()
+	var bulk_count: int = state.get_character_level_bulk_count(selected_buy_mode)
+	var bulk_cost: int = state.get_character_level_bulk_cost(selected_buy_mode)
+	if bulk_count <= 0:
+		upgrade_character_level_button.text = "Upgrade Character Level x0 - Not enough gold"
+	else:
+		upgrade_character_level_button.text = "Upgrade Character Level x%d - Cost: %d" % [bulk_count, bulk_cost]
+
 	buy_autoclick_button.disabled = state.autoclick_purchased
 	buy_gold_bonus_button.disabled = state.gold_bonus_purchased
 
@@ -41,7 +61,7 @@ func update_view(state: ClickerState) -> void:
 
 
 func _on_upgrade_character_level_button_pressed() -> void:
-	character_level_upgrade_requested.emit(_get_buy_mode())
+	character_level_upgrade_requested.emit(selected_buy_mode)
 
 
 func _on_buy_autoclick_button_pressed() -> void:
@@ -52,20 +72,21 @@ func _on_buy_gold_bonus_button_pressed() -> void:
 	gold_bonus_purchase_requested.emit()
 
 
-func _setup_buy_mode_option() -> void:
-	if buy_mode_option.get_item_count() > 0:
-		return
-
-	buy_mode_option.add_item("x1")
-	buy_mode_option.add_item("x10")
-	buy_mode_option.add_item("x100")
-	buy_mode_option.add_item("Max")
-	buy_mode_option.select(0)
+func _select_buy_mode(mode: String) -> void:
+	selected_buy_mode = mode
+	_update_buy_mode_buttons()
+	if current_state != null:
+		update_view(current_state)
 
 
-func _get_buy_mode() -> String:
-	var selected: int = buy_mode_option.selected
-	if selected < 0 or selected >= BUY_MODES.size():
-		return "x1"
+func _update_buy_mode_buttons() -> void:
+	for i in range(buy_mode_buttons.size()):
+		var mode: String = BUY_MODES[i]
+		var button: Button = buy_mode_buttons[i]
+		button.disabled = mode == selected_buy_mode
+		button.text = _get_buy_mode_label(mode, button.disabled)
 
-	return BUY_MODES[selected]
+
+func _get_buy_mode_label(mode: String, selected: bool) -> String:
+	var label: String = "Max" if mode == "max" else mode
+	return "[%s]" % label if selected else label
