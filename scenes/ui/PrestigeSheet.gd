@@ -2,6 +2,7 @@ class_name PrestigeSheet
 extends Control
 
 signal prestige_requested
+signal closed
 
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
 @onready var prestige_panel: PrestigePanel = $PanelContainer/MarginContainer/VBoxContainer/PrestigePanel
@@ -21,6 +22,7 @@ func show_sheet() -> void:
 func hide_sheet() -> void:
 	prestige_confirm_dialog.hide()
 	hide()
+	closed.emit()
 
 
 func update_view(state: ClickerState) -> void:

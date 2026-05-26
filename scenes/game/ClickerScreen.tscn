@@ -66,6 +66,18 @@ autowrap_mode = 3
 [node name="AbilityBar" parent="." instance=ExtResource("5_3gfnf")]
 layout_mode = 1
 
+[node name="UpgradeSheet" parent="." instance=ExtResource("4_vcx67")]
+layout_mode = 1
+
+[node name="PartnerSheet" parent="." instance=ExtResource("6_lfl8p")]
+layout_mode = 1
+
+[node name="SettlementSheet" parent="." instance=ExtResource("8_3qslc")]
+layout_mode = 1
+
+[node name="PrestigeSheet" parent="." instance=ExtResource("7_4qosh")]
+layout_mode = 1
+
 [node name="BottomBar" type="PanelContainer" parent="."]
 layout_mode = 1
 anchors_preset = 12
@@ -110,15 +122,3 @@ custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Prestige"
-
-[node name="UpgradeSheet" parent="." instance=ExtResource("4_vcx67")]
-layout_mode = 1
-
-[node name="PartnerSheet" parent="." instance=ExtResource("6_lfl8p")]
-layout_mode = 1
-
-[node name="SettlementSheet" parent="." instance=ExtResource("8_3qslc")]
-layout_mode = 1
-
-[node name="PrestigeSheet" parent="." instance=ExtResource("7_4qosh")]
-layout_mode = 1

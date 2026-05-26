@@ -4,6 +4,7 @@ extends Control
 signal character_level_upgrade_requested(mode: String)
 signal autoclick_purchase_requested
 signal gold_bonus_purchase_requested
+signal closed
 
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
 @onready var upgrade_panel: UpgradePanel = $PanelContainer/MarginContainer/VBoxContainer/UpgradePanel
@@ -23,6 +24,7 @@ func show_sheet() -> void:
 
 func hide_sheet() -> void:
 	hide()
+	closed.emit()
 
 
 func update_view(state: ClickerState) -> void:

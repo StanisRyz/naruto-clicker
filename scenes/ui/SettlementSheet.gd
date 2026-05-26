@@ -2,6 +2,7 @@ class_name SettlementSheet
 extends Control
 
 signal building_purchase_requested(building_index: int, mode: String)
+signal closed
 
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
 @onready var settlement_panel: SettlementPanel = $PanelContainer/MarginContainer/VBoxContainer/SettlementPanel
@@ -19,6 +20,7 @@ func show_sheet() -> void:
 
 func hide_sheet() -> void:
 	hide()
+	closed.emit()
 
 
 func update_view(state: ClickerState) -> void:

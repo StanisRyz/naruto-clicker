@@ -25,7 +25,10 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Keep `StatsPanel`, `GameField`, and `UpgradePanel` as focused UI components.
 - Keep `UpgradePanel` responsible only for upgrade controls.
 - Use `BottomBar` to open `UpgradeSheet`, `PartnerSheet`, `SettlementSheet`, and `PrestigeSheet`; do not keep sheet controls permanently in the main gameplay flow.
+- BottomBar must remain visible and clickable while any bottom sheet is open.
+- Opening a BottomBar tab should switch directly to that sheet without requiring the current sheet to close first.
 - Keep `UpgradeSheet` to the bottom half of the screen so visible `GameField` space remains clickable while it is open.
+- Bottom sheets must not cover BottomBar; they should end above it.
 - Keep `GameField` as the fullscreen bottom clickable layer in `ClickerScreen`.
 - Keep visible UI overlays clickable above `GameField`, and make passive text/containers ignore mouse input.
 - Keep `GameField` responsible only for tap/click input and simple visual feedback.
@@ -186,6 +189,8 @@ After each patch, validate manually in Godot:
 - Clicking inside `UpgradeSheet` does not attack the enemy.
 - Visible `GameField` area still attacks while `PrestigeSheet` is open.
 - Clicking inside `PrestigeSheet` does not attack the enemy.
+- BottomBar remains visible and clickable while any sheet is open.
+- Pressing a different BottomBar tab switches directly to that sheet.
 - `AbilityBar` is a left-middle screen overlay.
 - Ability buttons do not pulse with `GameField` feedback.
 - Ability buttons do not attack the enemy.

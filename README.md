@@ -39,6 +39,8 @@ The main scene contains the first local clicker loop:
 - Gold Bonus unlocks at character level 30 and doubles enemy rewards while active.
 - Ability buttons live on the left side of the game field.
 - The bottom bar opens bottom-half `Upgrades`, `Partners`, `Settlement`, and `Prestige` sheets.
+- The bottom bar remains visible and clickable while sheets are open, and tabs switch directly between sheets.
+- Bottom-half sheets stop above the bottom bar so the visible upper game field remains clickable.
 - The visible upper game field remains clickable while bottom-half sheets are open.
 - The game field is the fullscreen bottom clickable layer.
 - Ability buttons are a separate left-middle overlay and must be purchased before activation.

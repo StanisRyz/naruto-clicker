@@ -17,6 +17,7 @@ var autoclick_interval_epsilon: float = 0.000001
 var partner_damage_accumulator: float = 0.0
 var partner_damage_interval: float = 0.1
 var partner_damage_interval_epsilon: float = 0.000001
+var active_bottom_tab: String = ""
 
 @onready var stats_panel: StatsPanel = $MainContent/VBoxContainer/StatsPanel
 @onready var game_field: GameField = $GameField
@@ -49,6 +50,10 @@ func _ready() -> void:
 	prestige_sheet.prestige_requested.connect(_on_prestige_requested)
 	prestige_confirm_dialog.confirmed.connect(_on_prestige_confirmed)
 	prestige_confirm_dialog.cancelled.connect(_on_prestige_cancelled)
+	upgrade_sheet.closed.connect(_on_sheet_closed)
+	partner_sheet.closed.connect(_on_sheet_closed)
+	settlement_sheet.closed.connect(_on_sheet_closed)
+	prestige_sheet.closed.connect(_on_sheet_closed)
 	_update_ui()
 	_sync_boss_timer()
 
@@ -84,6 +89,7 @@ func _process(delta: float) -> void:
 
 
 func _update_ui() -> void:
+	_update_bottom_bar_view()
 	stats_panel.update_view(state)
 	game_field.update_view(state)
 	game_field.update_boss_timer(boss_time_left, boss_timer_active)
@@ -140,6 +146,8 @@ func _on_upgrades_button_pressed() -> void:
 	settlement_sheet.hide_sheet()
 	prestige_sheet.hide_sheet()
 	upgrade_sheet.show_sheet()
+	active_bottom_tab = "upgrades"
+	_update_bottom_bar_view()
 
 
 func _on_partners_button_pressed() -> void:
@@ -147,6 +155,8 @@ func _on_partners_button_pressed() -> void:
 	settlement_sheet.hide_sheet()
 	prestige_sheet.hide_sheet()
 	partner_sheet.show_sheet()
+	active_bottom_tab = "partners"
+	_update_bottom_bar_view()
 
 
 func _on_settlement_button_pressed() -> void:
@@ -154,6 +164,8 @@ func _on_settlement_button_pressed() -> void:
 	partner_sheet.hide_sheet()
 	prestige_sheet.hide_sheet()
 	settlement_sheet.show_sheet()
+	active_bottom_tab = "settlement"
+	_update_bottom_bar_view()
 
 
 func _on_prestige_button_pressed() -> void:
@@ -161,6 +173,8 @@ func _on_prestige_button_pressed() -> void:
 	partner_sheet.hide_sheet()
 	settlement_sheet.hide_sheet()
 	prestige_sheet.show_sheet()
+	active_bottom_tab = "prestige"
+	_update_bottom_bar_view()
 
 
 func _on_prestige_requested() -> void:
@@ -184,6 +198,18 @@ func _on_prestige_confirmed() -> void:
 
 func _on_prestige_cancelled() -> void:
 	prestige_confirm_dialog.hide()
+
+
+func _update_bottom_bar_view() -> void:
+	upgrades_button.text = "[Upgrades]" if active_bottom_tab == "upgrades" else "Upgrades"
+	partners_button.text = "[Partners]" if active_bottom_tab == "partners" else "Partners"
+	settlement_button.text = "[Settlement]" if active_bottom_tab == "settlement" else "Settlement"
+	prestige_button.text = "[Prestige]" if active_bottom_tab == "prestige" else "Prestige"
+
+
+func _on_sheet_closed() -> void:
+	active_bottom_tab = ""
+	_update_bottom_bar_view()
 
 
 func _sync_boss_timer() -> void:
