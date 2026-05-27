@@ -31,8 +31,9 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Bottom sheets must not cover BottomBar; they should end above it.
 - Bottom sheet headers and close buttons should remain fixed while content scrolls vertically.
 - `BuyModeSelector` is the reusable UI for `x1`, `x10`, `x100`, and `Max` purchase modes.
-- `BuyModeSelector` must stay fixed under the sheet header in `UpgradeSheet`, `PartnerSheet`, and `SettlementSheet`; purchase lists should scroll independently below it.
-- Do not add `BuyModeSelector` to `PrestigeSheet`.
+- `BuyModeSelector` must stay fixed under the sheet header in `PartnerSheet` and `SettlementSheet`; purchase lists should scroll independently below it.
+- Do not add `BuyModeSelector` to `UpgradeSheet` or `PrestigeSheet`.
+- Purchase tabs use card-style rows with a temporary white `ColorRect` image placeholder, two-line info text, and an action button.
 - Keep `GameField` as the fullscreen bottom clickable layer in `ClickerScreen`.
 - Keep visible UI overlays clickable above `GameField`, and make passive text/containers ignore mouse input.
 - Keep `GameField` responsible only for tap/click input and simple visual feedback.
@@ -64,7 +65,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Settlement buildings reset on prestige.
 - Character level replaces the old damage upgrade; character level must equal click damage.
 - Character level upgrade cost is `5 + (character_level - 1) * 3`.
-- Character level upgrades use horizontal bulk mode buttons `x1`, `x10`, `x100`, and `Max`; displayed costs must show total package cost.
+- UpgradePanel is for one-time ability purchases only and must not use bulk-buy modes.
 - Character level `x10` and `x100` purchases are strict all-or-nothing packages; `Max` buys as many as current gold allows.
 - Autoclick purchase costs 50 gold.
 - Gold Bonus purchase costs 150 gold.
@@ -81,6 +82,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Scale enemy HP and gold reward by level with deterministic formulas.
 - Prestige lives in a separate `PrestigeSheet` opened by the `PrestigeButton` bottom tab; do not keep prestige controls inside `UpgradeSheet`.
 - PrestigePanel should stay compact; detailed prestige calculation belongs in the confirmation dialog, not the main PrestigePanel.
+- PrestigePanel uses compact `available / total` points text, a card-style prestige action, and card-style talent rows.
 - Prestige reward formula is `floor(current_level / 50) + floor(character_level / 100)` points.
 - Prestige confirmation dialog (`PrestigeConfirmDialog`) is an overlay child of `PrestigeSheet` and must be fully opaque so underlying UI text is not visible through it.
 - Signal flow: PrestigePanel `prestige_requested` -> PrestigeSheet `prestige_requested` -> ClickerScreen calls `show_prestige_confirm(state)`; dialog `confirmed` -> ClickerScreen calls `perform_prestige()`.
@@ -172,12 +174,10 @@ After each patch, validate manually in Godot:
 - `PartnersButton` opens `PartnerSheet`.
 - `UpgradeSheet` is hidden by default and can be closed.
 - `PartnerSheet` is hidden by default and can be closed.
-- Character level upgrade works from inside `UpgradeSheet`.
 - Character level starts at 1 and damage starts at 1.
-- Character level upgrade starts at 5 gold.
-- Buying character level upgrade subtracts the current cost and increases character level and damage by 1.
-- Character level cost increases after purchase.
 - Old damage upgrade naming is not visible in UI.
+- UpgradeSheet has no `BuyModeSelector`.
+- UpgradePanel uses card-style ability purchase rows with white `ColorRect` image placeholders.
 - Autoclick button is visible but locked before character level 15.
 - Gold Bonus button is visible but locked before character level 30.
 - Focus Burst button is visible but locked before character level 60.
@@ -191,6 +191,8 @@ After each patch, validate manually in Godot:
 - Gold Bonus active doubles enemy rewards.
 - BottomBar has `Upgrades`, `Partners`, `Settlement`, and `Prestige` buttons on one row.
 - Partner 1 starts at 10 gold.
+- PartnerPanel uses card-style partner rows with white `ColorRect` image placeholders.
+- PartnerSheet keeps `BuyModeSelector` fixed under the header while partner rows scroll.
 - Partner 2 starts at 50 gold.
 - Partner 3 starts at 150 gold.
 - Partner 2 cannot be bought before at least one Partner 1.
@@ -230,13 +232,9 @@ After each patch, validate manually in Godot:
 - Ability buttons show active, cooldown, and ready states.
 - Abilities cannot activate while active or on cooldown.
 - Autoclick performs separate attacks every 0.05 seconds.
-- Upgrade x1 buys 1 character level.
-- Upgrade x10 buys exactly 10 character levels or buys nothing if gold is insufficient.
-- Upgrade x100 buys exactly 100 character levels or buys nothing if gold is insufficient.
-- Upgrade Max buys as many character levels as current gold allows.
 - Partner x10 and x100 modes buy the full package or buy nothing if gold is insufficient.
 - Partner Max buys as many partners as current gold allows.
-- Bulk mode UI uses horizontal buttons, not dropdowns.
+- Partner and Settlement bulk mode UI uses horizontal buttons, not dropdowns.
 - Settlement opens `SettlementSheet`.
 - Training Camp can be bought when enough gold.
 - Market requires at least one Training Camp.
@@ -281,6 +279,9 @@ After each patch, validate manually in Godot:
 - Prestige button is not visible inside UpgradeSheet.
 - `PrestigeButton` opens `PrestigeSheet`.
 - PrestigeSheet is hidden by default and can be closed.
+- PrestigeSheet has no `BuyModeSelector`.
+- PrestigePanel shows compact `available / total` prestige points.
+- Prestige action and talent rows use card-style rows with white `ColorRect` image placeholders.
 - Prestige button is disabled when total points to gain is 0.
 - Prestige button enables and shows the reward point count when total points to gain is greater than 0.
 - Prestige reward at current_level 52 and character_level 102 is 2.

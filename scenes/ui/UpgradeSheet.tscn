@@ -1,8 +1,7 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/UpgradeSheet.gd" id="1_wmn3s"]
 [ext_resource type="PackedScene" path="res://scenes/ui/UpgradePanel.tscn" id="2_ggq7k"]
-[ext_resource type="PackedScene" path="res://scenes/ui/BuyModeSelector.tscn" id="3_buy_mode"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sheet_panel"]
 bg_color = Color(0.08, 0.085, 0.1, 1)
@@ -54,9 +53,6 @@ text = "Upgrades"
 custom_minimum_size = Vector2(72, 56)
 layout_mode = 2
 text = "Close"
-
-[node name="BuyModeSelector" parent="PanelContainer/MarginContainer/VBoxContainer" instance=ExtResource("3_buy_mode")]
-layout_mode = 2
 
 [node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2

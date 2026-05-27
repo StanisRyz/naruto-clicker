@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scenes/ui/UpgradePanel.gd" id="1_x2nck"]
 
 [node name="UpgradePanel" type="Control"]
-custom_minimum_size = Vector2(0, 500)
+custom_minimum_size = Vector2(0, 430)
 script = ExtResource("1_x2nck")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
@@ -15,27 +15,6 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 12
 
-[node name="UpgradeCharacterLevelButton" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 72)
+[node name="RowsContainer" type="VBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
-text = "Upgrade Character Level - Cost: 5"
-
-[node name="BuyAutoclickButton" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 72)
-layout_mode = 2
-text = "Autoclick - Requires Level 15"
-
-[node name="BuyGoldBonusButton" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 72)
-layout_mode = 2
-text = "Gold Bonus - Requires Level 30"
-
-[node name="BuyFocusBurstButton" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 72)
-layout_mode = 2
-text = "Focus Burst - Requires Level 60"
-
-[node name="BuyRallyButton" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 72)
-layout_mode = 2
-text = "Rally - Requires Level 80"
+theme_override_constants/separation = 10

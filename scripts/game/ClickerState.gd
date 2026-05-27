@@ -687,6 +687,49 @@ func get_building_effect_description(building_index: int) -> String:
 			return "+%d%% Bonus for each %s" % [amount, building_name]
 
 
+func get_partner_description(partner_index: int) -> String:
+	if partner_index < 0 or partner_index >= partner_dps_values.size():
+		return ""
+
+	return "%d DPS" % partner_dps_values[partner_index]
+
+
+func get_ability_description(ability_id: String) -> String:
+	match ability_id:
+		"autoclick":
+			return "20 attacks/sec for 15s"
+		"gold_bonus":
+			return "Gold rewards x2 for 45s"
+		"focus_burst":
+			return "Click/autoclick damage x2 for 20s"
+		"rally":
+			return "Partner DPS x2 for 30s"
+		_:
+			return ""
+
+
+func get_prestige_talent_description(talent_index: int) -> String:
+	if talent_index < 0 or talent_index >= prestige_talent_bonus_types.size():
+		return ""
+
+	var amount: int = prestige_talent_bonus_percent_per_level
+	match prestige_talent_bonus_types[talent_index]:
+		"click_damage":
+			return "+%d%% Click Damage per level" % amount
+		"gold":
+			return "+%d%% Gold Gain per level" % amount
+		"partner_dps":
+			return "+%d%% Partner DPS per level" % amount
+		"autoclick_rate":
+			return "+%d%% Autoclick Rate per level" % amount
+		"settlement_effect":
+			return "+%d%% Settlement Bonus per level" % amount
+		"boss_damage":
+			return "+%d%% Boss Damage per level" % amount
+		_:
+			return "+%d%% Bonus per level" % amount
+
+
 func recalculate_building_cost(building_index: int) -> void:
 	building_purchase_costs[building_index] = _get_building_cost_for_count(
 		building_index,
