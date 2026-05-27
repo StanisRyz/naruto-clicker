@@ -15,10 +15,6 @@ var enemy_transition_locked: bool = false
 var current_health_color: Color = HEALTHY_COLOR
 
 @onready var enemy_image_holder: ColorRect = $EnemyImageHolder
-@onready var zone_name_label: Label = $GameFieldContent/ZoneNameLabel
-@onready var enemy_name_label: Label = $GameFieldContent/EnemyNameLabel
-@onready var target_hp_label: Label = $GameFieldContent/TargetHpLabel
-@onready var target_progress_bar: ProgressBar = $GameFieldContent/TargetProgressBar
 @onready var boss_timer_label: Label = $GameFieldContent/BossTimerLabel
 @onready var defeat_feedback_label: Label = $FeedbackLayer/DefeatFeedbackLabel
 
@@ -37,11 +33,6 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func update_view(state: ClickerState) -> void:
-	zone_name_label.text = state.zone_name
-	enemy_name_label.text = state.enemy_name
-	target_hp_label.text = "Enemy HP: %d / %d" % [state.target_hp, state.target_max_hp]
-	target_progress_bar.max_value = state.target_max_hp
-	target_progress_bar.value = state.target_hp
 	update_enemy_visual_state(state)
 
 

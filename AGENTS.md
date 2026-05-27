@@ -29,8 +29,9 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - `PrimaryStatsPanel` should be centered on the viewport vertical axis and must not stretch full width.
 - `PrimaryStatsPanel` uses horizontal stat cards from left to right in this order: gold, character level, click damage, partner DPS.
 - Primary stat cards show only a temporary white `ColorRect` placeholder and the value; card backgrounds should stay transparent/invisible.
-- `PrimaryStatsPanel` includes a placeholder white-square `SettingsButton`; pressing it should only show "Settings coming soon" until a real settings flow is explicitly requested.
-- `ProgressInfoPanel` shows only level, zone name, and enemies progress.
+- `PrimaryStatsPanel` includes a placeholder white-square `SettingsButton`; it should remain a stub until a real settings flow is explicitly requested.
+- The main screen does not use a general `StatusLabel`; status text may be ignored or routed through a no-op helper until a dedicated UI is requested.
+- `ProgressInfoPanel` shows level, zone name, enemies progress, enemy name, enemy HP, and a compact enemy HP bar directly under the HP text.
 - Prestige and settlement details belong in their tabs, not on the main screen.
 - Keep `UpgradePanel` responsible only for upgrade controls.
 - Use `BottomBar` to open `UpgradeSheet`, `PartnerSheet`, `SettlementSheet`, and `PrestigeSheet`; do not keep sheet controls permanently in the main gameplay flow.
@@ -47,7 +48,8 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Keep `GameField` as the fullscreen bottom clickable layer in `ClickerScreen`.
 - `GameField` uses a muted green `BackgroundImageHolder` placeholder and should not pulse or blink on click.
 - `EnemyImageHolder` is a centered placeholder square: healthy white, hit blue for 0.5 seconds, wounded red, defeated black for 0.2 seconds.
-- A 0.2 second enemy transition lock after defeat must block manual clicks, autoclick, and partner damage.
+- `GameField` should not display enemy name or HP text; those belong in `ProgressInfoPanel`.
+- A 0.2 second enemy transition lock after defeat must keep enemy HP at 0 and block manual clicks, autoclick, and partner damage; reward, defeated count, level changes, and next enemy setup happen only after the lock ends.
 - Keep visible UI overlays clickable above `GameField`, and make passive text/containers ignore mouse input.
 - Keep `GameField` responsible only for tap/click input and simple visual feedback.
 - Keep `AbilityBar` separate from `GameField` on the left-middle screen edge.
@@ -67,7 +69,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Partner damage ticks every 0.1 seconds for `total_dps / 10` damage.
 - Partner purchases use horizontal bulk mode buttons `x1`, `x10`, `x100`, and `Max`; displayed costs must show total package cost.
 - Partner `x10` and `x100` purchases are strict all-or-nothing packages; `Max` buys as many as current gold allows.
-- PartnerPanel should always show the required package cost when prerequisites are met; "Not enough gold" belongs in StatusLabel after a failed purchase, not in partner button text.
+- PartnerPanel should always show the required package cost when prerequisites are met; "Not enough gold" belongs in status handling after a failed purchase, not in partner button text.
 - Keep `PartnerSheet`, `SettlementSheet`, and `PrestigeSheet` as separate bottom-half overlays from `UpgradeSheet`.
 - Settlement tab sits between `Partners` and `Prestige` in the bottom bar.
 - Settlement buildings are Training Camp (+1% final partner DPS per level), Market (+1% final gold gain per level), Knight Hut (+1% final click damage per level), War Banner (+1% Focus Burst/Rally duration per level), Clock Tower (-1% ability cooldown per level, capped at 50%), and Boss Shrine (+1% boss reward gold per level).
@@ -292,9 +294,9 @@ After each patch, validate manually in Godot:
 - No external plugins/assets were added.
 - Level 1 starts in Training Grounds with enemy "Rogue Ninja".
 - Level 5 boss is named "Training Master".
-- Reaching level 11 transitions to Forest Path; status shows "New zone: Forest Path".
+- Reaching level 11 transitions to Forest Path; ProgressInfoPanel shows "Forest Path" and defeat feedback shows "New Zone!".
 - Level 11 enemy is "Forest Bandit"; level 15 boss is "Forest Guardian".
-- GameField zone name label updates on zone change.
+- ProgressInfoPanel updates zone name, enemy name, and enemy HP.
 - ProgressInfoPanel shows zone name without the zone level range.
 - HP and reward values are higher in later zones than the base formula alone.
 - Zone defeat feedback shows "New Zone!" flash when zone changes.

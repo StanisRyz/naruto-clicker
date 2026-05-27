@@ -300,6 +300,26 @@ func attack_with_damage(damage: int) -> Dictionary:
 	if target_hp > 0:
 		return _make_attack_result(false, false, 0, damage_dealt, target_hp_before, target_hp, "Tap the field to attack!")
 
+	var did_level_up: bool = enemies_defeated_on_level + 1 >= enemies_required_per_level
+	var zone_changed: bool = false
+	var new_zone_name: String = ""
+	if did_level_up:
+		var next_level: int = current_level + 1
+		var next_zone_index: int = _get_zone_index_for_level(next_level)
+		zone_changed = next_zone_index != current_zone_index
+		if zone_changed:
+			var next_zone: Dictionary = ZONE_DATA[next_zone_index]
+			new_zone_name = next_zone.name
+
+	return _make_attack_result(true, did_level_up, 0, damage_dealt, target_hp_before, 0, "Enemy defeated!", zone_changed, new_zone_name)
+
+
+func resolve_defeated_target() -> Dictionary:
+	if target_hp > 0:
+		return _make_attack_result(false, false, 0, 0, target_hp, target_hp, "")
+
+	var target_hp_before: int = target_hp
+	var damage_dealt: int = 0
 	var defeated_boss: bool = is_boss_level
 	var boss_reward: int = int(reward_gold * get_boss_reward_multiplier()) if defeated_boss else reward_gold
 	var prestige_gold: int = int(boss_reward * get_prestige_gold_multiplier())

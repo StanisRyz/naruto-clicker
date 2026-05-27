@@ -34,7 +34,6 @@ var enemy_transition_token: int = 0
 @onready var progress_info_panel: ProgressInfoPanel = $MainContent/VBoxContainer/ProgressInfoPanel
 @onready var game_field: GameField = $GameField
 @onready var ability_bar: AbilityBar = $AbilityBar
-@onready var status_label: Label = $MainContent/VBoxContainer/StatusLabel
 @onready var upgrades_button: Button = $BottomBar/MarginContainer/HBoxContainer/UpgradesButton
 @onready var partners_button: Button = $BottomBar/MarginContainer/HBoxContainer/PartnersButton
 @onready var settlement_button: Button = $BottomBar/MarginContainer/HBoxContainer/SettlementButton
@@ -141,47 +140,47 @@ func _on_attack_requested() -> void:
 
 func _on_character_level_upgrade_requested(mode: String) -> void:
 	var result: Dictionary = state.buy_character_level_upgrades(mode)
-	status_label.text = result.get("status_text", "")
+	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
 
 
 func _on_autoclick_purchase_requested() -> void:
 	var result: Dictionary = state.buy_autoclick_ability()
-	status_label.text = result.get("status_text", "")
+	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
 
 
 func _on_gold_bonus_purchase_requested() -> void:
 	var result: Dictionary = state.buy_gold_bonus_ability()
-	status_label.text = result.get("status_text", "")
+	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
 
 
 func _on_focus_burst_purchase_requested() -> void:
 	var result: Dictionary = state.buy_focus_burst_ability()
-	status_label.text = result.get("status_text", "")
+	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
 
 
 func _on_rally_purchase_requested() -> void:
 	var result: Dictionary = state.buy_rally_ability()
-	status_label.text = result.get("status_text", "")
+	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
 
 
 func _on_settings_requested() -> void:
-	status_label.text = "Settings coming soon"
+	_handle_status_text("Settings coming soon")
 
 
 func _on_partner_purchase_requested(partner_index: int, mode: String) -> void:
 	var result: Dictionary = state.buy_partners(partner_index, mode)
-	status_label.text = result.get("status_text", "")
+	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
 
 
 func _on_building_purchase_requested(building_index: int, mode: String) -> void:
 	var result: Dictionary = state.buy_buildings(building_index, mode)
-	status_label.text = result.get("status_text", "")
+	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
 
 
@@ -227,7 +226,7 @@ func _on_prestige_requested() -> void:
 
 func _on_prestige_talent_purchase_requested(talent_index: int) -> void:
 	var result: Dictionary = state.buy_prestige_talent(talent_index)
-	status_label.text = result.get("status_text", "")
+	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
 
 
@@ -248,7 +247,7 @@ func _on_prestige_confirmed() -> void:
 	rally_cooldown_left = 0.0
 	autoclick_accumulator = 0.0
 	partner_damage_accumulator = 0.0
-	status_label.text = result.get("status_text", "")
+	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
 	_sync_boss_timer()
 
@@ -285,7 +284,7 @@ func _fail_boss_level() -> void:
 	boss_timer_active = false
 	var result: Dictionary = state.fail_boss_level()
 	boss_time_left = 0.0
-	status_label.text = result.get("status_text", "")
+	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
 
 
@@ -295,7 +294,7 @@ func _apply_attack_result(result: Dictionary, _show_hit_feedback: bool, was_boss
 		return
 
 	game_field.play_hit_feedback(result.get("damage_dealt", 0))
-	status_label.text = result.get("status_text", "")
+	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
 	_sync_boss_timer()
 
@@ -450,7 +449,7 @@ func _handle_defeat_result(result: Dictionary, was_boss_level: bool) -> void:
 	var transition_token: int = enemy_transition_token
 	game_field.set_enemy_transition_locked(true)
 	game_field.play_defeat_feedback(result.get("level_up", false), result.get("zone_changed", false))
-	status_label.text = result.get("status_text", "")
+	_handle_status_text(result.get("status_text", ""))
 
 	if was_boss_level:
 		boss_timer_active = false
@@ -461,12 +460,17 @@ func _handle_defeat_result(result: Dictionary, was_boss_level: bool) -> void:
 	_finish_enemy_transition_after_delay(transition_token)
 
 
+func _handle_status_text(_text: String) -> void:
+	pass
+
+
 func _finish_enemy_transition_after_delay(transition_token: int) -> void:
 	await get_tree().create_timer(enemy_respawn_delay).timeout
 	if transition_token != enemy_transition_token:
 		return
 
-	_update_ui()
+	var result: Dictionary = state.resolve_defeated_target()
+	_handle_status_text(result.get("status_text", ""))
 	enemy_transition_locked = false
 	game_field.set_enemy_transition_locked(false)
 	_update_ui()

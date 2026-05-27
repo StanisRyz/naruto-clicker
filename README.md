@@ -28,16 +28,18 @@ Do not add external plugins or external assets without explicit approval.
 The main scene contains the first local clicker loop:
 
 - Tap/click the main game field to damage the current enemy.
-- Enemy HP is shown with a label and progress bar.
 - `GameField` uses a muted green placeholder background and does not pulse or blink on click.
+- `GameField` is primarily visual: muted green background, enemy placeholder states, boss timer, and defeat feedback.
+- Enemy name and HP text are not displayed inside `GameField`.
 - `EnemyImageHolder` is a centered placeholder square: healthy is white, hit is blue for 0.5 seconds, wounded is red, and defeated is black for 0.2 seconds.
-- After enemy defeat, a 0.2 second transition lock blocks manual, autoclick, and partner damage before the next enemy can be damaged.
-- The main screen uses two independent panels: `PrimaryStatsPanel` for gold, character level, click damage, and partner DPS; `ProgressInfoPanel` for level, zone name, and enemies progress.
+- After enemy defeat, a 0.2 second transition lock keeps enemy HP at 0 and blocks manual, autoclick, and partner damage before reward, kill count, level changes, and the next enemy are applied.
+- The main screen has no general `StatusLabel`.
+- The main screen uses two independent panels: `PrimaryStatsPanel` for gold, character level, click damage, and partner DPS; `ProgressInfoPanel` for level, zone name, enemies progress, enemy name, enemy HP, and a compact HP bar under the HP text.
 - `PrimaryStatsPanel` is a compact top-centered overlay, not a child of stretching main content containers.
 - Its center should align with the viewport vertical center axis and it must not stretch full width.
 - `PrimaryStatsPanel` uses horizontal stat cards from left to right: gold, character level, click damage, partner DPS.
 - Primary stat cards show only a temporary white `ColorRect` placeholder and the value, with transparent backgrounds.
-- `PrimaryStatsPanel` includes a placeholder white-square `SettingsButton`; pressing it only shows "Settings coming soon".
+- `PrimaryStatsPanel` includes a placeholder white-square `SettingsButton`; it is a stub until a real settings flow is explicitly requested.
 - Prestige and settlement details belong in their bottom tabs, not on the main screen.
 - Each level requires defeating 10 enemies.
 - Enemy HP and gold reward scale with the current level.
@@ -75,7 +77,7 @@ The main scene contains the first local clicker loop:
 - In `UpgradeSheet`, `PartnerSheet`, and `SettlementSheet`, the buy mode selector stays fixed under the sheet header while purchase lists scroll independently below it.
 - In `UpgradeSheet`, the buy mode selector affects only the Hero Level card; ability purchases are one-time purchases and never use bulk-buy.
 - Bulk cost displays show the total package cost. `x10` and `x100` are strict all-or-nothing purchases; `Max` buys as many as current gold allows.
-- Partner buttons always show the required package cost when prerequisites are met; failed unaffordable purchases report "Not enough gold" in the status text.
+- Partner buttons always show the required package cost when prerequisites are met; failed unaffordable purchases can return "Not enough gold" through the status helper, but no main-screen status label is currently shown.
 - Purchase tabs use card-style rows with a temporary white `ColorRect` image placeholder, two-line info text, and an action button.
 These formulas are prototype balance values.
 
@@ -152,10 +154,10 @@ The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes
 - `scenes/main/Main.tscn` - App/root scene. It hosts the clicker screen and remains the project main scene.
 - `scenes/main/Main.gd` - Root startup script for YandexBridge ready/gameplay calls.
 - `scenes/game/ClickerScreen.tscn` - Main gameplay screen and layout.
-- `scenes/game/ClickerScreen.gd` - Owns gameplay flow, status messages, and UI updates.
+- `scenes/game/ClickerScreen.gd` - Owns gameplay flow and UI updates.
 - `scenes/ui/PrimaryStatsPanel.tscn` - Compact top-centered horizontal stat overlay for gold, character level, click damage, partner DPS, and a placeholder settings button.
-- `scenes/ui/ProgressInfoPanel.tscn` - Compact progress text for level, zone name, and enemies progress.
-- `scenes/ui/GameField.tscn` - Fullscreen tap/click attack field, muted green background placeholder, enemy placeholder, and enemy HP display.
+- `scenes/ui/ProgressInfoPanel.tscn` - Compact progress UI for level, zone name, enemies progress, enemy name, enemy HP, and the enemy HP bar.
+- `scenes/ui/GameField.tscn` - Fullscreen tap/click attack field, muted green background placeholder, enemy placeholder states, boss timer, and defeat feedback.
 - `scenes/ui/AbilityBar.tscn` - Left-side textless placeholder-square active ability buttons.
 - `scenes/ui/BuyModeSelector.tscn` - Reusable fixed `x1` / `x10` / `x100` / `Max` selector for hero level, partner, and settlement purchase sheets.
 - `scenes/ui/UpgradePanel.tscn` - Card-style Hero Level upgrade row and one-time ability purchase rows.
