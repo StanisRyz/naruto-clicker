@@ -1,101 +1,163 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/StatsPanel.gd" id="1_475bc"]
 
-[node name="StatsPanel" type="GridContainer"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stat_card"]
+bg_color = Color(0.12, 0.125, 0.145, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.23, 0.26, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="StatsPanel" type="Control"]
+custom_minimum_size = Vector2(128, 360)
 mouse_filter = 2
-theme_override_constants/h_separation = 16
-theme_override_constants/v_separation = 8
-columns = 2
 script = ExtResource("1_475bc")
 
-[node name="GoldLabel" type="Label" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="PrimaryStatsContainer" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="GoldCard" type="PanelContainer" parent="VBoxContainer/PrimaryStatsContainer"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_stat_card")
+
+[node name="Content" type="HBoxContainer" parent="VBoxContainer/PrimaryStatsContainer/GoldCard"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="GoldIcon" type="ColorRect" parent="VBoxContainer/PrimaryStatsContainer/GoldCard/Content"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 1)
+
+[node name="GoldValueLabel" type="Label" parent="VBoxContainer/PrimaryStatsContainer/GoldCard/Content"]
 layout_mode = 2
 mouse_filter = 2
 size_flags_horizontal = 3
-text = "Gold: 0"
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CharacterLevelCard" type="PanelContainer" parent="VBoxContainer/PrimaryStatsContainer"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_stat_card")
+
+[node name="Content" type="HBoxContainer" parent="VBoxContainer/PrimaryStatsContainer/CharacterLevelCard"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="CharacterLevelIcon" type="ColorRect" parent="VBoxContainer/PrimaryStatsContainer/CharacterLevelCard/Content"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 1)
+
+[node name="CharacterLevelValueLabel" type="Label" parent="VBoxContainer/PrimaryStatsContainer/CharacterLevelCard/Content"]
+layout_mode = 2
+mouse_filter = 2
+size_flags_horizontal = 3
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DamageCard" type="PanelContainer" parent="VBoxContainer/PrimaryStatsContainer"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_stat_card")
+
+[node name="Content" type="HBoxContainer" parent="VBoxContainer/PrimaryStatsContainer/DamageCard"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="DamageIcon" type="ColorRect" parent="VBoxContainer/PrimaryStatsContainer/DamageCard/Content"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 1)
+
+[node name="DamageValueLabel" type="Label" parent="VBoxContainer/PrimaryStatsContainer/DamageCard/Content"]
+layout_mode = 2
+mouse_filter = 2
+size_flags_horizontal = 3
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PartnerDpsCard" type="PanelContainer" parent="VBoxContainer/PrimaryStatsContainer"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_stat_card")
+
+[node name="Content" type="HBoxContainer" parent="VBoxContainer/PrimaryStatsContainer/PartnerDpsCard"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="PartnerDpsIcon" type="ColorRect" parent="VBoxContainer/PrimaryStatsContainer/PartnerDpsCard/Content"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 1)
+
+[node name="PartnerDpsValueLabel" type="Label" parent="VBoxContainer/PrimaryStatsContainer/PartnerDpsCard/Content"]
+layout_mode = 2
+mouse_filter = 2
+size_flags_horizontal = 3
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ProgressInfoContainer" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="LevelLabel" type="Label" parent="VBoxContainer/ProgressInfoContainer"]
+layout_mode = 2
+mouse_filter = 2
+text = "Level 1"
 horizontal_alignment = 1
 
-[node name="CharacterLevelLabel" type="Label" parent="."]
+[node name="ZoneNameLabel" type="Label" parent="VBoxContainer/ProgressInfoContainer"]
 layout_mode = 2
 mouse_filter = 2
-size_flags_horizontal = 3
-text = "Character Level: 1"
+text = "Training Grounds"
 horizontal_alignment = 1
+autowrap_mode = 3
 
-[node name="DamageLabel" type="Label" parent="."]
+[node name="EnemiesLabel" type="Label" parent="VBoxContainer/ProgressInfoContainer"]
 layout_mode = 2
 mouse_filter = 2
-size_flags_horizontal = 3
-text = "Damage: 1"
-horizontal_alignment = 1
-
-[node name="PartnerDpsLabel" type="Label" parent="."]
-layout_mode = 2
-mouse_filter = 2
-size_flags_horizontal = 3
-text = "Partner DPS: 0"
-horizontal_alignment = 1
-
-[node name="LevelLabel" type="Label" parent="."]
-layout_mode = 2
-mouse_filter = 2
-size_flags_horizontal = 3
-text = "Level: 1"
-horizontal_alignment = 1
-
-[node name="EnemiesDefeatedLabel" type="Label" parent="."]
-layout_mode = 2
-mouse_filter = 2
-size_flags_horizontal = 3
-text = "Enemies: 0 / 10"
-horizontal_alignment = 1
-
-[node name="ZoneLabel" type="Label" parent="."]
-layout_mode = 2
-mouse_filter = 2
-size_flags_horizontal = 3
-text = "Zone: Training Grounds"
-horizontal_alignment = 1
-
-[node name="ZoneRangeLabel" type="Label" parent="."]
-layout_mode = 2
-mouse_filter = 2
-size_flags_horizontal = 3
-text = "Lv 1-10"
-horizontal_alignment = 1
-
-[node name="PrestigePointsLabel" type="Label" parent="."]
-layout_mode = 2
-mouse_filter = 2
-size_flags_horizontal = 3
-text = "Prestige Points: 0 / 0"
-horizontal_alignment = 1
-
-[node name="PrestigeRunsLabel" type="Label" parent="."]
-layout_mode = 2
-mouse_filter = 2
-size_flags_horizontal = 3
-text = "Runs: 0"
-horizontal_alignment = 1
-
-[node name="SettlementDpsLabel" type="Label" parent="."]
-layout_mode = 2
-mouse_filter = 2
-size_flags_horizontal = 3
-text = "Settlement DPS: +0%"
-horizontal_alignment = 1
-
-[node name="SettlementGoldLabel" type="Label" parent="."]
-layout_mode = 2
-mouse_filter = 2
-size_flags_horizontal = 3
-text = "Settlement Gold: +0%"
-horizontal_alignment = 1
-
-[node name="SettlementClickLabel" type="Label" parent="."]
-layout_mode = 2
-mouse_filter = 2
-size_flags_horizontal = 3
-text = "Settlement Click: +0%"
+text = "Enemies 0 / 10"
 horizontal_alignment = 1

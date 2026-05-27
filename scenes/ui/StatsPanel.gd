@@ -1,38 +1,23 @@
 class_name StatsPanel
-extends GridContainer
+extends Control
 
-@onready var gold_label: Label = $GoldLabel
-@onready var character_level_label: Label = $CharacterLevelLabel
-@onready var damage_label: Label = $DamageLabel
-@onready var partner_dps_label: Label = $PartnerDpsLabel
-@onready var level_label: Label = $LevelLabel
-@onready var enemies_defeated_label: Label = $EnemiesDefeatedLabel
-@onready var zone_label: Label = $ZoneLabel
-@onready var zone_range_label: Label = $ZoneRangeLabel
-@onready var prestige_points_label: Label = $PrestigePointsLabel
-@onready var prestige_runs_label: Label = $PrestigeRunsLabel
-@onready var settlement_dps_label: Label = $SettlementDpsLabel
-@onready var settlement_gold_label: Label = $SettlementGoldLabel
-@onready var settlement_click_label: Label = $SettlementClickLabel
+@onready var gold_value_label: Label = $VBoxContainer/PrimaryStatsContainer/GoldCard/Content/GoldValueLabel
+@onready var character_level_value_label: Label = $VBoxContainer/PrimaryStatsContainer/CharacterLevelCard/Content/CharacterLevelValueLabel
+@onready var damage_value_label: Label = $VBoxContainer/PrimaryStatsContainer/DamageCard/Content/DamageValueLabel
+@onready var partner_dps_value_label: Label = $VBoxContainer/PrimaryStatsContainer/PartnerDpsCard/Content/PartnerDpsValueLabel
+@onready var level_label: Label = $VBoxContainer/ProgressInfoContainer/LevelLabel
+@onready var zone_name_label: Label = $VBoxContainer/ProgressInfoContainer/ZoneNameLabel
+@onready var enemies_label: Label = $VBoxContainer/ProgressInfoContainer/EnemiesLabel
 
 
 func update_view(state: ClickerState) -> void:
-	gold_label.text = "Gold: %d" % state.gold
-	character_level_label.text = "Character Level: %d" % state.character_level
-	damage_label.text = "Damage: %d" % state.click_damage
-	partner_dps_label.text = "Partner DPS: %d" % state.get_total_partner_dps()
-	level_label.text = "Level: %d" % state.current_level
-	enemies_defeated_label.text = "Enemies: %d / %d" % [
+	gold_value_label.text = "%d" % state.gold
+	character_level_value_label.text = "%d" % state.character_level
+	damage_value_label.text = "%d" % state.click_damage
+	partner_dps_value_label.text = "%d" % state.get_total_partner_dps()
+	level_label.text = "Level %d" % state.current_level
+	zone_name_label.text = "%s" % state.zone_name
+	enemies_label.text = "Enemies %d / %d" % [
 		state.enemies_defeated_on_level,
 		state.enemies_required_per_level,
 	]
-	zone_label.text = "Zone: %s" % state.zone_name
-	zone_range_label.text = "Lv %d-%d" % [state.zone_level_start, state.zone_level_end]
-	prestige_points_label.text = "Prestige Points: %d / %d" % [
-		state.prestige_points_available,
-		state.prestige_points_total_earned,
-	]
-	prestige_runs_label.text = "Runs: %d" % state.total_prestiges
-	settlement_dps_label.text = "Settlement DPS: +%d%%" % state.get_settlement_partner_dps_bonus_percent()
-	settlement_gold_label.text = "Settlement Gold: +%d%%" % state.get_settlement_gold_bonus_percent()
-	settlement_click_label.text = "Settlement Click: +%d%%" % state.get_settlement_click_damage_bonus_percent()

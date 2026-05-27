@@ -29,6 +29,9 @@ The main scene contains the first local clicker loop:
 
 - Tap/click the main game field to damage the current enemy.
 - Enemy HP is shown with a label and progress bar.
+- The main `StatsPanel` is intentionally compact: it shows only gold, character level, click damage, partner DPS, level, zone name, and enemies progress.
+- Prestige and settlement details belong in their bottom tabs, not on the main screen.
+- Main stat icons are temporary white `ColorRect` placeholders until real art is added.
 - Each level requires defeating 10 enemies.
 - Enemy HP and gold reward scale with the current level.
 - Every 5th level is a boss level with one boss.
@@ -141,7 +144,7 @@ The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes
 - `scenes/main/Main.gd` - Root startup script for YandexBridge ready/gameplay calls.
 - `scenes/game/ClickerScreen.tscn` - Main gameplay screen and layout.
 - `scenes/game/ClickerScreen.gd` - Owns gameplay flow, status messages, and UI updates.
-- `scenes/ui/StatsPanel.tscn` - Displays gold, character level, damage, level, and enemy progress.
+- `scenes/ui/StatsPanel.tscn` - Compact main stats: gold, character level, click damage, partner DPS, level, zone name, and enemies progress.
 - `scenes/ui/GameField.tscn` - Fullscreen tap/click attack field and enemy HP display.
 - `scenes/ui/AbilityBar.tscn` - Left-side active ability buttons.
 - `scenes/ui/BuyModeSelector.tscn` - Reusable fixed `x1` / `x10` / `x100` / `Max` selector for hero level, partner, and settlement purchase sheets.
