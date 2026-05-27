@@ -6,7 +6,8 @@ const ZONE_DATA: Array = [
 		"name": "Training Grounds",
 		"level_start": 1,
 		"level_end": 10,
-		"enemy": "Rogue Ninja",
+		"enemies": ["Rogue Ninja", "Novice Bandit", "Training Outcast"],
+		"elite_enemy": "Elite Rogue Ninja",
 		"boss": "Training Master",
 		"hp_multiplier": 1.0,
 		"reward_multiplier": 1.0,
@@ -15,7 +16,8 @@ const ZONE_DATA: Array = [
 		"name": "Forest Path",
 		"level_start": 11,
 		"level_end": 20,
-		"enemy": "Forest Bandit",
+		"enemies": ["Forest Bandit", "Wild Scout", "Hidden Archer"],
+		"elite_enemy": "Elite Forest Bandit",
 		"boss": "Forest Guardian",
 		"hp_multiplier": 1.4,
 		"reward_multiplier": 1.3,
@@ -24,7 +26,8 @@ const ZONE_DATA: Array = [
 		"name": "Stone Valley",
 		"level_start": 21,
 		"level_end": 30,
-		"enemy": "Stone Warrior",
+		"enemies": ["Stone Warrior", "Valley Raider", "Rock Sentinel"],
+		"elite_enemy": "Elite Stone Warrior",
 		"boss": "Valley Warlord",
 		"hp_multiplier": 1.9,
 		"reward_multiplier": 1.7,
@@ -33,7 +36,8 @@ const ZONE_DATA: Array = [
 		"name": "Shadow Camp",
 		"level_start": 31,
 		"level_end": 40,
-		"enemy": "Shadow Fighter",
+		"enemies": ["Shadow Fighter", "Camp Assassin", "Dark Scout"],
+		"elite_enemy": "Elite Shadow Fighter",
 		"boss": "Shadow Commander",
 		"hp_multiplier": 2.5,
 		"reward_multiplier": 2.2,
@@ -51,6 +55,10 @@ var target_hp: int = 10
 var target_max_hp: int = 10
 var reward_gold: int = 5
 var is_boss_level: bool = false
+var is_elite_enemy: bool = false
+var elite_spawn_chance: float = 0.07
+var elite_hp_multiplier: int = 3
+var elite_reward_multiplier: int = 5
 var boss_time_limit: float = 30.0
 var enemy_name: String = "Enemy"
 var autoclick_unlocked: bool = false
@@ -119,6 +127,7 @@ var prestige_talent_levels: Array[int] = [0, 0, 0, 0, 0, 0]
 var prestige_talent_names: Array[String] = ["Focus Training", "Trade Routes", "Command Aura", "Quick Hands", "Builder Wisdom", "Boss Hunter"]
 var prestige_talent_bonus_types: Array[String] = ["click_damage", "gold", "partner_dps", "autoclick_rate", "settlement_effect", "boss_damage"]
 var prestige_talent_bonus_percent_per_level: int = 5
+var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 var prestige_points: int:
 	get:
@@ -129,6 +138,7 @@ var prestige_points: int:
 
 
 func _init() -> void:
+	rng.randomize()
 	_reset_partner_state()
 	_reset_building_state()
 	_update_character_state()
@@ -218,6 +228,13 @@ func get_rally_multiplier() -> float:
 
 func get_boss_damage_multiplier() -> float:
 	return get_boss_hunter_multiplier() if is_boss_level else 1.0
+
+
+func get_current_enemy_type() -> String:
+	if is_boss_level:
+		return "boss"
+
+	return "elite" if is_elite_enemy else "normal"
 
 
 func get_prestige_talent_cost(talent_index: int) -> int:
@@ -934,10 +951,7 @@ func is_current_level_boss() -> bool:
 func setup_current_level() -> void:
 	is_boss_level = is_current_level_boss()
 	_update_zone()
-	recalculate_level_values()
 	enemies_required_per_level = 1 if is_boss_level else 10
-	var zone: Dictionary = ZONE_DATA[current_zone_index]
-	enemy_name = zone.boss if is_boss_level else zone.enemy
 	reset_target()
 
 
@@ -986,7 +1000,30 @@ func fail_boss_level() -> Dictionary:
 
 
 func reset_target() -> void:
+	choose_enemy_for_current_level()
+	recalculate_level_values()
 	target_hp = target_max_hp
+
+
+func choose_enemy_for_current_level() -> void:
+	var zone: Dictionary = ZONE_DATA[current_zone_index]
+	if is_boss_level:
+		is_elite_enemy = false
+		enemy_name = zone.boss
+		return
+
+	if rng.randf() < elite_spawn_chance:
+		is_elite_enemy = true
+		enemy_name = zone.elite_enemy
+		return
+
+	is_elite_enemy = false
+	var enemies: Array = zone.enemies
+	if enemies.is_empty():
+		enemy_name = "Enemy"
+		return
+
+	enemy_name = enemies[rng.randi_range(0, enemies.size() - 1)]
 
 
 func recalculate_level_values() -> void:
@@ -995,8 +1032,15 @@ func recalculate_level_values() -> void:
 	var base_reward: int = 5 + (current_level - 1) * 3
 	var scaled_hp: int = int(base_hp * zone.hp_multiplier)
 	var scaled_reward: int = int(base_reward * zone.reward_multiplier)
-	target_max_hp = scaled_hp * 5 if is_boss_level else scaled_hp
-	reward_gold = scaled_reward * 5 if is_boss_level else scaled_reward
+	if is_boss_level:
+		target_max_hp = scaled_hp * 5
+		reward_gold = scaled_reward * 5
+	elif is_elite_enemy:
+		target_max_hp = scaled_hp * elite_hp_multiplier
+		reward_gold = scaled_reward * elite_reward_multiplier
+	else:
+		target_max_hp = scaled_hp
+		reward_gold = scaled_reward
 
 
 func _get_zone_index_for_level(level: int) -> int:

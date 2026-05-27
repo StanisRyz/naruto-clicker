@@ -96,7 +96,10 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Keep level progression simple: 10 enemies defeated per level, then advance the level.
 - Keep every 5th level as a boss level with exactly one boss.
 - Boss levels must use a 30 second timer and return to the previous level on failure.
-- Do not add elite enemies.
+- Each zone has three normal enemies, one elite enemy, and one boss.
+- Normal enemies are randomly selected when each new non-boss target is created.
+- Elite enemies have a 7% spawn chance on non-boss targets, count as one defeated enemy, have 3x normal HP, and give 5x normal base reward.
+- Elite enemies must never appear on boss levels, and boss HP/reward behavior must remain boss-only.
 - Scale enemy HP and gold reward by level with deterministic formulas.
 - Prestige lives in a separate `PrestigeSheet` opened by the `PrestigeButton` bottom tab; do not keep prestige controls inside `UpgradeSheet`.
 - PrestigePanel should stay compact; detailed prestige calculation belongs in the confirmation dialog, not the main PrestigePanel.
@@ -116,7 +119,8 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Zones group levels 1–10, 11–20, 21–30, 31–40. Level 41+ stays in Zone 4.
 - Zone HP multipliers: 1.0, 1.4, 1.9, 2.5. Zone reward multipliers: 1.0, 1.3, 1.7, 2.2.
 - Apply zone multipliers after the base HP/reward formula, before the boss ×5 multiplier.
-- Enemy and boss names come from the active zone; do not hard-code "Enemy" or "Boss" strings.
+- Elite and boss multipliers are applied after base level and zone scaling.
+- Enemy, elite enemy, and boss names come from the active zone; do not hard-code "Enemy" or "Boss" strings.
 - Zone transition is detected in `attack_with_damage()` and included in the result dict as `zone_changed` and `zone_name`.
 - Status text priority on level-up: zone change > boss defeated > normal level up.
 - No background images or audio assets should be added for zones.
@@ -292,10 +296,10 @@ After each patch, validate manually in Godot:
 - Renderer remains GL Compatibility.
 - No missing scene/script errors.
 - No external plugins/assets were added.
-- Level 1 starts in Training Grounds with enemy "Rogue Ninja".
+- Level 1 starts in Training Grounds with a random normal enemy or a 7% elite enemy roll.
 - Level 5 boss is named "Training Master".
 - Reaching level 11 transitions to Forest Path; ProgressInfoPanel shows "Forest Path" and defeat feedback shows "New Zone!".
-- Level 11 enemy is "Forest Bandit"; level 15 boss is "Forest Guardian".
+- Level 11 uses one of the Forest Path normal enemies or its 7% elite enemy roll; level 15 boss is "Forest Guardian".
 - ProgressInfoPanel updates zone name, enemy name, and enemy HP.
 - ProgressInfoPanel shows zone name without the zone level range.
 - HP and reward values are higher in later zones than the base formula alone.

@@ -129,16 +129,24 @@ Prestige is an unlockable reset in its own bottom `Prestige` tab.
 
 ## Zone Progression
 
-Levels are grouped into zones. Each zone has named enemies and multipliers applied on top of the base HP and reward formulas.
+Levels are grouped into zones. Each zone has three normal enemies, one elite enemy, one boss, and multipliers applied on top of the base HP and reward formulas.
 
-| Zone | Levels | Name | Enemy | Boss | HP Mult | Reward Mult |
-|------|--------|------|-------|------|---------|-------------|
+| Zone | Levels | Name | First Normal Enemy | Boss | HP Mult | Reward Mult |
+|------|--------|------|--------------------|------|---------|-------------|
 | 1 | 1–10 | Training Grounds | Rogue Ninja | Training Master | 1.0× | 1.0× |
 | 2 | 11–20 | Forest Path | Forest Bandit | Forest Guardian | 1.4× | 1.3× |
 | 3 | 21–30 | Stone Valley | Stone Warrior | Valley Warlord | 1.9× | 1.7× |
 | 4 | 31–40 | Shadow Camp | Shadow Fighter | Shadow Commander | 2.5× | 2.2× |
 
 - After level 40 the game continues using Zone 4 data indefinitely.
+- Zone enemy pools are:
+  - Training Grounds: Rogue Ninja, Novice Bandit, Training Outcast; elite: Elite Rogue Ninja; boss: Training Master.
+  - Forest Path: Forest Bandit, Wild Scout, Hidden Archer; elite: Elite Forest Bandit; boss: Forest Guardian.
+  - Stone Valley: Stone Warrior, Valley Raider, Rock Sentinel; elite: Elite Stone Warrior; boss: Valley Warlord.
+  - Shadow Camp: Shadow Fighter, Camp Assassin, Dark Scout; elite: Elite Shadow Fighter; boss: Shadow Commander.
+- Normal enemies are randomly selected when a new non-boss target is created.
+- Elite enemies have a 7% spawn chance on non-boss targets, count as one defeated enemy, have 3x normal HP, and give 5x normal base reward.
+- Boss levels still use exactly one boss and are not affected by elite enemy logic.
 - Base HP formula: `10 + (level - 1) * 8`. Zone HP multiplier is applied after.
 - Base reward formula: `5 + (level - 1) * 3`. Zone reward multiplier is applied after.
 - Boss levels (every 5th level) still multiply the zone-scaled HP and reward by 5.
@@ -174,4 +182,4 @@ The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes
 
 The project is intended for Yandex Games Web export. Keep the 720x1280 portrait setup, GL Compatibility renderer, and Web-friendly Control-based UI layout.
 
-YandexBridge is present for future platform integration, but ads, payments, saves, cloud features, authentication, heroes, loot/items, and elite enemies should not be added until explicitly requested.
+YandexBridge is present for future platform integration, but ads, payments, saves, cloud features, authentication, heroes, loot/items, and additional enemy systems should not be added until explicitly requested.
