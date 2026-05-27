@@ -30,6 +30,9 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Keep `UpgradeSheet` to the bottom half of the screen so visible `GameField` space remains clickable while it is open.
 - Bottom sheets must not cover BottomBar; they should end above it.
 - Bottom sheet headers and close buttons should remain fixed while content scrolls vertically.
+- `BuyModeSelector` is the reusable UI for `x1`, `x10`, `x100`, and `Max` purchase modes.
+- `BuyModeSelector` must stay fixed under the sheet header in `UpgradeSheet`, `PartnerSheet`, and `SettlementSheet`; purchase lists should scroll independently below it.
+- Do not add `BuyModeSelector` to `PrestigeSheet`.
 - Keep `GameField` as the fullscreen bottom clickable layer in `ClickerScreen`.
 - Keep visible UI overlays clickable above `GameField`, and make passive text/containers ignore mouse input.
 - Keep `GameField` responsible only for tap/click input and simple visual feedback.

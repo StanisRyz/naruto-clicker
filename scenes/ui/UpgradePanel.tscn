@@ -15,35 +15,6 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 12
 
-[node name="BuyModeRow" type="HBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="X1Button" type="Button" parent="VBoxContainer/BuyModeRow"]
-custom_minimum_size = Vector2(0, 56)
-layout_mode = 2
-size_flags_horizontal = 3
-disabled = true
-text = "[x1]"
-
-[node name="X10Button" type="Button" parent="VBoxContainer/BuyModeRow"]
-custom_minimum_size = Vector2(0, 56)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "x10"
-
-[node name="X100Button" type="Button" parent="VBoxContainer/BuyModeRow"]
-custom_minimum_size = Vector2(0, 56)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "x100"
-
-[node name="MaxButton" type="Button" parent="VBoxContainer/BuyModeRow"]
-custom_minimum_size = Vector2(0, 56)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Max"
-
 [node name="UpgradeCharacterLevelButton" type="Button" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 72)
 layout_mode = 2

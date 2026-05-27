@@ -10,27 +10,12 @@ var current_state: ClickerState = null
 var partner_rows: Array[Dictionary] = []
 
 @onready var total_dps_label: Label = $TotalDpsLabel
-@onready var buy_mode_buttons: Array[Button] = [
-	$BuyModeRow/X1Button,
-	$BuyModeRow/X10Button,
-	$BuyModeRow/X100Button,
-	$BuyModeRow/MaxButton,
-]
 @onready var rows_container: VBoxContainer = $RowsContainer
-
-
-func _ready() -> void:
-	buy_mode_buttons[0].pressed.connect(func() -> void: _select_buy_mode("x1"))
-	buy_mode_buttons[1].pressed.connect(func() -> void: _select_buy_mode("x10"))
-	buy_mode_buttons[2].pressed.connect(func() -> void: _select_buy_mode("x100"))
-	buy_mode_buttons[3].pressed.connect(func() -> void: _select_buy_mode("max"))
-	_update_buy_mode_buttons()
 
 
 func update_view(state: ClickerState) -> void:
 	current_state = state
 	_ensure_partner_rows(state)
-	_update_buy_mode_buttons()
 	total_dps_label.text = "Total DPS: %d" % state.get_total_partner_dps()
 
 	for partner_index in range(partner_rows.size()):
@@ -83,21 +68,7 @@ func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionar
 	button.text = "Hire %s x%d - Cost: %d" % [partner_name, bulk_count, bulk_cost]
 
 
-func _select_buy_mode(mode: String) -> void:
+func set_buy_mode(mode: String) -> void:
+	if not BUY_MODES.has(mode):
+		return
 	selected_buy_mode = mode
-	_update_buy_mode_buttons()
-	if current_state != null:
-		update_view(current_state)
-
-
-func _update_buy_mode_buttons() -> void:
-	for i in range(buy_mode_buttons.size()):
-		var mode: String = BUY_MODES[i]
-		var button: Button = buy_mode_buttons[i]
-		button.disabled = mode == selected_buy_mode
-		button.text = _get_buy_mode_label(mode, button.disabled)
-
-
-func _get_buy_mode_label(mode: String, selected: bool) -> String:
-	var label: String = "Max" if mode == "max" else mode
-	return "[%s]" % label if selected else label

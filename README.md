@@ -59,7 +59,8 @@ The main scene contains the first local clicker loop:
 - Partner costs scale by adding `[10, 30, 50, 100, 180, 300, 500, 900, 1600, 2800, 5000, 9000, 16000]` per owned partner.
 - Each partner tier requires at least one of the previous tier.
 - Partner damage ticks every 0.1 seconds for `total_dps / 10` damage.
-- Character level upgrades and partner hires use horizontal bulk mode buttons: `x1`, `x10`, `x100`, and `Max`.
+- Character level upgrades, partner hires, and settlement buildings use the reusable `BuyModeSelector` for horizontal bulk mode buttons: `x1`, `x10`, `x100`, and `Max`.
+- In `UpgradeSheet`, `PartnerSheet`, and `SettlementSheet`, the buy mode selector stays fixed under the sheet header while purchase lists scroll independently below it.
 - Bulk cost displays show the total package cost. `x10` and `x100` are strict all-or-nothing purchases; `Max` buys as many as current gold allows.
 - Partner buttons always show the required package cost when prerequisites are met; failed unaffordable purchases report "Not enough gold" in the status text.
 These formulas are prototype balance values.
@@ -87,6 +88,7 @@ Settlement is a separate bottom tab between `Partners` and `Prestige`.
 Prestige is an unlockable reset in its own bottom `Prestige` tab.
 
 - The bottom bar has `Upgrades`, `Partners`, and `Prestige` buttons on one row.
+- `PrestigeSheet` does not use the buy mode selector.
 - `UpgradeSheet` only contains character level, Autoclick, and Gold Bonus purchases.
 - Reward: `floor(current_level / 50) + floor(character_level / 100)` prestige points per prestige action.
 - Stage level 52 and character level 102 gives 2 points.
@@ -138,6 +140,7 @@ The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes
 - `scenes/ui/StatsPanel.tscn` - Displays gold, character level, damage, level, and enemy progress.
 - `scenes/ui/GameField.tscn` - Fullscreen tap/click attack field and enemy HP display.
 - `scenes/ui/AbilityBar.tscn` - Left-side active ability buttons.
+- `scenes/ui/BuyModeSelector.tscn` - Reusable fixed `x1` / `x10` / `x100` / `Max` selector for purchase sheets.
 - `scenes/ui/UpgradePanel.tscn` - Character level and ability purchase buttons.
 - `scenes/ui/UpgradeSheet.tscn` - Bottom-half upgrades sheet that hosts UpgradePanel.
 - `scenes/ui/PartnerPanel.tscn` - Partner hiring controls and DPS display.

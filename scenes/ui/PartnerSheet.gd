@@ -5,11 +5,16 @@ signal partner_purchase_requested(partner_index: int, mode: String)
 signal closed
 
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
+@onready var buy_mode_selector: BuyModeSelector = $PanelContainer/MarginContainer/VBoxContainer/BuyModeSelector
 @onready var partner_panel: PartnerPanel = $PanelContainer/MarginContainer/VBoxContainer/ScrollContainer/PartnerPanel
+
+var current_state: ClickerState = null
 
 
 func _ready() -> void:
 	close_button.pressed.connect(hide_sheet)
+	buy_mode_selector.buy_mode_changed.connect(_on_buy_mode_changed)
+	partner_panel.set_buy_mode(buy_mode_selector.get_selected_mode())
 	partner_panel.partner_purchase_requested.connect(_on_partner_purchase_requested)
 	hide()
 
@@ -24,7 +29,14 @@ func hide_sheet() -> void:
 
 
 func update_view(state: ClickerState) -> void:
+	current_state = state
 	partner_panel.update_view(state)
+
+
+func _on_buy_mode_changed(mode: String) -> void:
+	partner_panel.set_buy_mode(mode)
+	if current_state != null:
+		update_view(current_state)
 
 
 func _on_partner_purchase_requested(partner_index: int, mode: String) -> void:
