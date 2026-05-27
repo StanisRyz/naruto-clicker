@@ -10,6 +10,10 @@ signal rally_requested
 @onready var gold_bonus_button: Button = $GoldBonusButton
 @onready var focus_burst_button: Button = $FocusBurstButton
 @onready var rally_button: Button = $RallyButton
+@onready var autoclick_icon: ColorRect = $AutoclickButton/ImageHolder
+@onready var gold_bonus_icon: ColorRect = $GoldBonusButton/ImageHolder
+@onready var focus_burst_icon: ColorRect = $FocusBurstButton/ImageHolder
+@onready var rally_icon: ColorRect = $RallyButton/ImageHolder
 
 
 func _ready() -> void:
@@ -51,33 +55,15 @@ func update_view(
 		or rally_cooldown_left > 0.0
 	)
 
-	if state.autoclick_active:
-		autoclick_button.text = "Auto %ds" % ceili(autoclick_time_left)
-	elif autoclick_cooldown_left > 0.0:
-		autoclick_button.text = "Auto CD %ds" % ceili(autoclick_cooldown_left)
-	else:
-		autoclick_button.text = "Auto"
+	autoclick_button.text = ""
+	gold_bonus_button.text = ""
+	focus_burst_button.text = ""
+	rally_button.text = ""
 
-	if state.gold_bonus_active:
-		gold_bonus_button.text = "Gold %ds" % ceili(gold_bonus_time_left)
-	elif gold_bonus_cooldown_left > 0.0:
-		gold_bonus_button.text = "Gold CD %ds" % ceili(gold_bonus_cooldown_left)
-	else:
-		gold_bonus_button.text = "Gold x2"
-
-	if state.focus_burst_active:
-		focus_burst_button.text = "Focus %ds" % ceili(focus_burst_time_left)
-	elif focus_burst_cooldown_left > 0.0:
-		focus_burst_button.text = "Focus CD %ds" % ceili(focus_burst_cooldown_left)
-	else:
-		focus_burst_button.text = "Focus"
-
-	if state.rally_active:
-		rally_button.text = "Rally %ds" % ceili(rally_time_left)
-	elif rally_cooldown_left > 0.0:
-		rally_button.text = "Rally CD %ds" % ceili(rally_cooldown_left)
-	else:
-		rally_button.text = "Rally"
+	_update_icon_color(autoclick_icon, state.autoclick_purchased, state.autoclick_active, autoclick_cooldown_left)
+	_update_icon_color(gold_bonus_icon, state.gold_bonus_purchased, state.gold_bonus_active, gold_bonus_cooldown_left)
+	_update_icon_color(focus_burst_icon, state.focus_burst_purchased, state.focus_burst_active, focus_burst_cooldown_left)
+	_update_icon_color(rally_icon, state.rally_purchased, state.rally_active, rally_cooldown_left)
 
 
 func _on_autoclick_button_pressed() -> void:
@@ -94,3 +80,14 @@ func _on_focus_burst_button_pressed() -> void:
 
 func _on_rally_button_pressed() -> void:
 	rally_requested.emit()
+
+
+func _update_icon_color(icon: ColorRect, purchased: bool, active: bool, cooldown_left: float) -> void:
+	if not purchased:
+		icon.color = Color(0.25, 0.25, 0.25, 0.65)
+	elif active:
+		icon.color = Color(1.0, 1.0, 1.0, 1.0)
+	elif cooldown_left > 0.0:
+		icon.color = Color(0.55, 0.55, 0.55, 1.0)
+	else:
+		icon.color = Color.WHITE

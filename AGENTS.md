@@ -49,6 +49,8 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Keep `GameField` responsible only for tap/click input and simple visual feedback.
 - Keep `AbilityBar` separate from `GameField` on the left-middle screen edge.
 - Abilities must be purchased in `UpgradeSheet` before activation.
+- AbilityBar buttons are placeholder ImageHolder-style controls: textless white squares until real icons are added.
+- AbilityBar state should be represented by disabled/color feedback or optional tiny labels outside the square, not text inside the button.
 - Autoclick lasts 15 seconds, performs one attack every 0.05 seconds, then enters a 60 second cooldown.
 - Gold Bonus lasts 45 seconds, doubles rewards while active, then enters a 300 second cooldown.
 - Focus Burst unlocks at character level 60, costs 500 gold, lasts 20 seconds, doubles final click/autoclick damage, and enters a 120 second cooldown.
@@ -228,6 +230,7 @@ After each patch, validate manually in Godot:
 - `AbilityBar` is a left-middle screen overlay.
 - Ability buttons do not pulse with `GameField` feedback.
 - Ability buttons do not attack the enemy.
+- Ability buttons should not show text inside the square.
 - Autoclick cannot activate before purchase.
 - Gold Bonus cannot activate before purchase.
 - Autoclick can be purchased for 50 gold at character level 15.

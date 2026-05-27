@@ -47,6 +47,8 @@ The main scene contains the first local clicker loop:
 - Focus Burst unlocks at character level 60 and doubles final click/autoclick damage while active.
 - Rally unlocks at character level 80 and doubles final partner DPS while active.
 - Ability buttons live on the left side of the game field.
+- Ability buttons are placeholder ImageHolder-style controls: textless white squares until real icons are added.
+- Ability state is shown with color/disabled feedback, not text inside the button.
 - The bottom bar opens bottom-half `Upgrades`, `Partners`, `Settlement`, and `Prestige` sheets.
 - The bottom bar remains visible and clickable while sheets are open, and tabs switch directly between sheets.
 - Bottom-half sheets stop above the bottom bar so the visible upper game field remains clickable.
@@ -151,7 +153,7 @@ The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes
 - `scenes/ui/PrimaryStatsPanel.tscn` - Compact top-centered horizontal stat overlay for gold, character level, click damage, partner DPS, and a placeholder settings button.
 - `scenes/ui/ProgressInfoPanel.tscn` - Compact progress text for level, zone name, and enemies progress.
 - `scenes/ui/GameField.tscn` - Fullscreen tap/click attack field and enemy HP display.
-- `scenes/ui/AbilityBar.tscn` - Left-side active ability buttons.
+- `scenes/ui/AbilityBar.tscn` - Left-side textless placeholder-square active ability buttons.
 - `scenes/ui/BuyModeSelector.tscn` - Reusable fixed `x1` / `x10` / `x100` / `Max` selector for hero level, partner, and settlement purchase sheets.
 - `scenes/ui/UpgradePanel.tscn` - Card-style Hero Level upgrade row and one-time ability purchase rows.
 - `scenes/ui/UpgradeSheet.tscn` - Bottom-half upgrades sheet that hosts UpgradePanel.
