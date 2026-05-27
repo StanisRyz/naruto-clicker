@@ -163,11 +163,11 @@ func get_prestige_reward() -> int:
 
 
 func get_prestige_damage_multiplier() -> float:
-	return 1.0 + prestige_points_total_earned * prestige_damage_bonus_per_point
+	return 1.0
 
 
 func get_prestige_gold_multiplier() -> float:
-	return 1.0 + prestige_points_total_earned * prestige_gold_bonus_per_point
+	return 1.0
 
 
 func get_focus_training_multiplier() -> float:

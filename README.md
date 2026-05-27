@@ -69,12 +69,14 @@ The main scene contains the first local clicker loop:
 - War Banner increases Focus Burst and Rally duration, and Clock Tower reduces ability cooldowns up to a 50% cap.
 - Partners provide passive DPS and are managed from a separate bottom-half sheet.
 - Partner DPS tiers are data-driven: Partner 1 (10), Partner 2 (30), Partner 3 (50), Field Scout (100), Spear Guard (175), Iron Defender (300), Battle Monk (500), Elite Samurai (850), Shadow Captain (1400), War Sage (2300), Beast Tamer (3800), Blade Master (6200), and Legendary Commander (10000).
+- The Partners tab uses partner card rows only and should not show a Total DPS summary line.
 - Partner initial costs are `[10, 50, 150, 400, 900, 1800, 3500, 7000, 14000, 28000, 56000, 110000, 220000]`.
 - Partner costs scale by adding `[10, 30, 50, 100, 180, 300, 500, 900, 1600, 2800, 5000, 9000, 16000]` per owned partner.
 - Each partner tier requires at least one of the previous tier.
 - Partner damage ticks every 0.1 seconds for `total_dps / 10` damage.
 - Hero Level upgrades, partner hires, and settlement buildings use the reusable `BuyModeSelector` for horizontal bulk mode buttons: `x1`, `x10`, `x100`, and `Max`.
 - In `UpgradeSheet`, `PartnerSheet`, and `SettlementSheet`, the buy mode selector stays fixed under the sheet header while purchase lists scroll independently below it.
+- `SettlementSheet` should use the same header / `BuyModeSelector` / scroll spacing as `UpgradeSheet` and `PartnerSheet`.
 - In `UpgradeSheet`, the buy mode selector affects only the Hero Level card; ability purchases are one-time purchases and never use bulk-buy.
 - Bulk cost displays show the total package cost. `x10` and `x100` are strict all-or-nothing purchases; `Max` buys as many as current gold allows.
 - Partner buttons always show the required package cost when prerequisites are met; failed unaffordable purchases can return "Not enough gold" through the status helper, but no main-screen status label is currently shown.
@@ -98,6 +100,7 @@ Settlement is a separate bottom tab between `Partners` and `Prestige`.
 - `x10` and `x100` are strict all-or-nothing purchases; `Max` buys as many as current gold allows.
 - Settlement building rows use a temporary white `ColorRect` image placeholder, a two-line building summary, and a buy button.
 - Building rows show the building name, owned count, and per-purchase effect; total owned effects belong in summary/stats UI, not each row.
+- SettlementPanel should not show a combined settlement bonus summary line above building rows.
 - Settlement buildings reset on prestige, while prestige points, prestige talents, and `total_prestiges` are kept.
 - No save system is implemented; settlement state is lost on page reload.
 
@@ -112,11 +115,12 @@ Prestige is an unlockable reset in its own bottom `Prestige` tab.
 - Stage level 52 and character level 102 gives 2 points.
 - Stage level 101 and character level 301 gives 5 points.
 - The Prestige button is disabled when the reward is 0 and enabled when the reward is greater than 0.
-- Pressing the button opens a fully opaque confirmation dialog inside `PrestigeSheet` showing stage points, character points, total points, and resulting bonuses.
-- The main Prestige panel uses a compact `available / total` points display, a card-style prestige action, and card-style talent rows; detailed prestige calculations live in the confirmation dialog.
+- Pressing the button opens a fully opaque confirmation dialog inside `PrestigeSheet` showing stage points, character points, and total reward points.
+- The main Prestige panel shows only available Prestige Points, a card-style prestige action, and card-style talent rows; detailed prestige calculations live in the confirmation dialog.
 - Confirming resets all normal progress (gold, character level, game level, abilities, partners, settlement, zone) but keeps available prestige points, total earned prestige points, prestige talents, and `total_prestiges`.
-- Each total earned prestige point permanently adds +10% to click damage and +10% to gold rewards.
-- Available prestige points can be spent on prestige talents and total earned prestige points do not decrease.
+- Prestige points do not provide passive damage or gold bonuses by themselves.
+- Available prestige points can be spent on prestige talents; total earned prestige points are historical/stat data only.
+- Purchased prestige talents are the only source of prestige-related bonuses.
 - Focus Training adds +5% click/autoclick damage per level.
 - Trade Routes adds +5% gold gain per level.
 - Command Aura adds +5% partner DPS per level.
@@ -124,7 +128,7 @@ Prestige is an unlockable reset in its own bottom `Prestige` tab.
 - Builder Wisdom adds +5% settlement building bonus effectiveness per level.
 - Boss Hunter adds +5% damage against bosses per level for manual clicks, autoclick, and partners.
 - Each talent's next cost is `1 + current talent level` available prestige points.
-- Gold Bonus still doubles rewards on top of the prestige gold multiplier.
+- Gold Bonus still doubles rewards on top of talent and settlement gold multipliers.
 - No save system is implemented; prestige state and talents are lost on page reload.
 
 ## Zone Progression

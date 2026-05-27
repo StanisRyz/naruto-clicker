@@ -9,21 +9,12 @@ var selected_buy_mode: String = "x1"
 var current_state: ClickerState = null
 var building_rows: Array[Dictionary] = []
 
-@onready var bonuses_label: Label = $BonusesLabel
 @onready var rows_container: VBoxContainer = $RowsContainer
 
 
 func update_view(state: ClickerState) -> void:
 	current_state = state
 	_ensure_building_rows(state)
-	bonuses_label.text = "DPS +%d%% | Gold +%d%% | Click +%d%% | Dur +%d%% | CD -%d%% | Boss Gold +%d%%" % [
-		state.get_settlement_partner_dps_bonus_percent(),
-		state.get_settlement_gold_bonus_percent(),
-		state.get_settlement_click_damage_bonus_percent(),
-		state.get_settlement_ability_duration_bonus_percent(),
-		state.get_settlement_cooldown_reduction_percent(),
-		state.get_settlement_boss_gold_bonus_percent(),
-	]
 
 	for building_index in range(building_rows.size()):
 		_update_building_row(state, building_index, building_rows[building_index])

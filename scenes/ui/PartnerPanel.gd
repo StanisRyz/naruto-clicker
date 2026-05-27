@@ -9,14 +9,12 @@ var selected_buy_mode: String = "x1"
 var current_state: ClickerState = null
 var partner_rows: Array[Dictionary] = []
 
-@onready var total_dps_label: Label = $TotalDpsLabel
 @onready var rows_container: VBoxContainer = $RowsContainer
 
 
 func update_view(state: ClickerState) -> void:
 	current_state = state
 	_ensure_partner_rows(state)
-	total_dps_label.text = "Total DPS: %d" % state.get_total_partner_dps()
 
 	for partner_index in range(partner_rows.size()):
 		_update_partner_row(state, partner_index, partner_rows[partner_index])

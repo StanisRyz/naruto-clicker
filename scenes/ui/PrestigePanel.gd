@@ -20,10 +20,7 @@ func update_view(state: ClickerState) -> void:
 	_ensure_talent_rows(state)
 	var total_reward: int = state.get_prestige_reward()
 
-	points_label.text = "Prestige Points: %d / %d" % [
-		state.prestige_points_available,
-		state.prestige_points_total_earned,
-	]
+	points_label.text = "Prestige Points: %d" % state.prestige_points_available
 	_update_prestige_action_row(total_reward)
 
 	for talent_index in range(talent_rows.size()):

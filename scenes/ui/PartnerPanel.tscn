@@ -6,11 +6,6 @@
 theme_override_constants/separation = 12
 script = ExtResource("1_qxodb")
 
-[node name="TotalDpsLabel" type="Label" parent="."]
-layout_mode = 2
-text = "Total DPS: 0"
-horizontal_alignment = 1
-
 [node name="RowsContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10

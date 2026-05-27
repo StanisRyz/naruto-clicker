@@ -69,11 +69,13 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Partner damage ticks every 0.1 seconds for `total_dps / 10` damage.
 - Partner purchases use horizontal bulk mode buttons `x1`, `x10`, `x100`, and `Max`; displayed costs must show total package cost.
 - Partner `x10` and `x100` purchases are strict all-or-nothing packages; `Max` buys as many as current gold allows.
+- PartnerPanel should not show a Total DPS summary line above partner rows.
 - PartnerPanel should always show the required package cost when prerequisites are met; "Not enough gold" belongs in status handling after a failed purchase, not in partner button text.
 - Keep `PartnerSheet`, `SettlementSheet`, and `PrestigeSheet` as separate bottom-half overlays from `UpgradeSheet`.
 - Settlement tab sits between `Partners` and `Prestige` in the bottom bar.
 - Settlement buildings are Training Camp (+1% final partner DPS per level), Market (+1% final gold gain per level), Knight Hut (+1% final click damage per level), War Banner (+1% Focus Burst/Rally duration per level), Clock Tower (-1% ability cooldown per level, capped at 50%), and Boss Shrine (+1% boss reward gold per level).
 - Settlement rows use a temporary white `ColorRect` image placeholder, two text lines for name/count and per-purchase effect, and a buy button.
+- SettlementPanel should not show a combined settlement bonus summary line above building rows.
 - Settlement building rows should not show total owned effect; total bonuses belong in stats or summary UI.
 - Each settlement building requires at least one of the previous building.
 - Settlement initial costs are `[25, 75, 150, 500, 1200, 3000]`.
@@ -103,12 +105,13 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Scale enemy HP and gold reward by level with deterministic formulas.
 - Prestige lives in a separate `PrestigeSheet` opened by the `PrestigeButton` bottom tab; do not keep prestige controls inside `UpgradeSheet`.
 - PrestigePanel should stay compact; detailed prestige calculation belongs in the confirmation dialog, not the main PrestigePanel.
-- PrestigePanel uses compact `available / total` points text, a card-style prestige action, and card-style talent rows.
+- PrestigePanel shows only available Prestige Points, a card-style prestige action, and card-style talent rows.
 - Prestige reward formula is `floor(current_level / 50) + floor(character_level / 100)` points.
 - Prestige confirmation dialog (`PrestigeConfirmDialog`) is an overlay child of `PrestigeSheet` and must be fully opaque so underlying UI text is not visible through it.
 - Signal flow: PrestigePanel `prestige_requested` -> PrestigeSheet `prestige_requested` -> ClickerScreen calls `show_prestige_confirm(state)`; dialog `confirmed` -> ClickerScreen calls `perform_prestige()`.
 - `perform_prestige()` resets all normal progress except available prestige points, total earned prestige points, prestige talents, and `total_prestiges`.
 - Prestige points are split into available points and total earned points; spending talents subtracts only from available points.
+- Prestige points do not provide passive damage or gold bonuses by themselves; only purchased prestige talents provide prestige-related bonuses.
 - Prestige talents are Focus Training (+5% click/autoclick damage per level), Trade Routes (+5% gold gain per level), Command Aura (+5% partner DPS per level), Quick Hands (+5% Autoclick attack rate per level, minimum interval 0.02 seconds), Builder Wisdom (+5% settlement bonus effectiveness per level), and Boss Hunter (+5% boss damage per level).
 - Prestige talent next cost is `1 + current talent level`.
 - Prestige reset does not reset prestige talents.
@@ -199,6 +202,7 @@ After each patch, validate manually in Godot:
 - Character level starts at 1 and damage starts at 1.
 - Old damage upgrade naming is not visible in UI.
 - UpgradeSheet keeps `BuyModeSelector` fixed under the header while upgrade cards scroll.
+- SettlementSheet should match UpgradeSheet and PartnerSheet spacing between header, fixed `BuyModeSelector`, and scroll content.
 - UpgradePanel uses a card-style Hero Level row and card-style ability purchase rows with white `ColorRect` image placeholders.
 - Hero Level card shows the current character level and selected bulk upgrade cost.
 - Autoclick button is visible but locked before character level 15.
@@ -308,7 +312,7 @@ After each patch, validate manually in Godot:
 - `PrestigeButton` opens `PrestigeSheet`.
 - PrestigeSheet is hidden by default and can be closed.
 - PrestigeSheet has no `BuyModeSelector`.
-- PrestigePanel shows compact `available / total` prestige points.
+- PrestigePanel shows only available Prestige Points.
 - Prestige action and talent rows use card-style rows with white `ColorRect` image placeholders.
 - Prestige button is disabled when total points to gain is 0.
 - Prestige button enables and shows the reward point count when total points to gain is greater than 0.
@@ -321,7 +325,7 @@ After each patch, validate manually in Godot:
 - Quick Hands affects Autoclick attack interval without going below 0.02 seconds.
 - Builder Wisdom increases settlement percentage bonus effectiveness.
 - Boss Hunter increases manual, autoclick, and partner damage against bosses.
-- PrimaryStatsPanel and ProgressInfoPanel do not show available / total earned Prestige points or total runs; those belong in PrestigeSheet.
+- PrimaryStatsPanel and ProgressInfoPanel do not show Prestige points or total runs; prestige details belong in PrestigeSheet.
 - After prestige, all timers (boss, autoclick, gold bonus, ability cooldowns, accumulators) are reset in ClickerScreen.
 
 ## Documentation Update Rules
