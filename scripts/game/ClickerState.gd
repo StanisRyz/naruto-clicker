@@ -661,6 +661,32 @@ func get_building_bulk_display_cost(building_index: int, mode: String) -> int:
 	return building_purchase_costs[building_index]
 
 
+func get_building_effect_description(building_index: int) -> String:
+	if building_index < 0 or building_index >= building_names.size():
+		return ""
+
+	var building_name: String = building_names[building_index]
+	var amount: int = building_bonus_percent_per_level
+	if building_index >= building_bonus_types.size():
+		return "+%d%% Bonus for each %s" % [amount, building_name]
+
+	match building_bonus_types[building_index]:
+		"partner_dps":
+			return "+%d%% DPS for each %s" % [amount, building_name]
+		"gold":
+			return "+%d%% Gold for each %s" % [amount, building_name]
+		"click_damage":
+			return "+%d%% Click Damage for each %s" % [amount, building_name]
+		"ability_duration":
+			return "+%d%% Focus/Rally Duration for each %s" % [amount, building_name]
+		"ability_cooldown":
+			return "-%d%% Ability Cooldown for each %s" % [amount, building_name]
+		"boss_gold":
+			return "+%d%% Boss Gold for each %s" % [amount, building_name]
+		_:
+			return "+%d%% Bonus for each %s" % [amount, building_name]
+
+
 func recalculate_building_cost(building_index: int) -> void:
 	building_purchase_costs[building_index] = _get_building_cost_for_count(
 		building_index,

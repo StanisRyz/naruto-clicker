@@ -14,4 +14,4 @@ autowrap_mode = 3
 
 [node name="RowsContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10

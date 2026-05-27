@@ -55,6 +55,8 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Keep `PartnerSheet`, `SettlementSheet`, and `PrestigeSheet` as separate bottom-half overlays from `UpgradeSheet`.
 - Settlement tab sits between `Partners` and `Prestige` in the bottom bar.
 - Settlement buildings are Training Camp (+1% final partner DPS per level), Market (+1% final gold gain per level), Knight Hut (+1% final click damage per level), War Banner (+1% Focus Burst/Rally duration per level), Clock Tower (-1% ability cooldown per level, capped at 50%), and Boss Shrine (+1% boss reward gold per level).
+- Settlement rows use a temporary white `ColorRect` image placeholder, two text lines for name/count and per-purchase effect, and a buy button.
+- Settlement building rows should not show total owned effect; total bonuses belong in stats or summary UI.
 - Each settlement building requires at least one of the previous building.
 - Settlement initial costs are `[25, 75, 150, 500, 1200, 3000]`.
 - Settlement costs scale by adding `[25, 50, 100, 250, 600, 1500]` per owned building.

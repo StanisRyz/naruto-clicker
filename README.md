@@ -80,6 +80,8 @@ Settlement is a separate bottom tab between `Partners` and `Prestige`.
 - Building costs scale by adding `[25, 50, 100, 250, 600, 1500]` per owned building.
 - Buildings use the same bulk modes as partners: `x1`, `x10`, `x100`, and `Max`.
 - `x10` and `x100` are strict all-or-nothing purchases; `Max` buys as many as current gold allows.
+- Settlement building rows use a temporary white `ColorRect` image placeholder, a two-line building summary, and a buy button.
+- Building rows show the building name, owned count, and per-purchase effect; total owned effects belong in summary/stats UI, not each row.
 - Settlement buildings reset on prestige, while prestige points, prestige talents, and `total_prestiges` are kept.
 - No save system is implemented; settlement state is lost on page reload.
 
