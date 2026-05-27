@@ -29,6 +29,9 @@ The main scene contains the first local clicker loop:
 
 - Tap/click the main game field to damage the current enemy.
 - Enemy HP is shown with a label and progress bar.
+- `GameField` uses a muted green placeholder background and does not pulse or blink on click.
+- `EnemyImageHolder` is a centered placeholder square: healthy is white, hit is blue for 0.5 seconds, wounded is red, and defeated is black for 0.2 seconds.
+- After enemy defeat, a 0.2 second transition lock blocks manual, autoclick, and partner damage before the next enemy can be damaged.
 - The main screen uses two independent panels: `PrimaryStatsPanel` for gold, character level, click damage, and partner DPS; `ProgressInfoPanel` for level, zone name, and enemies progress.
 - `PrimaryStatsPanel` is a compact top-centered overlay, not a child of stretching main content containers.
 - Its center should align with the viewport vertical center axis and it must not stretch full width.
@@ -152,7 +155,7 @@ The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes
 - `scenes/game/ClickerScreen.gd` - Owns gameplay flow, status messages, and UI updates.
 - `scenes/ui/PrimaryStatsPanel.tscn` - Compact top-centered horizontal stat overlay for gold, character level, click damage, partner DPS, and a placeholder settings button.
 - `scenes/ui/ProgressInfoPanel.tscn` - Compact progress text for level, zone name, and enemies progress.
-- `scenes/ui/GameField.tscn` - Fullscreen tap/click attack field and enemy HP display.
+- `scenes/ui/GameField.tscn` - Fullscreen tap/click attack field, muted green background placeholder, enemy placeholder, and enemy HP display.
 - `scenes/ui/AbilityBar.tscn` - Left-side textless placeholder-square active ability buttons.
 - `scenes/ui/BuyModeSelector.tscn` - Reusable fixed `x1` / `x10` / `x100` / `Max` selector for hero level, partner, and settlement purchase sheets.
 - `scenes/ui/UpgradePanel.tscn` - Card-style Hero Level upgrade row and one-time ability purchase rows.

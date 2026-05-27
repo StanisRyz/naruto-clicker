@@ -1,19 +1,39 @@
 class_name GameField
-extends Button
+extends Control
 
 signal attack_requested
 
+const HEALTHY_COLOR: Color = Color.WHITE
+const HIT_COLOR: Color = Color(0.15, 0.45, 1.0, 1.0)
+const WOUNDED_COLOR: Color = Color(1.0, 0.1, 0.1, 1.0)
+const DEFEATED_COLOR: Color = Color.BLACK
+const HIT_STATE_DURATION: float = 0.3
+
+var hit_tween: Tween = null
+var defeat_tween: Tween = null
+var enemy_transition_locked: bool = false
+var current_health_color: Color = HEALTHY_COLOR
+
+@onready var enemy_image_holder: ColorRect = $EnemyImageHolder
 @onready var zone_name_label: Label = $GameFieldContent/ZoneNameLabel
 @onready var enemy_name_label: Label = $GameFieldContent/EnemyNameLabel
 @onready var target_hp_label: Label = $GameFieldContent/TargetHpLabel
 @onready var target_progress_bar: ProgressBar = $GameFieldContent/TargetProgressBar
 @onready var boss_timer_label: Label = $GameFieldContent/BossTimerLabel
-@onready var feedback_layer: Control = $FeedbackLayer
 @onready var defeat_feedback_label: Label = $FeedbackLayer/DefeatFeedbackLabel
 
 
-func _ready() -> void:
-	pressed.connect(_on_pressed)
+func _gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		var mouse_event: InputEventMouseButton = event as InputEventMouseButton
+		if mouse_event.button_index == MOUSE_BUTTON_LEFT and mouse_event.pressed:
+			accept_event()
+			attack_requested.emit()
+	elif event is InputEventScreenTouch:
+		var touch_event: InputEventScreenTouch = event as InputEventScreenTouch
+		if touch_event.pressed:
+			accept_event()
+			attack_requested.emit()
 
 
 func update_view(state: ClickerState) -> void:
@@ -22,6 +42,19 @@ func update_view(state: ClickerState) -> void:
 	target_hp_label.text = "Enemy HP: %d / %d" % [state.target_hp, state.target_max_hp]
 	target_progress_bar.max_value = state.target_max_hp
 	target_progress_bar.value = state.target_hp
+	update_enemy_visual_state(state)
+
+
+func update_enemy_visual_state(state: ClickerState) -> void:
+	current_health_color = _get_health_color(state)
+	if enemy_transition_locked:
+		enemy_image_holder.color = DEFEATED_COLOR
+		return
+
+	if hit_tween != null and hit_tween.is_running():
+		return
+
+	enemy_image_holder.color = current_health_color
 
 
 func update_boss_timer(time_left: float, is_active: bool) -> void:
@@ -31,34 +64,29 @@ func update_boss_timer(time_left: float, is_active: bool) -> void:
 
 
 func play_hit_feedback(damage: int) -> void:
-	if damage <= 0:
+	if damage <= 0 or enemy_transition_locked:
 		return
 
-	pivot_offset = size * 0.5
-	var pulse_tween: Tween = create_tween()
-	pulse_tween.tween_property(self, "scale", Vector2(1.03, 1.03), 0.05)
-	pulse_tween.tween_property(self, "scale", Vector2.ONE, 0.08)
+	if hit_tween != null:
+		hit_tween.kill()
 
-	var popup_label: Label = Label.new()
-	popup_label.text = "-%d" % damage
-	popup_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	popup_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	popup_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	popup_label.modulate = Color(1.0, 0.95, 0.45, 1.0)
-	feedback_layer.add_child(popup_label)
-
-	var popup_size := Vector2(96, 40)
-	popup_label.size = popup_size
-	popup_label.position = (feedback_layer.size - popup_size) * 0.5
-
-	var popup_tween: Tween = create_tween()
-	popup_tween.set_parallel(true)
-	popup_tween.tween_property(popup_label, "position:y", popup_label.position.y - 54.0, 0.35)
-	popup_tween.tween_property(popup_label, "modulate:a", 0.0, 0.35)
-	popup_tween.chain().tween_callback(popup_label.queue_free)
+	enemy_image_holder.color = HIT_COLOR
+	hit_tween = create_tween()
+	hit_tween.tween_interval(HIT_STATE_DURATION)
+	hit_tween.tween_callback(func() -> void:
+		hit_tween = null
+		if not enemy_transition_locked:
+			enemy_image_holder.color = current_health_color
+	)
 
 
 func play_defeat_feedback(level_up: bool, zone_changed: bool = false) -> void:
+	if hit_tween != null:
+		hit_tween.kill()
+		hit_tween = null
+
+	enemy_image_holder.color = DEFEATED_COLOR
+
 	if zone_changed:
 		defeat_feedback_label.text = "New Zone!"
 	elif level_up:
@@ -68,11 +96,28 @@ func play_defeat_feedback(level_up: bool, zone_changed: bool = false) -> void:
 	defeat_feedback_label.modulate.a = 1.0
 	defeat_feedback_label.scale = Vector2.ONE
 
-	var tween: Tween = create_tween()
-	tween.tween_property(defeat_feedback_label, "scale", Vector2(1.08, 1.08), 0.08)
-	tween.tween_interval(0.22)
-	tween.tween_property(defeat_feedback_label, "modulate:a", 0.0, 0.18)
+	if defeat_tween != null:
+		defeat_tween.kill()
+	defeat_tween = create_tween()
+	defeat_tween.tween_property(defeat_feedback_label, "scale", Vector2(1.08, 1.08), 0.08)
+	defeat_tween.tween_interval(0.22)
+	defeat_tween.tween_property(defeat_feedback_label, "modulate:a", 0.0, 0.18)
 
 
-func _on_pressed() -> void:
-	attack_requested.emit()
+func set_enemy_transition_locked(is_locked: bool) -> void:
+	enemy_transition_locked = is_locked
+	if enemy_transition_locked:
+		if hit_tween != null:
+			hit_tween.kill()
+			hit_tween = null
+		enemy_image_holder.color = DEFEATED_COLOR
+	else:
+		enemy_image_holder.color = current_health_color
+
+
+func _get_health_color(state: ClickerState) -> Color:
+	if state.target_hp <= 0:
+		return DEFEATED_COLOR
+
+	var hp_ratio: float = float(state.target_hp) / maxf(float(state.target_max_hp), 1.0)
+	return WOUNDED_COLOR if hp_ratio <= 0.5 else HEALTHY_COLOR

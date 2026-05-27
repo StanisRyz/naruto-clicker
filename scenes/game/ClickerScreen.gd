@@ -26,6 +26,9 @@ var partner_damage_accumulator: float = 0.0
 var partner_damage_interval: float = 0.1
 var partner_damage_interval_epsilon: float = 0.000001
 var active_bottom_tab: String = ""
+var enemy_transition_locked: bool = false
+var enemy_respawn_delay: float = 0.2
+var enemy_transition_token: int = 0
 
 @onready var primary_stats_panel: PrimaryStatsPanel = $PrimaryStatsPanel
 @onready var progress_info_panel: ProgressInfoPanel = $MainContent/VBoxContainer/ProgressInfoPanel
@@ -74,7 +77,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	if boss_timer_active:
+	if boss_timer_active and not enemy_transition_locked:
 		boss_time_left = maxf(boss_time_left - delta, 0.0)
 		game_field.update_boss_timer(boss_time_left, boss_timer_active)
 
@@ -128,8 +131,12 @@ func _update_ui() -> void:
 
 
 func _on_attack_requested() -> void:
+	if enemy_transition_locked:
+		return
+
+	var was_boss_level: bool = state.is_boss_level
 	var result: Dictionary = state.attack()
-	_apply_attack_result(result, true)
+	_apply_attack_result(result, true, was_boss_level)
 
 
 func _on_character_level_upgrade_requested(mode: String) -> void:
@@ -226,6 +233,9 @@ func _on_prestige_talent_purchase_requested(talent_index: int) -> void:
 
 func _on_prestige_confirmed() -> void:
 	var result: Dictionary = state.perform_prestige()
+	enemy_transition_locked = false
+	enemy_transition_token += 1
+	game_field.set_enemy_transition_locked(false)
 	boss_time_left = 0.0
 	boss_timer_active = false
 	autoclick_time_left = 0.0
@@ -279,30 +289,37 @@ func _fail_boss_level() -> void:
 	_update_ui()
 
 
-func _apply_attack_result(result: Dictionary, show_hit_feedback: bool) -> void:
-	if show_hit_feedback:
-		game_field.play_hit_feedback(result.get("damage_dealt", 0))
-
+func _apply_attack_result(result: Dictionary, _show_hit_feedback: bool, was_boss_level: bool = false) -> void:
 	if result.get("defeated", false):
-		game_field.play_defeat_feedback(result.get("level_up", false), result.get("zone_changed", false))
+		_handle_defeat_result(result, was_boss_level)
+		return
 
+	game_field.play_hit_feedback(result.get("damage_dealt", 0))
 	status_label.text = result.get("status_text", "")
 	_update_ui()
 	_sync_boss_timer()
 
 
 func _run_autoclick_attack() -> void:
+	if enemy_transition_locked:
+		return
+
+	var was_boss_level: bool = state.is_boss_level
 	var result: Dictionary = state.attack()
-	_apply_attack_result(result, false)
+	_apply_attack_result(result, false, was_boss_level)
 
 
 func _run_partner_damage_tick() -> void:
+	if enemy_transition_locked:
+		return
+
 	var tick_damage: int = state.get_partner_tick_damage()
 	if tick_damage <= 0:
 		return
 
+	var was_boss_level: bool = state.is_boss_level
 	var result: Dictionary = state.attack_with_damage(tick_damage)
-	_apply_passive_attack_result(result)
+	_apply_passive_attack_result(result, was_boss_level)
 
 
 func _on_autoclick_requested() -> void:
@@ -417,10 +434,41 @@ func _get_scaled_cooldown(base_cooldown: float) -> float:
 	return base_cooldown * state.get_ability_cooldown_multiplier()
 
 
-func _apply_passive_attack_result(result: Dictionary) -> void:
+func _apply_passive_attack_result(result: Dictionary, was_boss_level: bool = false) -> void:
 	if result.get("defeated", false):
-		game_field.play_defeat_feedback(result.get("level_up", false), result.get("zone_changed", false))
-		status_label.text = result.get("status_text", "")
+		_handle_defeat_result(result, was_boss_level)
+		return
 
+	game_field.play_hit_feedback(result.get("damage_dealt", 0))
 	_update_ui()
 	_sync_boss_timer()
+
+
+func _handle_defeat_result(result: Dictionary, was_boss_level: bool) -> void:
+	enemy_transition_locked = true
+	enemy_transition_token += 1
+	var transition_token: int = enemy_transition_token
+	game_field.set_enemy_transition_locked(true)
+	game_field.play_defeat_feedback(result.get("level_up", false), result.get("zone_changed", false))
+	status_label.text = result.get("status_text", "")
+
+	if was_boss_level:
+		boss_timer_active = false
+		boss_time_left = 0.0
+		game_field.update_boss_timer(boss_time_left, boss_timer_active)
+
+	_update_ui()
+	_finish_enemy_transition_after_delay(transition_token)
+
+
+func _finish_enemy_transition_after_delay(transition_token: int) -> void:
+	await get_tree().create_timer(enemy_respawn_delay).timeout
+	if transition_token != enemy_transition_token:
+		return
+
+	_update_ui()
+	enemy_transition_locked = false
+	game_field.set_enemy_transition_locked(false)
+	_update_ui()
+	_sync_boss_timer()
+	game_field.update_view(state)
