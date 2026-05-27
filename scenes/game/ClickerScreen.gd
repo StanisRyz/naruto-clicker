@@ -288,12 +288,13 @@ func _fail_boss_level() -> void:
 	_update_ui()
 
 
-func _apply_attack_result(result: Dictionary, _show_hit_feedback: bool, was_boss_level: bool = false) -> void:
+func _apply_attack_result(result: Dictionary, show_hit_feedback: bool, was_boss_level: bool = false) -> void:
 	if result.get("defeated", false):
 		_handle_defeat_result(result, was_boss_level)
 		return
 
-	game_field.play_hit_feedback(result.get("damage_dealt", 0))
+	if show_hit_feedback:
+		game_field.play_hit_feedback(result.get("damage_dealt", 0))
 	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
 	_sync_boss_timer()
@@ -305,7 +306,7 @@ func _run_autoclick_attack() -> void:
 
 	var was_boss_level: bool = state.is_boss_level
 	var result: Dictionary = state.attack()
-	_apply_attack_result(result, false, was_boss_level)
+	_apply_attack_result(result, true, was_boss_level)
 
 
 func _run_partner_damage_tick() -> void:
@@ -318,7 +319,7 @@ func _run_partner_damage_tick() -> void:
 
 	var was_boss_level: bool = state.is_boss_level
 	var result: Dictionary = state.attack_with_damage(tick_damage)
-	_apply_passive_attack_result(result, was_boss_level)
+	_apply_attack_result(result, false, was_boss_level)
 
 
 func _on_autoclick_requested() -> void:
@@ -431,16 +432,6 @@ func _get_scaled_duration(base_duration: float, uses_war_banner: bool) -> float:
 
 func _get_scaled_cooldown(base_cooldown: float) -> float:
 	return base_cooldown * state.get_ability_cooldown_multiplier()
-
-
-func _apply_passive_attack_result(result: Dictionary, was_boss_level: bool = false) -> void:
-	if result.get("defeated", false):
-		_handle_defeat_result(result, was_boss_level)
-		return
-
-	game_field.play_hit_feedback(result.get("damage_dealt", 0))
-	_update_ui()
-	_sync_boss_timer()
 
 
 func _handle_defeat_result(result: Dictionary, was_boss_level: bool) -> void:

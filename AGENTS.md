@@ -47,7 +47,8 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Purchase tabs use card-style rows with a temporary white `ColorRect` image placeholder, two-line info text, and an action button.
 - Keep `GameField` as the fullscreen bottom clickable layer in `ClickerScreen`.
 - `GameField` uses a muted green `BackgroundImageHolder` placeholder and should not pulse or blink on click.
-- `EnemyImageHolder` is a centered placeholder square: healthy white, hit blue for 0.5 seconds, wounded red, defeated black for 0.2 seconds.
+- `EnemyImageHolder` is a centered placeholder square: healthy white, hit blue for 0.3 seconds, wounded red, defeated black for 0.2 seconds.
+- Blue hit feedback should only play for player-origin damage: manual clicks and Autoclick. Partner DPS should update HP/wounded state and defeat state, but should not turn the enemy blue.
 - `GameField` should not display enemy name or HP text; those belong in `ProgressInfoPanel`.
 - A 0.2 second enemy transition lock after defeat must keep enemy HP at 0 and block manual clicks, autoclick, and partner damage; reward, defeated count, level changes, and next enemy setup happen only after the lock ends.
 - Keep visible UI overlays clickable above `GameField`, and make passive text/containers ignore mouse input.

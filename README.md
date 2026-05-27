@@ -31,7 +31,9 @@ The main scene contains the first local clicker loop:
 - `GameField` uses a muted green placeholder background and does not pulse or blink on click.
 - `GameField` is primarily visual: muted green background, enemy placeholder states, boss timer, and defeat feedback.
 - Enemy name and HP text are not displayed inside `GameField`.
-- `EnemyImageHolder` is a centered placeholder square: healthy is white, hit is blue for 0.5 seconds, wounded is red, and defeated is black for 0.2 seconds.
+- `EnemyImageHolder` is a centered placeholder square: healthy is white, hit is blue for 0.3 seconds, wounded is red, and defeated is black for 0.2 seconds.
+- Blue hit feedback is only for player-origin damage: manual clicks and Autoclick trigger it, while partner DPS does not.
+- The black defeated state still applies to all damage sources.
 - After enemy defeat, a 0.2 second transition lock keeps enemy HP at 0 and blocks manual, autoclick, and partner damage before reward, kill count, level changes, and the next enemy are applied.
 - The main screen has no general `StatusLabel`.
 - The main screen uses two independent panels: `PrimaryStatsPanel` for gold, character level, click damage, and partner DPS; `ProgressInfoPanel` for level, zone name, enemies progress, enemy name, enemy HP, and a compact HP bar under the HP text.

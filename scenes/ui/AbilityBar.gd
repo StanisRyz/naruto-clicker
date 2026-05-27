@@ -25,12 +25,12 @@ func _ready() -> void:
 
 func update_view(
 	state: ClickerState,
-	autoclick_time_left: float,
-	gold_bonus_time_left: float,
+	_autoclick_time_left: float,
+	_gold_bonus_time_left: float,
 	autoclick_cooldown_left: float,
 	gold_bonus_cooldown_left: float,
-	focus_burst_time_left: float,
-	rally_time_left: float,
+	_focus_burst_time_left: float,
+	_rally_time_left: float,
 	focus_burst_cooldown_left: float,
 	rally_cooldown_left: float
 ) -> void:
