@@ -27,7 +27,7 @@ var partner_damage_interval: float = 0.1
 var partner_damage_interval_epsilon: float = 0.000001
 var active_bottom_tab: String = ""
 
-@onready var primary_stats_panel: PrimaryStatsPanel = $MainContent/VBoxContainer/PrimaryStatsPanel
+@onready var primary_stats_panel: PrimaryStatsPanel = $PrimaryStatsPanel
 @onready var progress_info_panel: ProgressInfoPanel = $MainContent/VBoxContainer/ProgressInfoPanel
 @onready var game_field: GameField = $GameField
 @onready var ability_bar: AbilityBar = $AbilityBar

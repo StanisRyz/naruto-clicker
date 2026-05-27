@@ -1,10 +1,10 @@
 class_name PrimaryStatsPanel
 extends Control
 
-@onready var gold_value_label: Label = $VBoxContainer/GoldCard/Content/GoldValueLabel
-@onready var character_level_value_label: Label = $VBoxContainer/CharacterLevelCard/Content/CharacterLevelValueLabel
-@onready var damage_value_label: Label = $VBoxContainer/DamageCard/Content/DamageValueLabel
-@onready var partner_dps_value_label: Label = $VBoxContainer/PartnerDpsCard/Content/PartnerDpsValueLabel
+@onready var gold_value_label: Label = $VBoxContainer/GoldRow/GoldValueLabel
+@onready var character_level_value_label: Label = $VBoxContainer/CharacterLevelRow/CharacterLevelValueLabel
+@onready var damage_value_label: Label = $VBoxContainer/DamageRow/DamageValueLabel
+@onready var partner_dps_value_label: Label = $VBoxContainer/PartnerDpsRow/PartnerDpsValueLabel
 
 
 func update_view(state: ClickerState) -> void:

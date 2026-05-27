@@ -27,6 +27,14 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
+[node name="PrimaryStatsPanel" parent="." instance=ExtResource("2_primary")]
+layout_mode = 1
+offset_left = 16.0
+offset_top = 104.0
+offset_right = 136.0
+offset_bottom = 288.0
+mouse_filter = 2
+
 [node name="MainContent" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -52,10 +60,6 @@ layout_mode = 2
 mouse_filter = 2
 text = "Naruto Clicker"
 horizontal_alignment = 1
-
-[node name="PrimaryStatsPanel" parent="MainContent/VBoxContainer" instance=ExtResource("2_primary")]
-layout_mode = 2
-mouse_filter = 2
 
 [node name="ProgressInfoPanel" parent="MainContent/VBoxContainer" instance=ExtResource("9_progress")]
 layout_mode = 2

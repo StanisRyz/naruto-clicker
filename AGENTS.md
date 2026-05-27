@@ -25,9 +25,10 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Keep `PrimaryStatsPanel`, `ProgressInfoPanel`, `GameField`, and `UpgradePanel` as focused UI components.
 - Main screen primary stats and progress info are independent UI components; do not use a combined `StatsPanel` for new main screen UI.
 - `PrimaryStatsPanel` shows only gold, character level, click damage, and partner DPS numeric stat cards.
+- `PrimaryStatsPanel` is an independent compact left-side overlay and should not be placed inside stretch containers.
+- Primary stat rows show only a temporary white `ColorRect` placeholder and the value; card backgrounds should stay transparent/invisible.
 - `ProgressInfoPanel` shows only level, zone name, and enemies progress.
 - Prestige and settlement details belong in their tabs, not on the main screen.
-- Main stat icon placeholders are temporary white `ColorRect` nodes.
 - Keep `UpgradePanel` responsible only for upgrade controls.
 - Use `BottomBar` to open `UpgradeSheet`, `PartnerSheet`, `SettlementSheet`, and `PrestigeSheet`; do not keep sheet controls permanently in the main gameplay flow.
 - BottomBar must remain visible and clickable while any bottom sheet is open.
