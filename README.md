@@ -30,8 +30,9 @@ The main scene contains the first local clicker loop:
 - Tap/click the main game field to damage the current enemy.
 - Enemy HP is shown with a label and progress bar.
 - The main screen uses two independent panels: `PrimaryStatsPanel` for gold, character level, click damage, and partner DPS; `ProgressInfoPanel` for level, zone name, and enemies progress.
-- `PrimaryStatsPanel` is a compact left-side overlay, not a child of stretching main content containers.
-- Primary stat rows show only a temporary white `ColorRect` placeholder and the value, with transparent row backgrounds.
+- `PrimaryStatsPanel` is a compact top-screen overlay, not a child of stretching main content containers.
+- `PrimaryStatsPanel` uses horizontal stat cards from left to right: gold, character level, click damage, partner DPS.
+- Primary stat cards show only a temporary white `ColorRect` placeholder and the value, with transparent backgrounds.
 - Prestige and settlement details belong in their bottom tabs, not on the main screen.
 - Each level requires defeating 10 enemies.
 - Enemy HP and gold reward scale with the current level.
@@ -145,7 +146,7 @@ The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes
 - `scenes/main/Main.gd` - Root startup script for YandexBridge ready/gameplay calls.
 - `scenes/game/ClickerScreen.tscn` - Main gameplay screen and layout.
 - `scenes/game/ClickerScreen.gd` - Owns gameplay flow, status messages, and UI updates.
-- `scenes/ui/PrimaryStatsPanel.tscn` - Compact left-side numeric stat overlay for gold, character level, click damage, and partner DPS.
+- `scenes/ui/PrimaryStatsPanel.tscn` - Compact top-screen horizontal stat overlay for gold, character level, click damage, and partner DPS.
 - `scenes/ui/ProgressInfoPanel.tscn` - Compact progress text for level, zone name, and enemies progress.
 - `scenes/ui/GameField.tscn` - Fullscreen tap/click attack field and enemy HP display.
 - `scenes/ui/AbilityBar.tscn` - Left-side active ability buttons.
