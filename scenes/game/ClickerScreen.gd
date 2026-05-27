@@ -27,7 +27,8 @@ var partner_damage_interval: float = 0.1
 var partner_damage_interval_epsilon: float = 0.000001
 var active_bottom_tab: String = ""
 
-@onready var stats_panel: StatsPanel = $MainContent/VBoxContainer/StatsPanel
+@onready var primary_stats_panel: PrimaryStatsPanel = $MainContent/VBoxContainer/PrimaryStatsPanel
+@onready var progress_info_panel: ProgressInfoPanel = $MainContent/VBoxContainer/ProgressInfoPanel
 @onready var game_field: GameField = $GameField
 @onready var ability_bar: AbilityBar = $AbilityBar
 @onready var status_label: Label = $MainContent/VBoxContainer/StatusLabel
@@ -104,7 +105,8 @@ func _process(delta: float) -> void:
 
 func _update_ui() -> void:
 	_update_bottom_bar_view()
-	stats_panel.update_view(state)
+	primary_stats_panel.update_view(state)
+	progress_info_panel.update_view(state)
 	game_field.update_view(state)
 	game_field.update_boss_timer(boss_time_left, boss_timer_active)
 	ability_bar.update_view(

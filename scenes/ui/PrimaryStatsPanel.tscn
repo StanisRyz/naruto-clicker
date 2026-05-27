@@ -1,0 +1,134 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/PrimaryStatsPanel.gd" id="1_primary_stats"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stat_card"]
+bg_color = Color(0.12, 0.125, 0.145, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.23, 0.26, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="PrimaryStatsPanel" type="Control"]
+custom_minimum_size = Vector2(128, 242)
+mouse_filter = 2
+script = ExtResource("1_primary_stats")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="GoldCard" type="PanelContainer" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_stat_card")
+
+[node name="Content" type="HBoxContainer" parent="VBoxContainer/GoldCard"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="GoldIcon" type="ColorRect" parent="VBoxContainer/GoldCard/Content"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 1)
+
+[node name="GoldValueLabel" type="Label" parent="VBoxContainer/GoldCard/Content"]
+layout_mode = 2
+mouse_filter = 2
+size_flags_horizontal = 3
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CharacterLevelCard" type="PanelContainer" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_stat_card")
+
+[node name="Content" type="HBoxContainer" parent="VBoxContainer/CharacterLevelCard"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="CharacterLevelIcon" type="ColorRect" parent="VBoxContainer/CharacterLevelCard/Content"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 1)
+
+[node name="CharacterLevelValueLabel" type="Label" parent="VBoxContainer/CharacterLevelCard/Content"]
+layout_mode = 2
+mouse_filter = 2
+size_flags_horizontal = 3
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DamageCard" type="PanelContainer" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_stat_card")
+
+[node name="Content" type="HBoxContainer" parent="VBoxContainer/DamageCard"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="DamageIcon" type="ColorRect" parent="VBoxContainer/DamageCard/Content"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 1)
+
+[node name="DamageValueLabel" type="Label" parent="VBoxContainer/DamageCard/Content"]
+layout_mode = 2
+mouse_filter = 2
+size_flags_horizontal = 3
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PartnerDpsCard" type="PanelContainer" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_stat_card")
+
+[node name="Content" type="HBoxContainer" parent="VBoxContainer/PartnerDpsCard"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="PartnerDpsIcon" type="ColorRect" parent="VBoxContainer/PartnerDpsCard/Content"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 1)
+
+[node name="PartnerDpsValueLabel" type="Label" parent="VBoxContainer/PartnerDpsCard/Content"]
+layout_mode = 2
+mouse_filter = 2
+size_flags_horizontal = 3
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1

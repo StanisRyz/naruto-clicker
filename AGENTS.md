@@ -22,8 +22,10 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Keep `Main.tscn` as the app/root scene.
 - Keep `ClickerScreen` responsible for gameplay flow and UI updates.
 - Keep prototype state and formulas in `scripts/game/ClickerState.gd`.
-- Keep `StatsPanel`, `GameField`, and `UpgradePanel` as focused UI components.
-- Main screen `StatsPanel` is intentionally compact and shows only gold, character level, click damage, partner DPS, level, zone name, and enemies progress.
+- Keep `PrimaryStatsPanel`, `ProgressInfoPanel`, `GameField`, and `UpgradePanel` as focused UI components.
+- Main screen primary stats and progress info are independent UI components; do not use a combined `StatsPanel` for new main screen UI.
+- `PrimaryStatsPanel` shows only gold, character level, click damage, and partner DPS numeric stat cards.
+- `ProgressInfoPanel` shows only level, zone name, and enemies progress.
 - Prestige and settlement details belong in their tabs, not on the main screen.
 - Main stat icon placeholders are temporary white `ColorRect` nodes.
 - Keep `UpgradePanel` responsible only for upgrade controls.
@@ -283,7 +285,7 @@ After each patch, validate manually in Godot:
 - Reaching level 11 transitions to Forest Path; status shows "New zone: Forest Path".
 - Level 11 enemy is "Forest Bandit"; level 15 boss is "Forest Guardian".
 - GameField zone name label updates on zone change.
-- StatsPanel shows zone name without the zone level range.
+- ProgressInfoPanel shows zone name without the zone level range.
 - HP and reward values are higher in later zones than the base formula alone.
 - Zone defeat feedback shows "New Zone!" flash when zone changes.
 - Prestige button is not visible inside UpgradeSheet.
@@ -303,7 +305,7 @@ After each patch, validate manually in Godot:
 - Quick Hands affects Autoclick attack interval without going below 0.02 seconds.
 - Builder Wisdom increases settlement percentage bonus effectiveness.
 - Boss Hunter increases manual, autoclick, and partner damage against bosses.
-- StatsPanel does not show available / total earned Prestige points or total runs; those belong in PrestigeSheet.
+- PrimaryStatsPanel and ProgressInfoPanel do not show available / total earned Prestige points or total runs; those belong in PrestigeSheet.
 - After prestige, all timers (boss, autoclick, gold bonus, ability cooldowns, accumulators) are reset in ClickerScreen.
 
 ## Documentation Update Rules

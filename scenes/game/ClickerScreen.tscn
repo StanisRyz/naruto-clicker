@@ -1,13 +1,14 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scenes/game/ClickerScreen.gd" id="1_ymqc8"]
-[ext_resource type="PackedScene" path="res://scenes/ui/StatsPanel.tscn" id="2_yinr5"]
+[ext_resource type="PackedScene" path="res://scenes/ui/PrimaryStatsPanel.tscn" id="2_primary"]
 [ext_resource type="PackedScene" path="res://scenes/ui/GameField.tscn" id="3_uv1kb"]
 [ext_resource type="PackedScene" path="res://scenes/ui/UpgradeSheet.tscn" id="4_vcx67"]
 [ext_resource type="PackedScene" path="res://scenes/ui/AbilityBar.tscn" id="5_3gfnf"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PartnerSheet.tscn" id="6_lfl8p"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PrestigeSheet.tscn" id="7_4qosh"]
 [ext_resource type="PackedScene" path="res://scenes/ui/SettlementSheet.tscn" id="8_3qslc"]
+[ext_resource type="PackedScene" path="res://scenes/ui/ProgressInfoPanel.tscn" id="9_progress"]
 
 [node name="ClickerScreen" type="Control"]
 layout_mode = 3
@@ -52,7 +53,11 @@ mouse_filter = 2
 text = "Naruto Clicker"
 horizontal_alignment = 1
 
-[node name="StatsPanel" parent="MainContent/VBoxContainer" instance=ExtResource("2_yinr5")]
+[node name="PrimaryStatsPanel" parent="MainContent/VBoxContainer" instance=ExtResource("2_primary")]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ProgressInfoPanel" parent="MainContent/VBoxContainer" instance=ExtResource("9_progress")]
 layout_mode = 2
 mouse_filter = 2
 
