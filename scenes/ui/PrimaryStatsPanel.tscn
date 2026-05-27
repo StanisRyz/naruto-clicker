@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scenes/ui/PrimaryStatsPanel.gd" id="1_primary_stats"]
 
 [node name="PrimaryStatsPanel" type="Control"]
-custom_minimum_size = Vector2(520, 48)
+custom_minimum_size = Vector2(560, 48)
 mouse_filter = 2
 script = ExtResource("1_primary_stats")
 
@@ -92,3 +92,19 @@ layout_mode = 2
 mouse_filter = 2
 text = "0"
 vertical_alignment = 1
+
+[node name="SettingsButton" type="Button" parent="HBoxContainer"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+mouse_filter = 0
+flat = true
+
+[node name="SettingsIcon" type="ColorRect" parent="HBoxContainer/SettingsButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 1)

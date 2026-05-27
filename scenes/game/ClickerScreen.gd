@@ -49,6 +49,7 @@ func _ready() -> void:
 	ability_bar.gold_bonus_requested.connect(_on_gold_bonus_requested)
 	ability_bar.focus_burst_requested.connect(_on_focus_burst_requested)
 	ability_bar.rally_requested.connect(_on_rally_requested)
+	primary_stats_panel.settings_requested.connect(_on_settings_requested)
 	upgrades_button.pressed.connect(_on_upgrades_button_pressed)
 	partners_button.pressed.connect(_on_partners_button_pressed)
 	settlement_button.pressed.connect(_on_settlement_button_pressed)
@@ -159,6 +160,10 @@ func _on_rally_purchase_requested() -> void:
 	var result: Dictionary = state.buy_rally_ability()
 	status_label.text = result.get("status_text", "")
 	_update_ui()
+
+
+func _on_settings_requested() -> void:
+	status_label.text = "Settings coming soon"
 
 
 func _on_partner_purchase_requested(partner_index: int, mode: String) -> void:
