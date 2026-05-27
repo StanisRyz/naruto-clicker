@@ -9,6 +9,7 @@ signal rally_purchase_requested
 signal closed
 
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
+@onready var buy_mode_selector: BuyModeSelector = $PanelContainer/MarginContainer/VBoxContainer/BuyModeSelector
 @onready var upgrade_panel: UpgradePanel = $PanelContainer/MarginContainer/VBoxContainer/ScrollContainer/UpgradePanel
 
 var current_state: ClickerState = null
@@ -16,6 +17,8 @@ var current_state: ClickerState = null
 
 func _ready() -> void:
 	close_button.pressed.connect(hide_sheet)
+	buy_mode_selector.buy_mode_changed.connect(_on_buy_mode_changed)
+	upgrade_panel.set_buy_mode(buy_mode_selector.get_selected_mode())
 	upgrade_panel.character_level_upgrade_requested.connect(_on_character_level_upgrade_requested)
 	upgrade_panel.autoclick_purchase_requested.connect(_on_autoclick_purchase_requested)
 	upgrade_panel.gold_bonus_purchase_requested.connect(_on_gold_bonus_purchase_requested)
@@ -36,6 +39,12 @@ func hide_sheet() -> void:
 func update_view(state: ClickerState) -> void:
 	current_state = state
 	upgrade_panel.update_view(state)
+
+
+func _on_buy_mode_changed(mode: String) -> void:
+	upgrade_panel.set_buy_mode(mode)
+	if current_state != null:
+		update_view(current_state)
 
 
 func _on_character_level_upgrade_requested(mode: String) -> void:

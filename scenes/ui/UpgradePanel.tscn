@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scenes/ui/UpgradePanel.gd" id="1_x2nck"]
 
 [node name="UpgradePanel" type="Control"]
-custom_minimum_size = Vector2(0, 430)
+custom_minimum_size = Vector2(0, 530)
 script = ExtResource("1_x2nck")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]

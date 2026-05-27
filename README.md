@@ -59,8 +59,9 @@ The main scene contains the first local clicker loop:
 - Partner costs scale by adding `[10, 30, 50, 100, 180, 300, 500, 900, 1600, 2800, 5000, 9000, 16000]` per owned partner.
 - Each partner tier requires at least one of the previous tier.
 - Partner damage ticks every 0.1 seconds for `total_dps / 10` damage.
-- Partner hires and settlement buildings use the reusable `BuyModeSelector` for horizontal bulk mode buttons: `x1`, `x10`, `x100`, and `Max`.
-- In `PartnerSheet` and `SettlementSheet`, the buy mode selector stays fixed under the sheet header while purchase lists scroll independently below it.
+- Hero Level upgrades, partner hires, and settlement buildings use the reusable `BuyModeSelector` for horizontal bulk mode buttons: `x1`, `x10`, `x100`, and `Max`.
+- In `UpgradeSheet`, `PartnerSheet`, and `SettlementSheet`, the buy mode selector stays fixed under the sheet header while purchase lists scroll independently below it.
+- In `UpgradeSheet`, the buy mode selector affects only the Hero Level card; ability purchases are one-time purchases and never use bulk-buy.
 - Bulk cost displays show the total package cost. `x10` and `x100` are strict all-or-nothing purchases; `Max` buys as many as current gold allows.
 - Partner buttons always show the required package cost when prerequisites are met; failed unaffordable purchases report "Not enough gold" in the status text.
 - Purchase tabs use card-style rows with a temporary white `ColorRect` image placeholder, two-line info text, and an action button.
@@ -92,7 +93,7 @@ Prestige is an unlockable reset in its own bottom `Prestige` tab.
 
 - The bottom bar has `Upgrades`, `Partners`, `Settlement`, and `Prestige` buttons on one row.
 - `PrestigeSheet` does not use the buy mode selector.
-- `UpgradeSheet` does not use the buy mode selector; upgrades are one-time ability purchases for Autoclick, Gold Bonus, Focus Burst, and Rally.
+- `UpgradeSheet` contains a bulk-buy Hero Level card plus one-time ability purchases for Autoclick, Gold Bonus, Focus Burst, and Rally.
 - Reward: `floor(current_level / 50) + floor(character_level / 100)` prestige points per prestige action.
 - Stage level 52 and character level 102 gives 2 points.
 - Stage level 101 and character level 301 gives 5 points.
@@ -143,8 +144,8 @@ The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes
 - `scenes/ui/StatsPanel.tscn` - Displays gold, character level, damage, level, and enemy progress.
 - `scenes/ui/GameField.tscn` - Fullscreen tap/click attack field and enemy HP display.
 - `scenes/ui/AbilityBar.tscn` - Left-side active ability buttons.
-- `scenes/ui/BuyModeSelector.tscn` - Reusable fixed `x1` / `x10` / `x100` / `Max` selector for partner and settlement purchase sheets.
-- `scenes/ui/UpgradePanel.tscn` - Card-style one-time ability purchase rows.
+- `scenes/ui/BuyModeSelector.tscn` - Reusable fixed `x1` / `x10` / `x100` / `Max` selector for hero level, partner, and settlement purchase sheets.
+- `scenes/ui/UpgradePanel.tscn` - Card-style Hero Level upgrade row and one-time ability purchase rows.
 - `scenes/ui/UpgradeSheet.tscn` - Bottom-half upgrades sheet that hosts UpgradePanel.
 - `scenes/ui/PartnerPanel.tscn` - Card-style partner hiring controls and DPS display.
 - `scenes/ui/PartnerSheet.tscn` - Bottom-half partners sheet that hosts PartnerPanel.

@@ -14,19 +14,57 @@ const ABILITIES: Array[Dictionary] = [
 	{"id": "rally", "name": "Rally"},
 ]
 
+const BUY_MODES: Array[String] = ["x1", "x10", "x100", "max"]
+
+var selected_buy_mode: String = "x1"
+var hero_level_row: Dictionary = {}
 var ability_rows: Array[Dictionary] = []
 
 @onready var rows_container: VBoxContainer = $VBoxContainer/RowsContainer
 
 
 func _ready() -> void:
+	hero_level_row = _create_hero_level_row()
 	for ability_index in range(ABILITIES.size()):
 		ability_rows.append(_create_ability_row(ability_index))
 
 
 func update_view(state: ClickerState) -> void:
+	_update_hero_level_row(state)
 	for ability_index in range(ability_rows.size()):
 		_update_ability_row(state, ability_index, ability_rows[ability_index])
+
+
+func set_buy_mode(mode: String) -> void:
+	if not BUY_MODES.has(mode):
+		return
+	selected_buy_mode = mode
+
+
+func _create_hero_level_row() -> Dictionary:
+	var row := PanelContainer.new()
+	row.name = "HeroLevelRow"
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_theme_stylebox_override("panel", _create_row_stylebox())
+	rows_container.add_child(row)
+
+	var row_content: Dictionary = _add_card_content(row, "UpgradeButton")
+	var button: Button = row_content["button"]
+	button.pressed.connect(_on_hero_level_button_pressed)
+	return row_content
+
+
+func _update_hero_level_row(state: ClickerState) -> void:
+	var name_status_label: Label = hero_level_row["name_status_label"]
+	var effect_label: Label = hero_level_row["effect_label"]
+	var button: Button = hero_level_row["button"]
+	var bulk_count: int = state.get_character_level_bulk_display_count(selected_buy_mode)
+	var bulk_cost: int = state.get_character_level_bulk_display_cost(selected_buy_mode)
+
+	name_status_label.text = "Hero Level | %d" % state.character_level
+	effect_label.text = "+1 Damage per Hero Level"
+	button.disabled = false
+	button.text = "Upgrade x%d - Cost: %d" % [bulk_count, bulk_cost]
 
 
 func _create_ability_row(ability_index: int) -> Dictionary:
@@ -37,53 +75,10 @@ func _create_ability_row(ability_index: int) -> Dictionary:
 	row.add_theme_stylebox_override("panel", _create_row_stylebox())
 	rows_container.add_child(row)
 
-	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 12)
-	margin.add_theme_constant_override("margin_top", 10)
-	margin.add_theme_constant_override("margin_right", 12)
-	margin.add_theme_constant_override("margin_bottom", 10)
-	row.add_child(margin)
-
-	var content := HBoxContainer.new()
-	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	content.add_theme_constant_override("separation", 12)
-	margin.add_child(content)
-
-	var image_holder := ColorRect.new()
-	image_holder.name = "ImageHolder"
-	image_holder.color = Color.WHITE
-	image_holder.custom_minimum_size = Vector2(72, 72)
-	content.add_child(image_holder)
-
-	var info_container := VBoxContainer.new()
-	info_container.name = "InfoContainer"
-	info_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	info_container.add_theme_constant_override("separation", 4)
-	content.add_child(info_container)
-
-	var name_status_label := Label.new()
-	name_status_label.name = "NameStatusLabel"
-	name_status_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	name_status_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	info_container.add_child(name_status_label)
-
-	var effect_label := Label.new()
-	effect_label.name = "EffectLabel"
-	effect_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	info_container.add_child(effect_label)
-
-	var button := Button.new()
-	button.name = "BuyButton"
-	button.custom_minimum_size = Vector2(220, 64)
+	var row_content: Dictionary = _add_card_content(row, "BuyButton")
+	var button: Button = row_content["button"]
 	button.pressed.connect(func() -> void: _emit_ability_purchase(String(ability["id"])))
-	content.add_child(button)
-
-	return {
-		"name_status_label": name_status_label,
-		"effect_label": effect_label,
-		"button": button,
-	}
+	return row_content
 
 
 func _update_ability_row(state: ClickerState, ability_index: int, row: Dictionary) -> void:
@@ -169,6 +164,59 @@ func _emit_ability_purchase(ability_id: String) -> void:
 			focus_burst_purchase_requested.emit()
 		"rally":
 			rally_purchase_requested.emit()
+
+
+func _on_hero_level_button_pressed() -> void:
+	character_level_upgrade_requested.emit(selected_buy_mode)
+
+
+func _add_card_content(row: PanelContainer, button_name: String) -> Dictionary:
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 12)
+	margin.add_theme_constant_override("margin_top", 10)
+	margin.add_theme_constant_override("margin_right", 12)
+	margin.add_theme_constant_override("margin_bottom", 10)
+	row.add_child(margin)
+
+	var content := HBoxContainer.new()
+	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content.add_theme_constant_override("separation", 12)
+	margin.add_child(content)
+
+	var image_holder := ColorRect.new()
+	image_holder.name = "ImageHolder"
+	image_holder.color = Color.WHITE
+	image_holder.custom_minimum_size = Vector2(72, 72)
+	content.add_child(image_holder)
+
+	var info_container := VBoxContainer.new()
+	info_container.name = "InfoContainer"
+	info_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info_container.add_theme_constant_override("separation", 4)
+	content.add_child(info_container)
+
+	var name_status_label := Label.new()
+	name_status_label.name = "NameStatusLabel"
+	name_status_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	name_status_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	info_container.add_child(name_status_label)
+
+	var effect_label := Label.new()
+	effect_label.name = "EffectLabel"
+	effect_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info_container.add_child(effect_label)
+
+	var button := Button.new()
+	button.name = button_name
+	button.custom_minimum_size = Vector2(220, 64)
+	content.add_child(button)
+
+	return {
+		"name_status_label": name_status_label,
+		"effect_label": effect_label,
+		"button": button,
+	}
 
 
 func _create_row_stylebox() -> StyleBoxFlat:

@@ -31,8 +31,9 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Bottom sheets must not cover BottomBar; they should end above it.
 - Bottom sheet headers and close buttons should remain fixed while content scrolls vertically.
 - `BuyModeSelector` is the reusable UI for `x1`, `x10`, `x100`, and `Max` purchase modes.
-- `BuyModeSelector` must stay fixed under the sheet header in `PartnerSheet` and `SettlementSheet`; purchase lists should scroll independently below it.
-- Do not add `BuyModeSelector` to `UpgradeSheet` or `PrestigeSheet`.
+- `BuyModeSelector` must stay fixed under the sheet header in `UpgradeSheet`, `PartnerSheet`, and `SettlementSheet`; purchase lists should scroll independently below it.
+- In `UpgradeSheet`, `BuyModeSelector` affects only the Hero Level card; ability purchases must never use bulk-buy modes.
+- Do not add `BuyModeSelector` to `PrestigeSheet`.
 - Purchase tabs use card-style rows with a temporary white `ColorRect` image placeholder, two-line info text, and an action button.
 - Keep `GameField` as the fullscreen bottom clickable layer in `ClickerScreen`.
 - Keep visible UI overlays clickable above `GameField`, and make passive text/containers ignore mouse input.
@@ -65,7 +66,8 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Settlement buildings reset on prestige.
 - Character level replaces the old damage upgrade; character level must equal click damage.
 - Character level upgrade cost is `5 + (character_level - 1) * 3`.
-- UpgradePanel is for one-time ability purchases only and must not use bulk-buy modes.
+- UpgradePanel contains a bulk-buy Hero Level card and one-time ability purchase cards.
+- Character level upgrades use horizontal bulk mode buttons `x1`, `x10`, `x100`, and `Max`; displayed costs must show total package cost.
 - Character level `x10` and `x100` purchases are strict all-or-nothing packages; `Max` buys as many as current gold allows.
 - Autoclick purchase costs 50 gold.
 - Gold Bonus purchase costs 150 gold.
@@ -176,8 +178,9 @@ After each patch, validate manually in Godot:
 - `PartnerSheet` is hidden by default and can be closed.
 - Character level starts at 1 and damage starts at 1.
 - Old damage upgrade naming is not visible in UI.
-- UpgradeSheet has no `BuyModeSelector`.
-- UpgradePanel uses card-style ability purchase rows with white `ColorRect` image placeholders.
+- UpgradeSheet keeps `BuyModeSelector` fixed under the header while upgrade cards scroll.
+- UpgradePanel uses a card-style Hero Level row and card-style ability purchase rows with white `ColorRect` image placeholders.
+- Hero Level card shows the current character level and selected bulk upgrade cost.
 - Autoclick button is visible but locked before character level 15.
 - Gold Bonus button is visible but locked before character level 30.
 - Focus Burst button is visible but locked before character level 60.
@@ -232,9 +235,13 @@ After each patch, validate manually in Godot:
 - Ability buttons show active, cooldown, and ready states.
 - Abilities cannot activate while active or on cooldown.
 - Autoclick performs separate attacks every 0.05 seconds.
+- Upgrade x1 buys 1 character level.
+- Upgrade x10 buys exactly 10 character levels or buys nothing if gold is insufficient.
+- Upgrade x100 buys exactly 100 character levels or buys nothing if gold is insufficient.
+- Upgrade Max buys as many character levels as current gold allows.
 - Partner x10 and x100 modes buy the full package or buy nothing if gold is insufficient.
 - Partner Max buys as many partners as current gold allows.
-- Partner and Settlement bulk mode UI uses horizontal buttons, not dropdowns.
+- Upgrade, Partner, and Settlement bulk mode UI uses horizontal buttons, not dropdowns.
 - Settlement opens `SettlementSheet`.
 - Training Camp can be bought when enough gold.
 - Market requires at least one Training Camp.
