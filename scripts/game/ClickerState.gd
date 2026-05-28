@@ -97,7 +97,8 @@ var partner_names: Array[String] = [
 	"Blade Master",
 	"Legendary Commander",
 ]
-var partner_dps_values: Array[int] = [10, 30, 50, 100, 175, 300, 500, 850, 1400, 2300, 3800, 6200, 10000]
+# Partner DPS tiers are prototype balance values tuned around milestone x2 spikes.
+var partner_dps_values: Array[int] = [10, 20, 35, 65, 120, 220, 410, 750, 1400, 2600, 4800, 9000, 16500]
 var partner_base_costs: Array[int] = [10, 50, 150, 400, 900, 1800, 3500, 7000, 14000, 28000, 56000, 110000, 220000]
 var partner_cost_steps: Array[int] = [10, 30, 50, 100, 180, 300, 500, 900, 1600, 2800, 5000, 9000, 16000]
 var partner_counts: Array[int] = []
@@ -111,6 +112,14 @@ var character_cost_curve: float = 0.18
 var character_cost_power: float = 2.35
 var partner_cost_curve_multiplier: float = 0.015
 var partner_cost_power: float = 2.15
+var enemy_hp_base: int = 10
+var enemy_hp_linear: float = 8.0
+var enemy_hp_curve: float = 1.15
+var enemy_hp_power: float = 2.10
+var enemy_reward_base: int = 5
+var enemy_reward_linear: float = 3.0
+var enemy_reward_curve: float = 0.22
+var enemy_reward_power: float = 1.80
 var building_names: Array[String] = ["Training Camp", "Market", "Knight Hut", "War Banner", "Clock Tower", "Boss Shrine"]
 var building_bonus_types: Array[String] = ["partner_dps", "gold", "click_damage", "ability_duration", "ability_cooldown", "boss_gold"]
 var building_base_costs: Array[int] = [25, 75, 150, 500, 1200, 3000]
@@ -1115,10 +1124,10 @@ func choose_enemy_for_current_level() -> void:
 
 func recalculate_level_values() -> void:
 	var zone: Dictionary = ZONE_DATA[current_zone_index]
-	var base_hp: int = 10 + (current_level - 1) * 8
-	var base_reward: int = 5 + (current_level - 1) * 3
-	var scaled_hp: int = int(base_hp * zone.hp_multiplier)
-	var scaled_reward: int = int(base_reward * zone.reward_multiplier)
+	var base_hp: int = get_base_enemy_hp_for_level(current_level)
+	var base_reward: int = get_base_enemy_reward_for_level(current_level)
+	var scaled_hp: int = ceili(base_hp * zone.hp_multiplier)
+	var scaled_reward: int = ceili(base_reward * zone.reward_multiplier)
 	if is_boss_level:
 		target_max_hp = scaled_hp * 5
 		reward_gold = scaled_reward * 5
@@ -1128,6 +1137,28 @@ func recalculate_level_values() -> void:
 	else:
 		target_max_hp = scaled_hp
 		reward_gold = scaled_reward
+
+
+func get_base_enemy_hp_for_level(level: int) -> int:
+	# HP uses the stronger curve; rewards grow slower so progression increasingly needs power spikes.
+	var stage: float = float(maxi(0, level - 1))
+	var base_hp: float = (
+		float(enemy_hp_base)
+		+ enemy_hp_linear * stage
+		+ enemy_hp_curve * pow(stage, enemy_hp_power)
+	)
+	return maxi(1, ceili(base_hp))
+
+
+func get_base_enemy_reward_for_level(level: int) -> int:
+	# Prototype balance values: tune these alongside partner DPS and milestone x2 spikes.
+	var stage: float = float(maxi(0, level - 1))
+	var base_reward: float = (
+		float(enemy_reward_base)
+		+ enemy_reward_linear * stage
+		+ enemy_reward_curve * pow(stage, enemy_reward_power)
+	)
+	return maxi(1, ceili(base_reward))
 
 
 func _get_zone_index_for_level(level: int) -> int:

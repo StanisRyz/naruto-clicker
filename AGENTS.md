@@ -70,7 +70,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Rally unlocks at character level 80, costs 1000 gold, lasts 30 seconds, doubles final partner DPS, and enters a 180 second cooldown.
 - Make sure ability buttons do not trigger attacks.
 - Partners provide passive DPS through `ClickerState` state and `ClickerScreen` ticking.
-- Partner tiers are data-driven: Partner 1 (10 DPS), Partner 2 (30), Partner 3 (50), Field Scout (100), Spear Guard (175), Iron Defender (300), Battle Monk (500), Elite Samurai (850), Shadow Captain (1400), War Sage (2300), Beast Tamer (3800), Blade Master (6200), and Legendary Commander (10000).
+- Partner tiers are data-driven: Partner 1 (10 DPS), Partner 2 (20), Partner 3 (35), Field Scout (65), Spear Guard (120), Iron Defender (220), Battle Monk (410), Elite Samurai (750), Shadow Captain (1400), War Sage (2600), Beast Tamer (4800), Blade Master (9000), and Legendary Commander (16500).
 - Partner initial costs are `[10, 50, 150, 400, 900, 1800, 3500, 7000, 14000, 28000, 56000, 110000, 220000]`.
 - Partner costs use each tier's base and step values plus a controlled non-linear power curve.
 - Partner milestone target counts `[10, 25, 50, 100, 250, 500]` cost x3 independently per tier.
@@ -151,6 +151,10 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Zones group levels 1–10, 11–20, 21–30, 31–40. Level 41+ stays in Zone 4.
 - Zone HP multipliers: 1.0, 1.4, 1.9, 2.5. Zone reward multipliers: 1.0, 1.3, 1.7, 2.2.
 - Apply zone multipliers after the base HP/reward formula, before the boss ×5 multiplier.
+- Enemy formulas use `stage = current_level - 1`.
+- Base HP formula is `10 + 8.0 * stage + 1.15 * stage^2.10`.
+- Base reward formula is `5 + 3.0 * stage + 0.22 * stage^1.80`.
+- HP grows faster than rewards so later progression leans on milestones, partners, settlement, prestige talents, and abilities.
 - Elite and boss multipliers are applied after base level and zone scaling.
 - Enemy, elite enemy, and boss names come from the active zone; do not hard-code "Enemy" or "Boss" strings.
 - Zone transition is detected in `attack_with_damage()` and included in the result dict as `zone_changed` and `zone_name`.

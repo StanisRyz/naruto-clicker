@@ -79,7 +79,7 @@ The main scene contains the first local clicker loop:
 - Rally costs 1000 gold, lasts 30 seconds, then enters a 180 second cooldown.
 - War Banner increases Focus Burst and Rally duration, and Clock Tower reduces ability cooldowns up to a 50% cap.
 - Partners provide passive DPS and are managed from a separate bottom-half sheet.
-- Partner DPS tiers are data-driven: Partner 1 (10), Partner 2 (30), Partner 3 (50), Field Scout (100), Spear Guard (175), Iron Defender (300), Battle Monk (500), Elite Samurai (850), Shadow Captain (1400), War Sage (2300), Beast Tamer (3800), Blade Master (6200), and Legendary Commander (10000).
+- Partner DPS tiers are data-driven: Partner 1 (10), Partner 2 (20), Partner 3 (35), Field Scout (65), Spear Guard (120), Iron Defender (220), Battle Monk (410), Elite Samurai (750), Shadow Captain (1400), War Sage (2600), Beast Tamer (4800), Blade Master (9000), and Legendary Commander (16500).
 - The Partners tab uses partner card rows only and should not show a Total DPS summary line.
 - The Partners tab progressively reveals cards: visible available partner cards plus one next locked requirement card; deeper locked tiers stay hidden.
 - Partner row second lines show the per-purchase DPS effect, such as `+10 DPS for each Partner 1`; total and final Partner DPS belong in `PrimaryStatsPanel`.
@@ -177,8 +177,10 @@ Levels are grouped into zones. Each zone has three normal enemies, one elite ene
 - Normal enemies are randomly selected when a new non-boss target is created.
 - Elite enemies have a 7% spawn chance on non-boss targets, count as one defeated enemy, have 3x normal HP, and give 5x normal base reward.
 - Boss levels still use exactly one boss and are not affected by elite enemy logic.
-- Base HP formula: `10 + (level - 1) * 8`. Zone HP multiplier is applied after.
-- Base reward formula: `5 + (level - 1) * 3`. Zone reward multiplier is applied after.
+- Enemy formulas use `stage = current_level - 1`.
+- Base HP formula: `10 + 8.0 * stage + 1.15 * stage^2.10`. Zone HP multiplier is applied after.
+- Base reward formula: `5 + 3.0 * stage + 0.22 * stage^1.80`. Zone reward multiplier is applied after.
+- HP grows faster than rewards so later progression leans on milestones, partners, settlement, prestige talents, and abilities.
 - Boss levels (every 5th level) still multiply the zone-scaled HP and reward by 5.
 - Zone data is stored as a constant array in `scripts/game/ClickerState.gd`.
 - No background images or audio assets are used for zones.
