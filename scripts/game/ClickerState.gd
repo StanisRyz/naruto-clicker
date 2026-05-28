@@ -104,6 +104,13 @@ var partner_counts: Array[int] = []
 var partner_purchase_costs: Array[int] = []
 var milestone_levels: Array[int] = [10, 25, 50, 100, 250, 500]
 var milestone_multiplier_per_reached: int = 2
+var milestone_cost_multiplier: int = 3
+var character_cost_base: int = 5
+var character_cost_linear: float = 2.2
+var character_cost_curve: float = 0.18
+var character_cost_power: float = 2.35
+var partner_cost_curve_multiplier: float = 0.015
+var partner_cost_power: float = 2.15
 var building_names: Array[String] = ["Training Camp", "Market", "Knight Hut", "War Banner", "Clock Tower", "Boss Shrine"]
 var building_bonus_types: Array[String] = ["partner_dps", "gold", "click_damage", "ability_duration", "ability_cooldown", "boss_gold"]
 var building_base_costs: Array[int] = [25, 75, 150, 500, 1200, 3000]
@@ -761,6 +768,17 @@ func get_next_milestone(level: int) -> int:
 	return 0
 
 
+func is_milestone_target(target_level_or_count: int) -> bool:
+	return milestone_levels.has(target_level_or_count)
+
+
+func apply_milestone_cost_multiplier(cost: int, target_level_or_count: int) -> int:
+	if is_milestone_target(target_level_or_count):
+		return cost * milestone_cost_multiplier
+
+	return cost
+
+
 func get_character_milestone_multiplier() -> int:
 	return get_milestone_multiplier(character_level)
 
@@ -875,7 +893,7 @@ func get_boss_reward_multiplier() -> float:
 
 
 func recalculate_character_level_cost() -> void:
-	character_level_upgrade_cost = 5 + (character_level - 1) * 3
+	character_level_upgrade_cost = _get_character_level_cost_for_level(character_level)
 
 
 func recalculate_partner_cost(partner_index: int) -> void:
@@ -925,7 +943,17 @@ func _get_character_level_bulk_cost_for_count(count: int) -> int:
 
 
 func _get_character_level_cost_for_level(level: int) -> int:
-	return 5 + (level - 1) * 3
+	# Non-linear, not exponential: target level is current + 1, and milestone targets cost x3.
+	var current_level: int = maxi(1, level)
+	var target_level: int = current_level + 1
+	var progress: float = float(current_level - 1)
+	var raw_cost: float = (
+		float(character_cost_base)
+		+ character_cost_linear * progress
+		+ character_cost_curve * pow(progress, character_cost_power)
+	)
+	var cost: int = maxi(1, ceili(raw_cost))
+	return apply_milestone_cost_multiplier(cost, target_level)
 
 
 func _get_partner_bulk_cost_for_count(partner_index: int, count: int) -> int:
@@ -943,7 +971,18 @@ func _get_partner_bulk_cost_for_count(partner_index: int, count: int) -> int:
 
 func _get_partner_cost_for_count(partner_index: int, count: int) -> int:
 	if partner_index >= 0 and partner_index < partner_base_costs.size():
-		return partner_base_costs[partner_index] + count * partner_cost_steps[partner_index]
+		# Non-linear, not exponential: target count is current + 1, and milestone targets cost x3.
+		var current_count: int = maxi(0, count)
+		var target_count: int = current_count + 1
+		var base: int = partner_base_costs[partner_index]
+		var step: int = partner_cost_steps[partner_index]
+		var raw_cost: float = (
+			float(base)
+			+ float(step * current_count)
+			+ float(base) * partner_cost_curve_multiplier * pow(float(current_count), partner_cost_power)
+		)
+		var cost: int = maxi(1, ceili(raw_cost))
+		return apply_milestone_cost_multiplier(cost, target_count)
 
 	return 0
 

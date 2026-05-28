@@ -53,7 +53,8 @@ The main scene contains the first local clicker loop:
 - Every 5th level is a boss level with one boss.
 - Bosses must be defeated within 30 seconds or the player returns to the previous level.
 - Gold can upgrade character level. Hero damage starts from character level and is boosted by hero level milestones.
-- Character level upgrade cost is `5 + (character_level - 1) * 3`.
+- Hero level upgrade costs use a controlled non-linear formula: early purchases stay affordable, while later purchases get harder through a power curve.
+- Hero milestone target levels 10, 25, 50, 100, 250, and 500 cost x3 for the purchase that reaches the milestone.
 - Hero level and each partner tier have milestone multipliers at 10, 25, 50, 100, 250, and 500 owned levels.
 - Each reached milestone doubles the total accumulated contribution of that source, applying to all owned levels rather than only future purchases.
 - Hero and each partner tier track milestones independently.
@@ -81,7 +82,9 @@ The main scene contains the first local clicker loop:
 - Partner DPS tiers are data-driven: Partner 1 (10), Partner 2 (30), Partner 3 (50), Field Scout (100), Spear Guard (175), Iron Defender (300), Battle Monk (500), Elite Samurai (850), Shadow Captain (1400), War Sage (2300), Beast Tamer (3800), Blade Master (6200), and Legendary Commander (10000).
 - The Partners tab uses partner card rows only and should not show a Total DPS summary line.
 - Partner initial costs are `[10, 50, 150, 400, 900, 1800, 3500, 7000, 14000, 28000, 56000, 110000, 220000]`.
-- Partner costs scale by adding `[10, 30, 50, 100, 180, 300, 500, 900, 1600, 2800, 5000, 9000, 16000]` per owned partner.
+- Partner costs use each tier's base and step values plus a controlled non-linear power curve.
+- Partner milestone target counts 10, 25, 50, 100, 250, and 500 cost x3 independently per tier.
+- Hero and partner bulk-buy costs include milestone price spikes when the package crosses milestone targets.
 - Each partner tier requires at least one of the previous tier.
 - Partner tier DPS is `owned count * tier DPS * tier milestone multiplier`.
 - Partner damage ticks every 0.1 seconds for final partner DPS / 10 damage.

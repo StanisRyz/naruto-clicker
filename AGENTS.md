@@ -71,7 +71,9 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Partners provide passive DPS through `ClickerState` state and `ClickerScreen` ticking.
 - Partner tiers are data-driven: Partner 1 (10 DPS), Partner 2 (30), Partner 3 (50), Field Scout (100), Spear Guard (175), Iron Defender (300), Battle Monk (500), Elite Samurai (850), Shadow Captain (1400), War Sage (2300), Beast Tamer (3800), Blade Master (6200), and Legendary Commander (10000).
 - Partner initial costs are `[10, 50, 150, 400, 900, 1800, 3500, 7000, 14000, 28000, 56000, 110000, 220000]`.
-- Partner costs scale by adding `[10, 30, 50, 100, 180, 300, 500, 900, 1600, 2800, 5000, 9000, 16000]` per owned partner.
+- Partner costs use each tier's base and step values plus a controlled non-linear power curve.
+- Partner milestone target counts `[10, 25, 50, 100, 250, 500]` cost x3 independently per tier.
+- Hero and partner bulk-buy costs must include milestone price spikes when the package crosses milestone targets.
 - Each partner tier requires at least one of the previous tier.
 - Base partner DPS includes partner tiers and partner milestones only.
 - Final partner DPS adds Command Aura, Training Camp, and Rally. UI should display final partner DPS without contextual Boss Hunter; partner damage ticks include Boss Hunter during boss fights.
@@ -104,7 +106,8 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Each reached milestone doubles the total accumulated contribution of that source, applying to all owned levels rather than only future purchases.
 - Hero and every partner tier track milestone multipliers independently.
 - Partner tier base DPS is `owned count * tier DPS * tier milestone multiplier` before settlement Training Camp, prestige Command Aura, Rally, and Boss Hunter.
-- Character level upgrade cost is `5 + (character_level - 1) * 3`.
+- Hero level upgrade costs use a controlled non-linear formula with affordable early levels and harder later levels.
+- Hero milestone target levels `[10, 25, 50, 100, 250, 500]` cost x3 for the purchase that reaches the milestone.
 - UpgradePanel contains a bulk-buy Hero Level card and one-time ability purchase cards.
 - Character level upgrades use horizontal bulk mode buttons `x1`, `x10`, `x100`, and `Max`; displayed costs must show total package cost.
 - Character level `x10` and `x100` purchases are strict all-or-nothing packages; `Max` buys as many as current gold allows.
@@ -288,8 +291,14 @@ After each patch, validate manually in Godot:
 - Upgrade x10 buys exactly 10 character levels or buys nothing if gold is insufficient.
 - Upgrade x100 buys exactly 100 character levels or buys nothing if gold is insufficient.
 - Upgrade Max buys as many character levels as current gold allows.
+- Hero upgrade costs increase non-linearly over time.
+- Hero target levels 10, 25, 50, 100, 250, and 500 cost x3.
+- Hero x10, x100, and Max costs include milestone x3 price spikes.
 - Partner x10 and x100 modes buy the full package or buy nothing if gold is insufficient.
 - Partner Max buys as many partners as current gold allows.
+- Partner costs increase non-linearly over time.
+- Partner target counts 10, 25, 50, 100, 250, and 500 cost x3 independently per tier.
+- Partner x10, x100, and Max costs include milestone x3 price spikes.
 - Upgrade, Partner, and Settlement bulk mode UI uses horizontal buttons, not dropdowns.
 - Settlement opens `SettlementSheet`.
 - Training Camp can be bought when enough gold.
