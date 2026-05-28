@@ -73,7 +73,9 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Partner initial costs are `[10, 50, 150, 400, 900, 1800, 3500, 7000, 14000, 28000, 56000, 110000, 220000]`.
 - Partner costs scale by adding `[10, 30, 50, 100, 180, 300, 500, 900, 1600, 2800, 5000, 9000, 16000]` per owned partner.
 - Each partner tier requires at least one of the previous tier.
-- Partner damage ticks every 0.1 seconds for `total_dps / 10` damage.
+- Base partner DPS includes partner tiers and partner milestones only.
+- Final partner DPS adds Command Aura, Training Camp, and Rally. UI should display final partner DPS without contextual Boss Hunter; partner damage ticks include Boss Hunter during boss fights.
+- Partner damage ticks every 0.1 seconds for final partner DPS / 10 damage.
 - Partner purchases use horizontal bulk mode buttons `x1`, `x10`, `x100`, and `Max`; displayed costs must show total package cost.
 - Partner `x10` and `x100` purchases are strict all-or-nothing packages; `Max` buys as many as current gold allows.
 - PartnerPanel should not show a Total DPS summary line above partner rows.
@@ -81,6 +83,13 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Keep `PartnerSheet`, `SettlementSheet`, and `PrestigeSheet` as separate bottom-half overlays from `UpgradeSheet`.
 - Settlement tab sits between `Partners` and `Prestige` in the bottom bar.
 - Settlement buildings are Training Camp (+1% final partner DPS per level), Market (+1% final gold gain per level), Knight Hut (+1% final click damage per level), War Banner (+1% Focus Burst/Rally duration per level), Clock Tower (-1% ability cooldown per level, capped at 50%), and Boss Shrine (+1% boss reward gold per level).
+- Builder Wisdom increases settlement building bonus effectiveness.
+- Training Camp affects displayed final Partner DPS and partner tick damage.
+- Market affects normal, elite, and boss final gold gain.
+- Knight Hut affects displayed click damage and manual/autoclick damage; manual combo stays in `ClickerScreen`.
+- War Banner affects Focus Burst and Rally duration only when those abilities are activated.
+- Clock Tower affects Autoclick, Gold Bonus, Focus Burst, and Rally cooldowns when cooldown starts, capped at 50%.
+- Boss Shrine affects boss rewards only and stacks with Market, Trade Routes, and Gold Bonus.
 - Settlement rows use a temporary white `ColorRect` image placeholder, two text lines for name/count and per-purchase effect, and a buy button.
 - SettlementPanel should not show a combined settlement bonus summary line above building rows.
 - Settlement building rows should not show total owned effect; total bonuses belong in stats or summary UI.
@@ -127,8 +136,8 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Prestige talents are Focus Training (+5% click/autoclick damage per level), Trade Routes (+5% gold gain per level), Command Aura (+5% partner DPS per level), Quick Hands (+5% Autoclick attack rate per level, minimum interval 0.02 seconds), Builder Wisdom (+5% settlement bonus effectiveness per level), and Boss Hunter (+5% boss damage per level).
 - Prestige talent next cost is `1 + current talent level`.
 - Prestige reset does not reset prestige talents.
-- Apply prestige damage multiplier in `_update_character_state()` so `click_damage` always reflects effective damage.
-- Apply prestige damage multiplier in `get_partner_tick_damage()`.
+- Apply Focus Training prestige talent in `_update_character_state()` so `click_damage` reflects effective non-boss click damage.
+- Apply Command Aura prestige talent in `get_final_partner_dps()`, and use contextual Boss Hunter only for partner tick damage against bosses.
 - Apply prestige gold multiplier in `attack_with_damage()` before the Gold Bonus x2 multiplier.
 - Zone data lives in `ZONE_DATA` const in `ClickerState.gd`; do not move it to separate files yet.
 - Zones group levels 1–10, 11–20, 21–30, 31–40. Level 41+ stays in Zone 4.
@@ -290,11 +299,19 @@ After each patch, validate manually in Godot:
 - Settlement x1, x10, x100, and Max modes work like partners.
 - Settlement buttons always show required cost when prerequisites are met.
 - Training Camp increases partner DPS/tick damage.
+- Training Camp x10 with 200 base partner DPS displays 220 final Partner DPS.
+- Training Camp x25 with 200 base partner DPS displays 250 final Partner DPS.
+- Training Camp x100 with 200 base partner DPS displays 400 final Partner DPS.
 - Market increases gold rewards.
+- Market affects normal, elite, and boss rewards.
 - Knight Hut increases manual click and autoclick damage.
+- Knight Hut x10 increases displayed click damage by about 10%.
 - War Banner increases Focus Burst and Rally duration.
+- War Banner x10 makes Focus Burst last about 22 seconds and Rally last about 33 seconds.
 - Clock Tower reduces ability cooldowns up to the 50% cap.
+- Clock Tower x10 makes Autoclick cooldown about 54 seconds and Gold Bonus cooldown about 270 seconds.
 - Boss Shrine increases boss reward gold.
+- Boss Shrine does not change normal or elite rewards by itself.
 - Target defeat gives gold.
 - Defeating 10 enemies advances to the next level.
 - Level text updates correctly.

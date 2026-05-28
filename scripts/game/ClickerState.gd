@@ -492,7 +492,7 @@ func buy_rally_ability() -> Dictionary:
 	return _make_purchase_result("Rally purchased!", false, true)
 
 
-func get_total_partner_dps() -> int:
+func get_base_partner_dps() -> int:
 	var total_dps: int = 0
 
 	for index in range(partner_counts.size()):
@@ -501,19 +501,33 @@ func get_total_partner_dps() -> int:
 	return total_dps
 
 
-func get_partner_tick_damage() -> int:
-	var total_dps: int = get_total_partner_dps()
-	if total_dps <= 0:
+func get_total_partner_dps() -> int:
+	return get_base_partner_dps()
+
+
+func get_final_partner_dps(include_contextual_boss_multiplier: bool = false) -> int:
+	var base_dps: int = get_base_partner_dps()
+	if base_dps <= 0:
 		return 0
 
 	var final_dps: int = int(
-		total_dps
-		* get_prestige_damage_multiplier()
+		base_dps
 		* get_command_aura_multiplier()
 		* get_settlement_partner_dps_multiplier()
 		* get_rally_multiplier()
-		* get_boss_damage_multiplier()
 	)
+
+	if include_contextual_boss_multiplier:
+		final_dps = int(final_dps * get_boss_damage_multiplier())
+
+	return final_dps
+
+
+func get_partner_tick_damage() -> int:
+	var final_dps: int = get_final_partner_dps(true)
+	if final_dps <= 0:
+		return 0
+
 	var final_tick: int = int(final_dps / 10.0)
 	return maxi(1, final_tick)
 
@@ -1101,7 +1115,6 @@ func _update_character_state() -> void:
 		1,
 		int(
 			base_damage
-			* get_prestige_damage_multiplier()
 			* get_focus_training_multiplier()
 			* get_focus_burst_multiplier()
 			* get_settlement_click_damage_multiplier()

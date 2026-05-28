@@ -107,7 +107,7 @@ func _process(delta: float) -> void:
 	else:
 		autoclick_accumulator = 0.0
 
-	if state.get_total_partner_dps() > 0:
+	if state.get_base_partner_dps() > 0:
 		partner_damage_accumulator += delta
 
 		while partner_damage_accumulator + partner_damage_interval_epsilon >= partner_damage_interval:

@@ -18,7 +18,7 @@ func update_view(state: ClickerState) -> void:
 	gold_value_label.text = "%d" % state.gold
 	character_level_value_label.text = "%d" % state.character_level
 	damage_value_label.text = "%d" % state.click_damage
-	partner_dps_value_label.text = "%d" % state.get_total_partner_dps()
+	partner_dps_value_label.text = "%d" % state.get_final_partner_dps(false)
 
 
 func _on_settings_button_pressed() -> void:

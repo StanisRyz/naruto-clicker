@@ -85,6 +85,8 @@ The main scene contains the first local clicker loop:
 - Each partner tier requires at least one of the previous tier.
 - Partner tier DPS is `owned count * tier DPS * tier milestone multiplier`.
 - Partner damage ticks every 0.1 seconds for final partner DPS / 10 damage.
+- Base partner DPS includes partner tiers and partner milestones only.
+- Final partner DPS adds Command Aura, Training Camp, and Rally; the main stats panel displays final partner DPS without contextual Boss Hunter, while partner damage ticks include Boss Hunter during boss fights.
 - Hero Level upgrades, partner hires, and settlement buildings use the reusable `BuyModeSelector` for horizontal bulk mode buttons: `x1`, `x10`, `x100`, and `Max`.
 - In `UpgradeSheet`, `PartnerSheet`, and `SettlementSheet`, the buy mode selector stays fixed under the sheet header while purchase lists scroll independently below it.
 - `SettlementSheet` should use the same header / `BuyModeSelector` / scroll spacing as `UpgradeSheet` and `PartnerSheet`.
@@ -104,6 +106,12 @@ Settlement is a separate bottom tab between `Partners` and `Prestige`.
 - War Banner gives +1% Focus Burst and Rally duration per level.
 - Clock Tower gives -1% active ability cooldown per level, capped at 50%.
 - Boss Shrine gives +1% boss reward gold per level.
+- Builder Wisdom increases settlement building bonus effectiveness.
+- Training Camp affects both displayed final Partner DPS and partner tick damage.
+- Gold rewards apply Boss Shrine only for bosses, then Trade Routes, Market, and finally Gold Bonus.
+- Knight Hut affects displayed click damage and the click damage used by manual clicks and Autoclick; manual combo remains owned by `ClickerScreen`.
+- War Banner applies when Focus Burst or Rally is activated and does not affect Autoclick or Gold Bonus duration.
+- Clock Tower applies when ability cooldowns start and does not need to reduce already-running cooldowns.
 - Each building requires at least one of the previous building.
 - Building initial costs are `[25, 75, 150, 500, 1200, 3000]`.
 - Building costs scale by adding `[25, 50, 100, 250, 600, 1500]` per owned building.
