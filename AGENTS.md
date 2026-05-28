@@ -83,6 +83,8 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Partner `x10` and `x100` purchases are strict all-or-nothing packages; `Max` buys as many as current gold allows.
 - PartnerPanel should not show a Total DPS summary line above partner rows.
 - PartnerPanel uses progressive reveal: show Partner 1, all currently available partner cards, and exactly one next locked requirement card; deeper locked cards stay hidden and should not take scroll space.
+- Partner row second lines show the per-purchase DPS effect, formatted `+%d DPS for each %s`.
+- Total/final Partner DPS belongs in `PrimaryStatsPanel`; partner milestone info should not be shown in partner row descriptions.
 - PartnerPanel should always show the required package cost when prerequisites are met; "Not enough gold" belongs in status handling after a failed purchase, not in partner button text.
 - Keep `PartnerSheet`, `SettlementSheet`, and `PrestigeSheet` as separate bottom-half overlays from `UpgradeSheet`.
 - Settlement tab sits between `Partners` and `Prestige` in the bottom bar.
@@ -259,7 +261,8 @@ After each patch, validate manually in Godot:
 - Partner costs increase after purchase.
 - Partner counts update after purchase.
 - Total Partner DPS updates correctly.
-- Partner rows show tier total DPS and the next milestone, or Max milestones when all milestones are reached.
+- Partner rows show per-purchase DPS effect text.
+- Partner rows do not show accumulated tier DPS, Next x2 milestone text, or Max milestones text.
 - Partner milestones apply independently per tier.
 - Partner DPS damages enemy every 0.1 seconds.
 - One Partner 1 deals 1 damage per 0.1 seconds.

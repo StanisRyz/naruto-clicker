@@ -944,9 +944,9 @@ func _get_character_level_bulk_cost_for_count(count: int) -> int:
 
 func _get_character_level_cost_for_level(level: int) -> int:
 	# Non-linear, not exponential: target level is current + 1, and milestone targets cost x3.
-	var current_level: int = maxi(1, level)
-	var target_level: int = current_level + 1
-	var progress: float = float(current_level - 1)
+	var current_hero_level: int = maxi(1, level)
+	var target_level: int = current_hero_level + 1
+	var progress: float = float(current_hero_level - 1)
 	var raw_cost: float = (
 		float(character_cost_base)
 		+ character_cost_linear * progress

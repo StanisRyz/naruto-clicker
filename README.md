@@ -82,6 +82,8 @@ The main scene contains the first local clicker loop:
 - Partner DPS tiers are data-driven: Partner 1 (10), Partner 2 (30), Partner 3 (50), Field Scout (100), Spear Guard (175), Iron Defender (300), Battle Monk (500), Elite Samurai (850), Shadow Captain (1400), War Sage (2300), Beast Tamer (3800), Blade Master (6200), and Legendary Commander (10000).
 - The Partners tab uses partner card rows only and should not show a Total DPS summary line.
 - The Partners tab progressively reveals cards: visible available partner cards plus one next locked requirement card; deeper locked tiers stay hidden.
+- Partner row second lines show the per-purchase DPS effect, such as `+10 DPS for each Partner 1`; total and final Partner DPS belong in `PrimaryStatsPanel`.
+- Partner milestone formulas still affect actual DPS, but milestone info is not shown in partner row descriptions.
 - Partner initial costs are `[10, 50, 150, 400, 900, 1800, 3500, 7000, 14000, 28000, 56000, 110000, 220000]`.
 - Partner costs use each tier's base and step values plus a controlled non-linear power curve.
 - Partner milestone target counts 10, 25, 50, 100, 250, and 500 cost x3 independently per tier.
@@ -199,7 +201,7 @@ The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes
 - `scenes/ui/BuyModeSelector.tscn` - Reusable fixed `x1` / `x10` / `x100` / `Max` selector for hero level, partner, and settlement purchase sheets.
 - `scenes/ui/UpgradePanel.tscn` - Card-style Hero Level upgrade row and one-time ability purchase rows.
 - `scenes/ui/UpgradeSheet.tscn` - Bottom-half upgrades sheet that hosts UpgradePanel.
-- `scenes/ui/PartnerPanel.tscn` - Card-style partner hiring controls and DPS display.
+- `scenes/ui/PartnerPanel.tscn` - Card-style partner hiring controls with per-purchase DPS effect rows.
 - `scenes/ui/PartnerSheet.tscn` - Bottom-half partners sheet that hosts PartnerPanel.
 - `scenes/ui/SettlementPanel.tscn` - Settlement building controls and bonus display.
 - `scenes/ui/SettlementSheet.tscn` - Bottom-half settlement sheet that hosts SettlementPanel.
