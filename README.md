@@ -43,6 +43,9 @@ The main scene contains the first local clicker loop:
 - Primary stat cards show only a temporary white `ColorRect` placeholder and the value, with transparent backgrounds.
 - `PrimaryStatsPanel` includes a placeholder white-square `SettingsButton`; it is a stub until a real settings flow is explicitly requested.
 - Prestige and settlement details belong in their bottom tabs, not on the main screen.
+- Manual Combo / Chakra Meter rewards active clicking: only manual `GameField` clicks build combo, every 10 combo adds +5% manual click damage, and combo is capped at 100 for a maximum x1.50 manual multiplier.
+- Combo resets after 2 seconds without manual clicks, resets on prestige, and is runtime-only with no save persistence.
+- Autoclick and partner DPS do not build combo and do not receive combo damage bonuses.
 - Each level requires defeating 10 enemies.
 - Enemy HP and gold reward scale with the current level.
 - Every 5th level is a boss level with one boss.
@@ -171,6 +174,7 @@ The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes
 - `scenes/game/ClickerScreen.gd` - Owns gameplay flow and UI updates.
 - `scenes/ui/PrimaryStatsPanel.tscn` - Compact top-centered horizontal stat overlay for gold, character level, click damage, partner DPS, and a placeholder settings button.
 - `scenes/ui/ProgressInfoPanel.tscn` - Compact progress UI for level, zone name, enemies progress, enemy name, enemy HP, and the enemy HP bar.
+- `scenes/ui/ComboPanel.tscn` - Compact runtime-only Manual Combo / Chakra Meter display for combo count and manual damage multiplier.
 - `scenes/ui/GameField.tscn` - Fullscreen tap/click attack field, muted green background placeholder, enemy placeholder states, boss timer, and defeat feedback.
 - `scenes/ui/AbilityBar.tscn` - Left-side textless placeholder-square active ability buttons.
 - `scenes/ui/BuyModeSelector.tscn` - Reusable fixed `x1` / `x10` / `x100` / `Max` selector for hero level, partner, and settlement purchase sheets.

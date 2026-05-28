@@ -29,9 +29,15 @@ var active_bottom_tab: String = ""
 var enemy_transition_locked: bool = false
 var enemy_respawn_delay: float = 0.2
 var enemy_transition_token: int = 0
+var manual_combo_count: int = 0
+var manual_combo_max: int = 100
+var manual_combo_timeout: float = 2.0
+var manual_combo_time_left: float = 0.0
+var manual_combo_bonus_per_10: float = 0.05
 
 @onready var primary_stats_panel: PrimaryStatsPanel = $PrimaryStatsPanel
 @onready var progress_info_panel: ProgressInfoPanel = $MainContent/VBoxContainer/ProgressInfoPanel
+@onready var combo_panel: ComboPanel = $MainContent/VBoxContainer/ComboPanel
 @onready var game_field: GameField = $GameField
 @onready var ability_bar: AbilityBar = $AbilityBar
 @onready var upgrades_button: Button = $BottomBar/MarginContainer/HBoxContainer/UpgradesButton
@@ -76,6 +82,13 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	if manual_combo_count > 0:
+		manual_combo_time_left -= delta
+		if manual_combo_time_left <= 0.0:
+			manual_combo_count = 0
+			manual_combo_time_left = 0.0
+			_update_combo_panel()
+
 	if boss_timer_active and not enemy_transition_locked:
 		boss_time_left = maxf(boss_time_left - delta, 0.0)
 		game_field.update_boss_timer(boss_time_left, boss_timer_active)
@@ -110,6 +123,7 @@ func _update_ui() -> void:
 	_update_bottom_bar_view()
 	primary_stats_panel.update_view(state)
 	progress_info_panel.update_view(state)
+	_update_combo_panel()
 	game_field.update_view(state)
 	game_field.update_boss_timer(boss_time_left, boss_timer_active)
 	ability_bar.update_view(
@@ -133,8 +147,11 @@ func _on_attack_requested() -> void:
 	if enemy_transition_locked:
 		return
 
+	manual_combo_count = mini(manual_combo_count + 1, manual_combo_max)
+	manual_combo_time_left = manual_combo_timeout
+	var manual_damage: int = maxi(1, int(state.get_current_click_damage() * _get_manual_combo_multiplier()))
 	var was_boss_level: bool = state.is_boss_level
-	var result: Dictionary = state.attack()
+	var result: Dictionary = state.attack_with_damage(manual_damage)
 	_apply_attack_result(result, true, was_boss_level)
 
 
@@ -247,6 +264,8 @@ func _on_prestige_confirmed() -> void:
 	rally_cooldown_left = 0.0
 	autoclick_accumulator = 0.0
 	partner_damage_accumulator = 0.0
+	manual_combo_count = 0
+	manual_combo_time_left = 0.0
 	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
 	_sync_boss_timer()
@@ -432,6 +451,20 @@ func _get_scaled_duration(base_duration: float, uses_war_banner: bool) -> float:
 
 func _get_scaled_cooldown(base_cooldown: float) -> float:
 	return base_cooldown * state.get_ability_cooldown_multiplier()
+
+
+func _get_manual_combo_multiplier() -> float:
+	var bonus_steps: int = int(manual_combo_count / 10)
+	return 1.0 + bonus_steps * manual_combo_bonus_per_10
+
+
+func _update_combo_panel() -> void:
+	combo_panel.update_view(
+		manual_combo_count,
+		manual_combo_time_left,
+		manual_combo_timeout,
+		_get_manual_combo_multiplier()
+	)
 
 
 func _handle_defeat_result(result: Dictionary, was_boss_level: bool) -> void:
