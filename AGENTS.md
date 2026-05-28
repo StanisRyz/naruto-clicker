@@ -32,10 +32,11 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - `PrimaryStatsPanel` includes a placeholder white-square `SettingsButton`; it should remain a stub until a real settings flow is explicitly requested.
 - The main screen does not use a general `StatusLabel`; status text may be ignored or routed through a no-op helper until a dedicated UI is requested.
 - `ProgressInfoPanel` shows level, zone name, enemies progress, enemy name, enemy HP, and a compact enemy HP bar directly under the HP text.
-- `ComboPanel` shows the runtime-only Manual Combo / Chakra Meter near progress info and should not be placed inside `PrimaryStatsPanel`, `GameField`, bottom sheets, or bottom tabs.
-- Only manual player clicks build combo. Autoclick and partner DPS must not build combo.
-- Every 10 combo adds +5% manual click damage only: combo 0-9 is x1.00, 10-19 is x1.05, and combo 100 is capped at x1.50.
-- Combo max is 100, resets after 2 seconds without manual clicks, resets on prestige, and must not be added to `ClickerState` persistence/state.
+- `ComboPanel` shows the runtime-only Manual Combo / Chakra Meter as a right-side vertically centered meter and should not be placed inside `PrimaryStatsPanel`, `ProgressInfoPanel`, `GameField`, bottom sheets, or bottom tabs.
+- Only manual player clicks fill the combo meter. Autoclick and partner DPS must not fill it.
+- Manual clicks add +1% meter charge, the meter decays by 1% per second, and every 1% meter charge gives +1% manual click damage only.
+- At 100% meter charge, an empowered state starts: manual click damage is x3 for 10 seconds, the meter stays full during the state, and the meter resets to 0 when the state ends.
+- Combo resets on prestige, is runtime-only, and must not be added to `ClickerState` persistence/state.
 - Autoclick and partner DPS must not receive combo damage bonuses.
 - Prestige and settlement details belong in their tabs, not on the main screen.
 - Keep `UpgradePanel` responsible only for upgrade controls.
@@ -312,16 +313,23 @@ After each patch, validate manually in Godot:
 - Level 11 uses one of the Forest Path normal enemies or its 7% elite enemy roll; level 15 boss is "Forest Guardian".
 - ProgressInfoPanel updates zone name, enemy name, and enemy HP.
 - ProgressInfoPanel shows zone name without the zone level range.
-- Manual click increases combo by 1.
-- Combo does not exceed 100.
-- Combo resets after 2 seconds without manual clicks.
-- Every 10 combo increases manual click damage by +5%.
-- Manual click at combo 100 uses x1.50 damage.
-- Autoclick does not increase combo.
+- ComboPanel appears on the right side, vertically centered.
+- Combo meter is vertical.
+- Multiplier text is below the meter.
+- Manual click increases meter by 1%.
+- Meter decays by 1% per second.
+- At 25% meter, manual click damage is approximately x1.25.
+- At 50% meter, manual click damage is approximately x1.50.
+- At 100% meter, empowered state starts.
+- During empowered state, manual click damage is x3.
+- Empowered state lasts 10 seconds.
+- After empowered state ends, meter instantly resets to 0.
+- Manual clicks do not refill meter during empowered state.
+- Autoclick does not fill meter.
 - Autoclick does not receive combo damage bonus.
-- Partner DPS does not increase combo.
+- Partner DPS does not fill meter.
 - Partner DPS does not receive combo damage bonus.
-- Combo resets on prestige.
+- Prestige resets combo meter and empowered state.
 - ComboPanel updates correctly.
 - HP and reward values are higher in later zones than the base formula alone.
 - Zone defeat feedback shows "New Zone!" flash when zone changes.
