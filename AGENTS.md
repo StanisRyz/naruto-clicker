@@ -126,7 +126,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Let `ClickerScreen` coordinate state results into UI feedback calls.
 - Keep the main attack input on the `GameField` tap/click area, not a separate Attack button.
 - Keep level progression simple: 10 enemies defeated per level, then advance the level.
-- Keep every 5th level as a boss level with exactly one boss.
+- Keep every 10th level as a boss level with exactly one boss.
 - Boss levels must use a 30 second timer and return to the previous level on failure.
 - Each zone has three normal enemies, one elite enemy, and one boss.
 - Normal enemies are randomly selected when each new non-boss target is created.
@@ -147,7 +147,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Prestige reset does not reset prestige talents.
 - Apply Focus Training prestige talent in `_update_character_state()` so `click_damage` reflects effective non-boss click damage.
 - Apply Command Aura prestige talent in `get_final_partner_dps()`, and use contextual Boss Hunter only for partner tick damage against bosses.
-- Apply prestige gold multiplier in `attack_with_damage()` before the Gold Bonus x2 multiplier.
+- Raw prestige points do not provide passive gold bonuses; Trade Routes applies to gold gain, Boss Shrine applies only to boss reward gold, Market applies to normal/elite/boss rewards, and Gold Bonus doubles final reward while active.
 - Zone data lives in `ZONE_DATA` const in `ClickerState.gd`; do not move it to separate files yet.
 - Zones group levels 1–10, 11–20, 21–30, 31–40. Level 41+ stays in Zone 4.
 - Zone HP multipliers: 1.0, 1.4, 1.9, 2.5. Zone reward multipliers: 1.0, 1.3, 1.7, 2.2.
@@ -344,7 +344,8 @@ After each patch, validate manually in Godot:
 - Level text updates correctly.
 - Enemies defeated counter updates correctly.
 - Enemy HP and reward increase after level up.
-- Levels 5, 10, 15, etc. are boss levels.
+- Levels 10, 20, 30, etc. are boss levels.
+- Levels 5, 15, 25, etc. are normal non-boss levels.
 - Boss levels have one boss with higher HP and reward.
 - Boss timer starts at 30 seconds and decreases.
 - Defeating a boss before timeout advances to the next level.
@@ -373,7 +374,8 @@ After each patch, validate manually in Godot:
 - Partner tick damage uses milestone-boosted DPS.
 - UI shows next milestone info for hero and partners.
 - Level 1 starts in Training Grounds with a random normal enemy or a 7% elite enemy roll.
-- Level 5 boss is named "Training Master".
+- Level 5 is a normal level.
+- Level 10 boss is named "Training Master".
 - Reaching level 11 transitions to Forest Path; ProgressInfoPanel shows "Forest Path" and defeat feedback shows "New Zone!".
 - Level 11 uses one of the Forest Path normal enemies or its 7% elite enemy roll; level 15 boss is "Forest Guardian".
 - ProgressInfoPanel updates zone name, enemy name, and enemy HP.

@@ -50,7 +50,7 @@ The main scene contains the first local clicker loop:
 - Autoclick and partner DPS do not build combo and do not receive combo damage bonuses.
 - Each level requires defeating 10 enemies.
 - Enemy HP and gold reward scale with the current level.
-- Every 5th level is a boss level with one boss.
+- Every 10th level is a boss level with one boss.
 - Bosses must be defeated within 30 seconds or the player returns to the previous level.
 - Gold can upgrade character level. Hero damage starts from character level and is boosted by hero level milestones.
 - Hero level upgrade costs use a controlled non-linear formula: early purchases stay affordable, while later purchases get harder through a power curve.
@@ -83,7 +83,6 @@ The main scene contains the first local clicker loop:
 - The Partners tab uses partner card rows only and should not show a Total DPS summary line.
 - The Partners tab progressively reveals cards: visible available partner cards plus one next locked requirement card; deeper locked tiers stay hidden.
 - Partner row second lines show per-purchase DPS and the next x2 milestone, such as `+10 DPS | Next x2 at 10`; they do not include `for each PartnerName` or accumulated partner DPS.
-- Partner milestone formulas still affect actual DPS, but milestone info is not shown in partner row descriptions.
 - Partner initial costs are `[10, 50, 150, 400, 900, 1800, 3500, 7000, 14000, 28000, 56000, 110000, 220000]`.
 - Partner costs use each tier's base and step values plus a controlled non-linear power curve.
 - Partner milestone target counts 10, 25, 50, 100, 250, and 500 cost x3 independently per tier.
@@ -181,7 +180,7 @@ Levels are grouped into zones. Each zone has three normal enemies, one elite ene
 - Base HP formula: `10 + 8.0 * stage + 1.15 * stage^2.10`. Zone HP multiplier is applied after.
 - Base reward formula: `5 + 3.0 * stage + 0.22 * stage^1.80`. Zone reward multiplier is applied after.
 - HP grows faster than rewards so later progression leans on milestones, partners, settlement, prestige talents, and abilities.
-- Boss levels (every 5th level) still multiply the zone-scaled HP and reward by 5.
+- Boss levels (every 10th level) still multiply the zone-scaled HP and reward by 5.
 - Zone data is stored as a constant array in `scripts/game/ClickerState.gd`.
 - No background images or audio assets are used for zones.
 

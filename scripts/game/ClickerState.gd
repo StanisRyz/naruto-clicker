@@ -139,8 +139,6 @@ var prestige_points_available: int = 0
 var prestige_points_total_earned: int = 0
 var total_prestiges: int = 0
 var prestige_required_level: int = 50
-var prestige_damage_bonus_per_point: float = 0.10
-var prestige_gold_bonus_per_point: float = 0.10
 var prestige_talent_levels: Array[int] = [0, 0, 0, 0, 0, 0]
 var prestige_talent_names: Array[String] = ["Focus Training", "Trade Routes", "Command Aura", "Quick Hands", "Builder Wisdom", "Boss Hunter"]
 var prestige_talent_bonus_types: Array[String] = ["click_damage", "gold", "partner_dps", "autoclick_rate", "settlement_effect", "boss_damage"]
@@ -178,14 +176,6 @@ func get_prestige_character_points() -> int:
 
 func get_prestige_reward() -> int:
 	return get_prestige_stage_points() + get_prestige_character_points()
-
-
-func get_prestige_damage_multiplier() -> float:
-	return 1.0
-
-
-func get_prestige_gold_multiplier() -> float:
-	return 1.0
 
 
 func get_focus_training_multiplier() -> float:
@@ -357,8 +347,7 @@ func resolve_defeated_target() -> Dictionary:
 	var damage_dealt: int = 0
 	var defeated_boss: bool = is_boss_level
 	var boss_reward: int = int(reward_gold * get_boss_reward_multiplier()) if defeated_boss else reward_gold
-	var prestige_gold: int = int(boss_reward * get_prestige_gold_multiplier())
-	var talent_gold: int = int(prestige_gold * get_trade_routes_multiplier())
+	var talent_gold: int = int(boss_reward * get_trade_routes_multiplier())
 	var settlement_gold: int = int(talent_gold * get_settlement_gold_multiplier())
 	var earned_gold: int = settlement_gold * gold_bonus_multiplier if gold_bonus_active else settlement_gold
 	gold += earned_gold
@@ -1041,7 +1030,7 @@ func _reset_building_state() -> void:
 
 
 func is_current_level_boss() -> bool:
-	return current_level % 5 == 0
+	return current_level % 10 == 0
 
 
 func setup_current_level() -> void:
