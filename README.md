@@ -73,8 +73,11 @@ The main scene contains the first local clicker loop:
 - The game field is the fullscreen bottom clickable layer.
 - Ability buttons are a separate left-middle overlay and must be purchased before activation.
 - `TasksButton` is a textless white square directly above the right-side `ComboPanel`.
-- `TasksWindow` shows 5 active runtime-only tasks randomly selected from a pool of 10 tasks.
-- Claiming a completed task gives dynamic gold, removes that task, and fills the active list with a random inactive task when available.
+- `TasksWindow` shows 5 active runtime-only tasks from a repeatable pool of 10 tasks; the other 5 tasks stay inactive.
+- Active tasks snapshot their baseline when activated, so inactive tasks do not progress in the background.
+- Claiming a completed task gives dynamic gold, resets that task into the inactive pool, and swaps in one random inactive task with a fresh baseline.
+- Claimed tasks can rotate back later; tasks are never permanently exhausted.
+- Level-based tasks are delta tasks such as "Reach 10 more levels", and hero progression uses "Gain 10 Hero Levels".
 - Task rewards use `current normal enemy reward * reward_scale`, include current zone reward scaling, and are recalculated when displayed or claimed.
 - Task rewards do not include elite/boss reward multipliers, Boss Shrine, Market, Trade Routes, or Gold Bonus.
 - Tasks can be closed with the window Close button or by clicking/tapping outside the task panel.
@@ -204,7 +207,7 @@ The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes
 - `scenes/ui/PrimaryStatsPanel.tscn` - Compact top-centered horizontal stat overlay for gold, character level, click damage, partner DPS, and a placeholder settings button.
 - `scenes/ui/ProgressInfoPanel.tscn` - Compact progress UI for level, zone name, enemies progress, enemy name, enemy HP, and the enemy HP bar.
 - `scenes/ui/ComboPanel.tscn` - Right-side vertical runtime-only Manual Combo / Chakra Meter display for meter charge and manual damage multiplier.
-- `scenes/ui/TasksWindow.tscn` - Runtime-only tasks overlay with 5 active goals, dynamic level-scaled gold claim rewards, and outside-click close behavior.
+- `scenes/ui/TasksWindow.tscn` - Runtime-only repeatable tasks overlay with 5 active goals, dynamic level-scaled gold claim rewards, rotation after claim, and outside-click close behavior.
 - `scenes/ui/GameField.tscn` - Fullscreen tap/click attack field, muted green background placeholder, enemy placeholder states, boss timer, and defeat feedback.
 - `scenes/ui/AbilityBar.tscn` - Left-side textless placeholder-square active ability buttons.
 - `scenes/ui/BuyModeSelector.tscn` - Reusable fixed `x1` / `x10` / `x100` / `Max` selector for hero level, partner, and settlement purchase sheets.

@@ -34,8 +34,11 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - `ProgressInfoPanel` shows level, zone name, enemies progress, enemy name, enemy HP, and a compact enemy HP bar directly under the HP text.
 - `ComboPanel` shows the runtime-only Manual Combo / Chakra Meter as a right-side vertically centered meter and should not be placed inside `PrimaryStatsPanel`, `ProgressInfoPanel`, `GameField`, bottom sheets, or bottom tabs.
 - `TasksButton` is a textless white square directly above `ComboPanel`.
-- `TasksWindow` shows 5 active runtime-only tasks randomly selected from a pool of 10 total tasks.
-- Claiming a completed task gives dynamic gold, removes that task from the active list, and adds a random inactive task if available.
+- `TasksWindow` shows exactly 5 active runtime-only tasks from a repeatable pool of 10 total tasks, with the other 5 task ids inactive.
+- Active tasks snapshot a baseline when activated; inactive tasks must not calculate or accumulate progress.
+- Claiming a completed task gives dynamic gold, moves the claimed task back to the inactive pool, and activates one random inactive task with a fresh baseline.
+- Claimed tasks can rotate back later; tasks must never be permanently exhausted.
+- Level tasks are delta tasks such as "Reach 10 more levels", and hero level tasks use "Gain 10 Hero Levels".
 - Task rewards use `current normal enemy reward * reward_scale`, include current zone reward scaling, and are recalculated when displayed or claimed.
 - Task rewards must not include elite/boss reward multipliers, Boss Shrine, Market, Trade Routes, or Gold Bonus.
 - Keep task definitions on `reward_scale` values rather than fixed `reward_gold` values.
@@ -391,12 +394,13 @@ After each patch, validate manually in Godot:
 - ComboPanel appears on the right side, vertically centered.
 - TasksButton appears directly above ComboPanel as a textless white square.
 - TasksButton opens TasksWindow and does not attack the enemy.
-- TasksWindow shows 5 unique active tasks when enough unclaimed tasks are available.
+- TasksWindow shows 5 unique active tasks and the inactive pool has the other 5 task ids.
 - TasksWindow closes with Close button and outside-panel clicks.
 - Clicking inside TasksWindow does not close it unless Close is pressed and does not attack the enemy.
-- Completed tasks have enabled Claim buttons, add dynamic level-scaled gold when claimed, disappear after claim, and are replaced by random inactive tasks if available.
+- Completed tasks have enabled Claim buttons, add dynamic level-scaled gold when claimed, move back to inactive, and are replaced by random inactive tasks.
+- Claimed tasks can rotate back later with progress reset from a fresh activation baseline.
+- Inactive tasks do not progress from past actions before activation.
 - Task rewards scale from the current level's normal enemy reward plus zone reward multiplier, excluding elite/boss multipliers, settlement reward bonuses, prestige reward bonuses, Boss Shrine, and Gold Bonus.
-- Claimed tasks do not reappear.
 - Manual damage task progresses only from manual click damage.
 - Autoclick task progresses when Autoclick is activated.
 - Combo task progresses when combo empowered state starts.

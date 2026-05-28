@@ -144,20 +144,20 @@ var prestige_talent_names: Array[String] = ["Focus Training", "Trade Routes", "C
 var prestige_talent_bonus_types: Array[String] = ["click_damage", "gold", "partner_dps", "autoclick_rate", "settlement_effect", "boss_damage"]
 var prestige_talent_bonus_percent_per_level: int = 5
 var task_definitions: Array[Dictionary] = [
-	{"id": "manual_damage_500", "title": "Deal 500 manual damage", "goal_type": "manual_damage", "target": 500, "reward_scale": 20},
-	{"id": "defeat_25_enemies", "title": "Defeat 25 enemies", "goal_type": "enemies_defeated", "target": 25, "reward_scale": 30},
-	{"id": "defeat_2_elites", "title": "Defeat 2 elite enemies", "goal_type": "elite_enemies_defeated", "target": 2, "reward_scale": 60},
-	{"id": "defeat_1_boss", "title": "Defeat 1 boss", "goal_type": "bosses_defeated", "target": 1, "reward_scale": 100},
-	{"id": "reach_hero_level_10", "title": "Reach Hero Level 10", "goal_type": "hero_level", "target": 10, "reward_scale": 50},
-	{"id": "hire_10_partners", "title": "Hire 10 partners total", "goal_type": "partners_total", "target": 10, "reward_scale": 70},
-	{"id": "build_5_buildings", "title": "Build 5 settlement buildings", "goal_type": "buildings_total", "target": 5, "reward_scale": 80},
-	{"id": "activate_autoclick_1", "title": "Activate Autoclick 1 time", "goal_type": "autoclick_activations", "target": 1, "reward_scale": 40},
-	{"id": "combo_empowered_1", "title": "Fill Combo Meter to 100%", "goal_type": "combo_empowered", "target": 1, "reward_scale": 90},
-	{"id": "reach_level_10", "title": "Reach Level 10", "goal_type": "game_level", "target": 10, "reward_scale": 120},
+	{"id": "manual_damage_500", "title": "Deal 500 manual damage", "goal_type": "manual_damage_delta", "target_delta": 500, "reward_scale": 20},
+	{"id": "defeat_25_enemies", "title": "Defeat 25 enemies", "goal_type": "enemies_defeated_delta", "target_delta": 25, "reward_scale": 30},
+	{"id": "defeat_2_elites", "title": "Defeat 2 elite enemies", "goal_type": "elite_enemies_defeated_delta", "target_delta": 2, "reward_scale": 60},
+	{"id": "defeat_1_boss", "title": "Defeat 1 boss", "goal_type": "bosses_defeated_delta", "target_delta": 1, "reward_scale": 100},
+	{"id": "gain_10_hero_levels", "title": "Gain 10 Hero Levels", "goal_type": "hero_level_delta", "target_delta": 10, "reward_scale": 50},
+	{"id": "hire_10_partners", "title": "Hire 10 partners", "goal_type": "partners_total_delta", "target_delta": 10, "reward_scale": 70},
+	{"id": "build_5_buildings", "title": "Build 5 settlement buildings", "goal_type": "buildings_total_delta", "target_delta": 5, "reward_scale": 80},
+	{"id": "activate_autoclick_1", "title": "Activate Autoclick 1 time", "goal_type": "autoclick_activations_delta", "target_delta": 1, "reward_scale": 40},
+	{"id": "combo_empowered_1", "title": "Fill Combo Meter to 100%", "goal_type": "combo_empowered_delta", "target_delta": 1, "reward_scale": 90},
+	{"id": "gain_10_game_levels", "title": "Reach 10 more levels", "goal_type": "game_level_delta", "target_delta": 10, "reward_scale": 120},
 ]
 var active_task_ids: Array[String] = []
-var completed_task_ids: Array[String] = []
-var claimed_task_ids: Array[String] = []
+var inactive_task_ids: Array[String] = []
+var active_task_states: Dictionary = {}
 var total_manual_click_damage_dealt: int = 0
 var total_enemies_defeated: int = 0
 var total_elite_enemies_defeated: int = 0
@@ -202,34 +202,76 @@ func get_prestige_reward() -> int:
 
 func initialize_tasks() -> void:
 	active_task_ids.clear()
-	completed_task_ids.clear()
-	claimed_task_ids.clear()
-	_fill_active_tasks()
+	inactive_task_ids.clear()
+	active_task_states.clear()
 
-
-func _fill_active_tasks() -> void:
-	while active_task_ids.size() < 5:
-		var available_task_ids: Array[String] = _get_available_inactive_task_ids()
-		if available_task_ids.is_empty():
-			return
-
-		var random_index: int = rng.randi_range(0, available_task_ids.size() - 1)
-		active_task_ids.append(available_task_ids[random_index])
-
-
-func _get_available_inactive_task_ids() -> Array[String]:
-	var available_task_ids: Array[String] = []
+	var task_ids: Array[String] = []
 	for task: Dictionary in task_definitions:
 		var task_id: String = String(task.get("id", ""))
-		if task_id == "":
-			continue
+		if task_id != "":
+			task_ids.append(task_id)
 
-		if active_task_ids.has(task_id) or completed_task_ids.has(task_id) or claimed_task_ids.has(task_id):
-			continue
+	_shuffle_task_ids(task_ids)
+	for i in range(task_ids.size()):
+		var active_or_inactive_id: String = task_ids[i]
+		if i < 5:
+			active_task_ids.append(active_or_inactive_id)
+			_initialize_active_task_state(active_or_inactive_id)
+		else:
+			inactive_task_ids.append(active_or_inactive_id)
 
-		available_task_ids.append(task_id)
 
-	return available_task_ids
+func _shuffle_task_ids(task_ids: Array[String]) -> void:
+	if task_ids.size() < 2:
+		return
+
+	for i in range(task_ids.size() - 1, 0, -1):
+		var swap_index: int = rng.randi_range(0, i)
+		var original_id: String = task_ids[i]
+		task_ids[i] = task_ids[swap_index]
+		task_ids[swap_index] = original_id
+
+
+func _initialize_active_task_state(task_id: String) -> void:
+	var task: Dictionary = get_task_definition(task_id)
+	if task.is_empty():
+		return
+
+	var start_value: int = _get_task_current_value(task_id)
+	var target_delta: int = int(task.get("target_delta", 0))
+	active_task_states[task_id] = {
+		"start_value": start_value,
+		"target_delta": target_delta,
+		"target_value": start_value + target_delta,
+	}
+
+
+func _get_task_current_value(task_id: String) -> int:
+	var task: Dictionary = get_task_definition(task_id)
+	var goal_type: String = String(task.get("goal_type", ""))
+	match goal_type:
+		"manual_damage_delta":
+			return total_manual_click_damage_dealt
+		"enemies_defeated_delta":
+			return total_enemies_defeated
+		"elite_enemies_defeated_delta":
+			return total_elite_enemies_defeated
+		"bosses_defeated_delta":
+			return total_bosses_defeated
+		"hero_level_delta":
+			return character_level
+		"partners_total_delta":
+			return _get_total_partner_count()
+		"buildings_total_delta":
+			return _get_total_building_count()
+		"autoclick_activations_delta":
+			return total_autoclick_activations
+		"combo_empowered_delta":
+			return total_combo_empowered_activations
+		"game_level_delta":
+			return current_level
+
+	return 0
 
 
 func get_task_definition(task_id: String) -> Dictionary:
@@ -241,35 +283,22 @@ func get_task_definition(task_id: String) -> Dictionary:
 
 
 func get_task_progress(task_id: String) -> int:
-	var task: Dictionary = get_task_definition(task_id)
-	var goal_type: String = String(task.get("goal_type", ""))
-	match goal_type:
-		"manual_damage":
-			return total_manual_click_damage_dealt
-		"enemies_defeated":
-			return total_enemies_defeated
-		"elite_enemies_defeated":
-			return total_elite_enemies_defeated
-		"bosses_defeated":
-			return total_bosses_defeated
-		"hero_level":
-			return character_level
-		"partners_total":
-			return _get_total_partner_count()
-		"buildings_total":
-			return _get_total_building_count()
-		"autoclick_activations":
-			return total_autoclick_activations
-		"combo_empowered":
-			return total_combo_empowered_activations
-		"game_level":
-			return current_level
+	if not active_task_ids.has(task_id) or not active_task_states.has(task_id):
+		return 0
 
-	return 0
+	var task_state: Dictionary = active_task_states[task_id]
+	var start_value: int = int(task_state.get("start_value", 0))
+	var target_delta: int = int(task_state.get("target_delta", 0))
+	var progress: int = _get_task_current_value(task_id) - start_value
+	return clampi(progress, 0, target_delta)
 
 
 func get_task_target(task_id: String) -> int:
-	return int(get_task_definition(task_id).get("target", 0))
+	if not active_task_ids.has(task_id) or not active_task_states.has(task_id):
+		return 0
+
+	var task_state: Dictionary = active_task_states[task_id]
+	return int(task_state.get("target_delta", 0))
 
 
 func get_current_task_reward_unit() -> int:
@@ -291,11 +320,10 @@ func get_task_reward_gold(task_id: String) -> int:
 
 
 func is_task_completed(task_id: String) -> bool:
+	if not active_task_ids.has(task_id):
+		return false
+
 	return get_task_progress(task_id) >= get_task_target(task_id)
-
-
-func is_task_claimed(task_id: String) -> bool:
-	return claimed_task_ids.has(task_id)
 
 
 func get_active_task_view_data() -> Array[Dictionary]:
@@ -309,10 +337,9 @@ func get_active_task_view_data() -> Array[Dictionary]:
 			"id": task_id,
 			"title": String(task.get("title", "")),
 			"progress": get_task_progress(task_id),
-			"target": int(task.get("target", 0)),
+			"target": get_task_target(task_id),
 			"reward_gold": get_task_reward_gold(task_id),
 			"completed": is_task_completed(task_id),
-			"claimed": is_task_claimed(task_id),
 		})
 
 	return task_view_data
@@ -325,16 +352,21 @@ func claim_task_reward(task_id: String) -> Dictionary:
 	if not is_task_completed(task_id):
 		return _make_purchase_result("Task is not complete")
 
-	if is_task_claimed(task_id):
-		return _make_purchase_result("Task already claimed")
-
 	var reward: int = get_task_reward_gold(task_id)
 	gold += reward
 	active_task_ids.erase(task_id)
-	claimed_task_ids.append(task_id)
-	if not completed_task_ids.has(task_id):
-		completed_task_ids.append(task_id)
-	_fill_active_tasks()
+	active_task_states.erase(task_id)
+
+	if inactive_task_ids.is_empty():
+		inactive_task_ids.append(task_id)
+		return _make_purchase_result("Task complete! +%d gold" % reward, false, true)
+
+	var replacement_index: int = rng.randi_range(0, inactive_task_ids.size() - 1)
+	var replacement_id: String = inactive_task_ids[replacement_index]
+	inactive_task_ids.remove_at(replacement_index)
+	active_task_ids.append(replacement_id)
+	_initialize_active_task_state(replacement_id)
+	inactive_task_ids.append(task_id)
 
 	return _make_purchase_result("Task complete! +%d gold" % reward, false, true)
 
