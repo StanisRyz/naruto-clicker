@@ -89,7 +89,12 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Settlement costs scale by adding `[25, 50, 100, 250, 600, 1500]` per owned building.
 - Settlement purchases use bulk modes `x1`, `x10`, `x100`, and `Max` with the same strict all-or-nothing behavior as partners for `x10` and `x100`.
 - Settlement buildings reset on prestige.
-- Character level replaces the old damage upgrade; character level must equal click damage.
+- Character level replaces the old damage upgrade; base hero damage starts from character level and is boosted by hero milestones.
+- Hero base damage is `character_level * hero milestone multiplier` before Focus Burst, settlement Knight Hut, prestige talents, combo manual multiplier, and Boss Hunter.
+- Hero level and each partner tier use milestone levels `[10, 25, 50, 100, 250, 500]`.
+- Each reached milestone doubles the total accumulated contribution of that source, applying to all owned levels rather than only future purchases.
+- Hero and every partner tier track milestone multipliers independently.
+- Partner tier base DPS is `owned count * tier DPS * tier milestone multiplier` before settlement Training Camp, prestige Command Aura, Rally, and Boss Hunter.
 - Character level upgrade cost is `5 + (character_level - 1) * 3`.
 - UpgradePanel contains a bulk-buy Hero Level card and one-time ability purchase cards.
 - Character level upgrades use horizontal bulk mode buttons `x1`, `x10`, `x100`, and `Max`; displayed costs must show total package cost.
@@ -212,6 +217,7 @@ After each patch, validate manually in Godot:
 - SettlementSheet should match UpgradeSheet and PartnerSheet spacing between header, fixed `BuyModeSelector`, and scroll content.
 - UpgradePanel uses a card-style Hero Level row and card-style ability purchase rows with white `ColorRect` image placeholders.
 - Hero Level card shows the current character level and selected bulk upgrade cost.
+- Hero Level card shows current damage and the next milestone, or Max milestones when all milestones are reached.
 - Autoclick button is visible but locked before character level 15.
 - Gold Bonus button is visible but locked before character level 30.
 - Focus Burst button is visible but locked before character level 60.
@@ -235,6 +241,8 @@ After each patch, validate manually in Godot:
 - Partner costs increase after purchase.
 - Partner counts update after purchase.
 - Total Partner DPS updates correctly.
+- Partner rows show tier total DPS and the next milestone, or Max milestones when all milestones are reached.
+- Partner milestones apply independently per tier.
 - Partner DPS damages enemy every 0.1 seconds.
 - One Partner 1 deals 1 damage per 0.1 seconds.
 - Partner 1 plus Partner 2 deals 4 damage per 0.1 seconds.
@@ -307,6 +315,19 @@ After each patch, validate manually in Godot:
 - Renderer remains GL Compatibility.
 - No missing scene/script errors.
 - No external plugins/assets were added.
+- Hero level 9 has damage 9 before other multipliers.
+- Buying level 10 changes hero damage to 20.
+- Hero level 25 changes hero damage to 100.
+- Hero level 50 changes hero damage to 400.
+- Hero bulk-buy updates milestone damage correctly.
+- Partner 1 count 9 gives 90 DPS.
+- Partner 1 count 10 gives 200 DPS.
+- Partner 1 count 25 gives 1000 DPS.
+- Partner 1 count 50 gives 4000 DPS.
+- Partner 2 milestones are independent from Partner 1.
+- Partner bulk-buy updates milestone DPS correctly.
+- Partner tick damage uses milestone-boosted DPS.
+- UI shows next milestone info for hero and partners.
 - Level 1 starts in Training Grounds with a random normal enemy or a 7% elite enemy roll.
 - Level 5 boss is named "Training Master".
 - Reaching level 11 transitions to Forest Path; ProgressInfoPanel shows "Forest Path" and defeat feedback shows "New Zone!".

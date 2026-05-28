@@ -52,8 +52,11 @@ The main scene contains the first local clicker loop:
 - Enemy HP and gold reward scale with the current level.
 - Every 5th level is a boss level with one boss.
 - Bosses must be defeated within 30 seconds or the player returns to the previous level.
-- Gold can upgrade character level; character level always equals click damage.
+- Gold can upgrade character level. Hero damage starts from character level and is boosted by hero level milestones.
 - Character level upgrade cost is `5 + (character_level - 1) * 3`.
+- Hero level and each partner tier have milestone multipliers at 10, 25, 50, 100, 250, and 500 owned levels.
+- Each reached milestone doubles the total accumulated contribution of that source, applying to all owned levels rather than only future purchases.
+- Hero and each partner tier track milestones independently.
 - Autoclick unlocks at character level 15.
 - Gold Bonus unlocks at character level 30 and doubles enemy rewards while active.
 - Focus Burst unlocks at character level 60 and doubles final click/autoclick damage while active.
@@ -80,7 +83,8 @@ The main scene contains the first local clicker loop:
 - Partner initial costs are `[10, 50, 150, 400, 900, 1800, 3500, 7000, 14000, 28000, 56000, 110000, 220000]`.
 - Partner costs scale by adding `[10, 30, 50, 100, 180, 300, 500, 900, 1600, 2800, 5000, 9000, 16000]` per owned partner.
 - Each partner tier requires at least one of the previous tier.
-- Partner damage ticks every 0.1 seconds for `total_dps / 10` damage.
+- Partner tier DPS is `owned count * tier DPS * tier milestone multiplier`.
+- Partner damage ticks every 0.1 seconds for final partner DPS / 10 damage.
 - Hero Level upgrades, partner hires, and settlement buildings use the reusable `BuyModeSelector` for horizontal bulk mode buttons: `x1`, `x10`, `x100`, and `Max`.
 - In `UpgradeSheet`, `PartnerSheet`, and `SettlementSheet`, the buy mode selector stays fixed under the sheet header while purchase lists scroll independently below it.
 - `SettlementSheet` should use the same header / `BuyModeSelector` / scroll spacing as `UpgradeSheet` and `PartnerSheet`.

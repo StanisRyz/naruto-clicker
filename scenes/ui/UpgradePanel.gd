@@ -60,9 +60,13 @@ func _update_hero_level_row(state: ClickerState) -> void:
 	var button: Button = hero_level_row["button"]
 	var bulk_count: int = state.get_character_level_bulk_display_count(selected_buy_mode)
 	var bulk_cost: int = state.get_character_level_bulk_display_cost(selected_buy_mode)
+	var next_milestone: int = state.get_next_milestone(state.character_level)
 
 	name_status_label.text = "Hero Level | %d" % state.character_level
-	effect_label.text = "+1 Damage per Hero Level"
+	if next_milestone > 0:
+		effect_label.text = "Damage %d | Next x2 at Lv %d" % [state.click_damage, next_milestone]
+	else:
+		effect_label.text = "Damage %d | Max milestones" % state.click_damage
 	button.disabled = false
 	button.text = "Upgrade x%d - Cost: %d" % [bulk_count, bulk_cost]
 

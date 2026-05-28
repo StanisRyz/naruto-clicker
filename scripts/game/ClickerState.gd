@@ -102,6 +102,8 @@ var partner_base_costs: Array[int] = [10, 50, 150, 400, 900, 1800, 3500, 7000, 1
 var partner_cost_steps: Array[int] = [10, 30, 50, 100, 180, 300, 500, 900, 1600, 2800, 5000, 9000, 16000]
 var partner_counts: Array[int] = []
 var partner_purchase_costs: Array[int] = []
+var milestone_levels: Array[int] = [10, 25, 50, 100, 250, 500]
+var milestone_multiplier_per_reached: int = 2
 var building_names: Array[String] = ["Training Camp", "Market", "Knight Hut", "War Banner", "Clock Tower", "Boss Shrine"]
 var building_bonus_types: Array[String] = ["partner_dps", "gold", "click_damage", "ability_duration", "ability_cooldown", "boss_gold"]
 var building_base_costs: Array[int] = [25, 75, 150, 500, 1200, 3000]
@@ -494,7 +496,7 @@ func get_total_partner_dps() -> int:
 	var total_dps: int = 0
 
 	for index in range(partner_counts.size()):
-		total_dps += partner_counts[index] * partner_dps_values[index]
+		total_dps += get_partner_tier_total_dps(index)
 
 	return total_dps
 
@@ -504,18 +506,15 @@ func get_partner_tick_damage() -> int:
 	if total_dps <= 0:
 		return 0
 
-	var base_tick: int = int(total_dps / 10.0)
-	if base_tick <= 0:
-		return 0
-
-	var final_tick: int = int(
-		base_tick
+	var final_dps: int = int(
+		total_dps
 		* get_prestige_damage_multiplier()
 		* get_command_aura_multiplier()
 		* get_settlement_partner_dps_multiplier()
 		* get_rally_multiplier()
 		* get_boss_damage_multiplier()
 	)
+	var final_tick: int = int(final_dps / 10.0)
 	return maxi(1, final_tick)
 
 
@@ -729,6 +728,41 @@ func get_partner_description(partner_index: int) -> String:
 		return ""
 
 	return "%d DPS" % partner_dps_values[partner_index]
+
+
+func get_milestone_multiplier(level: int) -> int:
+	var multiplier: int = 1
+	for milestone in milestone_levels:
+		if level >= milestone:
+			multiplier *= milestone_multiplier_per_reached
+
+	return multiplier
+
+
+func get_next_milestone(level: int) -> int:
+	for milestone in milestone_levels:
+		if level < milestone:
+			return milestone
+
+	return 0
+
+
+func get_character_milestone_multiplier() -> int:
+	return get_milestone_multiplier(character_level)
+
+
+func get_partner_milestone_multiplier(partner_index: int) -> int:
+	if partner_index < 0 or partner_index >= partner_counts.size():
+		return 1
+
+	return get_milestone_multiplier(partner_counts[partner_index])
+
+
+func get_partner_tier_total_dps(partner_index: int) -> int:
+	if partner_index < 0 or partner_index >= partner_counts.size() or partner_index >= partner_dps_values.size():
+		return 0
+
+	return partner_counts[partner_index] * partner_dps_values[partner_index] * get_partner_milestone_multiplier(partner_index)
 
 
 func get_ability_description(ability_id: String) -> String:
@@ -1062,10 +1096,11 @@ func _update_zone() -> void:
 
 
 func _update_character_state() -> void:
+	var base_damage: int = character_level * get_character_milestone_multiplier()
 	click_damage = maxi(
 		1,
 		int(
-			character_level
+			base_damage
 			* get_prestige_damage_multiplier()
 			* get_focus_training_multiplier()
 			* get_focus_burst_multiplier()

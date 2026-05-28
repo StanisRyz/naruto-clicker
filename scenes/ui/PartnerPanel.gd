@@ -87,8 +87,16 @@ func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionar
 	var effect_label: Label = row["effect_label"]
 	var button: Button = row["button"]
 	var partner_name: String = state.partner_names[partner_index]
-	name_count_label.text = "%s | %d" % [partner_name, state.partner_counts[partner_index]]
-	effect_label.text = state.get_partner_description(partner_index)
+	var partner_count: int = state.partner_counts[partner_index]
+	var next_milestone: int = state.get_next_milestone(partner_count)
+	name_count_label.text = "%s | %d" % [partner_name, partner_count]
+	if next_milestone > 0:
+		effect_label.text = "DPS %d | Next x2 at %d" % [
+			state.get_partner_tier_total_dps(partner_index),
+			next_milestone,
+		]
+	else:
+		effect_label.text = "DPS %d | Max milestones" % state.get_partner_tier_total_dps(partner_index)
 
 	if not state.can_buy_partner(partner_index):
 		button.disabled = true
