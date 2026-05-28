@@ -41,6 +41,8 @@ var combo_empowered_multiplier: float = 3.0
 @onready var primary_stats_panel: PrimaryStatsPanel = $PrimaryStatsPanel
 @onready var progress_info_panel: ProgressInfoPanel = $MainContent/VBoxContainer/ProgressInfoPanel
 @onready var combo_panel: ComboPanel = $ComboPanel
+@onready var tasks_button: Button = $TasksButton
+@onready var tasks_window: TasksWindow = $TasksWindow
 @onready var game_field: GameField = $GameField
 @onready var ability_bar: AbilityBar = $AbilityBar
 @onready var upgrades_button: Button = $BottomBar/MarginContainer/HBoxContainer/UpgradesButton
@@ -61,6 +63,8 @@ func _ready() -> void:
 	ability_bar.focus_burst_requested.connect(_on_focus_burst_requested)
 	ability_bar.rally_requested.connect(_on_rally_requested)
 	primary_stats_panel.settings_requested.connect(_on_settings_requested)
+	tasks_button.pressed.connect(_on_tasks_button_pressed)
+	tasks_window.task_claim_requested.connect(_on_task_claim_requested)
 	upgrades_button.pressed.connect(_on_upgrades_button_pressed)
 	partners_button.pressed.connect(_on_partners_button_pressed)
 	settlement_button.pressed.connect(_on_settlement_button_pressed)
@@ -139,6 +143,8 @@ func _update_ui() -> void:
 	partner_sheet.update_view(state)
 	settlement_sheet.update_view(state)
 	prestige_sheet.update_view(state)
+	if tasks_window.visible:
+		tasks_window.update_view(state)
 
 
 func _on_attack_requested() -> void:
@@ -151,10 +157,12 @@ func _on_attack_requested() -> void:
 			combo_meter_value = combo_meter_max
 			combo_empowered_active = true
 			combo_empowered_time_left = combo_empowered_duration
+			state.total_combo_empowered_activations += 1
 
 	var manual_damage: int = maxi(1, int(state.get_current_click_damage() * _get_manual_combo_multiplier()))
 	var was_boss_level: bool = state.is_boss_level
 	var result: Dictionary = state.attack_with_damage(manual_damage)
+	state.total_manual_click_damage_dealt += int(result.get("damage_dealt", 0))
 	_apply_attack_result(result, true, was_boss_level)
 
 
@@ -190,6 +198,17 @@ func _on_rally_purchase_requested() -> void:
 
 func _on_settings_requested() -> void:
 	_handle_status_text("Settings coming soon")
+
+
+func _on_tasks_button_pressed() -> void:
+	tasks_window.show_window(state)
+
+
+func _on_task_claim_requested(task_id: String) -> void:
+	var result: Dictionary = state.claim_task_reward(task_id)
+	_handle_status_text(result.get("status_text", ""))
+	_update_ui()
+	tasks_window.update_view(state)
 
 
 func _on_partner_purchase_requested(partner_index: int, mode: String) -> void:
@@ -361,6 +380,7 @@ func _on_autoclick_requested() -> void:
 	state.autoclick_active = true
 	autoclick_time_left = _get_scaled_duration(autoclick_duration, false)
 	autoclick_accumulator = 0.0
+	state.total_autoclick_activations += 1
 	_update_ui()
 
 
