@@ -66,7 +66,7 @@ The main scene contains the first local clicker loop:
 - Ability buttons are placeholder ImageHolder-style controls: textless white squares until real icons are added.
 - Ability state is shown with color/disabled feedback, not text inside the button.
 - The bottom bar opens bottom-half `Upgrades`, `Partners`, `Settlement`, and `Prestige` sheets.
-- The bottom bar remains visible and clickable while sheets are open, and tabs switch directly between sheets.
+- The bottom bar remains visible and clickable while sheets are open. Tabs switch directly between sheets, and clicking the active tab again closes its sheet.
 - Bottom-half sheets stop above the bottom bar so the visible upper game field remains clickable.
 - Bottom sheet headers and close buttons stay fixed while sheet content scrolls vertically.
 - The visible upper game field remains clickable while bottom-half sheets are open.
@@ -81,6 +81,7 @@ The main scene contains the first local clicker loop:
 - Partners provide passive DPS and are managed from a separate bottom-half sheet.
 - Partner DPS tiers are data-driven: Partner 1 (10), Partner 2 (30), Partner 3 (50), Field Scout (100), Spear Guard (175), Iron Defender (300), Battle Monk (500), Elite Samurai (850), Shadow Captain (1400), War Sage (2300), Beast Tamer (3800), Blade Master (6200), and Legendary Commander (10000).
 - The Partners tab uses partner card rows only and should not show a Total DPS summary line.
+- The Partners tab progressively reveals cards: visible available partner cards plus one next locked requirement card; deeper locked tiers stay hidden.
 - Partner initial costs are `[10, 50, 150, 400, 900, 1800, 3500, 7000, 14000, 28000, 56000, 110000, 220000]`.
 - Partner costs use each tier's base and step values plus a controlled non-linear power curve.
 - Partner milestone target counts 10, 25, 50, 100, 250, and 500 cost x3 independently per tier.
@@ -123,6 +124,7 @@ Settlement is a separate bottom tab between `Partners` and `Prestige`.
 - Settlement building rows use a temporary white `ColorRect` image placeholder, a two-line building summary, and a buy button.
 - Building rows show the building name, owned count, and per-purchase effect; total owned effects belong in summary/stats UI, not each row.
 - SettlementPanel should not show a combined settlement bonus summary line above building rows.
+- Settlement building cards progressively reveal: visible available building cards plus one next locked requirement card; deeper locked buildings stay hidden.
 - Settlement buildings reset on prestige, while prestige points, prestige talents, and `total_prestiges` are kept.
 - No save system is implemented; settlement state is lost on page reload.
 

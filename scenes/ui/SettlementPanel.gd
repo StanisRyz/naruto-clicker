@@ -17,6 +17,8 @@ func update_view(state: ClickerState) -> void:
 	_ensure_building_rows(state)
 
 	for building_index in range(building_rows.size()):
+		var panel_row: PanelContainer = building_rows[building_index]["row"]
+		panel_row.visible = _should_show_building_row(state, building_index)
 		_update_building_row(state, building_index, building_rows[building_index])
 
 
@@ -76,6 +78,7 @@ func _create_building_row(building_index: int) -> Dictionary:
 	content.add_child(button)
 
 	return {
+		"row": row,
 		"name_count_label": name_count_label,
 		"effect_label": effect_label,
 		"button": button,
@@ -106,6 +109,16 @@ func set_buy_mode(mode: String) -> void:
 	if not BUY_MODES.has(mode):
 		return
 	selected_buy_mode = mode
+
+
+func _should_show_building_row(state: ClickerState, building_index: int) -> bool:
+	if building_index == 0:
+		return true
+
+	if state.can_buy_building(building_index):
+		return true
+
+	return building_index > 0 and state.can_buy_building(building_index - 1)
 
 
 func _create_row_stylebox() -> StyleBoxFlat:

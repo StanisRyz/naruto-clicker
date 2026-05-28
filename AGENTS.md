@@ -43,6 +43,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Use `BottomBar` to open `UpgradeSheet`, `PartnerSheet`, `SettlementSheet`, and `PrestigeSheet`; do not keep sheet controls permanently in the main gameplay flow.
 - BottomBar must remain visible and clickable while any bottom sheet is open.
 - Opening a BottomBar tab should switch directly to that sheet without requiring the current sheet to close first.
+- Clicking the currently active BottomBar tab should close its sheet, clear `active_bottom_tab`, and return bottom bar labels to normal.
 - Keep `UpgradeSheet` to the bottom half of the screen so visible `GameField` space remains clickable while it is open.
 - Bottom sheets must not cover BottomBar; they should end above it.
 - Bottom sheet headers and close buttons should remain fixed while content scrolls vertically.
@@ -81,6 +82,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Partner purchases use horizontal bulk mode buttons `x1`, `x10`, `x100`, and `Max`; displayed costs must show total package cost.
 - Partner `x10` and `x100` purchases are strict all-or-nothing packages; `Max` buys as many as current gold allows.
 - PartnerPanel should not show a Total DPS summary line above partner rows.
+- PartnerPanel uses progressive reveal: show Partner 1, all currently available partner cards, and exactly one next locked requirement card; deeper locked cards stay hidden and should not take scroll space.
 - PartnerPanel should always show the required package cost when prerequisites are met; "Not enough gold" belongs in status handling after a failed purchase, not in partner button text.
 - Keep `PartnerSheet`, `SettlementSheet`, and `PrestigeSheet` as separate bottom-half overlays from `UpgradeSheet`.
 - Settlement tab sits between `Partners` and `Prestige` in the bottom bar.
@@ -94,6 +96,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Boss Shrine affects boss rewards only and stacks with Market, Trade Routes, and Gold Bonus.
 - Settlement rows use a temporary white `ColorRect` image placeholder, two text lines for name/count and per-purchase effect, and a buy button.
 - SettlementPanel should not show a combined settlement bonus summary line above building rows.
+- SettlementPanel uses progressive reveal: show Training Camp, all currently available building cards, and exactly one next locked requirement card; deeper locked cards stay hidden and should not take scroll space.
 - Settlement building rows should not show total owned effect; total bonuses belong in stats or summary UI.
 - Each settlement building requires at least one of the previous building.
 - Settlement initial costs are `[25, 75, 150, 500, 1200, 3000]`.
@@ -245,11 +248,14 @@ After each patch, validate manually in Godot:
 - Partner 1 starts at 10 gold.
 - PartnerPanel uses card-style partner rows with white `ColorRect` image placeholders.
 - PartnerSheet keeps `BuyModeSelector` fixed under the header while partner rows scroll.
+- With no partners bought, PartnerPanel shows Partner 1 and locked Partner 2 only.
+- Partner 3 and deeper locked partner cards are hidden until revealed.
+- After buying Partner 1, Partner 2 is available and locked Partner 3 appears.
 - Partner 2 starts at 50 gold.
 - Partner 3 starts at 150 gold.
 - Partner 2 cannot be bought before at least one Partner 1.
 - Partner 3 cannot be bought before at least one Partner 2.
-- All 13 partner tiers are visible through scrolling and each tier requires the previous tier.
+- All 13 partner tiers are progressively revealed through scrolling and each tier requires the previous tier.
 - Partner costs increase after purchase.
 - Partner counts update after purchase.
 - Total Partner DPS updates correctly.
@@ -267,6 +273,7 @@ After each patch, validate manually in Godot:
 - Clicking inside `PrestigeSheet` does not attack the enemy.
 - BottomBar remains visible and clickable while any sheet is open.
 - Pressing a different BottomBar tab switches directly to that sheet.
+- Pressing the active BottomBar tab closes its current sheet.
 - `AbilityBar` is a left-middle screen overlay.
 - Ability buttons do not pulse with `GameField` feedback.
 - Ability buttons do not attack the enemy.
@@ -304,7 +311,10 @@ After each patch, validate manually in Godot:
 - Training Camp can be bought when enough gold.
 - Market requires at least one Training Camp.
 - Knight Hut requires at least one Market.
-- War Banner, Clock Tower, and Boss Shrine are visible through scrolling and follow the building chain requirement.
+- With no settlement buildings bought, SettlementPanel shows Training Camp and locked Market only.
+- Knight Hut and deeper locked building cards are hidden until revealed.
+- After buying Training Camp, Market is available and locked Knight Hut appears.
+- War Banner, Clock Tower, and Boss Shrine are progressively revealed through scrolling and follow the building chain requirement.
 - Settlement x1, x10, x100, and Max modes work like partners.
 - Settlement buttons always show required cost when prerequisites are met.
 - Training Camp increases partner DPS/tick damage.

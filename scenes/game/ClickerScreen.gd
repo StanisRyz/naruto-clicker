@@ -205,39 +205,19 @@ func _on_building_purchase_requested(building_index: int, mode: String) -> void:
 
 
 func _on_upgrades_button_pressed() -> void:
-	partner_sheet.hide_sheet()
-	settlement_sheet.hide_sheet()
-	prestige_sheet.hide_sheet()
-	upgrade_sheet.show_sheet()
-	active_bottom_tab = "upgrades"
-	_update_bottom_bar_view()
+	_toggle_bottom_sheet("upgrades")
 
 
 func _on_partners_button_pressed() -> void:
-	upgrade_sheet.hide_sheet()
-	settlement_sheet.hide_sheet()
-	prestige_sheet.hide_sheet()
-	partner_sheet.show_sheet()
-	active_bottom_tab = "partners"
-	_update_bottom_bar_view()
+	_toggle_bottom_sheet("partners")
 
 
 func _on_settlement_button_pressed() -> void:
-	upgrade_sheet.hide_sheet()
-	partner_sheet.hide_sheet()
-	prestige_sheet.hide_sheet()
-	settlement_sheet.show_sheet()
-	active_bottom_tab = "settlement"
-	_update_bottom_bar_view()
+	_toggle_bottom_sheet("settlement")
 
 
 func _on_prestige_button_pressed() -> void:
-	upgrade_sheet.hide_sheet()
-	partner_sheet.hide_sheet()
-	settlement_sheet.hide_sheet()
-	prestige_sheet.show_sheet()
-	active_bottom_tab = "prestige"
-	_update_bottom_bar_view()
+	_toggle_bottom_sheet("prestige")
 
 
 func _on_prestige_requested() -> void:
@@ -284,6 +264,35 @@ func _update_bottom_bar_view() -> void:
 	partners_button.text = "[Partners]" if active_bottom_tab == "partners" else "Partners"
 	settlement_button.text = "[Settlement]" if active_bottom_tab == "settlement" else "Settlement"
 	prestige_button.text = "[Prestige]" if active_bottom_tab == "prestige" else "Prestige"
+
+
+func _toggle_bottom_sheet(tab_name: String) -> void:
+	if active_bottom_tab == tab_name:
+		_hide_all_bottom_sheets()
+		active_bottom_tab = ""
+		_update_bottom_bar_view()
+		return
+
+	_hide_all_bottom_sheets()
+	match tab_name:
+		"upgrades":
+			upgrade_sheet.show_sheet()
+		"partners":
+			partner_sheet.show_sheet()
+		"settlement":
+			settlement_sheet.show_sheet()
+		"prestige":
+			prestige_sheet.show_sheet()
+
+	active_bottom_tab = tab_name
+	_update_bottom_bar_view()
+
+
+func _hide_all_bottom_sheets() -> void:
+	upgrade_sheet.hide_sheet()
+	partner_sheet.hide_sheet()
+	settlement_sheet.hide_sheet()
+	prestige_sheet.hide_sheet()
 
 
 func _on_sheet_closed() -> void:

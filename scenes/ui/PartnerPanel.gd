@@ -17,6 +17,8 @@ func update_view(state: ClickerState) -> void:
 	_ensure_partner_rows(state)
 
 	for partner_index in range(partner_rows.size()):
+		var panel_row: PanelContainer = partner_rows[partner_index]["row"]
+		panel_row.visible = _should_show_partner_row(state, partner_index)
 		_update_partner_row(state, partner_index, partner_rows[partner_index])
 
 
@@ -76,6 +78,7 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 	content.add_child(button)
 
 	return {
+		"row": row,
 		"name_count_label": name_count_label,
 		"effect_label": effect_label,
 		"button": button,
@@ -113,6 +116,16 @@ func set_buy_mode(mode: String) -> void:
 	if not BUY_MODES.has(mode):
 		return
 	selected_buy_mode = mode
+
+
+func _should_show_partner_row(state: ClickerState, partner_index: int) -> bool:
+	if partner_index == 0:
+		return true
+
+	if state.can_buy_partner(partner_index):
+		return true
+
+	return partner_index > 0 and state.can_buy_partner(partner_index - 1)
 
 
 func _create_row_stylebox() -> StyleBoxFlat:
