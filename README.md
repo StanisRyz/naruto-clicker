@@ -82,7 +82,7 @@ The main scene contains the first local clicker loop:
 - Partner DPS tiers are data-driven: Partner 1 (10), Partner 2 (20), Partner 3 (35), Field Scout (65), Spear Guard (120), Iron Defender (220), Battle Monk (410), Elite Samurai (750), Shadow Captain (1400), War Sage (2600), Beast Tamer (4800), Blade Master (9000), and Legendary Commander (16500).
 - The Partners tab uses partner card rows only and should not show a Total DPS summary line.
 - The Partners tab progressively reveals cards: visible available partner cards plus one next locked requirement card; deeper locked tiers stay hidden.
-- Partner row second lines show the per-purchase DPS effect, such as `+10 DPS for each Partner 1`; total and final Partner DPS belong in `PrimaryStatsPanel`.
+- Partner row second lines show per-purchase DPS and the next x2 milestone, such as `+10 DPS | Next x2 at 10`; they do not include `for each PartnerName` or accumulated partner DPS.
 - Partner milestone formulas still affect actual DPS, but milestone info is not shown in partner row descriptions.
 - Partner initial costs are `[10, 50, 150, 400, 900, 1800, 3500, 7000, 14000, 28000, 56000, 110000, 220000]`.
 - Partner costs use each tier's base and step values plus a controlled non-linear power curve.
