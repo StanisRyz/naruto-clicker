@@ -68,6 +68,11 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Keep `UpgradeSheet` to the bottom half of the screen so visible `GameField` space remains clickable while it is open.
 - Bottom sheets must not cover BottomBar; they should end above it.
 - Bottom sheet headers and close buttons should remain fixed while content scrolls vertically.
+- `UpgradeSheet`, `PartnerSheet`, and `SettlementSheet` headers show a white `ImageHolder` placeholder and current gold beside the title.
+- `PrestigeSheet` header shows a white `ImageHolder` placeholder and current available prestige points beside the title.
+- `ShopSheet` header shows a white `ImageHolder` placeholder and current Gems beside the title.
+- `PrestigePanel` should not show a separate `Prestige Points` label; available points belong in the `PrestigeSheet` header.
+- `ShopPanel` should not show separate Gems, Boss Retry token, or Task Reward Boost summary rows; Boss Retry tokens and Task Reward Boost remain runtime mechanics.
 - `BuyModeSelector` is the reusable UI for `x1`, `x10`, `x100`, and `Max` purchase modes.
 - `BuyModeSelector` must stay fixed under the sheet header in `UpgradeSheet`, `PartnerSheet`, and `SettlementSheet`; purchase lists should scroll independently below it.
 - In `UpgradeSheet`, `BuyModeSelector` affects only the Hero Level card; ability purchases must never use bulk-buy modes.
@@ -156,7 +161,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Scale enemy HP and gold reward by level with deterministic formulas.
 - Prestige lives in a separate `PrestigeSheet` opened by the `PrestigeButton` bottom tab; do not keep prestige controls inside `UpgradeSheet`.
 - PrestigePanel should stay compact; detailed prestige calculation belongs in the confirmation dialog, not the main PrestigePanel.
-- PrestigePanel shows only available Prestige Points, a card-style prestige action, and card-style talent rows.
+- PrestigePanel shows only a card-style prestige action and card-style talent rows.
 - Prestige reward formula is `floor(current_level / 50) + floor(character_level / 100)` points.
 - Prestige confirmation dialog (`PrestigeConfirmDialog`) is an overlay child of `PrestigeSheet` and must be fully opaque so underlying UI text is not visible through it.
 - Signal flow: PrestigePanel `prestige_requested` -> PrestigeSheet `prestige_requested` -> ClickerScreen calls `show_prestige_confirm(state)`; dialog `confirmed` -> ClickerScreen calls `perform_prestige()`.
@@ -257,6 +262,7 @@ After each patch, validate manually in Godot:
 - Character level starts at 1 and damage starts at 1.
 - Old damage upgrade naming is not visible in UI.
 - UpgradeSheet keeps `BuyModeSelector` fixed under the header while upgrade cards scroll.
+- UpgradeSheet header shows title, white `ImageHolder`, current gold, spacer, and Close button.
 - SettlementSheet should match UpgradeSheet and PartnerSheet spacing between header, fixed `BuyModeSelector`, and scroll content.
 - UpgradePanel uses a card-style Hero Level row and card-style ability purchase rows with white `ColorRect` image placeholders.
 - Hero Level card shows the current character level and selected bulk upgrade cost.
@@ -276,6 +282,7 @@ After each patch, validate manually in Godot:
 - Partner 1 starts at 10 gold.
 - PartnerPanel uses card-style partner rows with white `ColorRect` image placeholders.
 - PartnerSheet keeps `BuyModeSelector` fixed under the header while partner rows scroll.
+- PartnerSheet header shows title, white `ImageHolder`, current gold, spacer, and Close button.
 - With no partners bought, PartnerPanel shows Partner 1 and locked Partner 2 only.
 - Partner 3 and deeper locked partner cards are hidden until revealed.
 - After buying Partner 1, Partner 2 is available and locked Partner 3 appears.
@@ -337,6 +344,7 @@ After each patch, validate manually in Godot:
 - Partner x10, x100, and Max costs include milestone x3 price spikes.
 - Upgrade, Partner, and Settlement bulk mode UI uses horizontal buttons, not dropdowns.
 - Settlement opens `SettlementSheet`.
+- SettlementSheet header shows title, white `ImageHolder`, current gold, spacer, and Close button.
 - Training Camp can be bought when enough gold.
 - Market requires at least one Training Camp.
 - Knight Hut requires at least one Market.
@@ -440,10 +448,12 @@ After each patch, validate manually in Godot:
 - `PrestigeButton` opens `PrestigeSheet`.
 - PrestigeSheet is hidden by default and can be closed.
 - PrestigeSheet has no `BuyModeSelector`.
+- PrestigeSheet header shows title, white `ImageHolder`, available prestige points, spacer, and Close button.
 - `ShopButton` opens `ShopSheet` as the fifth bottom tab after Prestige.
 - ShopSheet is hidden by default and can be closed.
 - ShopSheet has no `BuyModeSelector`.
-- Shop shows Gems, Boss Retry token count, Task Reward Boost status, and product cards.
+- ShopSheet header shows title, white `ImageHolder`, current Gems, spacer, and Close button.
+- ShopPanel shows product cards and the temporary Gems button without separate Gems, Boss Retry token, or Task Reward Boost summary rows.
 - `Prototype: Get 50 Gems` increases Gems and is temporary/dev-only.
 - Shop product buttons are disabled when Gems are insufficient and enabled when affordable.
 - Small Gold Pack and Large Gold Pack add stage-scaled gold.
@@ -451,7 +461,7 @@ After each patch, validate manually in Godot:
 - Boss Retry adds a token, and a failed boss consumes one token to retry the same boss level.
 - Task Reward Boost doubles the next claimed task reward only once.
 - Gems and shop reward state do not reset on prestige.
-- PrestigePanel shows only available Prestige Points.
+- PrestigePanel does not show a separate `Prestige Points` label.
 - Prestige action and talent rows use card-style rows with white `ColorRect` image placeholders.
 - Prestige button is disabled when total points to gain is 0.
 - Prestige button enables and shows the reward point count when total points to gain is greater than 0.

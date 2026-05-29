@@ -7,7 +7,6 @@ signal prestige_talent_purchase_requested(talent_index: int)
 var prestige_action_row: Dictionary = {}
 var talent_rows: Array[Dictionary] = []
 
-@onready var points_label: Label = $PointsLabel
 @onready var action_container: VBoxContainer = $ActionContainer
 @onready var talents_container: VBoxContainer = $TalentsContainer
 
@@ -20,7 +19,6 @@ func update_view(state: ClickerState) -> void:
 	_ensure_talent_rows(state)
 	var total_reward: int = state.get_prestige_reward()
 
-	points_label.text = "Prestige Points: %d" % state.prestige_points_available
 	_update_prestige_action_row(total_reward)
 
 	for talent_index in range(talent_rows.size()):

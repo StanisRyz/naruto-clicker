@@ -9,6 +9,7 @@ signal rally_purchase_requested
 signal closed
 
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
+@onready var header_resource_value_label: Label = $PanelContainer/MarginContainer/VBoxContainer/Header/HeaderResourceContainer/ResourceValueLabel
 @onready var buy_mode_selector: BuyModeSelector = $PanelContainer/MarginContainer/VBoxContainer/BuyModeSelector
 @onready var upgrade_panel: UpgradePanel = $PanelContainer/MarginContainer/VBoxContainer/ScrollContainer/UpgradePanel
 
@@ -38,6 +39,7 @@ func hide_sheet() -> void:
 
 func update_view(state: ClickerState) -> void:
 	current_state = state
+	header_resource_value_label.text = "%d" % state.gold
 	upgrade_panel.update_view(state)
 
 

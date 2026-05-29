@@ -6,9 +6,6 @@ signal test_gems_requested
 
 var product_rows: Dictionary = {}
 
-@onready var gems_label: Label = $GemsLabel
-@onready var tokens_label: Label = $TokensLabel
-@onready var boost_label: Label = $BoostLabel
 @onready var test_gems_button: Button = $TestGemsButton
 @onready var products_container: VBoxContainer = $ProductsContainer
 
@@ -18,12 +15,6 @@ func _ready() -> void:
 
 
 func update_view(state: ClickerState) -> void:
-	gems_label.text = "Gems: %d" % state.gems
-	tokens_label.text = "Boss Retry Tokens: %d" % state.boss_retry_tokens
-	if state.task_reward_boost_multiplier > 1.0:
-		boost_label.text = "Task Reward Boost: x%.1f active" % state.task_reward_boost_multiplier
-	else:
-		boost_label.text = "Task Reward Boost: inactive"
 	_ensure_product_rows(state)
 
 	for product_data: Dictionary in state.get_shop_product_view_data():

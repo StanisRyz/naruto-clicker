@@ -6,6 +6,7 @@ signal prestige_talent_purchase_requested(talent_index: int)
 signal closed
 
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
+@onready var header_resource_value_label: Label = $PanelContainer/MarginContainer/VBoxContainer/Header/HeaderResourceContainer/ResourceValueLabel
 @onready var prestige_panel: PrestigePanel = $PanelContainer/MarginContainer/VBoxContainer/ScrollContainer/PrestigePanel
 @onready var prestige_confirm_dialog: PrestigeConfirmDialog = $PrestigeConfirmDialog
 
@@ -28,6 +29,7 @@ func hide_sheet() -> void:
 
 
 func update_view(state: ClickerState) -> void:
+	header_resource_value_label.text = "%d" % state.prestige_points_available
 	prestige_panel.update_view(state)
 
 

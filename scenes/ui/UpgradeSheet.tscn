@@ -44,11 +44,31 @@ theme_override_constants/separation = 20
 
 [node name="Header" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
+theme_override_constants/separation = 12
 
 [node name="TitleLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/Header"]
 layout_mode = 2
-size_flags_horizontal = 3
 text = "Upgrades"
+
+[node name="HeaderResourceContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/Header"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ImageHolder" type="ColorRect" parent="PanelContainer/MarginContainer/VBoxContainer/Header/HeaderResourceContainer"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 1)
+
+[node name="ResourceValueLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/Header/HeaderResourceContainer"]
+custom_minimum_size = Vector2(96, 32)
+layout_mode = 2
+text = "0"
+vertical_alignment = 1
+
+[node name="HeaderSpacer" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="CloseButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/Header"]
 custom_minimum_size = Vector2(72, 56)

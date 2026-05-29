@@ -65,10 +65,13 @@ The main scene contains the first local clicker loop:
 - Ability buttons live on the left side of the game field.
 - Ability buttons are placeholder ImageHolder-style controls: textless white squares until real icons are added.
 - Ability state is shown with color/disabled feedback, not text inside the button.
-- The bottom bar opens bottom-half `Upgrades`, `Partners`, `Settlement`, and `Prestige` sheets.
+- The bottom bar opens bottom-half `Upgrades`, `Partners`, `Settlement`, `Prestige`, and `Shop` sheets.
 - The bottom bar remains visible and clickable while sheets are open. Tabs switch directly between sheets, and clicking the active tab again closes its sheet.
 - Bottom-half sheets stop above the bottom bar so the visible upper game field remains clickable.
 - Bottom sheet headers and close buttons stay fixed while sheet content scrolls vertically.
+- `UpgradeSheet`, `PartnerSheet`, and `SettlementSheet` headers show a white resource placeholder and current gold beside the title.
+- `PrestigeSheet` header shows a white resource placeholder and current available prestige points beside the title.
+- `ShopSheet` header shows a white resource placeholder and current Gems beside the title.
 - The visible upper game field remains clickable while bottom-half sheets are open.
 - The game field is the fullscreen bottom clickable layer.
 - Ability buttons are a separate left-middle overlay and must be purchased before activation.
@@ -158,7 +161,7 @@ Prestige is an unlockable reset in its own bottom `Prestige` tab.
 - Stage level 101 and character level 301 gives 5 points.
 - The Prestige button is disabled when the reward is 0 and enabled when the reward is greater than 0.
 - Pressing the button opens a fully opaque confirmation dialog inside `PrestigeSheet` showing stage points, character points, and total reward points.
-- The main Prestige panel shows only available Prestige Points, a card-style prestige action, and card-style talent rows; detailed prestige calculations live in the confirmation dialog.
+- The main Prestige panel shows only a card-style prestige action and card-style talent rows; available prestige points are shown in the `PrestigeSheet` header, and detailed prestige calculations live in the confirmation dialog.
 - Confirming resets all normal progress (gold, character level, game level, abilities, partners, settlement, zone) but keeps available prestige points, total earned prestige points, prestige talents, and `total_prestiges`.
 - Prestige points do not provide passive damage or gold bonuses by themselves.
 - Available prestige points can be spent on prestige talents; total earned prestige points are historical/stat data only.
@@ -187,6 +190,7 @@ The Shop is a prototype premium-currency tab for gameplay reward testing. It is 
 - Boss Retry adds an automatic retry token for failed boss fights.
 - Task Reward Boost makes the next claimed task give x2 gold, then resets.
 - Gems and shop reward state are runtime-only until a save system is added.
+- `ShopPanel` shows the temporary Gems grant and product cards only; Boss Retry tokens and Task Reward Boost still exist as runtime mechanics but are not shown as top summary rows.
 
 ## Zone Progression
 
@@ -239,10 +243,10 @@ The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes
 - `scenes/ui/PartnerSheet.tscn` - Bottom-half partners sheet that hosts PartnerPanel.
 - `scenes/ui/SettlementPanel.tscn` - Settlement building controls and bonus display.
 - `scenes/ui/SettlementSheet.tscn` - Bottom-half settlement sheet that hosts SettlementPanel.
-- `scenes/ui/PrestigePanel.tscn` - Compact prestige points display, card-style prestige action, and talent rows.
-- `scenes/ui/PrestigeSheet.tscn` - Bottom-half prestige sheet with the opaque confirmation dialog.
-- `scenes/ui/ShopPanel.tscn` - Prototype Gems shop panel with product cards and a temporary test Gems grant.
-- `scenes/ui/ShopSheet.tscn` - Bottom-half shop sheet that hosts ShopPanel.
+- `scenes/ui/PrestigePanel.tscn` - Compact card-style prestige action and talent rows.
+- `scenes/ui/PrestigeSheet.tscn` - Bottom-half prestige sheet with header prestige points and the opaque confirmation dialog.
+- `scenes/ui/ShopPanel.tscn` - Prototype shop panel with product cards and a temporary test Gems grant.
+- `scenes/ui/ShopSheet.tscn` - Bottom-half shop sheet with header Gems that hosts ShopPanel.
 - `scripts/game/ClickerState.gd` - Temporary prototype state and formulas.
 
 ## Web Export Notes

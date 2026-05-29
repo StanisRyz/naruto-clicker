@@ -6,21 +6,6 @@
 theme_override_constants/separation = 12
 script = ExtResource("1_shop_panel")
 
-[node name="GemsLabel" type="Label" parent="."]
-layout_mode = 2
-text = "Gems: 0"
-horizontal_alignment = 1
-
-[node name="TokensLabel" type="Label" parent="."]
-layout_mode = 2
-text = "Boss Retry Tokens: 0"
-horizontal_alignment = 1
-
-[node name="BoostLabel" type="Label" parent="."]
-layout_mode = 2
-text = "Task Reward Boost: x1.0"
-horizontal_alignment = 1
-
 [node name="TestGemsButton" type="Button" parent="."]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
