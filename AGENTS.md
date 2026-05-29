@@ -75,7 +75,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - `ShopPanel` should not show separate Gems, Boss Retry token, or Task Reward Boost summary rows; Boss Retry tokens and Task Reward Boost remain runtime mechanics.
 - `BuyModeSelector` is the reusable UI for `x1`, `x10`, `x100`, and `Max` purchase modes.
 - `BuyModeSelector` must stay fixed under the sheet header in `UpgradeSheet`, `PartnerSheet`, and `SettlementSheet`; purchase lists should scroll independently below it.
-- In `UpgradeSheet`, `BuyModeSelector` affects only the Hero Level card; ability purchases must never use bulk-buy modes.
+- In `UpgradeSheet`, `BuyModeSelector` affects only the Hero Level card; ability buy/upgrade actions must never use bulk-buy modes.
 - Do not add `BuyModeSelector` to `PrestigeSheet`.
 - Purchase tabs use card-style rows with a temporary white `ColorRect` image placeholder, two-line info text, and an action button.
 - Keep `GameField` as the fullscreen bottom clickable layer in `ClickerScreen`.
@@ -90,10 +90,15 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Abilities must be purchased in `UpgradeSheet` before activation.
 - AbilityBar buttons are placeholder ImageHolder-style controls: textless white squares until real icons are added.
 - AbilityBar state should be represented by disabled/color feedback or optional tiny labels outside the square, not text inside the button.
-- Autoclick lasts 15 seconds, performs one attack every 0.05 seconds, then enters a 60 second cooldown.
-- Gold Bonus lasts 45 seconds, doubles rewards while active, then enters a 300 second cooldown.
-- Focus Burst unlocks at character level 60, costs 500 gold, lasts 20 seconds, doubles final click/autoclick damage, and enters a 120 second cooldown.
-- Rally unlocks at character level 80, costs 1000 gold, lasts 30 seconds, doubles final partner DPS, and enters a 180 second cooldown.
+- Active abilities have ranks 0–5. Rank 0 = not purchased. First purchase via UpgradeSheet sets rank 1; ranks 2–5 are gold upgrades bought from the same card. Prestige resets all ranks to 0.
+- Ability upgrades must never use BuyModeSelector; each Buy/Upgrade action always buys exactly one rank. The same signal (e.g. autoclick_purchase_requested) serves both first purchase and upgrades; ClickerScreen routes all four to buy_or_upgrade_ability().
+- Upgrade cost formula: base_cost × rank_to_buy² × 2 where rank_to_buy = current_rank + 1.
+- Autoclick unlocks at character level 15, base cost 50 gold. Base: 20 hits/sec for 15 s, 60 s cooldown. Each rank above 1 adds +15% attack rate (via get_autoclick_rank_rate_multiplier()) and +2 s duration.
+- Gold Bonus unlocks at character level 30, base cost 150 gold. Multiplier formula: 1.75 + 0.25 × rank (rank 1 = x2.00, rank 5 = x3.00), 45 s, 300 s cooldown.
+- Focus Burst unlocks at character level 60, base cost 500 gold. Damage multiplier: 1.75 + 0.25 × rank, 20 s, 120 s cooldown.
+- Rally unlocks at character level 80, base cost 1000 gold. Partner DPS multiplier: 1.75 + 0.25 × rank, 30 s, 180 s cooldown.
+- get_focus_burst_multiplier() and get_rally_multiplier() return rank-scaled values when active; get_gold_bonus_multiplier() does the same. All three return 1.0 when inactive.
+- AbilityBar uses rank > 0 (autoclick_rank, gold_bonus_rank, etc.) to determine purchased state; do not use the *_purchased booleans in new code.
 - Make sure ability buttons do not trigger attacks.
 - Partners provide passive DPS through `ClickerState` state and `ClickerScreen` ticking.
 - Partner tiers are data-driven: Partner 1 (10 DPS), Partner 2 (20), Partner 3 (35), Field Scout (65), Spear Guard (120), Iron Defender (220), Battle Monk (410), Elite Samurai (750), Shadow Captain (1400), War Sage (2600), Beast Tamer (4800), Blade Master (9000), and Legendary Commander (16500).
@@ -171,14 +176,13 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Partner tier base DPS is `owned count * tier DPS * tier milestone multiplier` before settlement Training Camp, prestige Command Aura, Rally, and Boss Hunter.
 - Hero level upgrade costs use a controlled non-linear formula with affordable early levels and harder later levels.
 - Hero milestone target levels `[10, 25, 50, 100, 250, 500]` cost x3 for the purchase that reaches the milestone.
-- UpgradePanel contains a bulk-buy Hero Level card and one-time ability purchase cards.
+- UpgradePanel contains a bulk-buy Hero Level card and ability rank cards (Buy at rank 0, Upgrade at rank 1–4, Max label at rank 5).
 - Character level upgrades use horizontal bulk mode buttons `x1`, `x10`, `x100`, and `Max`; displayed costs must show total package cost.
 - Character level `x10` and `x100` purchases are strict all-or-nothing packages; `Max` buys as many as current gold allows.
-- Autoclick purchase costs 50 gold.
-- Gold Bonus purchase costs 150 gold.
+- Autoclick base purchase cost 50 gold (rank 1); upgrades: 50 × rank_to_buy² × 2.
+- Gold Bonus base purchase cost 150 gold; Focus Burst 500 gold; Rally 1000 gold.
 - Treat economy formulas as prototype balance values.
-- Autoclick unlocks at character level 15.
-- Gold Bonus unlocks at character level 30 and doubles rewards while active.
+- Autoclick unlocks at character level 15; Gold Bonus at 30; Focus Burst at 60; Rally at 80.
 - Keep UI animation details out of `ClickerState`.
 - Let `ClickerScreen` coordinate state results into UI feedback calls.
 - Keep the main attack input on the `GameField` tap/click area, not a separate Attack button.

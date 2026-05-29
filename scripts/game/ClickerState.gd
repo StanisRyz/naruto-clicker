@@ -74,6 +74,11 @@ var autoclick_purchased: bool = false
 var gold_bonus_purchased: bool = false
 var focus_burst_purchased: bool = false
 var rally_purchased: bool = false
+var autoclick_rank: int = 0
+var gold_bonus_rank: int = 0
+var focus_burst_rank: int = 0
+var rally_rank: int = 0
+var ability_max_rank: int = 5
 var autoclick_unlock_level: int = 15
 var gold_bonus_unlock_level: int = 30
 var focus_burst_unlock_level: int = 60
@@ -560,11 +565,21 @@ func get_boss_timer_multiplier() -> float:
 
 
 func get_focus_burst_multiplier() -> float:
-	return 2.0 if focus_burst_active else 1.0
+	return 1.75 + 0.25 * focus_burst_rank if focus_burst_active else 1.0
 
 
 func get_rally_multiplier() -> float:
-	return 2.0 if rally_active else 1.0
+	return 1.75 + 0.25 * rally_rank if rally_active else 1.0
+
+
+func get_gold_bonus_multiplier() -> float:
+	return 1.75 + 0.25 * gold_bonus_rank if gold_bonus_active else 1.0
+
+
+func get_autoclick_rank_rate_multiplier() -> float:
+	if autoclick_rank <= 1:
+		return 1.0
+	return 1.0 + 0.15 * (autoclick_rank - 1)
 
 
 func get_boss_damage_multiplier() -> float:
@@ -648,10 +663,10 @@ func buy_shop_product(product_id: String) -> Dictionary:
 	match reward_type:
 		"gold":
 			var reward_scale: int = int(product.get("reward_scale", 0))
-			var reward_gold: int = maxi(1, get_current_task_reward_unit() * reward_scale)
-			gold += reward_gold
-			result["reward_gold"] = reward_gold
-			result["status_text"] = "%s purchased! +%d gold" % [product_name, reward_gold]
+			var shop_gold: int = maxi(1, get_current_task_reward_unit() * reward_scale)
+			gold += shop_gold
+			result["reward_gold"] = shop_gold
+			result["status_text"] = "%s purchased! +%d gold" % [product_name, shop_gold]
 		"combo_fill":
 			var combo_reward_amount: int = int(product.get("reward_amount", 100))
 			result["combo_fill"] = combo_reward_amount
@@ -684,12 +699,16 @@ func perform_prestige() -> Dictionary:
 	current_level = 1
 	enemies_defeated_on_level = 0
 	autoclick_purchased = false
+	autoclick_rank = 0
 	autoclick_active = false
 	gold_bonus_purchased = false
+	gold_bonus_rank = 0
 	gold_bonus_active = false
 	focus_burst_purchased = false
+	focus_burst_rank = 0
 	focus_burst_active = false
 	rally_purchased = false
+	rally_rank = 0
 	rally_active = false
 	purchased_partner_skill_ids.clear()
 
@@ -759,7 +778,7 @@ func resolve_defeated_target() -> Dictionary:
 		source_reward = int(source_reward * get_partner_skill_bonus_multiplier("elite_reward"))
 	var talent_gold: int = int(source_reward * get_trade_routes_multiplier() * get_partner_skill_gold_multiplier())
 	var settlement_gold: int = int(talent_gold * get_settlement_gold_multiplier())
-	var earned_gold: int = settlement_gold * gold_bonus_multiplier if gold_bonus_active else settlement_gold
+	var earned_gold: int = int(settlement_gold * get_gold_bonus_multiplier()) if gold_bonus_active else settlement_gold
 	gold += earned_gold
 	enemies_defeated_on_level += 1
 	total_enemies_defeated += 1
@@ -864,6 +883,7 @@ func buy_autoclick_ability() -> Dictionary:
 
 	gold -= autoclick_purchase_cost
 	autoclick_purchased = true
+	autoclick_rank = 1
 	return _make_purchase_result("Autoclick purchased!", false, true)
 
 
@@ -879,6 +899,7 @@ func buy_gold_bonus_ability() -> Dictionary:
 
 	gold -= gold_bonus_purchase_cost
 	gold_bonus_purchased = true
+	gold_bonus_rank = 1
 	return _make_purchase_result("Gold Bonus purchased!", false, true)
 
 
@@ -894,6 +915,7 @@ func buy_focus_burst_ability() -> Dictionary:
 
 	gold -= focus_burst_purchase_cost
 	focus_burst_purchased = true
+	focus_burst_rank = 1
 	return _make_purchase_result("Focus Burst purchased!", false, true)
 
 
@@ -909,6 +931,7 @@ func buy_rally_ability() -> Dictionary:
 
 	gold -= rally_purchase_cost
 	rally_purchased = true
+	rally_rank = 1
 	return _make_purchase_result("Rally purchased!", false, true)
 
 
@@ -1354,16 +1377,122 @@ func _get_partner_skill_total_bonus(bonus_type: String) -> float:
 	return total_bonus
 
 
-func get_ability_description(ability_id: String) -> String:
+func get_ability_rank(ability_id: String) -> int:
+	match ability_id:
+		"autoclick": return autoclick_rank
+		"gold_bonus": return gold_bonus_rank
+		"focus_burst": return focus_burst_rank
+		"rally": return rally_rank
+	return 0
+
+
+func is_ability_purchased(ability_id: String) -> bool:
+	return get_ability_rank(ability_id) > 0
+
+
+func is_ability_unlocked(ability_id: String) -> bool:
+	match ability_id:
+		"autoclick": return autoclick_unlocked
+		"gold_bonus": return gold_bonus_unlocked
+		"focus_burst": return focus_burst_unlocked
+		"rally": return rally_unlocked
+	return false
+
+
+func get_ability_unlock_level(ability_id: String) -> int:
+	match ability_id:
+		"autoclick": return autoclick_unlock_level
+		"gold_bonus": return gold_bonus_unlock_level
+		"focus_burst": return focus_burst_unlock_level
+		"rally": return rally_unlock_level
+	return 0
+
+
+func can_upgrade_ability(ability_id: String) -> bool:
+	if get_ability_rank(ability_id) >= ability_max_rank:
+		return false
+	return is_ability_unlocked(ability_id)
+
+
+func get_ability_upgrade_cost(ability_id: String) -> int:
+	var rank: int = get_ability_rank(ability_id)
+	var rank_to_buy: int = rank + 1
+	var base_cost: int = _get_ability_base_cost(ability_id)
+	if rank == 0:
+		return base_cost
+	return base_cost * rank_to_buy * rank_to_buy * 2
+
+
+func _get_ability_base_cost(ability_id: String) -> int:
+	match ability_id:
+		"autoclick": return autoclick_purchase_cost
+		"gold_bonus": return gold_bonus_purchase_cost
+		"focus_burst": return focus_burst_purchase_cost
+		"rally": return rally_purchase_cost
+	return 0
+
+
+func buy_or_upgrade_ability(ability_id: String) -> Dictionary:
+	if not can_upgrade_ability(ability_id):
+		if get_ability_rank(ability_id) >= ability_max_rank:
+			return _make_purchase_result("Already at max rank")
+		return _make_purchase_result("Requires character level %d" % get_ability_unlock_level(ability_id))
+	var cost: int = get_ability_upgrade_cost(ability_id)
+	if gold < cost:
+		return _make_purchase_result("Not enough gold", true)
+	gold -= cost
 	match ability_id:
 		"autoclick":
-			return "20 attacks/sec for 15s"
+			autoclick_rank += 1
+			autoclick_purchased = true
 		"gold_bonus":
-			return "Gold rewards x2 for 45s"
+			gold_bonus_rank += 1
+			gold_bonus_purchased = true
 		"focus_burst":
-			return "Click/autoclick damage x2 for 20s"
+			focus_burst_rank += 1
+			focus_burst_purchased = true
 		"rally":
-			return "Partner DPS x2 for 30s"
+			rally_rank += 1
+			rally_purchased = true
+	var new_rank: int = get_ability_rank(ability_id)
+	var ability_name: String = ability_id.replace("_", " ").capitalize()
+	if new_rank == 1:
+		return _make_purchase_result("%s purchased!" % ability_name, false, true)
+	return _make_purchase_result("%s rank %d!" % [ability_name, new_rank], false, true)
+
+
+func get_ability_description(ability_id: String) -> String:
+	var rank: int = get_ability_rank(ability_id)
+	match ability_id:
+		"autoclick":
+			var hits: int = roundi(20.0 * (1.0 + 0.15 * maxi(0, rank - 1)))
+			var dur: int = 15 + 2 * maxi(0, rank - 1)
+			if rank == 0:
+				return "20 hits/sec | 15s"
+			if rank >= ability_max_rank:
+				return "%d hits/sec | %ds" % [hits, dur]
+			return "%d hits/sec | %ds | Next: +15%% rate, +2s" % [hits, dur]
+		"gold_bonus":
+			if rank == 0:
+				return "x2.00 gold | 45s"
+			var mult: float = 1.75 + 0.25 * rank
+			if rank >= ability_max_rank:
+				return "x%.2f gold" % mult
+			return "x%.2f gold | Next: x%.2f" % [mult, mult + 0.25]
+		"focus_burst":
+			if rank == 0:
+				return "x2.00 damage | 20s"
+			var mult: float = 1.75 + 0.25 * rank
+			if rank >= ability_max_rank:
+				return "x%.2f damage" % mult
+			return "x%.2f damage | Next: x%.2f" % [mult, mult + 0.25]
+		"rally":
+			if rank == 0:
+				return "x2.00 partner DPS | 30s"
+			var mult: float = 1.75 + 0.25 * rank
+			if rank >= ability_max_rank:
+				return "x%.2f partner DPS" % mult
+			return "x%.2f partner DPS | Next: x%.2f" % [mult, mult + 0.25]
 		_:
 			return ""
 
@@ -1636,18 +1765,22 @@ func update_ability_unlocks() -> void:
 	if not autoclick_unlocked:
 		autoclick_active = false
 		autoclick_purchased = false
+		autoclick_rank = 0
 
 	if not gold_bonus_unlocked:
 		gold_bonus_active = false
 		gold_bonus_purchased = false
+		gold_bonus_rank = 0
 
 	if not focus_burst_unlocked:
 		focus_burst_active = false
 		focus_burst_purchased = false
+		focus_burst_rank = 0
 
 	if not rally_unlocked:
 		rally_active = false
 		rally_purchased = false
+		rally_rank = 0
 
 
 func fail_boss_level() -> Dictionary:

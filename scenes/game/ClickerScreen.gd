@@ -190,25 +190,25 @@ func _on_character_level_upgrade_requested(mode: String) -> void:
 
 
 func _on_autoclick_purchase_requested() -> void:
-	var result: Dictionary = state.buy_autoclick_ability()
+	var result: Dictionary = state.buy_or_upgrade_ability("autoclick")
 	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
 
 
 func _on_gold_bonus_purchase_requested() -> void:
-	var result: Dictionary = state.buy_gold_bonus_ability()
+	var result: Dictionary = state.buy_or_upgrade_ability("gold_bonus")
 	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
 
 
 func _on_focus_burst_purchase_requested() -> void:
-	var result: Dictionary = state.buy_focus_burst_ability()
+	var result: Dictionary = state.buy_or_upgrade_ability("focus_burst")
 	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
 
 
 func _on_rally_purchase_requested() -> void:
-	var result: Dictionary = state.buy_rally_ability()
+	var result: Dictionary = state.buy_or_upgrade_ability("rally")
 	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
 
@@ -425,7 +425,8 @@ func _on_autoclick_requested() -> void:
 		return
 
 	state.autoclick_active = true
-	autoclick_time_left = _get_scaled_duration(autoclick_duration, false)
+	var rank_bonus_seconds: float = 2.0 * maxi(0, state.autoclick_rank - 1)
+	autoclick_time_left = _get_scaled_duration(autoclick_duration + rank_bonus_seconds, false)
 	autoclick_accumulator = 0.0
 	state.total_autoclick_activations += 1
 	_update_ui()
@@ -519,7 +520,7 @@ func _process_ability_timers(delta: float) -> void:
 
 
 func _get_current_autoclick_interval() -> float:
-	return maxf(0.02, autoclick_interval / state.get_quick_hands_multiplier())
+	return maxf(0.02, autoclick_interval / (state.get_quick_hands_multiplier() * state.get_autoclick_rank_rate_multiplier()))
 
 
 func _get_scaled_duration(base_duration: float, uses_war_banner: bool) -> float:

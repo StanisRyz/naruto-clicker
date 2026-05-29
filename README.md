@@ -58,10 +58,13 @@ The main scene contains the first local clicker loop:
 - Hero level and each partner tier have milestone multipliers at 10, 25, 50, 100, 250, and 500 owned levels.
 - Each reached milestone doubles the total accumulated contribution of that source, applying to all owned levels rather than only future purchases.
 - Hero and each partner tier track milestones independently.
-- Autoclick unlocks at character level 15.
-- Gold Bonus unlocks at character level 30 and doubles enemy rewards while active.
-- Focus Burst unlocks at character level 60 and doubles final click/autoclick damage while active.
-- Rally unlocks at character level 80 and doubles final partner DPS while active.
+- Active abilities have ranks 0–5. Rank 0 means not purchased. First purchase sets rank 1; ranks 2–5 are gold upgrades that increase the effect.
+- Autoclick unlocks at character level 15, base cost 50 gold. Each rank above 1 adds +15% attack rate and +2 seconds duration.
+- Gold Bonus unlocks at character level 30, base cost 150 gold. Multiplier: rank 1 = x2.00, rank 5 = x3.00 (steps of +0.25 per rank).
+- Focus Burst unlocks at character level 60, base cost 500 gold. Damage multiplier: rank 1 = x2.00, rank 5 = x3.00 (steps of +0.25 per rank).
+- Rally unlocks at character level 80, base cost 1000 gold. Partner DPS multiplier: rank 1 = x2.00, rank 5 = x3.00 (steps of +0.25 per rank).
+- Upgrade costs: base_cost × rank_to_buy² × 2 (e.g. Autoclick rank 2 costs 50×4×2 = 400 gold).
+- Prestige resets all ability ranks to 0 along with normal progression.
 - Ability buttons live on the left side of the game field.
 - Ability buttons are placeholder ImageHolder-style controls: textless white squares until real icons are added.
 - Ability state is shown with color/disabled feedback, not text inside the button.
@@ -92,11 +95,10 @@ The main scene contains the first local clicker loop:
 - The Shop includes a temporary dev-only `Prototype: Get 50 Gems` button for testing product flow without payments.
 - Boss Retry tokens automatically retry the same failed boss level once per token. Task Reward Boost doubles the next claimed task reward only once.
 - Gems, Boss Retry tokens, and Task Reward Boost state are runtime-only until a save system is explicitly added.
-- Autoclick costs 50 gold, and Gold Bonus costs 150 gold.
-- Autoclick lasts 15 seconds, attacks once every 0.05 seconds while active, then enters a 60 second cooldown.
-- Gold Bonus lasts 45 seconds, doubles gold rewards while active, then enters a 300 second cooldown.
-- Focus Burst costs 500 gold, lasts 20 seconds, then enters a 120 second cooldown.
-- Rally costs 1000 gold, lasts 30 seconds, then enters a 180 second cooldown.
+- Autoclick base: 20 hits/sec for 15 s, 60 s cooldown. Each rank above 1 adds +15% rate and +2 s duration.
+- Gold Bonus base: x2 gold for 45 s, 300 s cooldown. Multiplier scales to x3 at rank 5.
+- Focus Burst base: x2 damage for 20 s, 120 s cooldown. Multiplier scales to x3 at rank 5.
+- Rally base: x2 partner DPS for 30 s, 180 s cooldown. Multiplier scales to x3 at rank 5.
 - War Banner increases Focus Burst and Rally duration, and Clock Tower improves cooldown efficiency with diminishing returns.
 - Partners provide passive DPS and are managed from a separate bottom-half sheet.
 - Partner DPS tiers are data-driven: Partner 1 (10), Partner 2 (20), Partner 3 (35), Field Scout (65), Spear Guard (120), Iron Defender (220), Battle Monk (410), Elite Samurai (750), Shadow Captain (1400), War Sage (2600), Beast Tamer (4800), Blade Master (9000), and Legendary Commander (16500).
@@ -127,7 +129,7 @@ The main scene contains the first local clicker loop:
 - Hero Level upgrades, partner hires, and settlement buildings use the reusable `BuyModeSelector` for horizontal bulk mode buttons: `x1`, `x10`, `x100`, and `Max`.
 - In `UpgradeSheet`, `PartnerSheet`, and `SettlementSheet`, the buy mode selector stays fixed under the sheet header while purchase lists scroll independently below it.
 - `SettlementSheet` should use the same header / `BuyModeSelector` / scroll spacing as `UpgradeSheet` and `PartnerSheet`.
-- In `UpgradeSheet`, the buy mode selector affects only the Hero Level card; ability purchases are one-time purchases and never use bulk-buy.
+- In `UpgradeSheet`, the buy mode selector affects only the Hero Level card; ability buy/upgrade actions never use bulk-buy modes.
 - Bulk cost displays show the total package cost. `x10` and `x100` are strict all-or-nothing purchases; `Max` buys as many as current gold allows.
 - Partner buttons always show the required package cost when prerequisites are met; failed unaffordable purchases can return "Not enough gold" through the status helper, but no main-screen status label is currently shown.
 - Purchase tabs use card-style rows with a temporary white `ColorRect` image placeholder, two-line info text, and an action button.

@@ -93,69 +93,20 @@ func _update_ability_row(state: ClickerState, ability_index: int, row: Dictionar
 	var effect_label: Label = row["effect_label"]
 	var button: Button = row["button"]
 
-	var status: String = _get_ability_status(state, ability_id)
-	name_status_label.text = "%s | %s" % [ability_name, status]
+	var rank: int = state.get_ability_rank(ability_id)
+	name_status_label.text = "%s | Rank %d/%d" % [ability_name, rank, state.ability_max_rank]
 	effect_label.text = state.get_ability_description(ability_id)
 
-	if status == "Purchased":
+	if not state.is_ability_unlocked(ability_id):
 		button.disabled = true
-		button.text = "Purchased"
-	elif status == "Locked":
+		button.text = "Requires Level %d" % state.get_ability_unlock_level(ability_id)
+	elif rank >= state.ability_max_rank:
 		button.disabled = true
-		button.text = "Requires Level %d" % _get_ability_unlock_level(state, ability_id)
+		button.text = "Max"
 	else:
 		button.disabled = false
-		button.text = "Buy - Cost: %d" % _get_ability_cost(state, ability_id)
-
-
-func _get_ability_status(state: ClickerState, ability_id: String) -> String:
-	match ability_id:
-		"autoclick":
-			if state.autoclick_purchased:
-				return "Purchased"
-			return "Available" if state.autoclick_unlocked else "Locked"
-		"gold_bonus":
-			if state.gold_bonus_purchased:
-				return "Purchased"
-			return "Available" if state.gold_bonus_unlocked else "Locked"
-		"focus_burst":
-			if state.focus_burst_purchased:
-				return "Purchased"
-			return "Available" if state.focus_burst_unlocked else "Locked"
-		"rally":
-			if state.rally_purchased:
-				return "Purchased"
-			return "Available" if state.rally_unlocked else "Locked"
-
-	return "Locked"
-
-
-func _get_ability_unlock_level(state: ClickerState, ability_id: String) -> int:
-	match ability_id:
-		"autoclick":
-			return state.autoclick_unlock_level
-		"gold_bonus":
-			return state.gold_bonus_unlock_level
-		"focus_burst":
-			return state.focus_burst_unlock_level
-		"rally":
-			return state.rally_unlock_level
-
-	return 0
-
-
-func _get_ability_cost(state: ClickerState, ability_id: String) -> int:
-	match ability_id:
-		"autoclick":
-			return state.autoclick_purchase_cost
-		"gold_bonus":
-			return state.gold_bonus_purchase_cost
-		"focus_burst":
-			return state.focus_burst_purchase_cost
-		"rally":
-			return state.rally_purchase_cost
-
-	return 0
+		var cost: int = state.get_ability_upgrade_cost(ability_id)
+		button.text = "Buy: %d" % cost if rank == 0 else "Upgrade: %d" % cost
 
 
 func _emit_ability_purchase(ability_id: String) -> void:
