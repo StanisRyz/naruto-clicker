@@ -79,7 +79,11 @@ autowrap_mode = 3
 
 [node name="RequirementLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
-text = "Requires: Partner Count 25"
+text = "Requires: 25 Partner 1"
+
+[node name="CurrentLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Current: 0 / 25"
 
 [node name="CostLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2

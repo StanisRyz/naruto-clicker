@@ -6,7 +6,8 @@ signal skill_popup_requested(skill_id: String, anchor_global_position: Vector2)
 
 const BUY_MODES: Array[String] = ["x1", "x10", "x100", "max"]
 const PARTNER_IMAGE_SIZE: Vector2 = Vector2(104, 104)
-const SKILL_ICON_SIZE: Vector2 = Vector2(36, 36)
+const SKILL_ICON_SIZE: Vector2 = Vector2(32, 32)
+const SKILL_COUNT: int = 5
 const SKILL_ICON_COLORS: Dictionary = {
 	"locked": Color(0.32, 0.32, 0.34, 1.0),
 	"available": Color(0.18, 0.44, 0.95, 1.0),
@@ -83,25 +84,34 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 	var skill_row := HBoxContainer.new()
 	skill_row.name = "SkillRow"
 	skill_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	skill_row.add_theme_constant_override("separation", 10)
+	skill_row.add_theme_constant_override("separation", 6)
 	right_content.add_child(skill_row)
 
-	var skill_button := Button.new()
-	skill_button.name = "SkillButton"
-	skill_button.custom_minimum_size = SKILL_ICON_SIZE
-	skill_button.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	skill_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	skill_button.focus_mode = Control.FOCUS_NONE
-	skill_button.text = ""
-	skill_button.pressed.connect(func() -> void: _on_skill_button_pressed(partner_index, skill_button))
-	skill_row.add_child(skill_button)
+	var skill_buttons: Array[Button] = []
+	var skill_image_holders: Array[ColorRect] = []
 
-	var skill_image_holder := ColorRect.new()
-	skill_image_holder.name = "ImageHolder"
-	skill_image_holder.color = SKILL_ICON_COLORS["locked"]
-	skill_image_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	skill_image_holder.set_anchors_preset(Control.PRESET_FULL_RECT)
-	skill_button.add_child(skill_image_holder)
+	for i in range(SKILL_COUNT):
+		var skill_button := Button.new()
+		skill_button.name = "SkillButton%d" % (i + 1)
+		skill_button.custom_minimum_size = SKILL_ICON_SIZE
+		skill_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		skill_button.focus_mode = Control.FOCUS_NONE
+		skill_button.text = ""
+		var captured_index: int = i
+		skill_button.pressed.connect(
+			func() -> void: _on_skill_button_pressed(partner_index, captured_index, skill_button)
+		)
+		skill_row.add_child(skill_button)
+
+		var skill_image_holder := ColorRect.new()
+		skill_image_holder.name = "ImageHolder"
+		skill_image_holder.color = SKILL_ICON_COLORS["locked"]
+		skill_image_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		skill_image_holder.set_anchors_preset(Control.PRESET_FULL_RECT)
+		skill_button.add_child(skill_image_holder)
+
+		skill_buttons.append(skill_button)
+		skill_image_holders.append(skill_image_holder)
 
 	var skill_spacer := Control.new()
 	skill_spacer.name = "SkillSpacer"
@@ -119,8 +129,8 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 		"row": row,
 		"name_count_label": name_count_label,
 		"effect_label": effect_label,
-		"skill_button": skill_button,
-		"skill_image_holder": skill_image_holder,
+		"skill_buttons": skill_buttons,
+		"skill_image_holders": skill_image_holders,
 		"button": button,
 	}
 
@@ -128,8 +138,8 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionary) -> void:
 	var name_count_label: Label = row["name_count_label"]
 	var effect_label: Label = row["effect_label"]
-	var skill_button: Button = row["skill_button"]
-	var skill_image_holder: ColorRect = row["skill_image_holder"]
+	var skill_buttons: Array = row["skill_buttons"]
+	var skill_image_holders: Array = row["skill_image_holders"]
 	var button: Button = row["button"]
 	var partner_name: String = state.partner_names[partner_index]
 	var partner_count: int = state.partner_counts[partner_index]
@@ -143,14 +153,18 @@ func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionar
 	else:
 		effect_label.text = "+%d DPS | Max milestones" % state.partner_dps_values[partner_index]
 
-	var skill: Dictionary = state.get_partner_skill_for_partner(partner_index)
-	var skill_state: String = "locked"
-	if skill.is_empty():
-		skill_button.disabled = true
-	else:
-		skill_button.disabled = false
-		skill_state = state.get_partner_skill_state(String(skill.get("id", "")))
-	skill_image_holder.color = SKILL_ICON_COLORS.get(skill_state, SKILL_ICON_COLORS["locked"])
+	var skills: Array[Dictionary] = state.get_partner_skills_for_partner(partner_index)
+	for i in range(skill_buttons.size()):
+		var skill_button: Button = skill_buttons[i]
+		var skill_image_holder: ColorRect = skill_image_holders[i]
+		if i >= skills.size():
+			skill_button.disabled = true
+			skill_image_holder.color = SKILL_ICON_COLORS["locked"]
+		else:
+			skill_button.disabled = false
+			var skill_id: String = String(skills[i].get("id", ""))
+			var skill_state: String = state.get_partner_skill_state(skill_id)
+			skill_image_holder.color = SKILL_ICON_COLORS.get(skill_state, SKILL_ICON_COLORS["locked"])
 
 	if not state.can_buy_partner(partner_index):
 		button.disabled = true
@@ -194,15 +208,15 @@ func _create_row_stylebox() -> StyleBoxFlat:
 	return stylebox
 
 
-func _on_skill_button_pressed(partner_index: int, skill_button: Button) -> void:
+func _on_skill_button_pressed(partner_index: int, skill_index: int, skill_button: Button) -> void:
 	if current_state == null:
 		return
 
-	var skill: Dictionary = current_state.get_partner_skill_for_partner(partner_index)
-	if skill.is_empty():
+	var skills: Array[Dictionary] = current_state.get_partner_skills_for_partner(partner_index)
+	if skill_index >= skills.size():
 		return
 
-	var skill_id: String = String(skill.get("id", ""))
+	var skill_id: String = String(skills[skill_index].get("id", ""))
 	if skill_id == "":
 		return
 

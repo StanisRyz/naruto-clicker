@@ -9,6 +9,7 @@ signal skill_purchase_requested(skill_id: String)
 @onready var name_label: Label = $PanelContainer/MarginContainer/VBoxContainer/Header/NameLabel
 @onready var description_label: Label = $PanelContainer/MarginContainer/VBoxContainer/DescriptionLabel
 @onready var requirement_label: Label = $PanelContainer/MarginContainer/VBoxContainer/RequirementLabel
+@onready var current_label: Label = $PanelContainer/MarginContainer/VBoxContainer/CurrentLabel
 @onready var cost_label: Label = $PanelContainer/MarginContainer/VBoxContainer/CostLabel
 @onready var buy_button: Button = $PanelContainer/MarginContainer/VBoxContainer/BuyButton
 
@@ -44,17 +45,35 @@ func _update_view(state: ClickerState) -> void:
 		hide()
 		return
 
+	var partner_index: int = int(skill.get("partner_index", -1))
+	var unlock_count: int = int(skill.get("unlock_count", 0))
+	var partner_name: String = "Partner"
+	if partner_index >= 0 and partner_index < state.partner_names.size():
+		partner_name = state.partner_names[partner_index]
+	var current_count: int = 0
+	if partner_index >= 0 and partner_index < state.partner_counts.size():
+		current_count = state.partner_counts[partner_index]
+
 	var cost: int = state.get_partner_skill_cost(current_skill_id)
 	var skill_state: String = state.get_partner_skill_state(current_skill_id)
+
 	name_label.text = String(skill.get("name", "Partner Skill"))
 	description_label.text = String(skill.get("description", ""))
-	requirement_label.text = "Requires: Partner Count %d" % int(skill.get("unlock_count", 0))
+	requirement_label.text = "Requires: %d %s" % [unlock_count, partner_name]
+	current_label.text = "Current: %d / %d" % [current_count, unlock_count]
 	cost_label.text = "Cost: %d gold" % cost
-	buy_button.disabled = not state.can_buy_partner_skill(current_skill_id)
-	if skill_state == "purchased":
-		buy_button.text = "Purchased"
-	else:
-		buy_button.text = "Buy: %d" % cost
+
+	match skill_state:
+		"purchased":
+			buy_button.disabled = true
+			buy_button.text = "Purchased"
+		"locked":
+			buy_button.disabled = true
+			buy_button.text = "Locked"
+		_:
+			buy_button.text = "Buy: %d" % cost
+			buy_button.disabled = not state.can_buy_partner_skill(current_skill_id)
+
 	panel_container.reset_size()
 
 

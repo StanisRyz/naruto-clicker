@@ -112,14 +112,18 @@ The main scene contains the first local clicker loop:
 - Partner damage ticks every 0.1 seconds for final partner DPS / 10 damage.
 - Base partner DPS includes partner tiers and partner milestones only.
 - Final partner DPS adds Command Aura, Training Camp, and Rally; the main stats panel displays final partner DPS without contextual Boss Hunter, while partner damage ticks include Boss Hunter during boss fights.
-- Partner cards use three vertical info rows on the right: name/count, per-purchase DPS plus next x2 milestone, then the partner skill icon.
-- The main partner ImageHolder stays square and visually fills the taller card; the partner skill icon is a separate small square placeholder under the DPS/milestone line.
+- Partner cards use three vertical info rows on the right: name/count, per-purchase DPS plus next x2 milestone, then a row of 5 partner skill icons.
+- The main partner ImageHolder stays square and visually fills the taller card; the 5 skill icons are small fixed squares (32×32) in a horizontal row under the DPS/milestone line.
 - Partner skills are purchasable gold upgrades shown as small ImageHolder-style icons in partner cards, not automatic unlocks.
-- Each partner currently has one skill icon placeholder at the 25 owned milestone. The data model supports future multiple milestone skills per partner, but the panel currently shows the first skill for each tier.
+- Each partner has 5 purchasable skill icons that unlock at partner counts 10, 25, 50, 100, and 250. The 500 milestone is reserved for a future ultimate skill.
 - Skill icon states are gray for locked, blue for available to buy, and white for purchased.
-- Clicking a skill icon opens a compact non-modal popup with the skill name, description, required partner count, gold cost, and Buy button. The popup should fit its content height and must not stretch vertically to the screen bottom.
-- Skill bonuses apply only after purchase and reset on prestige with normal partner progress for now.
-- Prototype partner skills are: Partner 1 Basic Training (+5% Click Damage), Partner 2 Team Rhythm (+5% Partner DPS), Partner 3 Spoils Finder (+5% Gold Gain), Field Scout Elite Tracking (+10% Elite Enemy Rewards), Spear Guard Boss Pressure (+5% Boss Damage), Iron Defender Defensive Planning (+5% Boss Timer Duration), Battle Monk Chakra Flow (+5% Combo Meter Gain), Elite Samurai Blade Automation (+10% Autoclick Damage), Shadow Captain Mission Command (+5% Task Rewards), War Sage Village Wisdom (+5% Settlement Effects), Beast Tamer Predator Sense (+1% Elite Spawn Chance), Blade Master Critical Strike (+5% Manual Critical Chance), and Legendary Commander Commander's Aura (+5% All Damage).
+- Clicking any skill icon opens a compact non-modal popup with the skill name, description, required partner count, current count vs requirement, gold cost, and Buy button. The popup fits its content height and must not stretch vertically to the screen bottom.
+- Skill bonuses apply only after purchase and reset on prestige with normal partner progress.
+- Skill categories and distribution:
+  - Partner 1 and Field Scout (Partner 4): Click Damage skills — Click Training I–V (+20%/+25%/+50%/+100%/+100%).
+  - Spear Guard (Partner 5): Total Partner DPS skills — Team Command I–V (+25%/+40%/+60%/+60%/+100%).
+  - Iron Defender (Partner 6): Gold Gain skills — Gold Sense I–V (+25%/+50%/+50%/+50%/+50%).
+  - All other partners (Partner 2, 3, 7–13): Own Partner DPS skills — Personal Mastery I–V (+50%/+50%/+50%/+100%/+100%) affecting only that partner tier's DPS.
 - Hero Level upgrades, partner hires, and settlement buildings use the reusable `BuyModeSelector` for horizontal bulk mode buttons: `x1`, `x10`, `x100`, and `Max`.
 - In `UpgradeSheet`, `PartnerSheet`, and `SettlementSheet`, the buy mode selector stays fixed under the sheet header while purchase lists scroll independently below it.
 - `SettlementSheet` should use the same header / `BuyModeSelector` / scroll spacing as `UpgradeSheet` and `PartnerSheet`.

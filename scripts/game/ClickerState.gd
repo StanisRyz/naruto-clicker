@@ -104,20 +104,87 @@ var partner_base_costs: Array[int] = [10, 50, 150, 400, 900, 1800, 3500, 7000, 1
 var partner_cost_steps: Array[int] = [10, 30, 50, 100, 180, 300, 500, 900, 1600, 2800, 5000, 9000, 16000]
 var partner_counts: Array[int] = []
 var partner_purchase_costs: Array[int] = []
+var partner_skill_unlock_counts: Array[int] = [10, 25, 50, 100, 250]
+var partner_skill_cost_multipliers: Array[int] = [3, 5, 8, 12, 20]
 var partner_skill_definitions: Array[Dictionary] = [
-	{"id": "partner_1_click_damage", "partner_index": 0, "name": "Basic Training", "description": "+5% Click Damage", "unlock_count": 25, "bonus_type": "click_damage", "bonus_value": 0.05},
-	{"id": "partner_2_partner_dps", "partner_index": 1, "name": "Team Rhythm", "description": "+5% Partner DPS", "unlock_count": 25, "bonus_type": "partner_dps", "bonus_value": 0.05},
-	{"id": "partner_3_gold", "partner_index": 2, "name": "Spoils Finder", "description": "+5% Gold Gain", "unlock_count": 25, "bonus_type": "gold", "bonus_value": 0.05},
-	{"id": "field_scout_elite_reward", "partner_index": 3, "name": "Elite Tracking", "description": "+10% Elite Enemy Rewards", "unlock_count": 25, "bonus_type": "elite_reward", "bonus_value": 0.10},
-	{"id": "spear_guard_boss_damage", "partner_index": 4, "name": "Boss Pressure", "description": "+5% Boss Damage", "unlock_count": 25, "bonus_type": "boss_damage", "bonus_value": 0.05},
-	{"id": "iron_defender_boss_timer", "partner_index": 5, "name": "Defensive Planning", "description": "+5% Boss Timer Duration", "unlock_count": 25, "bonus_type": "boss_timer", "bonus_value": 0.05},
-	{"id": "battle_monk_combo_gain", "partner_index": 6, "name": "Chakra Flow", "description": "+5% Combo Meter Gain", "unlock_count": 25, "bonus_type": "combo_gain", "bonus_value": 0.05},
-	{"id": "elite_samurai_autoclick_damage", "partner_index": 7, "name": "Blade Automation", "description": "+10% Autoclick Damage", "unlock_count": 25, "bonus_type": "autoclick_damage", "bonus_value": 0.10},
-	{"id": "shadow_captain_task_reward", "partner_index": 8, "name": "Mission Command", "description": "+5% Task Rewards", "unlock_count": 25, "bonus_type": "task_reward", "bonus_value": 0.05},
-	{"id": "war_sage_settlement_effect", "partner_index": 9, "name": "Village Wisdom", "description": "+5% Settlement Effects", "unlock_count": 25, "bonus_type": "settlement_effect", "bonus_value": 0.05},
-	{"id": "beast_tamer_elite_spawn", "partner_index": 10, "name": "Predator Sense", "description": "+1% Elite Spawn Chance", "unlock_count": 25, "bonus_type": "elite_spawn", "bonus_value": 0.01},
-	{"id": "blade_master_critical_manual", "partner_index": 11, "name": "Critical Strike", "description": "+5% Manual Critical Chance", "unlock_count": 25, "bonus_type": "critical_manual", "bonus_value": 0.05},
-	{"id": "legendary_commander_all_damage", "partner_index": 12, "name": "Commander's Aura", "description": "+5% All Damage", "unlock_count": 25, "bonus_type": "all_damage", "bonus_value": 0.05},
+	# Partner 1 (index 0) — Click Damage
+	{"id": "p0_s1", "partner_index": 0, "skill_level": 1, "unlock_count": 10, "name": "Click Training I", "description": "+20% Click Damage", "bonus_type": "click_damage", "bonus_value": 0.20},
+	{"id": "p0_s2", "partner_index": 0, "skill_level": 2, "unlock_count": 25, "name": "Click Training II", "description": "+25% Click Damage", "bonus_type": "click_damage", "bonus_value": 0.25},
+	{"id": "p0_s3", "partner_index": 0, "skill_level": 3, "unlock_count": 50, "name": "Click Training III", "description": "+50% Click Damage", "bonus_type": "click_damage", "bonus_value": 0.50},
+	{"id": "p0_s4", "partner_index": 0, "skill_level": 4, "unlock_count": 100, "name": "Click Training IV", "description": "+100% Click Damage", "bonus_type": "click_damage", "bonus_value": 1.00},
+	{"id": "p0_s5", "partner_index": 0, "skill_level": 5, "unlock_count": 250, "name": "Click Training V", "description": "+100% Click Damage", "bonus_type": "click_damage", "bonus_value": 1.00},
+	# Partner 2 (index 1) — Own Partner DPS
+	{"id": "p1_s1", "partner_index": 1, "skill_level": 1, "unlock_count": 10, "name": "Personal Mastery I", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p1_s2", "partner_index": 1, "skill_level": 2, "unlock_count": 25, "name": "Personal Mastery II", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p1_s3", "partner_index": 1, "skill_level": 3, "unlock_count": 50, "name": "Personal Mastery III", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p1_s4", "partner_index": 1, "skill_level": 4, "unlock_count": 100, "name": "Personal Mastery IV", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
+	{"id": "p1_s5", "partner_index": 1, "skill_level": 5, "unlock_count": 250, "name": "Personal Mastery V", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
+	# Partner 3 (index 2) — Own Partner DPS
+	{"id": "p2_s1", "partner_index": 2, "skill_level": 1, "unlock_count": 10, "name": "Personal Mastery I", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p2_s2", "partner_index": 2, "skill_level": 2, "unlock_count": 25, "name": "Personal Mastery II", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p2_s3", "partner_index": 2, "skill_level": 3, "unlock_count": 50, "name": "Personal Mastery III", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p2_s4", "partner_index": 2, "skill_level": 4, "unlock_count": 100, "name": "Personal Mastery IV", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
+	{"id": "p2_s5", "partner_index": 2, "skill_level": 5, "unlock_count": 250, "name": "Personal Mastery V", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
+	# Field Scout (index 3) — Click Damage
+	{"id": "p3_s1", "partner_index": 3, "skill_level": 1, "unlock_count": 10, "name": "Click Training I", "description": "+20% Click Damage", "bonus_type": "click_damage", "bonus_value": 0.20},
+	{"id": "p3_s2", "partner_index": 3, "skill_level": 2, "unlock_count": 25, "name": "Click Training II", "description": "+25% Click Damage", "bonus_type": "click_damage", "bonus_value": 0.25},
+	{"id": "p3_s3", "partner_index": 3, "skill_level": 3, "unlock_count": 50, "name": "Click Training III", "description": "+50% Click Damage", "bonus_type": "click_damage", "bonus_value": 0.50},
+	{"id": "p3_s4", "partner_index": 3, "skill_level": 4, "unlock_count": 100, "name": "Click Training IV", "description": "+100% Click Damage", "bonus_type": "click_damage", "bonus_value": 1.00},
+	{"id": "p3_s5", "partner_index": 3, "skill_level": 5, "unlock_count": 250, "name": "Click Training V", "description": "+100% Click Damage", "bonus_type": "click_damage", "bonus_value": 1.00},
+	# Spear Guard (index 4) — Total Partner DPS
+	{"id": "p4_s1", "partner_index": 4, "skill_level": 1, "unlock_count": 10, "name": "Team Command I", "description": "+25% Total Partner DPS", "bonus_type": "partner_dps", "bonus_value": 0.25},
+	{"id": "p4_s2", "partner_index": 4, "skill_level": 2, "unlock_count": 25, "name": "Team Command II", "description": "+40% Total Partner DPS", "bonus_type": "partner_dps", "bonus_value": 0.40},
+	{"id": "p4_s3", "partner_index": 4, "skill_level": 3, "unlock_count": 50, "name": "Team Command III", "description": "+60% Total Partner DPS", "bonus_type": "partner_dps", "bonus_value": 0.60},
+	{"id": "p4_s4", "partner_index": 4, "skill_level": 4, "unlock_count": 100, "name": "Team Command IV", "description": "+60% Total Partner DPS", "bonus_type": "partner_dps", "bonus_value": 0.60},
+	{"id": "p4_s5", "partner_index": 4, "skill_level": 5, "unlock_count": 250, "name": "Team Command V", "description": "+100% Total Partner DPS", "bonus_type": "partner_dps", "bonus_value": 1.00},
+	# Iron Defender (index 5) — Gold Gain
+	{"id": "p5_s1", "partner_index": 5, "skill_level": 1, "unlock_count": 10, "name": "Gold Sense I", "description": "+25% Gold Gain", "bonus_type": "gold", "bonus_value": 0.25},
+	{"id": "p5_s2", "partner_index": 5, "skill_level": 2, "unlock_count": 25, "name": "Gold Sense II", "description": "+50% Gold Gain", "bonus_type": "gold", "bonus_value": 0.50},
+	{"id": "p5_s3", "partner_index": 5, "skill_level": 3, "unlock_count": 50, "name": "Gold Sense III", "description": "+50% Gold Gain", "bonus_type": "gold", "bonus_value": 0.50},
+	{"id": "p5_s4", "partner_index": 5, "skill_level": 4, "unlock_count": 100, "name": "Gold Sense IV", "description": "+50% Gold Gain", "bonus_type": "gold", "bonus_value": 0.50},
+	{"id": "p5_s5", "partner_index": 5, "skill_level": 5, "unlock_count": 250, "name": "Gold Sense V", "description": "+50% Gold Gain", "bonus_type": "gold", "bonus_value": 0.50},
+	# Battle Monk (index 6) — Own Partner DPS
+	{"id": "p6_s1", "partner_index": 6, "skill_level": 1, "unlock_count": 10, "name": "Personal Mastery I", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p6_s2", "partner_index": 6, "skill_level": 2, "unlock_count": 25, "name": "Personal Mastery II", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p6_s3", "partner_index": 6, "skill_level": 3, "unlock_count": 50, "name": "Personal Mastery III", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p6_s4", "partner_index": 6, "skill_level": 4, "unlock_count": 100, "name": "Personal Mastery IV", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
+	{"id": "p6_s5", "partner_index": 6, "skill_level": 5, "unlock_count": 250, "name": "Personal Mastery V", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
+	# Elite Samurai (index 7) — Own Partner DPS
+	{"id": "p7_s1", "partner_index": 7, "skill_level": 1, "unlock_count": 10, "name": "Personal Mastery I", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p7_s2", "partner_index": 7, "skill_level": 2, "unlock_count": 25, "name": "Personal Mastery II", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p7_s3", "partner_index": 7, "skill_level": 3, "unlock_count": 50, "name": "Personal Mastery III", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p7_s4", "partner_index": 7, "skill_level": 4, "unlock_count": 100, "name": "Personal Mastery IV", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
+	{"id": "p7_s5", "partner_index": 7, "skill_level": 5, "unlock_count": 250, "name": "Personal Mastery V", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
+	# Shadow Captain (index 8) — Own Partner DPS
+	{"id": "p8_s1", "partner_index": 8, "skill_level": 1, "unlock_count": 10, "name": "Personal Mastery I", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p8_s2", "partner_index": 8, "skill_level": 2, "unlock_count": 25, "name": "Personal Mastery II", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p8_s3", "partner_index": 8, "skill_level": 3, "unlock_count": 50, "name": "Personal Mastery III", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p8_s4", "partner_index": 8, "skill_level": 4, "unlock_count": 100, "name": "Personal Mastery IV", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
+	{"id": "p8_s5", "partner_index": 8, "skill_level": 5, "unlock_count": 250, "name": "Personal Mastery V", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
+	# War Sage (index 9) — Own Partner DPS
+	{"id": "p9_s1", "partner_index": 9, "skill_level": 1, "unlock_count": 10, "name": "Personal Mastery I", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p9_s2", "partner_index": 9, "skill_level": 2, "unlock_count": 25, "name": "Personal Mastery II", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p9_s3", "partner_index": 9, "skill_level": 3, "unlock_count": 50, "name": "Personal Mastery III", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p9_s4", "partner_index": 9, "skill_level": 4, "unlock_count": 100, "name": "Personal Mastery IV", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
+	{"id": "p9_s5", "partner_index": 9, "skill_level": 5, "unlock_count": 250, "name": "Personal Mastery V", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
+	# Beast Tamer (index 10) — Own Partner DPS
+	{"id": "p10_s1", "partner_index": 10, "skill_level": 1, "unlock_count": 10, "name": "Personal Mastery I", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p10_s2", "partner_index": 10, "skill_level": 2, "unlock_count": 25, "name": "Personal Mastery II", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p10_s3", "partner_index": 10, "skill_level": 3, "unlock_count": 50, "name": "Personal Mastery III", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p10_s4", "partner_index": 10, "skill_level": 4, "unlock_count": 100, "name": "Personal Mastery IV", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
+	{"id": "p10_s5", "partner_index": 10, "skill_level": 5, "unlock_count": 250, "name": "Personal Mastery V", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
+	# Blade Master (index 11) — Own Partner DPS
+	{"id": "p11_s1", "partner_index": 11, "skill_level": 1, "unlock_count": 10, "name": "Personal Mastery I", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p11_s2", "partner_index": 11, "skill_level": 2, "unlock_count": 25, "name": "Personal Mastery II", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p11_s3", "partner_index": 11, "skill_level": 3, "unlock_count": 50, "name": "Personal Mastery III", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p11_s4", "partner_index": 11, "skill_level": 4, "unlock_count": 100, "name": "Personal Mastery IV", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
+	{"id": "p11_s5", "partner_index": 11, "skill_level": 5, "unlock_count": 250, "name": "Personal Mastery V", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
+	# Legendary Commander (index 12) — Own Partner DPS
+	{"id": "p12_s1", "partner_index": 12, "skill_level": 1, "unlock_count": 10, "name": "Personal Mastery I", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p12_s2", "partner_index": 12, "skill_level": 2, "unlock_count": 25, "name": "Personal Mastery II", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p12_s3", "partner_index": 12, "skill_level": 3, "unlock_count": 50, "name": "Personal Mastery III", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
+	{"id": "p12_s4", "partner_index": 12, "skill_level": 4, "unlock_count": 100, "name": "Personal Mastery IV", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
+	{"id": "p12_s5", "partner_index": 12, "skill_level": 5, "unlock_count": 250, "name": "Personal Mastery V", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
 ]
 var purchased_partner_skill_ids: Array[String] = []
 var milestone_levels: Array[int] = [10, 25, 50, 100, 250, 500]
@@ -1146,12 +1213,12 @@ func get_partner_milestone_multiplier(partner_index: int) -> int:
 	return get_milestone_multiplier(partner_counts[partner_index])
 
 
-func get_partner_skill_for_partner(partner_index: int) -> Dictionary:
+func get_partner_skills_for_partner(partner_index: int) -> Array[Dictionary]:
+	var skills: Array[Dictionary] = []
 	for skill: Dictionary in partner_skill_definitions:
 		if int(skill.get("partner_index", -1)) == partner_index:
-			return skill
-
-	return {}
+			skills.append(skill)
+	return skills
 
 
 func get_partner_skill(skill_id: String) -> Dictionary:
@@ -1169,10 +1236,14 @@ func get_partner_skill_cost(skill_id: String) -> int:
 
 	var partner_index: int = int(skill.get("partner_index", -1))
 	var unlock_count: int = int(skill.get("unlock_count", 0))
+	var skill_level: int = int(skill.get("skill_level", 1))
 	if partner_index < 0 or partner_index >= partner_base_costs.size() or unlock_count <= 0:
 		return 0
+	if skill_level < 1 or skill_level > partner_skill_cost_multipliers.size():
+		return 0
 
-	return _get_partner_cost_for_count(partner_index, unlock_count - 1) * 5
+	var base_milestone_cost: int = _get_partner_cost_for_count(partner_index, unlock_count - 1)
+	return base_milestone_cost * partner_skill_cost_multipliers[skill_level - 1]
 
 
 func is_partner_skill_unlocked(skill_id: String) -> bool:
@@ -1245,11 +1316,30 @@ func get_partner_skill_additive_bonus(bonus_type: String) -> float:
 	return _get_partner_skill_total_bonus(bonus_type)
 
 
+func get_own_partner_skill_multiplier(partner_index: int) -> float:
+	var total_bonus: float = 0.0
+	for skill: Dictionary in partner_skill_definitions:
+		if int(skill.get("partner_index", -1)) != partner_index:
+			continue
+		if String(skill.get("bonus_type", "")) != "own_partner_dps":
+			continue
+		var skill_id: String = String(skill.get("id", ""))
+		if not is_partner_skill_purchased(skill_id):
+			continue
+		total_bonus += float(skill.get("bonus_value", 0.0))
+	return 1.0 + total_bonus
+
+
 func get_partner_tier_total_dps(partner_index: int) -> int:
 	if partner_index < 0 or partner_index >= partner_counts.size() or partner_index >= partner_dps_values.size():
 		return 0
 
-	return partner_counts[partner_index] * partner_dps_values[partner_index] * get_partner_milestone_multiplier(partner_index)
+	return int(
+		partner_counts[partner_index]
+		* partner_dps_values[partner_index]
+		* get_partner_milestone_multiplier(partner_index)
+		* get_own_partner_skill_multiplier(partner_index)
+	)
 
 
 func _get_partner_skill_total_bonus(bonus_type: String) -> float:

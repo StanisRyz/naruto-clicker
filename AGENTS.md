@@ -112,15 +112,23 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Partner rows use three vertical info rows on the right: partner name/count, per-purchase DPS plus next x2 milestone, then the partner skill icon.
 - Partner row second lines show per-purchase DPS and next x2 milestone, formatted `+%d DPS | Next x2 at %d` or `+%d DPS | Max milestones`.
 - Partner row second lines must not include `for each PartnerName`.
-- Partner rows show a small clickable partner skill ImageHolder icon below the DPS/milestone line, not Partner Mastery text.
+- Partner rows show a horizontal row of 5 small clickable skill ImageHolder icons (32×32) below the DPS/milestone line, not Partner Mastery text.
 - Partner main ImageHolders stay square and visually fill the taller card; partner skill icons stay small fixed squares.
 - Partner skills are purchasable gold upgrades, not automatic unlocks. Reaching the required partner count only makes the skill available to buy.
-- Each partner currently has one skill icon at 25 owned. The data model may support future multiple milestone skills per partner, but the panel currently shows only the first skill for each tier.
+- Each partner has 5 purchasable skill icons that unlock at partner counts 10, 25, 50, 100, and 250. The 500 milestone is reserved for a future ultimate skill and must not be used for partner skills yet.
 - Partner skill icon states are gray for locked, blue for available to buy, and white for purchased.
-- Clicking a partner skill icon opens a compact non-modal popup with the skill name, description, required partner count, gold cost, and Buy button.
+- Clicking any partner skill icon opens a compact non-modal popup with the skill name, description, required count, current count vs requirement, gold cost, and Buy button.
+- Partner skill popup Buy button states: locked → disabled "Locked"; available but not enough gold → disabled "Buy: N"; available and affordable → enabled "Buy: N"; purchased → disabled "Purchased".
 - Partner skill popups must fit content height and must not stretch vertically to the screen bottom.
-- Partner skill bonuses apply only after purchase and reset on prestige with normal partner progress for now.
-- Prototype partner skills are Partner 1 Basic Training (+5% Click Damage), Partner 2 Team Rhythm (+5% Partner DPS), Partner 3 Spoils Finder (+5% Gold Gain), Field Scout Elite Tracking (+10% Elite Enemy Rewards), Spear Guard Boss Pressure (+5% Boss Damage), Iron Defender Defensive Planning (+5% Boss Timer Duration), Battle Monk Chakra Flow (+5% Combo Meter Gain), Elite Samurai Blade Automation (+10% Autoclick Damage), Shadow Captain Mission Command (+5% Task Rewards), War Sage Village Wisdom (+5% Settlement Effects), Beast Tamer Predator Sense (+1% Elite Spawn Chance), Blade Master Critical Strike (+5% Manual Critical Chance), and Legendary Commander Commander's Aura (+5% All Damage).
+- Partner skill bonuses apply only after purchase and reset on prestige with normal partner progress.
+- Skill categories and distribution:
+  - Partner 1 (index 0) and Field Scout (index 3): bonus_type "click_damage" — Click Training I–V (+20%/+25%/+50%/+100%/+100%).
+  - Spear Guard (index 4): bonus_type "partner_dps" — Team Command I–V (+25%/+40%/+60%/+60%/+100%) affecting total final Partner DPS.
+  - Iron Defender (index 5): bonus_type "gold" — Gold Sense I–V (+25%/+50%/+50%/+50%/+50%) affecting gold rewards.
+  - All other partners (indices 1, 2, 6–12): bonus_type "own_partner_dps" — Personal Mastery I–V (+50%/+50%/+50%/+100%/+100%) affecting only that partner tier's DPS via get_own_partner_skill_multiplier(partner_index).
+- own_partner_dps bonuses must not be applied globally; they are multiplied per tier in get_partner_tier_total_dps and must never be passed to get_partner_skill_bonus_multiplier for global use.
+- Skill costs use partner_skill_cost_multipliers [3, 5, 8, 12, 20] applied to the base milestone cost: _get_partner_cost_for_count(partner_index, unlock_count - 1) * multiplier[skill_level - 1].
+- Skill IDs use the format "p{index}_s{level}" e.g. "p0_s1" through "p0_s5".
 - Total/final Partner DPS belongs in `PrimaryStatsPanel`; partner rows only show per-purchase DPS plus next milestone info.
 - PartnerPanel should always show the required package cost when prerequisites are met; "Not enough gold" belongs in status handling after a failed purchase, not in partner button text.
 - Keep `PartnerSheet`, `SettlementSheet`, and `PrestigeSheet` as separate bottom-half overlays from `UpgradeSheet`.
@@ -312,11 +320,14 @@ After each patch, validate manually in Godot:
 - Partner costs increase after purchase.
 - Partner counts update after purchase.
 - Total Partner DPS updates correctly.
-- Partner rows show name/count, per-purchase DPS with next x2 milestone, and the skill icon as three vertical info rows.
+- Partner rows show name/count, per-purchase DPS with next x2 milestone, and the 5-icon skill row as three vertical info rows.
 - Partner main ImageHolders remain square and visually fill the taller card.
-- Partner skill icons are small square placeholders and do not stretch.
+- Partner skill icons are small square (32×32) placeholders and do not stretch.
+- Each partner card shows exactly 5 skill icon squares in a horizontal row.
+- Locked skill icons are gray, available icons are blue, purchased icons are white.
 - Partner rows show clickable partner skill icons, not Partner Mastery text.
-- Partner skill popups show the description, unlock count, gold cost, and Buy button without stretching vertically to the screen bottom.
+- Partner skill popups show name, description, required count, current count vs required, gold cost, and Buy button without stretching vertically to the screen bottom.
+- Skill 1 becomes available at partner count 10, skill 2 at 25, skill 3 at 50, skill 4 at 100, skill 5 at 250.
 - Partner rows do not show accumulated tier DPS or total/final Partner DPS.
 - Partner milestones apply independently per tier.
 - Partner DPS damages enemy every 0.1 seconds.
