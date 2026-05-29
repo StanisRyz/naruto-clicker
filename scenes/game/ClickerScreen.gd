@@ -144,7 +144,7 @@ func _update_ui() -> void:
 	settlement_sheet.update_view(state)
 	prestige_sheet.update_view(state)
 	if tasks_window.visible:
-		tasks_window.request_update_view(state)
+		tasks_window.refresh_progress_only(state)
 
 
 func _on_attack_requested() -> void:
@@ -211,7 +211,8 @@ func _on_task_claim_requested(task_id: String) -> void:
 	var result: Dictionary = state.claim_task_reward(task_id)
 	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
-	tasks_window.request_update_view(state)
+	if tasks_window.visible:
+		tasks_window.request_full_rebuild(state)
 
 
 func _on_partner_purchase_requested(partner_index: int, mode: String) -> void:

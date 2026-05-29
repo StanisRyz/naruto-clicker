@@ -10,6 +10,7 @@ signal task_claim_requested(task_id: String)
 
 var pending_state: ClickerState = null
 var rebuild_queued: bool = false
+var task_rows_by_id: Dictionary = {}
 
 
 func _ready() -> void:
@@ -20,7 +21,7 @@ func _ready() -> void:
 
 
 func show_window(state: ClickerState) -> void:
-	update_view(state)
+	_rebuild_rows(state)
 	show()
 
 
@@ -28,14 +29,7 @@ func hide_window() -> void:
 	hide()
 
 
-func update_view(state: ClickerState) -> void:
-	_clear_task_rows()
-
-	for task_data: Dictionary in state.get_active_task_view_data():
-		tasks_container.add_child(_create_task_row(task_data))
-
-
-func request_update_view(state: ClickerState) -> void:
+func request_full_rebuild(state: ClickerState) -> void:
 	pending_state = state
 	if rebuild_queued:
 		return
@@ -44,16 +38,64 @@ func request_update_view(state: ClickerState) -> void:
 	call_deferred("_rebuild_rows_deferred")
 
 
+func refresh_progress_only(state: ClickerState) -> void:
+	var active_task_data: Array = state.get_active_task_view_data()
+	if active_task_data.size() != task_rows_by_id.size():
+		return
+
+	for task_data: Dictionary in active_task_data:
+		var task_id: String = String(task_data.get("id", ""))
+		if not task_rows_by_id.has(task_id):
+			return
+
+	for task_data: Dictionary in active_task_data:
+		var task_id: String = String(task_data.get("id", ""))
+		var row_data: Dictionary = task_rows_by_id[task_id]
+		var title_label: Label = row_data["title_label"]
+		var progress_label: Label = row_data["progress_label"]
+		var claim_button: Button = row_data["claim_button"]
+		var completed: bool = bool(task_data.get("completed", false))
+
+		title_label.text = String(task_data.get("title", ""))
+		progress_label.text = _format_progress_text(task_data)
+
+		if claim_button.text == "Claimed":
+			continue
+
+		if completed == bool(row_data.get("completed", false)):
+			continue
+
+		row_data["completed"] = completed
+		if completed:
+			claim_button.disabled = false
+			claim_button.text = "Claim"
+		else:
+			claim_button.disabled = true
+			claim_button.text = "In Progress"
+
+
+func update_view(state: ClickerState) -> void:
+	_rebuild_rows(state)
+
+
+func _rebuild_rows(state: ClickerState) -> void:
+	_clear_task_rows()
+
+	for task_data: Dictionary in state.get_active_task_view_data():
+		tasks_container.add_child(_create_task_row(task_data))
+
+
 func _rebuild_rows_deferred() -> void:
 	await get_tree().process_frame
 	if pending_state != null:
-		update_view(pending_state)
+		_rebuild_rows(pending_state)
 
 	pending_state = null
 	rebuild_queued = false
 
 
 func _clear_task_rows() -> void:
+	task_rows_by_id.clear()
 	for child in tasks_container.get_children():
 		tasks_container.remove_child(child)
 		child.queue_free()
@@ -104,11 +146,7 @@ func _create_task_row(task_data: Dictionary) -> PanelContainer:
 	progress_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	progress_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	progress_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	progress_label.text = "%d / %d | Reward: %d gold" % [
-		int(task_data.get("progress", 0)),
-		int(task_data.get("target", 0)),
-		int(task_data.get("reward_gold", 0)),
-	]
+	progress_label.text = _format_progress_text(task_data)
 	info_container.add_child(progress_label)
 
 	var claim_button := Button.new()
@@ -127,7 +165,23 @@ func _create_task_row(task_data: Dictionary) -> PanelContainer:
 	)
 	content.add_child(claim_button)
 
+	task_rows_by_id[task_id] = {
+		"row": row,
+		"title_label": title_label,
+		"progress_label": progress_label,
+		"claim_button": claim_button,
+		"completed": bool(task_data.get("completed", false)),
+	}
+
 	return row
+
+
+func _format_progress_text(task_data: Dictionary) -> String:
+	return "%d / %d | Reward: %d gold" % [
+		int(task_data.get("progress", 0)),
+		int(task_data.get("target", 0)),
+		int(task_data.get("reward_gold", 0)),
+	]
 
 
 func _on_outside_click_area_gui_input(event: InputEvent) -> void:
