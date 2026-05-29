@@ -49,10 +49,12 @@ var combo_empowered_multiplier: float = 3.0
 @onready var partners_button: Button = $BottomBar/MarginContainer/HBoxContainer/PartnersButton
 @onready var settlement_button: Button = $BottomBar/MarginContainer/HBoxContainer/SettlementButton
 @onready var prestige_button: Button = $BottomBar/MarginContainer/HBoxContainer/PrestigeButton
+@onready var shop_button: Button = $BottomBar/MarginContainer/HBoxContainer/ShopButton
 @onready var upgrade_sheet: UpgradeSheet = $UpgradeSheet
 @onready var partner_sheet: PartnerSheet = $PartnerSheet
 @onready var settlement_sheet: SettlementSheet = $SettlementSheet
 @onready var prestige_sheet: PrestigeSheet = $PrestigeSheet
+@onready var shop_sheet: ShopSheet = $ShopSheet
 @onready var prestige_confirm_dialog: PrestigeConfirmDialog = $PrestigeSheet/PrestigeConfirmDialog
 
 
@@ -69,6 +71,7 @@ func _ready() -> void:
 	partners_button.pressed.connect(_on_partners_button_pressed)
 	settlement_button.pressed.connect(_on_settlement_button_pressed)
 	prestige_button.pressed.connect(_on_prestige_button_pressed)
+	shop_button.pressed.connect(_on_shop_button_pressed)
 	upgrade_sheet.character_level_upgrade_requested.connect(_on_character_level_upgrade_requested)
 	upgrade_sheet.autoclick_purchase_requested.connect(_on_autoclick_purchase_requested)
 	upgrade_sheet.gold_bonus_purchase_requested.connect(_on_gold_bonus_purchase_requested)
@@ -78,12 +81,15 @@ func _ready() -> void:
 	settlement_sheet.building_purchase_requested.connect(_on_building_purchase_requested)
 	prestige_sheet.prestige_requested.connect(_on_prestige_requested)
 	prestige_sheet.prestige_talent_purchase_requested.connect(_on_prestige_talent_purchase_requested)
+	shop_sheet.product_purchase_requested.connect(_on_shop_product_purchase_requested)
+	shop_sheet.test_gems_requested.connect(_on_test_gems_requested)
 	prestige_confirm_dialog.confirmed.connect(_on_prestige_confirmed)
 	prestige_confirm_dialog.cancelled.connect(_on_prestige_cancelled)
 	upgrade_sheet.closed.connect(_on_sheet_closed)
 	partner_sheet.closed.connect(_on_sheet_closed)
 	settlement_sheet.closed.connect(_on_sheet_closed)
 	prestige_sheet.closed.connect(_on_sheet_closed)
+	shop_sheet.closed.connect(_on_sheet_closed)
 	_update_ui()
 	_sync_boss_timer()
 
@@ -143,6 +149,7 @@ func _update_ui() -> void:
 	partner_sheet.update_view(state)
 	settlement_sheet.update_view(state)
 	prestige_sheet.update_view(state)
+	shop_sheet.update_view(state)
 	if tasks_window.visible:
 		tasks_window.refresh_progress_only(state)
 
@@ -243,12 +250,30 @@ func _on_prestige_button_pressed() -> void:
 	_toggle_bottom_sheet("prestige")
 
 
+func _on_shop_button_pressed() -> void:
+	_toggle_bottom_sheet("shop")
+
+
 func _on_prestige_requested() -> void:
 	prestige_sheet.show_prestige_confirm(state)
 
 
 func _on_prestige_talent_purchase_requested(talent_index: int) -> void:
 	var result: Dictionary = state.buy_prestige_talent(talent_index)
+	_handle_status_text(result.get("status_text", ""))
+	_update_ui()
+
+
+func _on_shop_product_purchase_requested(product_id: String) -> void:
+	var result: Dictionary = state.buy_shop_product(product_id)
+	_handle_status_text(result.get("status_text", ""))
+	if result.has("combo_fill"):
+		_fill_combo_meter_from_shop(float(result.get("combo_fill", combo_meter_max)))
+	_update_ui()
+
+
+func _on_test_gems_requested() -> void:
+	var result: Dictionary = state.grant_test_gems(50)
 	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
 
@@ -287,6 +312,7 @@ func _update_bottom_bar_view() -> void:
 	partners_button.text = "[Partners]" if active_bottom_tab == "partners" else "Partners"
 	settlement_button.text = "[Settlement]" if active_bottom_tab == "settlement" else "Settlement"
 	prestige_button.text = "[Prestige]" if active_bottom_tab == "prestige" else "Prestige"
+	shop_button.text = "[Shop]" if active_bottom_tab == "shop" else "Shop"
 
 
 func _toggle_bottom_sheet(tab_name: String) -> void:
@@ -306,6 +332,8 @@ func _toggle_bottom_sheet(tab_name: String) -> void:
 			settlement_sheet.show_sheet()
 		"prestige":
 			prestige_sheet.show_sheet()
+		"shop":
+			shop_sheet.show_sheet()
 
 	active_bottom_tab = tab_name
 	_update_bottom_bar_view()
@@ -316,6 +344,7 @@ func _hide_all_bottom_sheets() -> void:
 	partner_sheet.hide_sheet()
 	settlement_sheet.hide_sheet()
 	prestige_sheet.hide_sheet()
+	shop_sheet.hide_sheet()
 
 
 func _on_sheet_closed() -> void:
@@ -341,6 +370,7 @@ func _fail_boss_level() -> void:
 	boss_time_left = 0.0
 	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
+	_sync_boss_timer()
 
 
 func _apply_attack_result(result: Dictionary, show_hit_feedback: bool, was_boss_level: bool = false) -> void:
@@ -519,6 +549,15 @@ func _update_combo_panel() -> void:
 		combo_empowered_active,
 		combo_empowered_time_left
 	)
+
+
+func _fill_combo_meter_from_shop(amount: float) -> void:
+	combo_meter_value = clampf(amount, 0.0, combo_meter_max)
+	if combo_meter_value >= combo_meter_max:
+		combo_meter_value = combo_meter_max
+		combo_empowered_active = true
+		combo_empowered_time_left = combo_empowered_duration
+		state.total_combo_empowered_activations += 1
 
 
 func _handle_defeat_result(result: Dictionary, was_boss_level: bool) -> void:

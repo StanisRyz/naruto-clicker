@@ -1,0 +1,64 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/ShopSheet.gd" id="1_shop_sheet"]
+[ext_resource type="PackedScene" path="res://scenes/ui/ShopPanel.tscn" id="2_shop_panel"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_shop_sheet_panel"]
+bg_color = Color(0.08, 0.085, 0.1, 1)
+border_width_top = 2
+border_color = Color(0.18, 0.19, 0.22, 1)
+
+[node name="ShopSheet" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 12
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -104.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 0
+script = ExtResource("1_shop_sheet")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_shop_sheet_panel")
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 24
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Header" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Shop"
+
+[node name="CloseButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/Header"]
+custom_minimum_size = Vector2(72, 56)
+layout_mode = 2
+text = "Close"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="ShopPanel" parent="PanelContainer/MarginContainer/VBoxContainer/ScrollContainer" instance=ExtResource("2_shop_panel")]
+layout_mode = 2
+size_flags_horizontal = 3

@@ -45,6 +45,7 @@ const ZONE_DATA: Array = [
 ]
 
 var gold: int = 0
+var gems: int = 0
 var click_damage: int = 1
 var character_level: int = 1
 var character_level_upgrade_cost: int = 5
@@ -127,6 +128,50 @@ var building_cost_steps: Array[int] = [25, 50, 100, 250, 600, 1500]
 var building_counts: Array[int] = []
 var building_bonus_percent_per_level: int = 1
 var building_purchase_costs: Array[int] = []
+var boss_retry_tokens: int = 0
+var task_reward_boost_multiplier: float = 1.0
+var shop_product_definitions: Array[Dictionary] = [
+	{
+		"id": "gold_pack_small",
+		"name": "Small Gold Pack",
+		"description": "Gain stage-scaled gold",
+		"cost_gems": 10,
+		"reward_type": "gold",
+		"reward_scale": 120,
+	},
+	{
+		"id": "gold_pack_large",
+		"name": "Large Gold Pack",
+		"description": "Gain a large stage-scaled gold reward",
+		"cost_gems": 25,
+		"reward_type": "gold",
+		"reward_scale": 350,
+	},
+	{
+		"id": "instant_combo",
+		"name": "Instant Combo",
+		"description": "Fill Combo Meter to 100%",
+		"cost_gems": 15,
+		"reward_type": "combo_fill",
+		"reward_amount": 100,
+	},
+	{
+		"id": "boss_retry_token",
+		"name": "Boss Retry",
+		"description": "Return to the failed boss level",
+		"cost_gems": 20,
+		"reward_type": "boss_retry_token",
+		"reward_amount": 1,
+	},
+	{
+		"id": "task_boost",
+		"name": "Task Reward Boost",
+		"description": "Next claimed task gives x2 gold",
+		"cost_gems": 30,
+		"reward_type": "task_reward_boost",
+		"reward_multiplier": 2.0,
+	},
+]
 
 var current_zone_index: int = 0
 var zone_name: String = "Training Grounds"
@@ -353,6 +398,10 @@ func claim_task_reward(task_id: String) -> Dictionary:
 		return _make_purchase_result("Task is not complete")
 
 	var reward: int = get_task_reward_gold(task_id)
+	if task_reward_boost_multiplier > 1.0:
+		reward = int(reward * task_reward_boost_multiplier)
+		task_reward_boost_multiplier = 1.0
+
 	gold += reward
 	active_task_ids.erase(task_id)
 	active_task_states.erase(task_id)
@@ -457,6 +506,77 @@ func buy_prestige_talent(talent_index: int) -> Dictionary:
 	prestige_talent_levels[talent_index] += 1
 	_update_character_state()
 	return _make_purchase_result("Prestige talent upgraded!", false, true)
+
+
+func add_gems(amount: int) -> void:
+	gems = maxi(0, gems + amount)
+
+
+func grant_test_gems(amount: int = 50) -> Dictionary:
+	add_gems(amount)
+	return _make_purchase_result("Prototype test grant: +%d Gems" % amount, false, true)
+
+
+func get_shop_product(product_id: String) -> Dictionary:
+	for product: Dictionary in shop_product_definitions:
+		if String(product.get("id", "")) == product_id:
+			return product
+
+	return {}
+
+
+func get_shop_product_view_data() -> Array[Dictionary]:
+	var product_view_data: Array[Dictionary] = []
+	for product: Dictionary in shop_product_definitions:
+		var cost_gems: int = int(product.get("cost_gems", 0))
+		product_view_data.append({
+			"id": String(product.get("id", "")),
+			"name": String(product.get("name", "")),
+			"description": String(product.get("description", "")),
+			"cost_gems": cost_gems,
+			"can_buy": gems >= cost_gems,
+		})
+
+	return product_view_data
+
+
+func buy_shop_product(product_id: String) -> Dictionary:
+	var product: Dictionary = get_shop_product(product_id)
+	if product.is_empty():
+		return _make_purchase_result("Invalid shop product")
+
+	var cost_gems: int = int(product.get("cost_gems", 0))
+	if gems < cost_gems:
+		return _make_purchase_result("Not enough Gems")
+
+	gems -= cost_gems
+	var product_name: String = String(product.get("name", "Shop product"))
+	var reward_type: String = String(product.get("reward_type", ""))
+	var result: Dictionary = _make_purchase_result("%s purchased!" % product_name, false, true)
+
+	match reward_type:
+		"gold":
+			var reward_scale: int = int(product.get("reward_scale", 0))
+			var reward_gold: int = maxi(1, get_current_task_reward_unit() * reward_scale)
+			gold += reward_gold
+			result["reward_gold"] = reward_gold
+			result["status_text"] = "%s purchased! +%d gold" % [product_name, reward_gold]
+		"combo_fill":
+			var combo_reward_amount: int = int(product.get("reward_amount", 100))
+			result["combo_fill"] = combo_reward_amount
+			result["status_text"] = "%s purchased! Combo filled" % product_name
+		"boss_retry_token":
+			var boss_retry_reward_amount: int = int(product.get("reward_amount", 1))
+			boss_retry_tokens += boss_retry_reward_amount
+			result["status_text"] = "%s purchased! +%d Boss Retry" % [product_name, boss_retry_reward_amount]
+		"task_reward_boost":
+			var reward_multiplier: float = float(product.get("reward_multiplier", 1.0))
+			task_reward_boost_multiplier = maxf(task_reward_boost_multiplier, reward_multiplier)
+			result["status_text"] = "%s purchased! Next task reward x%.1f" % [product_name, task_reward_boost_multiplier]
+		_:
+			result["status_text"] = "Unknown shop reward"
+
+	return result
 
 
 func perform_prestige() -> Dictionary:
@@ -1279,6 +1399,26 @@ func update_ability_unlocks() -> void:
 
 
 func fail_boss_level() -> Dictionary:
+	if is_boss_level and boss_retry_tokens > 0:
+		boss_retry_tokens -= 1
+		enemies_defeated_on_level = 0
+		setup_current_level()
+		return {
+			"defeated": false,
+			"level_up": false,
+			"reward_gold": 0,
+			"damage_dealt": 0,
+			"target_hp_before": target_hp,
+			"target_hp_after": target_hp,
+			"upgraded": false,
+			"not_enough_gold": false,
+			"boss_failed": true,
+			"boss_retry_used": true,
+			"status_text": "Boss Retry used! Try Level %d again" % current_level,
+			"zone_changed": false,
+			"zone_name": "",
+		}
+
 	current_level = maxi(1, current_level - 1)
 	enemies_defeated_on_level = 0
 	setup_current_level()

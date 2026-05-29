@@ -24,10 +24,10 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Keep prototype state and formulas in `scripts/game/ClickerState.gd`.
 - Keep `PrimaryStatsPanel`, `ProgressInfoPanel`, `GameField`, and `UpgradePanel` as focused UI components.
 - Main screen primary stats and progress info are independent UI components; do not use a combined `StatsPanel` for new main screen UI.
-- `PrimaryStatsPanel` shows only gold, character level, click damage, and partner DPS numeric stat cards.
+- `PrimaryStatsPanel` shows only gold, Gems, character level, click damage, and partner DPS numeric stat cards.
 - `PrimaryStatsPanel` is an independent compact top-centered overlay and should not be placed inside stretch containers.
 - `PrimaryStatsPanel` should be centered on the viewport vertical axis and must not stretch full width.
-- `PrimaryStatsPanel` uses horizontal stat cards from left to right in this order: gold, character level, click damage, partner DPS.
+- `PrimaryStatsPanel` uses horizontal stat cards from left to right in this order: gold, Gems, character level, click damage, partner DPS.
 - Primary stat cards show only a temporary white `ColorRect` placeholder and the value; card backgrounds should stay transparent/invisible.
 - `PrimaryStatsPanel` includes a placeholder white-square `SettingsButton`; it should remain a stub until a real settings flow is explicitly requested.
 - The main screen does not use a general `StatusLabel`; status text may be ignored or routed through a no-op helper until a dedicated UI is requested.
@@ -46,6 +46,14 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - `TasksWindow` is modal while open: it must block `GameField` attacks, consume inside-panel input, and consume the outside click/tap that closes it.
 - Task claim refreshes must be deferred or otherwise input-safe so task rows are not rebuilt while the clicked Claim button is still handling input.
 - Tasks are runtime-only and not saved; do not add daily timers, ads, monetization, or new currencies to tasks yet.
+- Gems are a prototype premium currency for runtime testing only; they are not connected to real Yandex payments yet and are not saved.
+- The Shop is the fifth bottom tab after Prestige and spends Gems on prototype gameplay rewards.
+- Shop products are Small Gold Pack, Large Gold Pack, Instant Combo, Boss Retry, and Task Reward Boost.
+- `Prototype: Get 50 Gems` is temporary/dev-only and must not be treated as a real payment flow.
+- Boss Retry tokens automatically retry the same failed boss level once per token.
+- Task Reward Boost doubles the next claimed task reward only once, then resets to x1.
+- Gems, Boss Retry tokens, and Task Reward Boost state are runtime-only until a save system is explicitly added.
+- Do not add real payments, ads, authentication, or save integration for Gems until explicitly requested.
 - Only manual player clicks fill the combo meter. Autoclick and partner DPS must not fill it.
 - Manual clicks add +1% meter charge, the meter decays by 1% per second, and every 1% meter charge gives +1% manual click damage only.
 - At 100% meter charge, an empowered state starts: manual click damage is x3 for 10 seconds, the meter stays full during the state, and the meter resets to 0 when the state ends.
@@ -264,7 +272,7 @@ After each patch, validate manually in Godot:
 - Ability button clicks do not attack the enemy.
 - Autoclick active performs automatic damage every 0.05 seconds.
 - Gold Bonus active doubles enemy rewards.
-- BottomBar has `Upgrades`, `Partners`, `Settlement`, and `Prestige` buttons on one row.
+- BottomBar has `Upgrades`, `Partners`, `Settlement`, `Prestige`, and `Shop` buttons on one row.
 - Partner 1 starts at 10 gold.
 - PartnerPanel uses card-style partner rows with white `ColorRect` image placeholders.
 - PartnerSheet keeps `BuyModeSelector` fixed under the header while partner rows scroll.
@@ -432,6 +440,17 @@ After each patch, validate manually in Godot:
 - `PrestigeButton` opens `PrestigeSheet`.
 - PrestigeSheet is hidden by default and can be closed.
 - PrestigeSheet has no `BuyModeSelector`.
+- `ShopButton` opens `ShopSheet` as the fifth bottom tab after Prestige.
+- ShopSheet is hidden by default and can be closed.
+- ShopSheet has no `BuyModeSelector`.
+- Shop shows Gems, Boss Retry token count, Task Reward Boost status, and product cards.
+- `Prototype: Get 50 Gems` increases Gems and is temporary/dev-only.
+- Shop product buttons are disabled when Gems are insufficient and enabled when affordable.
+- Small Gold Pack and Large Gold Pack add stage-scaled gold.
+- Instant Combo fills the combo meter and starts the empowered combo state.
+- Boss Retry adds a token, and a failed boss consumes one token to retry the same boss level.
+- Task Reward Boost doubles the next claimed task reward only once.
+- Gems and shop reward state do not reset on prestige.
 - PrestigePanel shows only available Prestige Points.
 - Prestige action and talent rows use card-style rows with white `ColorRect` image placeholders.
 - Prestige button is disabled when total points to gain is 0.

@@ -15,13 +15,13 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 10
 
 [node name="GoldCard" type="HBoxContainer" parent="HBoxContainer"]
-custom_minimum_size = Vector2(116, 40)
+custom_minimum_size = Vector2(92, 40)
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
 
 [node name="GoldIcon" type="ColorRect" parent="HBoxContainer/GoldCard"]
 custom_minimum_size = Vector2(40, 40)
@@ -30,17 +30,36 @@ mouse_filter = 2
 color = Color(1, 1, 1, 1)
 
 [node name="GoldValueLabel" type="Label" parent="HBoxContainer/GoldCard"]
-custom_minimum_size = Vector2(68, 40)
+custom_minimum_size = Vector2(46, 40)
+layout_mode = 2
+mouse_filter = 2
+text = "0"
+vertical_alignment = 1
+
+[node name="GemsCard" type="HBoxContainer" parent="HBoxContainer"]
+custom_minimum_size = Vector2(92, 40)
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="GemsIcon" type="ColorRect" parent="HBoxContainer/GemsCard"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 1)
+
+[node name="GemsValueLabel" type="Label" parent="HBoxContainer/GemsCard"]
+custom_minimum_size = Vector2(46, 40)
 layout_mode = 2
 mouse_filter = 2
 text = "0"
 vertical_alignment = 1
 
 [node name="CharacterLevelCard" type="HBoxContainer" parent="HBoxContainer"]
-custom_minimum_size = Vector2(116, 40)
+custom_minimum_size = Vector2(92, 40)
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
 
 [node name="CharacterLevelIcon" type="ColorRect" parent="HBoxContainer/CharacterLevelCard"]
 custom_minimum_size = Vector2(40, 40)
@@ -49,17 +68,17 @@ mouse_filter = 2
 color = Color(1, 1, 1, 1)
 
 [node name="CharacterLevelValueLabel" type="Label" parent="HBoxContainer/CharacterLevelCard"]
-custom_minimum_size = Vector2(68, 40)
+custom_minimum_size = Vector2(46, 40)
 layout_mode = 2
 mouse_filter = 2
 text = "1"
 vertical_alignment = 1
 
 [node name="DamageCard" type="HBoxContainer" parent="HBoxContainer"]
-custom_minimum_size = Vector2(116, 40)
+custom_minimum_size = Vector2(92, 40)
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
 
 [node name="DamageIcon" type="ColorRect" parent="HBoxContainer/DamageCard"]
 custom_minimum_size = Vector2(40, 40)
@@ -68,17 +87,17 @@ mouse_filter = 2
 color = Color(1, 1, 1, 1)
 
 [node name="DamageValueLabel" type="Label" parent="HBoxContainer/DamageCard"]
-custom_minimum_size = Vector2(68, 40)
+custom_minimum_size = Vector2(46, 40)
 layout_mode = 2
 mouse_filter = 2
 text = "1"
 vertical_alignment = 1
 
 [node name="PartnerDpsCard" type="HBoxContainer" parent="HBoxContainer"]
-custom_minimum_size = Vector2(116, 40)
+custom_minimum_size = Vector2(92, 40)
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
 
 [node name="PartnerDpsIcon" type="ColorRect" parent="HBoxContainer/PartnerDpsCard"]
 custom_minimum_size = Vector2(40, 40)
@@ -87,7 +106,7 @@ mouse_filter = 2
 color = Color(1, 1, 1, 1)
 
 [node name="PartnerDpsValueLabel" type="Label" parent="HBoxContainer/PartnerDpsCard"]
-custom_minimum_size = Vector2(68, 40)
+custom_minimum_size = Vector2(46, 40)
 layout_mode = 2
 mouse_filter = 2
 text = "0"
