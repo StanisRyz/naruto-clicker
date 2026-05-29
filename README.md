@@ -112,9 +112,12 @@ The main scene contains the first local clicker loop:
 - Partner damage ticks every 0.1 seconds for final partner DPS / 10 damage.
 - Base partner DPS includes partner tiers and partner milestones only.
 - Final partner DPS adds Command Aura, Training Camp, and Rally; the main stats panel displays final partner DPS without contextual Boss Hunter, while partner damage ticks include Boss Hunter during boss fights.
-- Partner Mastery unlocks at 25 owned for each partner tier, separately from x2 DPS milestones.
-- Partner Mastery adds one unique passive perk per tier and does not add new currencies, items, inventory, or tabs.
-- Partner Mastery perks are: Partner 1 (+5% Click Damage), Partner 2 (+5% Partner DPS), Partner 3 (+5% Gold Gain), Field Scout (+10% Elite Enemy Rewards), Spear Guard (+5% Boss Damage), Iron Defender (+5% Boss Timer Duration), Battle Monk (+5% Combo Meter Gain), Elite Samurai (+10% Autoclick Damage), Shadow Captain (+5% Task Rewards), War Sage (+5% Settlement Effects), Beast Tamer (+1% Elite Spawn Chance), Blade Master (+5% Manual Critical Chance), and Legendary Commander (+5% All Damage).
+- Partner skills are purchasable gold upgrades shown as small ImageHolder-style icons in partner cards, not automatic unlocks.
+- Each partner currently has one skill icon placeholder at the 25 owned milestone. The data model supports future multiple milestone skills per partner, but the panel currently shows the first skill for each tier.
+- Skill icon states are gray for locked, blue for available to buy, and white for purchased.
+- Clicking a skill icon opens a popup with the skill name, description, required partner count, gold cost, and Buy button.
+- Skill bonuses apply only after purchase and reset on prestige with normal partner progress for now.
+- Prototype partner skills are: Partner 1 Basic Training (+5% Click Damage), Partner 2 Team Rhythm (+5% Partner DPS), Partner 3 Spoils Finder (+5% Gold Gain), Field Scout Elite Tracking (+10% Elite Enemy Rewards), Spear Guard Boss Pressure (+5% Boss Damage), Iron Defender Defensive Planning (+5% Boss Timer Duration), Battle Monk Chakra Flow (+5% Combo Meter Gain), Elite Samurai Blade Automation (+10% Autoclick Damage), Shadow Captain Mission Command (+5% Task Rewards), War Sage Village Wisdom (+5% Settlement Effects), Beast Tamer Predator Sense (+1% Elite Spawn Chance), Blade Master Critical Strike (+5% Manual Critical Chance), and Legendary Commander Commander's Aura (+5% All Damage).
 - Hero Level upgrades, partner hires, and settlement buildings use the reusable `BuyModeSelector` for horizontal bulk mode buttons: `x1`, `x10`, `x100`, and `Max`.
 - In `UpgradeSheet`, `PartnerSheet`, and `SettlementSheet`, the buy mode selector stays fixed under the sheet header while purchase lists scroll independently below it.
 - `SettlementSheet` should use the same header / `BuyModeSelector` / scroll spacing as `UpgradeSheet` and `PartnerSheet`.

@@ -104,23 +104,22 @@ var partner_base_costs: Array[int] = [10, 50, 150, 400, 900, 1800, 3500, 7000, 1
 var partner_cost_steps: Array[int] = [10, 30, 50, 100, 180, 300, 500, 900, 1600, 2800, 5000, 9000, 16000]
 var partner_counts: Array[int] = []
 var partner_purchase_costs: Array[int] = []
-var partner_mastery_unlock_count: int = 25
-var partner_mastery_bonus_types: Array[String] = [
-	"click_damage",
-	"partner_dps",
-	"gold",
-	"elite_reward",
-	"boss_damage",
-	"boss_timer",
-	"combo_gain",
-	"autoclick_damage",
-	"task_reward",
-	"settlement_effect",
-	"elite_spawn",
-	"critical_manual",
-	"all_damage",
+var partner_skill_definitions: Array[Dictionary] = [
+	{"id": "partner_1_click_damage", "partner_index": 0, "name": "Basic Training", "description": "+5% Click Damage", "unlock_count": 25, "bonus_type": "click_damage", "bonus_value": 0.05},
+	{"id": "partner_2_partner_dps", "partner_index": 1, "name": "Team Rhythm", "description": "+5% Partner DPS", "unlock_count": 25, "bonus_type": "partner_dps", "bonus_value": 0.05},
+	{"id": "partner_3_gold", "partner_index": 2, "name": "Spoils Finder", "description": "+5% Gold Gain", "unlock_count": 25, "bonus_type": "gold", "bonus_value": 0.05},
+	{"id": "field_scout_elite_reward", "partner_index": 3, "name": "Elite Tracking", "description": "+10% Elite Enemy Rewards", "unlock_count": 25, "bonus_type": "elite_reward", "bonus_value": 0.10},
+	{"id": "spear_guard_boss_damage", "partner_index": 4, "name": "Boss Pressure", "description": "+5% Boss Damage", "unlock_count": 25, "bonus_type": "boss_damage", "bonus_value": 0.05},
+	{"id": "iron_defender_boss_timer", "partner_index": 5, "name": "Defensive Planning", "description": "+5% Boss Timer Duration", "unlock_count": 25, "bonus_type": "boss_timer", "bonus_value": 0.05},
+	{"id": "battle_monk_combo_gain", "partner_index": 6, "name": "Chakra Flow", "description": "+5% Combo Meter Gain", "unlock_count": 25, "bonus_type": "combo_gain", "bonus_value": 0.05},
+	{"id": "elite_samurai_autoclick_damage", "partner_index": 7, "name": "Blade Automation", "description": "+10% Autoclick Damage", "unlock_count": 25, "bonus_type": "autoclick_damage", "bonus_value": 0.10},
+	{"id": "shadow_captain_task_reward", "partner_index": 8, "name": "Mission Command", "description": "+5% Task Rewards", "unlock_count": 25, "bonus_type": "task_reward", "bonus_value": 0.05},
+	{"id": "war_sage_settlement_effect", "partner_index": 9, "name": "Village Wisdom", "description": "+5% Settlement Effects", "unlock_count": 25, "bonus_type": "settlement_effect", "bonus_value": 0.05},
+	{"id": "beast_tamer_elite_spawn", "partner_index": 10, "name": "Predator Sense", "description": "+1% Elite Spawn Chance", "unlock_count": 25, "bonus_type": "elite_spawn", "bonus_value": 0.01},
+	{"id": "blade_master_critical_manual", "partner_index": 11, "name": "Critical Strike", "description": "+5% Manual Critical Chance", "unlock_count": 25, "bonus_type": "critical_manual", "bonus_value": 0.05},
+	{"id": "legendary_commander_all_damage", "partner_index": 12, "name": "Commander's Aura", "description": "+5% All Damage", "unlock_count": 25, "bonus_type": "all_damage", "bonus_value": 0.05},
 ]
-var partner_mastery_bonus_values: Array[float] = [0.05, 0.05, 0.05, 0.10, 0.05, 0.05, 0.05, 0.10, 0.05, 0.05, 0.01, 0.05, 0.05]
+var purchased_partner_skill_ids: Array[String] = []
 var milestone_levels: Array[int] = [10, 25, 50, 100, 250, 500]
 var milestone_multiplier_per_reached: int = 2
 var milestone_cost_multiplier: int = 3
@@ -378,7 +377,7 @@ func get_task_reward_gold(task_id: String) -> int:
 	if reward_scale <= 0:
 		return 0
 
-	return maxi(1, int(get_current_task_reward_unit() * reward_scale * get_partner_mastery_bonus_multiplier("task_reward")))
+	return maxi(1, int(get_current_task_reward_unit() * reward_scale * get_partner_skill_bonus_multiplier("task_reward")))
 
 
 func is_task_completed(task_id: String) -> bool:
@@ -445,8 +444,8 @@ func get_trade_routes_multiplier() -> float:
 	return 1.0 + get_trade_routes_bonus_percent() / 100.0
 
 
-func get_partner_mastery_gold_multiplier() -> float:
-	return get_partner_mastery_bonus_multiplier("gold")
+func get_partner_skill_gold_multiplier() -> float:
+	return get_partner_skill_bonus_multiplier("gold")
 
 
 func get_command_aura_multiplier() -> float:
@@ -482,15 +481,15 @@ func get_quick_hands_multiplier() -> float:
 
 
 func get_boss_hunter_multiplier() -> float:
-	return (1.0 + get_boss_hunter_bonus_percent() / 100.0) * get_partner_mastery_bonus_multiplier("boss_damage")
+	return (1.0 + get_boss_hunter_bonus_percent() / 100.0) * get_partner_skill_bonus_multiplier("boss_damage")
 
 
 func get_settlement_effectiveness_multiplier() -> float:
-	return (1.0 + get_builder_wisdom_bonus_percent() / 100.0) * get_partner_mastery_bonus_multiplier("settlement_effect")
+	return (1.0 + get_builder_wisdom_bonus_percent() / 100.0) * get_partner_skill_bonus_multiplier("settlement_effect")
 
 
 func get_boss_timer_multiplier() -> float:
-	return get_partner_mastery_bonus_multiplier("boss_timer")
+	return get_partner_skill_bonus_multiplier("boss_timer")
 
 
 func get_focus_burst_multiplier() -> float:
@@ -625,6 +624,7 @@ func perform_prestige() -> Dictionary:
 	focus_burst_active = false
 	rally_purchased = false
 	rally_active = false
+	purchased_partner_skill_ids.clear()
 
 	_reset_partner_state()
 	_reset_building_state()
@@ -689,8 +689,8 @@ func resolve_defeated_target() -> Dictionary:
 	if defeated_boss:
 		source_reward = int(source_reward * get_boss_reward_multiplier())
 	if defeated_elite:
-		source_reward = int(source_reward * get_partner_mastery_bonus_multiplier("elite_reward"))
-	var talent_gold: int = int(source_reward * get_trade_routes_multiplier() * get_partner_mastery_gold_multiplier())
+		source_reward = int(source_reward * get_partner_skill_bonus_multiplier("elite_reward"))
+	var talent_gold: int = int(source_reward * get_trade_routes_multiplier() * get_partner_skill_gold_multiplier())
 	var settlement_gold: int = int(talent_gold * get_settlement_gold_multiplier())
 	var earned_gold: int = settlement_gold * gold_bonus_multiplier if gold_bonus_active else settlement_gold
 	gold += earned_gold
@@ -867,8 +867,8 @@ func get_final_partner_dps(include_contextual_boss_multiplier: bool = false) -> 
 		base_dps
 		* get_command_aura_multiplier()
 		* get_settlement_partner_dps_multiplier()
-		* get_partner_mastery_bonus_multiplier("partner_dps")
-		* get_partner_mastery_bonus_multiplier("all_damage")
+		* get_partner_skill_bonus_multiplier("partner_dps")
+		* get_partner_skill_bonus_multiplier("all_damage")
 		* get_rally_multiplier()
 	)
 
@@ -888,7 +888,7 @@ func get_partner_tick_damage() -> int:
 
 
 func get_autoclick_damage() -> int:
-	return maxi(1, int(get_current_click_damage() * get_partner_mastery_bonus_multiplier("autoclick_damage")))
+	return maxi(1, int(get_current_click_damage() * get_partner_skill_bonus_multiplier("autoclick_damage")))
 
 
 func buy_partner(partner_index: int) -> Dictionary:
@@ -1146,55 +1146,103 @@ func get_partner_milestone_multiplier(partner_index: int) -> int:
 	return get_milestone_multiplier(partner_counts[partner_index])
 
 
-func is_partner_mastery_unlocked(partner_index: int) -> bool:
+func get_partner_skill_for_partner(partner_index: int) -> Dictionary:
+	for skill: Dictionary in partner_skill_definitions:
+		if int(skill.get("partner_index", -1)) == partner_index:
+			return skill
+
+	return {}
+
+
+func get_partner_skill(skill_id: String) -> Dictionary:
+	for skill: Dictionary in partner_skill_definitions:
+		if String(skill.get("id", "")) == skill_id:
+			return skill
+
+	return {}
+
+
+func get_partner_skill_cost(skill_id: String) -> int:
+	var skill: Dictionary = get_partner_skill(skill_id)
+	if skill.is_empty():
+		return 0
+
+	var partner_index: int = int(skill.get("partner_index", -1))
+	var unlock_count: int = int(skill.get("unlock_count", 0))
+	if partner_index < 0 or partner_index >= partner_base_costs.size() or unlock_count <= 0:
+		return 0
+
+	return _get_partner_cost_for_count(partner_index, unlock_count - 1) * 5
+
+
+func is_partner_skill_unlocked(skill_id: String) -> bool:
+	var skill: Dictionary = get_partner_skill(skill_id)
+	if skill.is_empty():
+		return false
+
+	var partner_index: int = int(skill.get("partner_index", -1))
 	if partner_index < 0 or partner_index >= partner_counts.size():
 		return false
 
-	return partner_counts[partner_index] >= partner_mastery_unlock_count
+	return partner_counts[partner_index] >= int(skill.get("unlock_count", 0))
 
 
-func get_partner_mastery_description(partner_index: int) -> String:
-	if partner_index < 0 or partner_index >= partner_mastery_bonus_types.size() or partner_index >= partner_mastery_bonus_values.size():
-		return ""
-
-	var value: float = partner_mastery_bonus_values[partner_index]
-	match partner_mastery_bonus_types[partner_index]:
-		"click_damage":
-			return "+%d%% Click Damage" % int(value * 100.0)
-		"partner_dps":
-			return "+%d%% Partner DPS" % int(value * 100.0)
-		"gold":
-			return "+%d%% Gold Gain" % int(value * 100.0)
-		"elite_reward":
-			return "+%d%% Elite Enemy Rewards" % int(value * 100.0)
-		"boss_damage":
-			return "+%d%% Boss Damage" % int(value * 100.0)
-		"boss_timer":
-			return "+%d%% Boss Timer Duration" % int(value * 100.0)
-		"combo_gain":
-			return "+%d%% Combo Meter Gain" % int(value * 100.0)
-		"autoclick_damage":
-			return "+%d%% Autoclick Damage" % int(value * 100.0)
-		"task_reward":
-			return "+%d%% Task Rewards" % int(value * 100.0)
-		"settlement_effect":
-			return "+%d%% Settlement Effects" % int(value * 100.0)
-		"elite_spawn":
-			return "+%d%% Elite Spawn Chance" % int(value * 100.0)
-		"critical_manual":
-			return "+%d%% Manual Critical Chance" % int(value * 100.0)
-		"all_damage":
-			return "+%d%% All Damage" % int(value * 100.0)
-		_:
-			return ""
+func is_partner_skill_purchased(skill_id: String) -> bool:
+	return purchased_partner_skill_ids.has(skill_id)
 
 
-func get_partner_mastery_bonus_multiplier(bonus_type: String) -> float:
-	return 1.0 + _get_partner_mastery_total_bonus(bonus_type)
+func can_buy_partner_skill(skill_id: String) -> bool:
+	if is_partner_skill_purchased(skill_id) or not is_partner_skill_unlocked(skill_id):
+		return false
+
+	var cost: int = get_partner_skill_cost(skill_id)
+	return cost > 0 and gold >= cost
 
 
-func get_partner_mastery_additive_bonus(bonus_type: String) -> float:
-	return _get_partner_mastery_total_bonus(bonus_type)
+func get_partner_skill_state(skill_id: String) -> String:
+	if is_partner_skill_purchased(skill_id):
+		return "purchased"
+
+	if is_partner_skill_unlocked(skill_id):
+		return "available"
+
+	return "locked"
+
+
+func buy_partner_skill(skill_id: String) -> Dictionary:
+	var skill: Dictionary = get_partner_skill(skill_id)
+	if skill.is_empty():
+		return _make_purchase_result("Invalid partner skill")
+
+	if is_partner_skill_purchased(skill_id):
+		return _make_purchase_result("Partner skill already purchased")
+
+	if not is_partner_skill_unlocked(skill_id):
+		var partner_index: int = int(skill.get("partner_index", -1))
+		var partner_name: String = "Partner"
+		if partner_index >= 0 and partner_index < partner_names.size():
+			partner_name = partner_names[partner_index]
+		return _make_purchase_result("Requires %s x%d" % [
+			partner_name,
+			int(skill.get("unlock_count", 0)),
+		])
+
+	var cost: int = get_partner_skill_cost(skill_id)
+	if cost <= 0 or gold < cost:
+		return _make_purchase_result("Not enough gold", true)
+
+	gold -= cost
+	purchased_partner_skill_ids.append(skill_id)
+	_update_character_state()
+	return _make_purchase_result("%s purchased!" % String(skill.get("name", "Partner skill")), false, true)
+
+
+func get_partner_skill_bonus_multiplier(bonus_type: String) -> float:
+	return 1.0 + _get_partner_skill_total_bonus(bonus_type)
+
+
+func get_partner_skill_additive_bonus(bonus_type: String) -> float:
+	return _get_partner_skill_total_bonus(bonus_type)
 
 
 func get_partner_tier_total_dps(partner_index: int) -> int:
@@ -1204,14 +1252,14 @@ func get_partner_tier_total_dps(partner_index: int) -> int:
 	return partner_counts[partner_index] * partner_dps_values[partner_index] * get_partner_milestone_multiplier(partner_index)
 
 
-func _get_partner_mastery_total_bonus(bonus_type: String) -> float:
+func _get_partner_skill_total_bonus(bonus_type: String) -> float:
 	var total_bonus: float = 0.0
-	var limit: int = mini(partner_counts.size(), mini(partner_mastery_bonus_types.size(), partner_mastery_bonus_values.size()))
-	for partner_index in range(limit):
-		if not is_partner_mastery_unlocked(partner_index):
+	for skill: Dictionary in partner_skill_definitions:
+		var skill_id: String = String(skill.get("id", ""))
+		if not is_partner_skill_purchased(skill_id):
 			continue
-		if partner_mastery_bonus_types[partner_index] == bonus_type:
-			total_bonus += partner_mastery_bonus_values[partner_index]
+		if String(skill.get("bonus_type", "")) == bonus_type:
+			total_bonus += float(skill.get("bonus_value", 0.0))
 
 	return total_bonus
 
@@ -1644,8 +1692,8 @@ func _update_character_state() -> void:
 		int(
 			base_damage
 			* get_focus_training_multiplier()
-			* get_partner_mastery_bonus_multiplier("click_damage")
-			* get_partner_mastery_bonus_multiplier("all_damage")
+			* get_partner_skill_bonus_multiplier("click_damage")
+			* get_partner_skill_bonus_multiplier("all_damage")
 			* get_focus_burst_multiplier()
 			* get_settlement_click_damage_multiplier()
 		)
@@ -1662,7 +1710,7 @@ func get_current_click_damage() -> int:
 
 
 func get_current_elite_spawn_chance() -> float:
-	return clampf(elite_spawn_chance + get_partner_mastery_additive_bonus("elite_spawn"), 0.0, 1.0)
+	return clampf(elite_spawn_chance + get_partner_skill_additive_bonus("elite_spawn"), 0.0, 1.0)
 
 
 func refresh_derived_stats() -> void:

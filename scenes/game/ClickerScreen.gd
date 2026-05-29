@@ -78,6 +78,7 @@ func _ready() -> void:
 	upgrade_sheet.focus_burst_purchase_requested.connect(_on_focus_burst_purchase_requested)
 	upgrade_sheet.rally_purchase_requested.connect(_on_rally_purchase_requested)
 	partner_sheet.partner_purchase_requested.connect(_on_partner_purchase_requested)
+	partner_sheet.skill_purchase_requested.connect(_on_partner_skill_purchase_requested)
 	settlement_sheet.building_purchase_requested.connect(_on_building_purchase_requested)
 	prestige_sheet.prestige_requested.connect(_on_prestige_requested)
 	prestige_sheet.prestige_talent_purchase_requested.connect(_on_prestige_talent_purchase_requested)
@@ -163,7 +164,7 @@ func _on_attack_requested() -> void:
 
 	if not combo_empowered_active:
 		combo_meter_value = clampf(
-			combo_meter_value + combo_gain_per_manual_click * state.get_partner_mastery_bonus_multiplier("combo_gain"),
+			combo_meter_value + combo_gain_per_manual_click * state.get_partner_skill_bonus_multiplier("combo_gain"),
 			0.0,
 			combo_meter_max
 		)
@@ -174,7 +175,7 @@ func _on_attack_requested() -> void:
 			state.total_combo_empowered_activations += 1
 
 	var manual_damage: int = maxi(1, int(state.get_current_click_damage() * _get_manual_combo_multiplier()))
-	if state.rng.randf() < state.get_partner_mastery_additive_bonus("critical_manual"):
+	if state.rng.randf() < state.get_partner_skill_additive_bonus("critical_manual"):
 		manual_damage *= 2
 	var was_boss_level: bool = state.is_boss_level
 	var result: Dictionary = state.attack_with_damage(manual_damage)
@@ -230,6 +231,12 @@ func _on_task_claim_requested(task_id: String) -> void:
 
 func _on_partner_purchase_requested(partner_index: int, mode: String) -> void:
 	var result: Dictionary = state.buy_partners(partner_index, mode)
+	_handle_status_text(result.get("status_text", ""))
+	_update_ui()
+
+
+func _on_partner_skill_purchase_requested(skill_id: String) -> void:
+	var result: Dictionary = state.buy_partner_skill(skill_id)
 	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
 

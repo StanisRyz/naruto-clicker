@@ -2,8 +2,14 @@ class_name PartnerPanel
 extends VBoxContainer
 
 signal partner_purchase_requested(partner_index: int, mode: String)
+signal skill_popup_requested(skill_id: String, anchor_global_position: Vector2)
 
 const BUY_MODES: Array[String] = ["x1", "x10", "x100", "max"]
+const SKILL_ICON_COLORS: Dictionary = {
+	"locked": Color(0.32, 0.32, 0.34, 1.0),
+	"available": Color(0.18, 0.44, 0.95, 1.0),
+	"purchased": Color.WHITE,
+}
 
 var selected_buy_mode: String = "x1"
 var current_state: ClickerState = null
@@ -71,11 +77,20 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 	effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	info_container.add_child(effect_label)
 
-	var mastery_label := Label.new()
-	mastery_label.name = "MasteryLabel"
-	mastery_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	mastery_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	info_container.add_child(mastery_label)
+	var skill_button := Button.new()
+	skill_button.name = "SkillButton"
+	skill_button.custom_minimum_size = Vector2(40, 40)
+	skill_button.focus_mode = Control.FOCUS_NONE
+	skill_button.text = ""
+	skill_button.pressed.connect(func() -> void: _on_skill_button_pressed(partner_index, skill_button))
+	content.add_child(skill_button)
+
+	var skill_image_holder := ColorRect.new()
+	skill_image_holder.name = "ImageHolder"
+	skill_image_holder.color = SKILL_ICON_COLORS["locked"]
+	skill_image_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	skill_image_holder.set_anchors_preset(Control.PRESET_FULL_RECT)
+	skill_button.add_child(skill_image_holder)
 
 	var button := Button.new()
 	button.name = "HireButton"
@@ -87,7 +102,8 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 		"row": row,
 		"name_count_label": name_count_label,
 		"effect_label": effect_label,
-		"mastery_label": mastery_label,
+		"skill_button": skill_button,
+		"skill_image_holder": skill_image_holder,
 		"button": button,
 	}
 
@@ -95,7 +111,8 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionary) -> void:
 	var name_count_label: Label = row["name_count_label"]
 	var effect_label: Label = row["effect_label"]
-	var mastery_label: Label = row["mastery_label"]
+	var skill_button: Button = row["skill_button"]
+	var skill_image_holder: ColorRect = row["skill_image_holder"]
 	var button: Button = row["button"]
 	var partner_name: String = state.partner_names[partner_index]
 	var partner_count: int = state.partner_counts[partner_index]
@@ -109,11 +126,14 @@ func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionar
 	else:
 		effect_label.text = "+%d DPS | Max milestones" % state.partner_dps_values[partner_index]
 
-	var mastery_description: String = state.get_partner_mastery_description(partner_index)
-	if state.is_partner_mastery_unlocked(partner_index):
-		mastery_label.text = "Mastery active: %s" % mastery_description
+	var skill: Dictionary = state.get_partner_skill_for_partner(partner_index)
+	var skill_state: String = "locked"
+	if skill.is_empty():
+		skill_button.disabled = true
 	else:
-		mastery_label.text = "Mastery at %d: %s" % [state.partner_mastery_unlock_count, mastery_description]
+		skill_button.disabled = false
+		skill_state = state.get_partner_skill_state(String(skill.get("id", "")))
+	skill_image_holder.color = SKILL_ICON_COLORS.get(skill_state, SKILL_ICON_COLORS["locked"])
 
 	if not state.can_buy_partner(partner_index):
 		button.disabled = true
@@ -155,3 +175,18 @@ func _create_row_stylebox() -> StyleBoxFlat:
 	stylebox.corner_radius_bottom_left = 6
 	stylebox.corner_radius_bottom_right = 6
 	return stylebox
+
+
+func _on_skill_button_pressed(partner_index: int, skill_button: Button) -> void:
+	if current_state == null:
+		return
+
+	var skill: Dictionary = current_state.get_partner_skill_for_partner(partner_index)
+	if skill.is_empty():
+		return
+
+	var skill_id: String = String(skill.get("id", ""))
+	if skill_id == "":
+		return
+
+	skill_popup_requested.emit(skill_id, skill_button.global_position)

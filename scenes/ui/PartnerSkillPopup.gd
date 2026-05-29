@@ -1,0 +1,89 @@
+class_name PartnerSkillPopup
+extends Control
+
+signal skill_purchase_requested(skill_id: String)
+
+@onready var outside_click_area: ColorRect = $OutsideClickArea
+@onready var panel_container: PanelContainer = $PanelContainer
+@onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
+@onready var name_label: Label = $PanelContainer/MarginContainer/VBoxContainer/Header/NameLabel
+@onready var description_label: Label = $PanelContainer/MarginContainer/VBoxContainer/DescriptionLabel
+@onready var requirement_label: Label = $PanelContainer/MarginContainer/VBoxContainer/RequirementLabel
+@onready var cost_label: Label = $PanelContainer/MarginContainer/VBoxContainer/CostLabel
+@onready var buy_button: Button = $PanelContainer/MarginContainer/VBoxContainer/BuyButton
+
+var current_skill_id: String = ""
+var current_anchor_global_position: Vector2 = Vector2.ZERO
+
+
+func _ready() -> void:
+	outside_click_area.gui_input.connect(_on_outside_click_area_gui_input)
+	panel_container.gui_input.connect(_on_panel_container_gui_input)
+	close_button.pressed.connect(func() -> void: hide())
+	buy_button.pressed.connect(_on_buy_button_pressed)
+	hide()
+
+
+func show_skill(state: ClickerState, skill_id: String, anchor_global_position: Vector2) -> void:
+	current_skill_id = skill_id
+	current_anchor_global_position = anchor_global_position
+	_update_view(state)
+	show()
+	call_deferred("_position_panel")
+
+
+func refresh_view(state: ClickerState) -> void:
+	if visible and current_skill_id != "":
+		_update_view(state)
+
+
+func _update_view(state: ClickerState) -> void:
+	var skill: Dictionary = state.get_partner_skill(current_skill_id)
+	if skill.is_empty():
+		hide()
+		return
+
+	var cost: int = state.get_partner_skill_cost(current_skill_id)
+	var skill_state: String = state.get_partner_skill_state(current_skill_id)
+	name_label.text = String(skill.get("name", "Partner Skill"))
+	description_label.text = String(skill.get("description", ""))
+	requirement_label.text = "Requires: Partner Count %d" % int(skill.get("unlock_count", 0))
+	cost_label.text = "Cost: %d gold" % cost
+	buy_button.disabled = not state.can_buy_partner_skill(current_skill_id)
+	if skill_state == "purchased":
+		buy_button.text = "Purchased"
+	else:
+		buy_button.text = "Buy: %d" % cost
+
+
+func _position_panel() -> void:
+	var local_anchor: Vector2 = get_global_transform().affine_inverse() * current_anchor_global_position
+	var desired_position := local_anchor + Vector2(-120.0, -164.0)
+	var viewport_size: Vector2 = get_viewport_rect().size
+	var panel_size: Vector2 = panel_container.size
+	desired_position.x = clampf(desired_position.x, 8.0, maxf(8.0, viewport_size.x - panel_size.x - 8.0))
+	desired_position.y = clampf(desired_position.y, 8.0, maxf(8.0, viewport_size.y - panel_size.y - 112.0))
+	panel_container.position = desired_position
+
+
+func _on_buy_button_pressed() -> void:
+	if current_skill_id != "":
+		skill_purchase_requested.emit(current_skill_id)
+
+
+func _on_outside_click_area_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		var mouse_event: InputEventMouseButton = event as InputEventMouseButton
+		if mouse_event.button_index == MOUSE_BUTTON_LEFT and mouse_event.pressed:
+			accept_event()
+			hide()
+	elif event is InputEventScreenTouch:
+		var touch_event: InputEventScreenTouch = event as InputEventScreenTouch
+		if touch_event.pressed:
+			accept_event()
+			hide()
+
+
+func _on_panel_container_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton or event is InputEventScreenTouch:
+		accept_event()
