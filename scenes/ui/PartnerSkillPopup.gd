@@ -7,7 +7,6 @@ const POPUP_WIDTH: float = 260.0
 const POPUP_MARGIN: float = 8.0
 const BOTTOM_SAFE_MARGIN: float = 112.0
 
-@onready var outside_click_area: ColorRect = $OutsideClickArea
 @onready var panel_container: PanelContainer = $PanelContainer
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
 @onready var name_label: Label = $PanelContainer/MarginContainer/VBoxContainer/Header/NameLabel
@@ -22,7 +21,6 @@ var current_anchor_global_position: Vector2 = Vector2.ZERO
 
 
 func _ready() -> void:
-	outside_click_area.gui_input.connect(_on_outside_click_area_gui_input)
 	panel_container.gui_input.connect(_on_panel_container_gui_input)
 	close_button.pressed.connect(func() -> void: hide())
 	buy_button.pressed.connect(_on_buy_button_pressed)
@@ -79,6 +77,27 @@ func _update_view(state: ClickerState) -> void:
 			buy_button.disabled = not state.can_buy_partner_skill(current_skill_id)
 
 
+func _input(event: InputEvent) -> void:
+	if not visible:
+		return
+	var press_pos: Vector2 = Vector2.INF
+	if event is InputEventMouseButton:
+		var me := event as InputEventMouseButton
+		if me.button_index == MOUSE_BUTTON_LEFT and me.pressed:
+			press_pos = me.global_position
+	elif event is InputEventScreenTouch:
+		var te := event as InputEventScreenTouch
+		if te.pressed:
+			press_pos = te.position
+	if press_pos == Vector2.INF:
+		return
+	if panel_container.get_global_rect().has_point(press_pos):
+		return
+	# Outside panel: hide without consuming so skill icon buttons still receive the event.
+	# PanelContainer (STOP) already prevents click-through for inside-panel clicks.
+	hide()
+
+
 func _deferred_resize_and_position_panel() -> void:
 	panel_container.size = Vector2(POPUP_WIDTH, 0)
 	panel_container.reset_size()
@@ -100,19 +119,6 @@ func _position_panel(panel_size: Vector2) -> void:
 func _on_buy_button_pressed() -> void:
 	if current_skill_id != "":
 		skill_purchase_requested.emit(current_skill_id)
-
-
-func _on_outside_click_area_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton:
-		var mouse_event: InputEventMouseButton = event as InputEventMouseButton
-		if mouse_event.button_index == MOUSE_BUTTON_LEFT and mouse_event.pressed:
-			accept_event()
-			hide()
-	elif event is InputEventScreenTouch:
-		var touch_event: InputEventScreenTouch = event as InputEventScreenTouch
-		if touch_event.pressed:
-			accept_event()
-			hide()
 
 
 func _on_panel_container_gui_input(event: InputEvent) -> void:

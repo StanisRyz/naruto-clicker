@@ -117,7 +117,7 @@ The main scene contains the first local clicker loop:
 - Partner skills are purchasable gold upgrades shown as small ImageHolder-style icons in partner cards, not automatic unlocks.
 - Each partner has 5 purchasable skill icons that unlock at partner counts 10, 25, 50, 100, and 250. The 500 milestone is reserved for a future ultimate skill.
 - Skill icon states are gray for locked, blue for available to buy, and white for purchased.
-- Clicking any skill icon opens a compact non-modal popup with the skill name, description, required partner count, current count vs requirement, gold cost, and Buy button. The popup fits its content height and must not stretch vertically to the screen bottom. The popup closes when clicking outside the popup panel; clicks outside the panel are consumed and do not trigger GameField attacks.
+- Clicking any skill icon opens a compact non-modal popup with the skill name, description, required partner count, current count vs requirement, gold cost, and Buy button. The popup fits its content height and must not stretch vertically to the screen bottom. The popup closes when clicking outside the popup panel. Clicking another skill icon while the popup is open switches the popup to that skill without closing first. Clicks inside the popup panel do not close it.
 - Skill bonuses apply only after purchase and reset on prestige with normal partner progress.
 - Skill categories and distribution:
   - Partner 1 and Field Scout (Partner 4): Click Damage skills — Click Training I–V (+20%/+25%/+50%/+100%/+100%).

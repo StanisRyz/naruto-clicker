@@ -120,9 +120,10 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Clicking any partner skill icon opens a compact non-modal popup with the skill name, description, required count, current count vs requirement, gold cost, and Buy button.
 - Partner skill popup Buy button states: locked → disabled "Locked"; available but not enough gold → disabled "Buy: N"; available and affordable → enabled "Buy: N"; purchased → disabled "Purchased".
 - Partner skill popups must fit content height and must not stretch vertically to the screen bottom.
-- PartnerSkillPopup closes when clicking outside the popup panel; the outside click must be consumed so it does not trigger GameField attacks.
-- PartnerSkillPopup must consume all input inside the panel (mouse pressed/released, touch pressed/released) so clicks inside labels or the background do not close the popup or trigger GameField attacks.
-- PartnerSkillPopup root mouse_filter must be PASS (1); OutsideClickArea mouse_filter must be STOP (0); PanelContainer mouse_filter must be STOP (0).
+- PartnerSkillPopup closes when clicking outside the popup panel and switches to the new skill when clicking another skill icon; clicking another icon must not just close the popup.
+- PartnerSkillPopup uses _input (not an overlay ColorRect) for outside-close detection; _input calls hide() without consuming the event so skill icon buttons below still receive the click and emit their pressed signal in the same frame.
+- PartnerSkillPopup root mouse_filter must be IGNORE (2); OutsideClickArea mouse_filter must be IGNORE (2); PanelContainer mouse_filter must be STOP (0).
+- PanelContainer must consume mouse/touch events via _on_panel_container_gui_input so clicks inside the popup do not close it or fall through to GameField.
 - PartnerSkillPopup panel sizing must be deferred after content changes (show_skill, refresh_view) by awaiting one process frame before reading combined minimum size to avoid first-open vertical stretching.
 - Partner skill bonuses apply only after purchase and reset on prestige with normal partner progress.
 - Skill categories and distribution:
