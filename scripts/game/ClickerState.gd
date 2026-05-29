@@ -1036,29 +1036,32 @@ func get_building_bulk_display_cost(building_index: int, mode: String) -> int:
 
 
 func get_building_effect_description(building_index: int) -> String:
+	return get_building_short_effect_description(building_index)
+
+
+func get_building_short_effect_description(building_index: int) -> String:
 	if building_index < 0 or building_index >= building_names.size():
 		return ""
 
-	var building_name: String = building_names[building_index]
 	var amount: int = building_bonus_percent_per_level
 	if building_index >= building_bonus_types.size():
-		return "+%d%% Bonus for each %s" % [amount, building_name]
+		return "+%d%% Bonus" % amount
 
 	match building_bonus_types[building_index]:
 		"partner_dps":
-			return "+%d%% DPS for each %s" % [amount, building_name]
+			return "+%d%% DPS" % amount
 		"gold":
-			return "+%d%% Gold for each %s" % [amount, building_name]
+			return "+%d%% Gold" % amount
 		"click_damage":
-			return "+%d%% Click Damage for each %s" % [amount, building_name]
+			return "+%d%% Click Damage" % amount
 		"ability_duration":
-			return "+%d%% Focus/Rally Duration for each %s" % [amount, building_name]
+			return "+%d%% Focus/Rally Duration" % amount
 		"ability_cooldown":
-			return "-%d%% Ability Cooldown for each %s" % [amount, building_name]
+			return "+%d%% Cooldown Efficiency" % amount
 		"boss_gold":
-			return "+%d%% Boss Gold for each %s" % [amount, building_name]
+			return "+%d%% Boss Gold" % amount
 		_:
-			return "+%d%% Bonus for each %s" % [amount, building_name]
+			return "+%d%% Bonus" % amount
 
 
 func get_partner_description(partner_index: int) -> String:
@@ -1174,7 +1177,7 @@ func get_settlement_ability_duration_bonus_percent() -> int:
 
 
 func get_settlement_cooldown_reduction_percent() -> int:
-	return mini(50, get_building_bonus_percent(4))
+	return int((1.0 - get_ability_cooldown_multiplier()) * 100.0)
 
 
 func get_settlement_boss_gold_bonus_percent() -> int:
@@ -1182,7 +1185,27 @@ func get_settlement_boss_gold_bonus_percent() -> int:
 
 
 func get_building_bonus_percent(building_index: int) -> int:
-	return _get_effective_settlement_bonus_percent(building_index)
+	return get_building_raw_bonus_percent(building_index)
+
+
+func get_building_raw_bonus_percent(building_index: int) -> int:
+	if building_index < 0 or building_index >= building_counts.size():
+		return 0
+
+	var building_count: int = building_counts[building_index]
+	if building_count <= 0:
+		return 0
+
+	var base_bonus: int = building_count * building_bonus_percent_per_level
+	var milestone_bonus: int = base_bonus * get_milestone_multiplier(building_count)
+	return int(milestone_bonus * get_settlement_effectiveness_multiplier())
+
+
+func get_diminishing_reduction_multiplier(raw_bonus_percent: int) -> float:
+	# Positive settlement effects can use additive percent bonuses.
+	# Reduction effects must use diminishing returns; never implement direct 100% cost/cooldown reduction.
+	# Future cost-reduction buildings should use this helper.
+	return 100.0 / (100.0 + float(maxi(0, raw_bonus_percent)))
 
 
 func get_settlement_partner_dps_multiplier() -> float:
@@ -1202,7 +1225,7 @@ func get_ability_duration_multiplier() -> float:
 
 
 func get_ability_cooldown_multiplier() -> float:
-	return 1.0 - get_settlement_cooldown_reduction_percent() / 100.0
+	return get_diminishing_reduction_multiplier(get_building_raw_bonus_percent(4))
 
 
 func get_boss_reward_multiplier() -> float:
@@ -1338,14 +1361,6 @@ func _get_building_cost_for_count(building_index: int, count: int) -> int:
 		return building_base_costs[building_index] + count * building_cost_steps[building_index]
 
 	return 0
-
-
-func _get_effective_settlement_bonus_percent(building_index: int) -> int:
-	if building_index < 0 or building_index >= building_counts.size():
-		return 0
-
-	var base_bonus: int = building_counts[building_index] * building_bonus_percent_per_level
-	return int(base_bonus * get_settlement_effectiveness_multiplier())
 
 
 func _reset_partner_state() -> void:

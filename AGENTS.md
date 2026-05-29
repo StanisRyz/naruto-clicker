@@ -115,23 +115,31 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - PartnerPanel should always show the required package cost when prerequisites are met; "Not enough gold" belongs in status handling after a failed purchase, not in partner button text.
 - Keep `PartnerSheet`, `SettlementSheet`, and `PrestigeSheet` as separate bottom-half overlays from `UpgradeSheet`.
 - Settlement tab sits between `Partners` and `Prestige` in the bottom bar.
-- Settlement buildings are Training Camp (+1% final partner DPS per level), Market (+1% final gold gain per level), Knight Hut (+1% final click damage per level), War Banner (+1% Focus Burst/Rally duration per level), Clock Tower (-1% ability cooldown per level, capped at 50%), and Boss Shrine (+1% boss reward gold per level).
+- Settlement buildings are Training Camp (+1% final partner DPS per level), Market (+1% final gold gain per level), Knight Hut (+1% final click damage per level), War Banner (+1% Focus Burst/Rally duration per level), Clock Tower (+1% cooldown efficiency per level), and Boss Shrine (+1% boss reward gold per level).
 - Builder Wisdom increases settlement building bonus effectiveness.
 - Training Camp affects displayed final Partner DPS and partner tick damage.
 - Market affects normal, elite, and boss final gold gain.
 - Knight Hut affects displayed click damage and manual/autoclick damage; manual combo stays in `ClickerScreen`.
 - War Banner affects Focus Burst and Rally duration only when those abilities are activated.
-- Clock Tower affects Autoclick, Gold Bonus, Focus Burst, and Rally cooldowns when cooldown starts, capped at 50%.
+- Clock Tower affects Autoclick, Gold Bonus, Focus Burst, and Rally cooldowns when cooldown starts using diminishing returns.
 - Boss Shrine affects boss rewards only and stacks with Market, Trade Routes, and Gold Bonus.
 - Settlement rows use a temporary white `ColorRect` image placeholder, two text lines for name/count and per-purchase effect, and a buy button.
 - SettlementPanel should not show a combined settlement bonus summary line above building rows.
 - SettlementPanel uses progressive reveal: show Training Camp, all currently available building cards, and exactly one next locked requirement card; deeper locked cards stay hidden and should not take scroll space.
+- Settlement building rows show per-purchase effect and next x2 milestone, formatted like `+1% DPS | Next x2 at 10` or `+1% DPS | Max milestones`.
 - Settlement building rows should not show total owned effect; total bonuses belong in stats or summary UI.
 - Each settlement building requires at least one of the previous building.
 - Settlement initial costs are `[25, 75, 150, 500, 1200, 3000]`.
 - Settlement costs scale by adding `[25, 50, 100, 250, 600, 1500]` per owned building.
 - Settlement purchases use bulk modes `x1`, `x10`, `x100`, and `Max` with the same strict all-or-nothing behavior as partners for `x10` and `x100`.
 - Settlement buildings reset on prestige.
+- Settlement buildings use independent milestone multipliers at `[10, 25, 50, 100, 250, 500]`.
+- Each reached settlement building milestone doubles the total accumulated effect of that building type.
+- Builder Wisdom applies after the settlement building milestone multiplier.
+- Settlement effects use two scaling types: positive additive bonuses and diminishing reduction bonuses.
+- Positive settlement bonuses can grow above 100%.
+- Reduction bonuses use `final_multiplier = 100 / (100 + raw_bonus)` and must never reduce cooldowns, costs, or future timers to 0.
+- Clock Tower uses cooldown efficiency through the diminishing formula. Future cost-reduction buildings must use the same helper.
 - Character level replaces the old damage upgrade; base hero damage starts from character level and is boosted by hero milestones.
 - Hero base damage is `character_level * hero milestone multiplier` before Focus Burst, settlement Knight Hut, prestige talents, combo manual multiplier, and Boss Hunter.
 - Hero level and each partner tier use milestone levels `[10, 25, 50, 100, 250, 500]`.
@@ -356,16 +364,17 @@ After each patch, validate manually in Godot:
 - Settlement buttons always show required cost when prerequisites are met.
 - Training Camp increases partner DPS/tick damage.
 - Training Camp x10 with 200 base partner DPS displays 220 final Partner DPS.
-- Training Camp x25 with 200 base partner DPS displays 250 final Partner DPS.
-- Training Camp x100 with 200 base partner DPS displays 400 final Partner DPS.
+- Training Camp x25 with 200 base partner DPS displays 400 final Partner DPS.
+- Training Camp x100 with 200 base partner DPS displays 3400 final Partner DPS.
 - Market increases gold rewards.
 - Market affects normal, elite, and boss rewards.
 - Knight Hut increases manual click and autoclick damage.
-- Knight Hut x10 increases displayed click damage by about 10%.
+- Knight Hut x10 increases displayed click damage by about 20%.
 - War Banner increases Focus Burst and Rally duration.
-- War Banner x10 makes Focus Burst last about 22 seconds and Rally last about 33 seconds.
-- Clock Tower reduces ability cooldowns up to the 50% cap.
-- Clock Tower x10 makes Autoclick cooldown about 54 seconds and Gold Bonus cooldown about 270 seconds.
+- War Banner x10 makes Focus Burst last about 24 seconds and Rally last about 36 seconds.
+- Clock Tower reduces ability cooldowns with diminishing returns.
+- Clock Tower x10 has 20 raw cooldown efficiency, making Autoclick cooldown about 50 seconds and Gold Bonus cooldown about 250 seconds.
+- Clock Tower x25 has 100 raw cooldown efficiency, making ability cooldowns about half length but not 0.
 - Boss Shrine increases boss reward gold.
 - Boss Shrine does not change normal or elite rewards by itself.
 - Target defeat gives gold.

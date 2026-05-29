@@ -92,7 +92,7 @@ func _update_building_row(state: ClickerState, building_index: int, row: Diction
 	var building_name: String = state.building_names[building_index]
 	var owned_count: int = state.building_counts[building_index]
 	name_count_label.text = "%s | %d" % [building_name, owned_count]
-	effect_label.text = state.get_building_effect_description(building_index)
+	effect_label.text = _get_building_effect_with_milestone_text(state, building_index, owned_count)
 
 	if not state.can_buy_building(building_index):
 		button.disabled = true
@@ -103,6 +103,15 @@ func _update_building_row(state: ClickerState, building_index: int, row: Diction
 	var bulk_cost: int = state.get_building_bulk_display_cost(building_index, selected_buy_mode)
 	button.disabled = false
 	button.text = "Build x%d - Cost: %d" % [bulk_count, bulk_cost]
+
+
+func _get_building_effect_with_milestone_text(state: ClickerState, building_index: int, owned_count: int) -> String:
+	var effect_text: String = state.get_building_short_effect_description(building_index)
+	var next_milestone: int = state.get_next_milestone(owned_count)
+	if next_milestone > 0:
+		return "%s | Next x2 at %d" % [effect_text, next_milestone]
+
+	return "%s | Max milestones" % effect_text
 
 
 func set_buy_mode(mode: String) -> void:
