@@ -81,6 +81,8 @@ The main scene contains the first local clicker loop:
 - Task rewards use `current normal enemy reward * reward_scale`, include current zone reward scaling, and are recalculated when displayed or claimed.
 - Task rewards do not include elite/boss reward multipliers, Boss Shrine, Market, Trade Routes, or Gold Bonus.
 - Tasks can be closed with the window Close button or by clicking/tapping outside the task panel.
+- `TasksWindow` is modal while open: it blocks `GameField` attacks, consumes inside-panel input, and consumes the outside click/tap that closes it.
+- Task claim refreshes should be deferred or otherwise input-safe so task rows are not rebuilt while the clicked Claim button is still handling input.
 - Tasks do not add new currencies, daily timers, ads, monetization, or save persistence.
 - Autoclick costs 50 gold, and Gold Bonus costs 150 gold.
 - Autoclick lasts 15 seconds, attacks once every 0.05 seconds while active, then enters a 60 second cooldown.
@@ -207,7 +209,7 @@ The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes
 - `scenes/ui/PrimaryStatsPanel.tscn` - Compact top-centered horizontal stat overlay for gold, character level, click damage, partner DPS, and a placeholder settings button.
 - `scenes/ui/ProgressInfoPanel.tscn` - Compact progress UI for level, zone name, enemies progress, enemy name, enemy HP, and the enemy HP bar.
 - `scenes/ui/ComboPanel.tscn` - Right-side vertical runtime-only Manual Combo / Chakra Meter display for meter charge and manual damage multiplier.
-- `scenes/ui/TasksWindow.tscn` - Runtime-only repeatable tasks overlay with 5 active goals, dynamic level-scaled gold claim rewards, rotation after claim, and outside-click close behavior.
+- `scenes/ui/TasksWindow.tscn` - Runtime-only modal repeatable tasks overlay with 5 active goals, dynamic level-scaled gold claim rewards, safe deferred row refresh after claim, rotation after claim, and outside-click close behavior that consumes the click.
 - `scenes/ui/GameField.tscn` - Fullscreen tap/click attack field, muted green background placeholder, enemy placeholder states, boss timer, and defeat feedback.
 - `scenes/ui/AbilityBar.tscn` - Left-side textless placeholder-square active ability buttons.
 - `scenes/ui/BuyModeSelector.tscn` - Reusable fixed `x1` / `x10` / `x100` / `Max` selector for hero level, partner, and settlement purchase sheets.

@@ -8,6 +8,9 @@ signal task_claim_requested(task_id: String)
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
 @onready var tasks_container: VBoxContainer = $PanelContainer/MarginContainer/VBoxContainer/ScrollContainer/TasksContainer
 
+var pending_state: ClickerState = null
+var rebuild_queued: bool = false
+
 
 func _ready() -> void:
 	outside_click_area.gui_input.connect(_on_outside_click_area_gui_input)
@@ -26,19 +29,45 @@ func hide_window() -> void:
 
 
 func update_view(state: ClickerState) -> void:
-	for child in tasks_container.get_children():
-		child.free()
+	_clear_task_rows()
 
 	for task_data: Dictionary in state.get_active_task_view_data():
 		tasks_container.add_child(_create_task_row(task_data))
 
 
+func request_update_view(state: ClickerState) -> void:
+	pending_state = state
+	if rebuild_queued:
+		return
+
+	rebuild_queued = true
+	call_deferred("_rebuild_rows_deferred")
+
+
+func _rebuild_rows_deferred() -> void:
+	await get_tree().process_frame
+	if pending_state != null:
+		update_view(pending_state)
+
+	pending_state = null
+	rebuild_queued = false
+
+
+func _clear_task_rows() -> void:
+	for child in tasks_container.get_children():
+		tasks_container.remove_child(child)
+		child.queue_free()
+
+
 func _create_task_row(task_data: Dictionary) -> PanelContainer:
 	var row := PanelContainer.new()
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.mouse_filter = Control.MOUSE_FILTER_STOP
+	row.gui_input.connect(_on_panel_container_gui_input)
 	row.add_theme_stylebox_override("panel", _create_row_stylebox())
 
 	var margin := MarginContainer.new()
+	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	margin.add_theme_constant_override("margin_left", 12)
 	margin.add_theme_constant_override("margin_top", 10)
 	margin.add_theme_constant_override("margin_right", 12)
@@ -47,6 +76,7 @@ func _create_task_row(task_data: Dictionary) -> PanelContainer:
 
 	var content := HBoxContainer.new()
 	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.add_theme_constant_override("separation", 12)
 	margin.add_child(content)
 
@@ -54,21 +84,25 @@ func _create_task_row(task_data: Dictionary) -> PanelContainer:
 	image_holder.name = "ImageHolder"
 	image_holder.color = Color.WHITE
 	image_holder.custom_minimum_size = Vector2(56, 56)
+	image_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.add_child(image_holder)
 
 	var info_container := VBoxContainer.new()
 	info_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	info_container.add_theme_constant_override("separation", 4)
 	content.add_child(info_container)
 
 	var title_label := Label.new()
 	title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	title_label.text = String(task_data.get("title", ""))
 	title_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	info_container.add_child(title_label)
 
 	var progress_label := Label.new()
 	progress_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	progress_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	progress_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	progress_label.text = "%d / %d | Reward: %d gold" % [
 		int(task_data.get("progress", 0)),
@@ -86,7 +120,11 @@ func _create_task_row(task_data: Dictionary) -> PanelContainer:
 	else:
 		claim_button.disabled = true
 		claim_button.text = "In Progress"
-	claim_button.pressed.connect(func() -> void: task_claim_requested.emit(task_id))
+	claim_button.pressed.connect(func() -> void:
+		claim_button.disabled = true
+		claim_button.text = "Claimed"
+		task_claim_requested.emit(task_id)
+	)
 	content.add_child(claim_button)
 
 	return row
@@ -107,13 +145,9 @@ func _on_outside_click_area_gui_input(event: InputEvent) -> void:
 
 func _on_panel_container_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
-		var mouse_event: InputEventMouseButton = event as InputEventMouseButton
-		if mouse_event.pressed:
-			accept_event()
+		accept_event()
 	elif event is InputEventScreenTouch:
-		var touch_event: InputEventScreenTouch = event as InputEventScreenTouch
-		if touch_event.pressed:
-			accept_event()
+		accept_event()
 
 
 func _create_row_stylebox() -> StyleBoxFlat:

@@ -43,6 +43,8 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Task rewards must not include elite/boss reward multipliers, Boss Shrine, Market, Trade Routes, or Gold Bonus.
 - Keep task definitions on `reward_scale` values rather than fixed `reward_gold` values.
 - Tasks can be closed with the Close button or by clicking/tapping outside the task panel.
+- `TasksWindow` is modal while open: it must block `GameField` attacks, consume inside-panel input, and consume the outside click/tap that closes it.
+- Task claim refreshes must be deferred or otherwise input-safe so task rows are not rebuilt while the clicked Claim button is still handling input.
 - Tasks are runtime-only and not saved; do not add daily timers, ads, monetization, or new currencies to tasks yet.
 - Only manual player clicks fill the combo meter. Autoclick and partner DPS must not fill it.
 - Manual clicks add +1% meter charge, the meter decays by 1% per second, and every 1% meter charge gives +1% manual click damage only.
@@ -397,6 +399,9 @@ After each patch, validate manually in Godot:
 - TasksWindow shows 5 unique active tasks and the inactive pool has the other 5 task ids.
 - TasksWindow closes with Close button and outside-panel clicks.
 - Clicking inside TasksWindow does not close it unless Close is pressed and does not attack the enemy.
+- Clicking outside TasksWindow to close it consumes the click and does not attack the enemy.
+- Clicking Claim works on the first click, gives gold once, and cannot double-claim from rapid clicking.
+- Claim refreshes task rows only after button input handling is safe.
 - Completed tasks have enabled Claim buttons, add dynamic level-scaled gold when claimed, move back to inactive, and are replaced by random inactive tasks.
 - Claimed tasks can rotate back later with progress reset from a fresh activation baseline.
 - Inactive tasks do not progress from past actions before activation.
