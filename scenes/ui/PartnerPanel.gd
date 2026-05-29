@@ -71,6 +71,12 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 	effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	info_container.add_child(effect_label)
 
+	var mastery_label := Label.new()
+	mastery_label.name = "MasteryLabel"
+	mastery_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	mastery_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info_container.add_child(mastery_label)
+
 	var button := Button.new()
 	button.name = "HireButton"
 	button.custom_minimum_size = Vector2(220, 64)
@@ -81,6 +87,7 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 		"row": row,
 		"name_count_label": name_count_label,
 		"effect_label": effect_label,
+		"mastery_label": mastery_label,
 		"button": button,
 	}
 
@@ -88,6 +95,7 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionary) -> void:
 	var name_count_label: Label = row["name_count_label"]
 	var effect_label: Label = row["effect_label"]
+	var mastery_label: Label = row["mastery_label"]
 	var button: Button = row["button"]
 	var partner_name: String = state.partner_names[partner_index]
 	var partner_count: int = state.partner_counts[partner_index]
@@ -100,6 +108,12 @@ func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionar
 		]
 	else:
 		effect_label.text = "+%d DPS | Max milestones" % state.partner_dps_values[partner_index]
+
+	var mastery_description: String = state.get_partner_mastery_description(partner_index)
+	if state.is_partner_mastery_unlocked(partner_index):
+		mastery_label.text = "Mastery active: %s" % mastery_description
+	else:
+		mastery_label.text = "Mastery at %d: %s" % [state.partner_mastery_unlock_count, mastery_description]
 
 	if not state.can_buy_partner(partner_index):
 		button.disabled = true

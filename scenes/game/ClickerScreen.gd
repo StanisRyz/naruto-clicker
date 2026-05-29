@@ -162,7 +162,11 @@ func _on_attack_requested() -> void:
 		return
 
 	if not combo_empowered_active:
-		combo_meter_value = clampf(combo_meter_value + combo_gain_per_manual_click, 0.0, combo_meter_max)
+		combo_meter_value = clampf(
+			combo_meter_value + combo_gain_per_manual_click * state.get_partner_mastery_bonus_multiplier("combo_gain"),
+			0.0,
+			combo_meter_max
+		)
 		if combo_meter_value >= combo_meter_max:
 			combo_meter_value = combo_meter_max
 			combo_empowered_active = true
@@ -170,6 +174,8 @@ func _on_attack_requested() -> void:
 			state.total_combo_empowered_activations += 1
 
 	var manual_damage: int = maxi(1, int(state.get_current_click_damage() * _get_manual_combo_multiplier()))
+	if state.rng.randf() < state.get_partner_mastery_additive_bonus("critical_manual"):
+		manual_damage *= 2
 	var was_boss_level: bool = state.is_boss_level
 	var result: Dictionary = state.attack_with_damage(manual_damage)
 	state.total_manual_click_damage_dealt += int(result.get("damage_dealt", 0))
@@ -355,7 +361,7 @@ func _on_sheet_closed() -> void:
 func _sync_boss_timer() -> void:
 	if state.is_boss_level:
 		if not boss_timer_active:
-			boss_time_left = state.boss_time_limit
+			boss_time_left = state.boss_time_limit * state.get_boss_timer_multiplier()
 			boss_timer_active = true
 	else:
 		boss_timer_active = false
@@ -390,7 +396,7 @@ func _run_autoclick_attack() -> void:
 		return
 
 	var was_boss_level: bool = state.is_boss_level
-	var result: Dictionary = state.attack()
+	var result: Dictionary = state.attack_with_damage(state.get_autoclick_damage())
 	_apply_attack_result(result, true, was_boss_level)
 
 

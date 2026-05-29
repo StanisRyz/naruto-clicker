@@ -111,6 +111,10 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - PartnerPanel uses progressive reveal: show Partner 1, all currently available partner cards, and exactly one next locked requirement card; deeper locked cards stay hidden and should not take scroll space.
 - Partner row second lines show per-purchase DPS and next x2 milestone, formatted `+%d DPS | Next x2 at %d` or `+%d DPS | Max milestones`.
 - Partner row second lines must not include `for each PartnerName`.
+- Partner rows show a compact third line for Partner Mastery, either `Mastery at 25: ...` or `Mastery active: ...`.
+- Partner Mastery unlocks independently at 25 owned for each partner tier and is separate from x2 DPS milestones.
+- Partner Mastery perks are Partner 1 (+5% Click Damage), Partner 2 (+5% Partner DPS), Partner 3 (+5% Gold Gain), Field Scout (+10% Elite Enemy Rewards), Spear Guard (+5% Boss Damage), Iron Defender (+5% Boss Timer Duration), Battle Monk (+5% Combo Meter Gain), Elite Samurai (+10% Autoclick Damage), Shadow Captain (+5% Task Rewards), War Sage (+5% Settlement Effects), Beast Tamer (+1% Elite Spawn Chance), Blade Master (+5% Manual Critical Chance), and Legendary Commander (+5% All Damage).
+- Partner Mastery should deepen existing partner progression without adding currencies, items, inventory, tabs, or new partner tiers.
 - Total/final Partner DPS belongs in `PrimaryStatsPanel`; partner rows only show per-purchase DPS plus next milestone info.
 - PartnerPanel should always show the required package cost when prerequisites are met; "Not enough gold" belongs in status handling after a failed purchase, not in partner button text.
 - Keep `PartnerSheet`, `SettlementSheet`, and `PrestigeSheet` as separate bottom-half overlays from `UpgradeSheet`.
@@ -303,6 +307,7 @@ After each patch, validate manually in Godot:
 - Partner counts update after purchase.
 - Total Partner DPS updates correctly.
 - Partner rows show per-purchase DPS and next x2 milestone text.
+- Partner rows show locked or active Partner Mastery text.
 - Partner rows do not show accumulated tier DPS or total/final Partner DPS.
 - Partner milestones apply independently per tier.
 - Partner DPS damages enemy every 0.1 seconds.
