@@ -29,6 +29,7 @@ func show_skill(state: ClickerState, skill_id: String, anchor_global_position: V
 	current_anchor_global_position = anchor_global_position
 	_update_view(state)
 	show()
+	panel_container.reset_size()
 	call_deferred("_position_panel")
 
 
@@ -54,13 +55,16 @@ func _update_view(state: ClickerState) -> void:
 		buy_button.text = "Purchased"
 	else:
 		buy_button.text = "Buy: %d" % cost
+	panel_container.reset_size()
 
 
 func _position_panel() -> void:
 	var local_anchor: Vector2 = get_global_transform().affine_inverse() * current_anchor_global_position
-	var desired_position := local_anchor + Vector2(-120.0, -164.0)
+	panel_container.reset_size()
+	var panel_size: Vector2 = panel_container.get_combined_minimum_size()
+	panel_container.size = panel_size
+	var desired_position := local_anchor + Vector2(-120.0, -panel_size.y - 12.0)
 	var viewport_size: Vector2 = get_viewport_rect().size
-	var panel_size: Vector2 = panel_container.size
 	desired_position.x = clampf(desired_position.x, 8.0, maxf(8.0, viewport_size.x - panel_size.x - 8.0))
 	desired_position.y = clampf(desired_position.y, 8.0, maxf(8.0, viewport_size.y - panel_size.y - 112.0))
 	panel_container.position = desired_position

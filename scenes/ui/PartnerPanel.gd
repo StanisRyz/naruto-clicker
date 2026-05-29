@@ -5,6 +5,8 @@ signal partner_purchase_requested(partner_index: int, mode: String)
 signal skill_popup_requested(skill_id: String, anchor_global_position: Vector2)
 
 const BUY_MODES: Array[String] = ["x1", "x10", "x100", "max"]
+const PARTNER_IMAGE_SIZE: Vector2 = Vector2(104, 104)
+const SKILL_ICON_SIZE: Vector2 = Vector2(36, 36)
 const SKILL_ICON_COLORS: Dictionary = {
 	"locked": Color(0.32, 0.32, 0.34, 1.0),
 	"available": Color(0.18, 0.44, 0.95, 1.0),
@@ -56,34 +58,43 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 	var image_holder := ColorRect.new()
 	image_holder.name = "ImageHolder"
 	image_holder.color = Color.WHITE
-	image_holder.custom_minimum_size = Vector2(72, 72)
+	image_holder.custom_minimum_size = PARTNER_IMAGE_SIZE
+	image_holder.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	content.add_child(image_holder)
 
-	var info_container := VBoxContainer.new()
-	info_container.name = "InfoContainer"
-	info_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	info_container.add_theme_constant_override("separation", 4)
-	content.add_child(info_container)
+	var right_content := VBoxContainer.new()
+	right_content.name = "RightContent"
+	right_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	right_content.add_theme_constant_override("separation", 6)
+	content.add_child(right_content)
 
 	var name_count_label := Label.new()
 	name_count_label.name = "NameCountLabel"
 	name_count_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_count_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	info_container.add_child(name_count_label)
+	right_content.add_child(name_count_label)
 
 	var effect_label := Label.new()
 	effect_label.name = "EffectLabel"
 	effect_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	info_container.add_child(effect_label)
+	right_content.add_child(effect_label)
+
+	var skill_row := HBoxContainer.new()
+	skill_row.name = "SkillRow"
+	skill_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	skill_row.add_theme_constant_override("separation", 10)
+	right_content.add_child(skill_row)
 
 	var skill_button := Button.new()
 	skill_button.name = "SkillButton"
-	skill_button.custom_minimum_size = Vector2(40, 40)
+	skill_button.custom_minimum_size = SKILL_ICON_SIZE
+	skill_button.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	skill_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	skill_button.focus_mode = Control.FOCUS_NONE
 	skill_button.text = ""
 	skill_button.pressed.connect(func() -> void: _on_skill_button_pressed(partner_index, skill_button))
-	content.add_child(skill_button)
+	skill_row.add_child(skill_button)
 
 	var skill_image_holder := ColorRect.new()
 	skill_image_holder.name = "ImageHolder"
@@ -92,11 +103,17 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 	skill_image_holder.set_anchors_preset(Control.PRESET_FULL_RECT)
 	skill_button.add_child(skill_image_holder)
 
+	var skill_spacer := Control.new()
+	skill_spacer.name = "SkillSpacer"
+	skill_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	skill_row.add_child(skill_spacer)
+
 	var button := Button.new()
 	button.name = "HireButton"
-	button.custom_minimum_size = Vector2(220, 64)
+	button.custom_minimum_size = Vector2(210, 48)
+	button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	button.pressed.connect(func() -> void: partner_purchase_requested.emit(partner_index, selected_buy_mode))
-	content.add_child(button)
+	skill_row.add_child(button)
 
 	return {
 		"row": row,
