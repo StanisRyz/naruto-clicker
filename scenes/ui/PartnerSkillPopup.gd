@@ -3,6 +3,10 @@ extends Control
 
 signal skill_purchase_requested(skill_id: String)
 
+const POPUP_WIDTH: float = 260.0
+const POPUP_MARGIN: float = 8.0
+const BOTTOM_SAFE_MARGIN: float = 112.0
+
 @onready var outside_click_area: ColorRect = $OutsideClickArea
 @onready var panel_container: PanelContainer = $PanelContainer
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
@@ -30,13 +34,13 @@ func show_skill(state: ClickerState, skill_id: String, anchor_global_position: V
 	current_anchor_global_position = anchor_global_position
 	_update_view(state)
 	show()
-	panel_container.reset_size()
-	call_deferred("_position_panel")
+	call_deferred("_deferred_resize_and_position_panel")
 
 
 func refresh_view(state: ClickerState) -> void:
 	if visible and current_skill_id != "":
 		_update_view(state)
+		call_deferred("_deferred_resize_and_position_panel")
 
 
 func _update_view(state: ClickerState) -> void:
@@ -74,18 +78,22 @@ func _update_view(state: ClickerState) -> void:
 			buy_button.text = "Buy: %d" % cost
 			buy_button.disabled = not state.can_buy_partner_skill(current_skill_id)
 
+
+func _deferred_resize_and_position_panel() -> void:
+	panel_container.size = Vector2(POPUP_WIDTH, 0)
 	panel_container.reset_size()
+	await get_tree().process_frame
+	var panel_height: float = panel_container.get_combined_minimum_size().y
+	panel_container.size = Vector2(POPUP_WIDTH, panel_height)
+	_position_panel(Vector2(POPUP_WIDTH, panel_height))
 
 
-func _position_panel() -> void:
+func _position_panel(panel_size: Vector2) -> void:
 	var local_anchor: Vector2 = get_global_transform().affine_inverse() * current_anchor_global_position
-	panel_container.reset_size()
-	var panel_size: Vector2 = panel_container.get_combined_minimum_size()
-	panel_container.size = panel_size
 	var desired_position := local_anchor + Vector2(-120.0, -panel_size.y - 12.0)
 	var viewport_size: Vector2 = get_viewport_rect().size
-	desired_position.x = clampf(desired_position.x, 8.0, maxf(8.0, viewport_size.x - panel_size.x - 8.0))
-	desired_position.y = clampf(desired_position.y, 8.0, maxf(8.0, viewport_size.y - panel_size.y - 112.0))
+	desired_position.x = clampf(desired_position.x, POPUP_MARGIN, maxf(POPUP_MARGIN, viewport_size.x - panel_size.x - POPUP_MARGIN))
+	desired_position.y = clampf(desired_position.y, POPUP_MARGIN, maxf(POPUP_MARGIN, viewport_size.y - panel_size.y - BOTTOM_SAFE_MARGIN))
 	panel_container.position = desired_position
 
 

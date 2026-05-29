@@ -120,6 +120,10 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Clicking any partner skill icon opens a compact non-modal popup with the skill name, description, required count, current count vs requirement, gold cost, and Buy button.
 - Partner skill popup Buy button states: locked → disabled "Locked"; available but not enough gold → disabled "Buy: N"; available and affordable → enabled "Buy: N"; purchased → disabled "Purchased".
 - Partner skill popups must fit content height and must not stretch vertically to the screen bottom.
+- PartnerSkillPopup closes when clicking outside the popup panel; the outside click must be consumed so it does not trigger GameField attacks.
+- PartnerSkillPopup must consume all input inside the panel (mouse pressed/released, touch pressed/released) so clicks inside labels or the background do not close the popup or trigger GameField attacks.
+- PartnerSkillPopup root mouse_filter must be PASS (1); OutsideClickArea mouse_filter must be STOP (0); PanelContainer mouse_filter must be STOP (0).
+- PartnerSkillPopup panel sizing must be deferred after content changes (show_skill, refresh_view) by awaiting one process frame before reading combined minimum size to avoid first-open vertical stretching.
 - Partner skill bonuses apply only after purchase and reset on prestige with normal partner progress.
 - Skill categories and distribution:
   - Partner 1 (index 0) and Field Scout (index 3): bonus_type "click_damage" — Click Training I–V (+20%/+25%/+50%/+100%/+100%).
