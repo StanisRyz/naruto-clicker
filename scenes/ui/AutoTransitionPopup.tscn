@@ -28,9 +28,9 @@ visible = false
 [node name="PanelContainer" type="PanelContainer" parent="."]
 layout_mode = 0
 offset_left = 0.0
-offset_top = -400.0
+offset_top = 0.0
 offset_right = 300.0
-offset_bottom = -200.0
+offset_bottom = 0.0
 custom_minimum_size = Vector2(300, 0)
 mouse_filter = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")

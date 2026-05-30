@@ -64,6 +64,7 @@ func _ready() -> void:
 	stage_navigator.stage_selected.connect(_on_stage_selected)
 	stage_navigator.latest_requested.connect(_on_stage_latest_requested)
 	stage_navigator.auto_transition_popup_requested.connect(_on_auto_transition_popup_requested)
+	auto_transition_popup.auto_button_pressed_through.connect(_toggle_auto_transition_and_show_popup)
 	game_field.attack_requested.connect(_on_attack_requested)
 	ability_bar.autoclick_requested.connect(_on_autoclick_requested)
 	ability_bar.gold_bonus_requested.connect(_on_gold_bonus_requested)
@@ -616,7 +617,11 @@ func _on_stage_latest_requested() -> void:
 	stage_navigator.center_on_latest_level()
 
 
-func _on_auto_transition_popup_requested(anchor_global_position: Vector2) -> void:
+func _on_auto_transition_popup_requested(anchor_global_position: Vector2, button_global_rect: Rect2) -> void:
+	_toggle_auto_transition_and_show_popup(anchor_global_position, button_global_rect)
+
+
+func _toggle_auto_transition_and_show_popup(anchor: Vector2, button_global_rect: Rect2) -> void:
 	if state.auto_stage_advance_enabled:
 		state.set_auto_stage_advance_enabled(false)
 	else:
@@ -630,7 +635,7 @@ func _on_auto_transition_popup_requested(anchor_global_position: Vector2) -> voi
 			stage_navigator.center_on_level(state.current_level)
 	stage_navigator.set_auto_transition_enabled(state.auto_stage_advance_enabled)
 	_update_ui()
-	auto_transition_popup.show_popup(state, anchor_global_position)
+	auto_transition_popup.show_popup(state, anchor, button_global_rect)
 
 
 func _handle_status_text(_text: String) -> void:

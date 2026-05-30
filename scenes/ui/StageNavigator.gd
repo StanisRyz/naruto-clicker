@@ -3,7 +3,7 @@ extends Control
 
 signal stage_selected(level: int)
 signal latest_requested
-signal auto_transition_popup_requested(anchor_global_position: Vector2)
+signal auto_transition_popup_requested(anchor_global_position: Vector2, button_global_rect: Rect2)
 
 const DISPLAY_COUNT: int = 7
 const SIDE_COUNT: int = 3
@@ -253,4 +253,4 @@ func _on_latest_button_pressed() -> void:
 
 func _on_auto_transition_button_pressed() -> void:
 	var btn_rect: Rect2 = _auto_btn.get_global_rect()
-	auto_transition_popup_requested.emit(Vector2(btn_rect.get_center().x, btn_rect.end.y))
+	auto_transition_popup_requested.emit(Vector2(btn_rect.get_center().x, btn_rect.end.y), btn_rect)
