@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scenes/game/ClickerScreen.gd" id="1_ymqc8"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PrimaryStatsPanel.tscn" id="2_primary"]
@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/ShopSheet.tscn" id="12_shop"]
 [ext_resource type="PackedScene" path="res://scenes/ui/StageNavigator.tscn" id="13_nav"]
 [ext_resource type="PackedScene" path="res://scenes/ui/AutoTransitionPopup.tscn" id="14_atp"]
+[ext_resource type="PackedScene" path="res://scenes/ui/SettingsWindow.tscn" id="15_settings"]
 
 [node name="ClickerScreen" type="Control"]
 layout_mode = 3
@@ -185,4 +186,7 @@ text = "Shop"
 layout_mode = 1
 
 [node name="TasksWindow" parent="." instance=ExtResource("11_tasks")]
+layout_mode = 1
+
+[node name="SettingsWindow" parent="." instance=ExtResource("15_settings")]
 layout_mode = 1

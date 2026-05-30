@@ -4,9 +4,9 @@ Naruto Clicker is a vertical idle/clicker game prototype for Yandex Games.
 
 ## Status
 
-Early setup/prototype. The project currently has a basic playable clicker loop and a YandexBridge autoload as a future integration point.
+Early setup/prototype. The project currently has a playable clicker loop, local Save System v1, and a YandexBridge autoload as a future integration point.
 
-Save systems, heroes, loot/items, ads, and real-money payments are intentionally not implemented yet.
+Heroes, loot/items, ads, cloud saves, and real-money payments are intentionally not implemented yet.
 
 ## Project Details
 
@@ -41,7 +41,10 @@ The main scene contains the first local clicker loop:
 - Its center should align with the viewport vertical center axis and it must not stretch full width.
 - `PrimaryStatsPanel` uses horizontal stat cards from left to right: gold, Gems, character level, click damage, partner DPS.
 - Primary stat cards show only a temporary white `ColorRect` placeholder and the value, with transparent backgrounds.
-- `PrimaryStatsPanel` includes a placeholder white-square `SettingsButton`; it is a stub until a real settings flow is explicitly requested.
+- `PrimaryStatsPanel` includes a white-square `SettingsButton` that opens `SettingsWindow`.
+- `SettingsWindow` is a modal overlay with Sound and Music placeholder toggles, Save Now, and Reset Progress.
+- Sound and Music toggles are persisted but do not affect audio yet because audio is not implemented.
+- Reset Progress requires confirmation, deletes the local save, and starts a fresh new game.
 - Prestige and settlement details belong in their bottom tabs, not on the main screen.
 - Manual Combo / Chakra Meter is a vertical meter on the right side of the screen that rewards active clicking.
 - Manual `GameField` clicks add +1% meter charge, the meter decays by 1% per second, and every 1% charge gives +1% manual click damage.
@@ -79,7 +82,7 @@ The main scene contains the first local clicker loop:
 - The game field is the fullscreen bottom clickable layer.
 - Ability buttons are a separate left-middle overlay and must be purchased before activation.
 - `TasksButton` is a textless white square directly above the right-side `ComboPanel`.
-- `TasksWindow` shows 5 active runtime-only tasks from a repeatable pool of 10 tasks; the other 5 tasks stay inactive.
+- `TasksWindow` shows 5 active tasks from a repeatable pool of 10 tasks; the other 5 tasks stay inactive.
 - Active tasks snapshot their baseline when activated, so inactive tasks do not progress in the background.
 - Claiming a completed task gives dynamic gold, resets that task into the inactive pool, and swaps in one random inactive task with a fresh baseline.
 - Claimed tasks can rotate back later; tasks are never permanently exhausted.
@@ -89,12 +92,12 @@ The main scene contains the first local clicker loop:
 - Tasks can be closed with the window Close button or by clicking/tapping outside the task panel.
 - `TasksWindow` is modal while open: it blocks `GameField` attacks, consumes inside-panel input, and consumes the outside click/tap that closes it.
 - Task claim refreshes should be deferred or otherwise input-safe so task rows are not rebuilt while the clicked Claim button is still handling input.
-- Tasks do not add new currencies, daily timers, ads, monetization, or save persistence.
-- Gems are a prototype premium currency for runtime testing only; they are not connected to real Yandex payments yet and are not saved.
+- Tasks do not add new currencies, daily timers, ads, or monetization.
+- Gems are a prototype premium currency for runtime testing only; they are not connected to real Yandex payments.
 - The Shop is the fifth bottom tab after Prestige. It spends Gems on prototype gameplay rewards: Small Gold Pack, Large Gold Pack, Instant Combo, Boss Retry, and Task Reward Boost.
 - The Shop includes a temporary dev-only `Prototype: Get 50 Gems` button for testing product flow without payments.
 - Boss Retry tokens automatically retry the same failed boss level once per token. Task Reward Boost doubles the next claimed task reward only once.
-- Gems, Boss Retry tokens, and Task Reward Boost state are runtime-only until a save system is explicitly added.
+- Gems, Boss Retry tokens, and Task Reward Boost are local-save prototype state until real payments/save integration are explicitly added.
 - Autoclick unlock base: 20 hits/sec for 15 s, 60 s cooldown. Each passive rank adds +15% rate and +2 s duration after Autoclick is purchased.
 - Gold Bonus base: x2 gold for 45 s, 300 s cooldown. Passive ranks add +0.25 multiplier each.
 - Focus Burst base: x2 damage for 20 s, 120 s cooldown. Passive ranks add +0.25 multiplier each.
@@ -170,7 +173,7 @@ Settlement is a separate bottom tab between `Partners` and `Prestige`.
 - SettlementPanel should not show a combined settlement bonus summary line above building rows.
 - Settlement building cards progressively reveal: visible available building cards plus one next locked requirement card; deeper locked buildings stay hidden.
 - Settlement buildings reset on prestige, while prestige points, prestige talents, and `total_prestiges` are kept.
-- No save system is implemented; settlement state is lost on page reload.
+- Settlement state is included in local Save System v1.
 
 ## Prestige
 
@@ -203,7 +206,7 @@ Prestige is an unlockable reset in its own bottom `Prestige` tab.
 - Boss Hunter adds +5% damage against bosses per level for manual clicks, autoclick, and partners.
 - Each talent's next cost is `1 + current talent level` available prestige points.
 - Gold Bonus still doubles rewards on top of talent and settlement gold multipliers.
-- No save system is implemented; prestige state and talents are lost on page reload.
+- Prestige state and talents are included in local Save System v1.
 
 ## Shop
 
@@ -211,14 +214,14 @@ The Shop is a prototype premium-currency tab for gameplay reward testing. It is 
 
 - Bottom bar order is `Upgrades`, `Partners`, `Settlement`, `Prestige`, `Shop`.
 - Gems are the only prototype premium currency.
-- Real Yandex payments, ads, authentication, and saves are not implemented.
+- Real Yandex payments, ads, authentication, and cloud saves are not implemented.
 - `Prototype: Get 50 Gems` is a temporary dev-only button.
 - Shop products are Small Gold Pack, Large Gold Pack, Instant Combo, Boss Retry, and Task Reward Boost.
 - Small and Large Gold Packs use stage-scaled gold based on the same normal enemy reward unit used by task rewards.
 - Instant Combo fills the combo meter and starts the empowered combo state.
 - Boss Retry adds an automatic retry token for failed boss fights.
 - Task Reward Boost makes the next claimed task give x2 gold, then resets.
-- Gems and shop reward state are runtime-only until a save system is added.
+- Gems and shop reward state are local-save prototype state until real payments/save integration are explicitly added.
 - `ShopPanel` shows the temporary Gems grant and product cards only; Boss Retry tokens and Task Reward Boost still exist as runtime mechanics but are not shown as top summary rows.
 
 ## Zone Progression
@@ -329,10 +332,11 @@ Opened by the `A` button in the stage strip row. A compact popup that:
 - `scenes/main/Main.gd` - Root startup script for YandexBridge ready/gameplay calls.
 - `scenes/game/ClickerScreen.tscn` - Main gameplay screen and layout.
 - `scenes/game/ClickerScreen.gd` - Owns gameplay flow and UI updates.
-- `scenes/ui/PrimaryStatsPanel.tscn` - Compact top-centered horizontal stat overlay for gold, Gems, character level, click damage, partner DPS, and a placeholder settings button.
+- `scenes/ui/PrimaryStatsPanel.tscn` - Compact top-centered horizontal stat overlay for gold, Gems, character level, click damage, partner DPS, and the settings button.
+- `scenes/ui/SettingsWindow.tscn` - Modal settings overlay with Sound/Music placeholders, Save Now, and Reset Progress confirmation.
 - `scenes/ui/ProgressInfoPanel.tscn` - Compact progress UI for level, zone name, enemies progress, enemy name, enemy HP, and the enemy HP bar.
 - `scenes/ui/ComboPanel.tscn` - Right-side vertical runtime-only Manual Combo / Chakra Meter display for meter charge and manual damage multiplier.
-- `scenes/ui/TasksWindow.tscn` - Runtime-only modal repeatable tasks overlay with 5 active goals, dynamic level-scaled gold claim rewards, safe deferred row refresh after claim, rotation after claim, and outside-click close behavior that consumes the click.
+- `scenes/ui/TasksWindow.tscn` - Modal repeatable tasks overlay with 5 active goals, dynamic level-scaled gold claim rewards, safe deferred row refresh after claim, rotation after claim, and outside-click close behavior that consumes the click.
 - `scenes/ui/GameField.tscn` - Fullscreen tap/click attack field, muted green background placeholder, enemy placeholder states, boss timer, and defeat feedback.
 - `scenes/ui/AbilityBar.tscn` - Left-side textless placeholder-square active ability buttons.
 - `scenes/ui/BuyModeSelector.tscn` - Reusable fixed `x1` / `x10` / `x100` / `Max` selector for hero level, partner, and settlement purchase sheets.
@@ -354,4 +358,4 @@ Opened by the `A` button in the stage strip row. A compact popup that:
 
 The project is intended for Yandex Games Web export. Keep the 720x1280 portrait setup, GL Compatibility renderer, and Web-friendly Control-based UI layout.
 
-YandexBridge is present for future platform integration, but real ads, payments, saves, cloud features, authentication, heroes, loot/items, and additional enemy systems should not be added until explicitly requested.
+YandexBridge is present for future platform integration, but real ads, payments, cloud saves, cloud features, authentication, heroes, loot/items, and additional enemy systems should not be added until explicitly requested.

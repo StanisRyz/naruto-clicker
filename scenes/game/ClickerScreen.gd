@@ -47,6 +47,7 @@ const _AUTOSAVE_INTERVAL: float = 10.0
 @onready var combo_panel: ComboPanel = $ComboPanel
 @onready var tasks_button: Button = $TasksButton
 @onready var tasks_window: TasksWindow = $TasksWindow
+@onready var settings_window: SettingsWindow = $SettingsWindow
 @onready var game_field: GameField = $GameField
 @onready var ability_bar: AbilityBar = $AbilityBar
 @onready var upgrades_button: Button = $BottomBar/MarginContainer/HBoxContainer/UpgradesButton
@@ -75,6 +76,10 @@ func _ready() -> void:
 	primary_stats_panel.settings_requested.connect(_on_settings_requested)
 	tasks_button.pressed.connect(_on_tasks_button_pressed)
 	tasks_window.task_claim_requested.connect(_on_task_claim_requested)
+	settings_window.sound_toggled.connect(_on_settings_sound_toggled)
+	settings_window.music_toggled.connect(_on_settings_music_toggled)
+	settings_window.save_requested.connect(_on_settings_save_requested)
+	settings_window.reset_requested.connect(_on_settings_reset_confirmed)
 	upgrades_button.pressed.connect(_on_upgrades_button_pressed)
 	partners_button.pressed.connect(_on_partners_button_pressed)
 	settlement_button.pressed.connect(_on_settlement_button_pressed)
@@ -168,10 +173,15 @@ func _update_ui() -> void:
 	shop_sheet.update_view(state)
 	if tasks_window.visible:
 		tasks_window.refresh_progress_only(state)
+	if settings_window.visible:
+		settings_window.refresh_view(state)
 
 
 func _on_attack_requested() -> void:
 	if tasks_window.visible:
+		return
+
+	if settings_window.visible:
 		return
 
 	if enemy_transition_locked:
@@ -231,7 +241,42 @@ func _on_ability_unlock_requested(ability_id: String) -> void:
 
 
 func _on_settings_requested() -> void:
-	_handle_status_text("Settings coming soon")
+	settings_window.show_window(state)
+
+
+func _on_settings_sound_toggled(enabled: bool) -> void:
+	state.sound_enabled = enabled
+	_save_game_now()
+	settings_window.refresh_view(state)
+
+
+func _on_settings_music_toggled(enabled: bool) -> void:
+	state.music_enabled = enabled
+	_save_game_now()
+	settings_window.refresh_view(state)
+
+
+func _on_settings_save_requested() -> void:
+	if _save_game_now():
+		settings_window.show_status("Saved")
+	else:
+		settings_window.show_status("Save failed")
+
+
+func _on_settings_reset_confirmed() -> void:
+	SaveManager.delete_save()
+	state.reset_to_new_game()
+	_reset_runtime_state_for_new_game()
+	_hide_all_bottom_sheets()
+	active_bottom_tab = ""
+	if tasks_window.visible:
+		tasks_window.hide_window()
+	settings_window.refresh_view(state)
+	settings_window.show_status("Progress reset")
+	_update_ui()
+	stage_navigator.center_on_level(1)
+	_sync_boss_timer()
+	_save_game_now()
 
 
 func _on_tasks_button_pressed() -> void:
@@ -350,6 +395,28 @@ func _on_prestige_confirmed() -> void:
 
 func _on_prestige_cancelled() -> void:
 	prestige_confirm_dialog.hide()
+
+
+func _reset_runtime_state_for_new_game() -> void:
+	enemy_transition_locked = false
+	enemy_transition_token += 1
+	game_field.set_enemy_transition_locked(false)
+	boss_time_left = 0.0
+	boss_timer_active = false
+	autoclick_time_left = 0.0
+	gold_bonus_time_left = 0.0
+	focus_burst_time_left = 0.0
+	rally_time_left = 0.0
+	autoclick_cooldown_left = 0.0
+	gold_bonus_cooldown_left = 0.0
+	focus_burst_cooldown_left = 0.0
+	rally_cooldown_left = 0.0
+	autoclick_accumulator = 0.0
+	partner_damage_accumulator = 0.0
+	combo_meter_value = 0.0
+	combo_empowered_active = false
+	combo_empowered_time_left = 0.0
+	_autosave_timer = 0.0
 
 
 func _update_bottom_bar_view() -> void:
@@ -693,9 +760,9 @@ func _finish_enemy_transition_after_delay(transition_token: int) -> void:
 		_save_game_now()
 
 
-func _save_game_now() -> void:
+func _save_game_now() -> bool:
 	state.save_current_level_progress()
-	SaveManager.save_data(state.get_save_data())
+	return SaveManager.save_data(state.get_save_data())
 
 
 func _load_game_on_start() -> void:

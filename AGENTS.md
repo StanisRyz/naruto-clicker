@@ -29,12 +29,15 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - `PrimaryStatsPanel` should be centered on the viewport vertical axis and must not stretch full width.
 - `PrimaryStatsPanel` uses horizontal stat cards from left to right in this order: gold, Gems, character level, click damage, partner DPS.
 - Primary stat cards show only a temporary white `ColorRect` placeholder and the value; card backgrounds should stay transparent/invisible.
-- `PrimaryStatsPanel` includes a placeholder white-square `SettingsButton`; it should remain a stub until a real settings flow is explicitly requested.
+- `PrimaryStatsPanel` includes a white-square `SettingsButton` that opens `SettingsWindow`.
+- `SettingsWindow` is a modal overlay with Sound and Music placeholder toggles, Save Now, and Reset Progress.
+- Sound and Music toggles are persisted but do not affect audio yet because audio is not implemented.
+- Reset Progress must require confirmation, delete the local save, reset all game progress, and save a fresh new-game state.
 - The main screen does not use a general `StatusLabel`; status text may be ignored or routed through a no-op helper until a dedicated UI is requested.
 - `ProgressInfoPanel` shows level, zone name, enemies progress, enemy name, enemy HP, and a compact enemy HP bar directly under the HP text.
 - `ComboPanel` shows the runtime-only Manual Combo / Chakra Meter as a right-side vertically centered meter and should not be placed inside `PrimaryStatsPanel`, `ProgressInfoPanel`, `GameField`, bottom sheets, or bottom tabs.
 - `TasksButton` is a textless white square directly above `ComboPanel`.
-- `TasksWindow` shows exactly 5 active runtime-only tasks from a repeatable pool of 10 total tasks, with the other 5 task ids inactive.
+- `TasksWindow` shows exactly 5 active tasks from a repeatable pool of 10 total tasks, with the other 5 task ids inactive.
 - Active tasks snapshot a baseline when activated; inactive tasks must not calculate or accumulate progress.
 - Claiming a completed task gives dynamic gold, moves the claimed task back to the inactive pool, and activates one random inactive task with a fresh baseline.
 - Claimed tasks can rotate back later; tasks must never be permanently exhausted.
@@ -45,15 +48,15 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Tasks can be closed with the Close button or by clicking/tapping outside the task panel.
 - `TasksWindow` is modal while open: it must block `GameField` attacks, consume inside-panel input, and consume the outside click/tap that closes it.
 - Task claim refreshes must be deferred or otherwise input-safe so task rows are not rebuilt while the clicked Claim button is still handling input.
-- Tasks are runtime-only and not saved; do not add daily timers, ads, monetization, or new currencies to tasks yet.
-- Gems are a prototype premium currency for runtime testing only; they are not connected to real Yandex payments yet and are not saved.
+- Tasks do not add daily timers, ads, monetization, or new currencies yet.
+- Gems are a prototype premium currency for runtime testing only; they are not connected to real Yandex payments.
 - The Shop is the fifth bottom tab after Prestige and spends Gems on prototype gameplay rewards.
 - Shop products are Small Gold Pack, Large Gold Pack, Instant Combo, Boss Retry, and Task Reward Boost.
 - `Prototype: Get 50 Gems` is temporary/dev-only and must not be treated as a real payment flow.
 - Boss Retry tokens automatically retry the same failed boss level once per token.
 - Task Reward Boost doubles the next claimed task reward only once, then resets to x1.
-- Gems, Boss Retry tokens, and Task Reward Boost state are runtime-only until a save system is explicitly added.
-- Do not add real payments, ads, authentication, or save integration for Gems until explicitly requested.
+- Gems, Boss Retry tokens, and Task Reward Boost are local-save prototype state until real payments/save integration are explicitly added.
+- Do not add real payments, ads, authentication, or cloud save integration for Gems until explicitly requested.
 - Only manual player clicks fill the combo meter. Autoclick and partner DPS must not fill it.
 - Manual clicks add +1% meter charge, the meter decays by 1% per second, and every 1% meter charge gives +1% manual click damage only.
 - At 100% meter charge, an empowered state starts: manual click damage is x3 for 10 seconds, the meter stays full during the state, and the meter resets to 0 when the state ends.
@@ -264,12 +267,12 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
   - `game_ready()`
   - `gameplay_start()`
   - `gameplay_stop()`
-- Do not add ads, payments, saves, cloud features, or authentication until explicitly requested.
+- Do not add ads, payments, cloud saves, cloud features, or authentication until explicitly requested.
 - Make sure editor and desktop preview runs do not crash when Web-only APIs are unavailable.
 
 ## What Not To Add Yet
 
-- Save system
+- Cloud save system
 - Monetization
 - Ads
 - Payments
@@ -587,7 +590,7 @@ After each patch, validate manually in Godot:
 
 ## Auto-transition Rules
 
-- `ClickerState.auto_stage_advance_enabled: bool = true` — runtime flag, not saved, not reset on prestige.
+- `ClickerState.auto_stage_advance_enabled: bool = true` — saved locally, not reset on prestige.
 - `set_auto_stage_advance_enabled(enabled)` is the only setter.
 - When `auto_stage_advance_enabled` is ON and `resolve_defeated_target()` detects `did_level_up`: `current_level += 1`, `setup_current_level()`, returns `advanced_to_next_level: true`.
 - When `auto_stage_advance_enabled` is OFF and `resolve_defeated_target()` detects `did_level_up`: next level is unlocked (`max_unlocked_level` updated), `enemies_defeated_on_level = 0`, `setup_current_level()` resets the same level's target for farming, returns `advanced_to_next_level: false`.

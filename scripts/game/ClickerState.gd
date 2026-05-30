@@ -304,6 +304,8 @@ var zone_level_start: int = 1
 var zone_level_end: int = 10
 var zone_hp_multiplier: float = 1.0
 var zone_reward_multiplier: float = 1.0
+var sound_enabled: bool = true
+var music_enabled: bool = true
 
 var prestige_points_available: int = 0
 var prestige_points_total_earned: int = 0
@@ -2384,6 +2386,8 @@ func get_save_data() -> Dictionary:
 		"total_bosses_defeated": total_bosses_defeated,
 		"total_autoclick_activations": total_autoclick_activations,
 		"total_combo_empowered_activations": total_combo_empowered_activations,
+		"sound_enabled": sound_enabled,
+		"music_enabled": music_enabled,
 	}
 
 
@@ -2397,6 +2401,8 @@ func apply_save_data(data: Dictionary) -> bool:
 	current_level = maxi(1, int(data.get("current_level", 1)))
 	max_unlocked_level = maxi(current_level, int(data.get("max_unlocked_level", 1)))
 	auto_stage_advance_enabled = bool(data.get("auto_stage_advance_enabled", true))
+	sound_enabled = bool(data.get("sound_enabled", true))
+	music_enabled = bool(data.get("music_enabled", true))
 
 	cleared_level_ids.clear()
 	var raw_cleared = data.get("cleared_level_ids", {})
@@ -2554,6 +2560,8 @@ func _try_restore_tasks(data: Dictionary) -> bool:
 func reset_to_new_game() -> void:
 	gold = 0
 	gems = 0
+	sound_enabled = true
+	music_enabled = true
 	character_level = 1
 	current_level = 1
 	max_unlocked_level = 1
