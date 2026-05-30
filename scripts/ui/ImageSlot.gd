@@ -46,14 +46,16 @@ func set_fallback_color(new_color: Color) -> void:
 	color = new_color
 
 
-func set_direct_texture(texture: Texture2D, new_fallback_color: Color) -> void:
+func set_direct_texture(texture: Texture2D, new_fallback_color: Color, show_fallback_behind_texture: bool = true) -> void:
 	fallback_color = new_fallback_color
-	color = new_fallback_color
 	if _texture_view == null:
+		color = new_fallback_color
 		return
 	if texture != null:
 		_texture_view.texture = texture
 		_texture_view.visible = true
+		color = new_fallback_color if show_fallback_behind_texture else Color.TRANSPARENT
 	else:
 		_texture_view.texture = null
 		_texture_view.visible = false
+		color = new_fallback_color

@@ -54,13 +54,13 @@ func update_enemy_visual_state(state: ClickerState) -> void:
 	_current_tex = _tex_wounded if is_wounded else _tex_healthy
 
 	if enemy_transition_locked:
-		enemy_image_holder.set_direct_texture(_tex_defeated, DEFEATED_COLOR)
+		enemy_image_holder.set_direct_texture(_tex_defeated, DEFEATED_COLOR, false)
 		return
 
 	if hit_tween != null and hit_tween.is_running():
 		return
 
-	enemy_image_holder.set_direct_texture(_current_tex, current_health_color)
+	enemy_image_holder.set_direct_texture(_current_tex, current_health_color, false)
 
 
 func update_boss_timer(time_left: float, is_active: bool) -> void:
@@ -76,13 +76,13 @@ func play_hit_feedback(damage: int) -> void:
 	if hit_tween != null:
 		hit_tween.kill()
 
-	enemy_image_holder.set_direct_texture(_tex_hit, HIT_COLOR)
+	enemy_image_holder.set_direct_texture(_tex_hit, HIT_COLOR, false)
 	hit_tween = create_tween()
 	hit_tween.tween_interval(HIT_STATE_DURATION)
 	hit_tween.tween_callback(func() -> void:
 		hit_tween = null
 		if not enemy_transition_locked:
-			enemy_image_holder.set_direct_texture(_current_tex, current_health_color)
+			enemy_image_holder.set_direct_texture(_current_tex, current_health_color, false)
 	)
 
 
@@ -91,7 +91,7 @@ func play_defeat_feedback(level_up: bool, zone_changed: bool = false) -> void:
 		hit_tween.kill()
 		hit_tween = null
 
-	enemy_image_holder.set_direct_texture(_tex_defeated, DEFEATED_COLOR)
+	enemy_image_holder.set_direct_texture(_tex_defeated, DEFEATED_COLOR, false)
 
 	if zone_changed:
 		defeat_feedback_label.text = "New Zone!"
@@ -116,9 +116,9 @@ func set_enemy_transition_locked(is_locked: bool) -> void:
 		if hit_tween != null:
 			hit_tween.kill()
 			hit_tween = null
-		enemy_image_holder.set_direct_texture(_tex_defeated, DEFEATED_COLOR)
+		enemy_image_holder.set_direct_texture(_tex_defeated, DEFEATED_COLOR, false)
 	else:
-		enemy_image_holder.set_direct_texture(_current_tex, current_health_color)
+		enemy_image_holder.set_direct_texture(_current_tex, current_health_color, false)
 
 
 func _refresh_enemy_textures(zone_index: int, enemy_slot: String) -> void:
