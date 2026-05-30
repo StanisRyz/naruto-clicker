@@ -39,8 +39,18 @@ static func buy_shop_product(state: ClickerState, product_id: String) -> Diction
 
 	match reward_type:
 		"gold":
-			var reward_scale: int = int(product.get("reward_scale", 0))
-			var shop_gold: int = maxi(1, state.get_current_task_reward_unit() * reward_scale)
+			# ETV formula: gold = (enemy_reward / TTK_seconds) * etv_seconds
+			# etv_seconds comes from BalanceConfig per product id; fallback uses reward_scale.
+			var base_reward_unit: int = state.get_current_task_reward_unit()
+			var shop_gold: int
+			match product_id:
+				"gold_pack_small":
+					shop_gold = maxi(1, ceili(float(base_reward_unit) / BalanceConfig.TASK_BASELINE_TTK_SECONDS * BalanceConfig.SHOP_SMALL_GOLD_ETV_SECONDS))
+				"gold_pack_large":
+					shop_gold = maxi(1, ceili(float(base_reward_unit) / BalanceConfig.TASK_BASELINE_TTK_SECONDS * BalanceConfig.SHOP_LARGE_GOLD_ETV_SECONDS))
+				_:
+					var reward_scale: int = int(product.get("reward_scale", 0))
+					shop_gold = maxi(1, base_reward_unit * reward_scale)
 			state.gold += shop_gold
 			result["reward_gold"] = shop_gold
 			result["status_text"] = "%s purchased! +%d gold" % [product_name, shop_gold]

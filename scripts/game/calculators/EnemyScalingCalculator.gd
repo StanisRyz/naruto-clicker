@@ -2,16 +2,18 @@ class_name EnemyScalingCalculator
 extends RefCounted
 
 
-static func get_base_hp(level: int, base: int, linear: float, curve: float, power: float) -> int:
-	var stage: float = float(maxi(0, level - 1))
-	var hp: float = float(base) + linear * stage + curve * pow(stage, power)
-	return maxi(1, ceili(hp))
+# --- Base enemy HP — exponential ---
+# hp(level) = base * growth^(level-1)
+static func get_base_hp(level: int, base: float, growth: float) -> int:
+	var stage: int = maxi(0, level - 1)
+	return maxi(1, ceili(base * pow(growth, float(stage))))
 
 
-static func get_base_reward(level: int, base: int, linear: float, curve: float, power: float) -> int:
-	var stage: float = float(maxi(0, level - 1))
-	var reward: float = float(base) + linear * stage + curve * pow(stage, power)
-	return maxi(1, ceili(reward))
+# --- Base enemy reward — exponential ---
+# reward(level) = base * growth^(level-1)
+static func get_base_reward(level: int, base: float, growth: float) -> int:
+	var stage: int = maxi(0, level - 1)
+	return maxi(1, ceili(base * pow(growth, float(stage))))
 
 
 static func get_scaled_hp(

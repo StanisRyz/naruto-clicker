@@ -65,20 +65,6 @@ var purchased_hero_skill_ids: Array[String] = []
 var purchased_ability_skill_ids: Array[String] = []
 var milestone_multiplier_per_reached: int = BalanceConfig.MILESTONE_MULTIPLIER_PER_REACHED
 var milestone_cost_multiplier: int = BalanceConfig.MILESTONE_COST_MULTIPLIER
-var character_cost_base: int = BalanceConfig.HERO_COST_BASE
-var character_cost_linear: float = BalanceConfig.HERO_COST_LINEAR
-var character_cost_curve: float = BalanceConfig.HERO_COST_CURVE
-var character_cost_power: float = BalanceConfig.HERO_COST_POWER
-var partner_cost_curve_multiplier: float = BalanceConfig.PARTNER_COST_CURVE_MULT
-var partner_cost_power: float = BalanceConfig.PARTNER_COST_POWER
-var enemy_hp_base: int = BalanceConfig.ENEMY_HP_BASE
-var enemy_hp_linear: float = BalanceConfig.ENEMY_HP_LINEAR
-var enemy_hp_curve: float = BalanceConfig.ENEMY_HP_CURVE
-var enemy_hp_power: float = BalanceConfig.ENEMY_HP_POWER
-var enemy_reward_base: int = BalanceConfig.ENEMY_REWARD_BASE
-var enemy_reward_linear: float = BalanceConfig.ENEMY_REWARD_LINEAR
-var enemy_reward_curve: float = BalanceConfig.ENEMY_REWARD_CURVE
-var enemy_reward_power: float = BalanceConfig.ENEMY_REWARD_POWER
 var building_counts: Array[int] = []
 var building_bonus_percent_per_level: int = BalanceConfig.BUILDING_BONUS_PERCENT_PER_LEVEL
 var building_purchase_costs: Array[int] = []
@@ -1395,10 +1381,12 @@ func _get_character_level_bulk_cost_for_count(count: int) -> int:
 func _get_character_level_cost_for_level(level: int) -> int:
 	return CostCalc.get_hero_level_cost(
 		level,
-		character_cost_base,
-		character_cost_linear,
-		character_cost_curve,
-		character_cost_power,
+		BalanceConfig.HERO_BASE_COST,
+		BalanceConfig.HERO_COST_GROWTH_EARLY,
+		BalanceConfig.HERO_COST_GROWTH_MID,
+		BalanceConfig.HERO_COST_GROWTH_LATE,
+		BalanceConfig.HERO_COST_MID_START_LEVEL,
+		BalanceConfig.HERO_COST_LATE_START_LEVEL,
 		BalanceConfig.MILESTONE_LEVELS,
 		milestone_cost_multiplier
 	)
@@ -1422,9 +1410,11 @@ func _get_partner_cost_for_count(partner_index: int, count: int) -> int:
 		partner_index,
 		count,
 		BalanceConfig.PARTNER_BASE_COSTS,
-		BalanceConfig.PARTNER_COST_STEPS,
-		partner_cost_curve_multiplier,
-		partner_cost_power,
+		BalanceConfig.PARTNER_COST_GROWTH_EARLY,
+		BalanceConfig.PARTNER_COST_GROWTH_MID,
+		BalanceConfig.PARTNER_COST_GROWTH_LATE,
+		BalanceConfig.PARTNER_COST_MID_START_COUNT,
+		BalanceConfig.PARTNER_COST_LATE_START_COUNT,
 		BalanceConfig.MILESTONE_LEVELS,
 		milestone_cost_multiplier
 	)
@@ -1464,7 +1454,7 @@ func _get_building_cost_for_count(building_index: int, count: int) -> int:
 		building_index,
 		count,
 		BalanceConfig.BUILDING_BASE_COSTS,
-		BalanceConfig.BUILDING_COST_STEPS
+		BalanceConfig.BUILDING_COST_GROWTH
 	)
 
 
@@ -1699,11 +1689,11 @@ func recalculate_level_values() -> void:
 
 
 func get_base_enemy_hp_for_level(level: int) -> int:
-	return EnemyCalc.get_base_hp(level, enemy_hp_base, enemy_hp_linear, enemy_hp_curve, enemy_hp_power)
+	return EnemyCalc.get_base_hp(level, BalanceConfig.ENEMY_HP_BASE, BalanceConfig.ENEMY_HP_GROWTH)
 
 
 func get_base_enemy_reward_for_level(level: int) -> int:
-	return EnemyCalc.get_base_reward(level, enemy_reward_base, enemy_reward_linear, enemy_reward_curve, enemy_reward_power)
+	return EnemyCalc.get_base_reward(level, BalanceConfig.ENEMY_REWARD_BASE, BalanceConfig.ENEMY_REWARD_GROWTH)
 
 
 func get_current_zone_index() -> int:

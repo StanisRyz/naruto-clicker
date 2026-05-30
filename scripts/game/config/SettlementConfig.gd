@@ -25,9 +25,3 @@ static func get_base_cost(index: int) -> int:
 	if index < 0 or index >= BalanceConfig.BUILDING_BASE_COSTS.size():
 		return 0
 	return BalanceConfig.BUILDING_BASE_COSTS[index]
-
-
-static func get_cost_step(index: int) -> int:
-	if index < 0 or index >= BalanceConfig.BUILDING_COST_STEPS.size():
-		return 0
-	return BalanceConfig.BUILDING_COST_STEPS[index]
