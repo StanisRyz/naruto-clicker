@@ -458,6 +458,11 @@ After each patch, validate manually in Godot:
 - Prestige resets max_unlocked_level to 1.
 - StageNavigator scroll left stops when stage 1 is leftmost visible.
 - StageNavigator scroll right stops when rightmost visible is max_unlocked_level + 3.
+- Manually scrolling left from current level does not snap the view back to current level.
+- Player can scroll all the way back to stage 1 even when current level is high.
+- Mouse wheel over StageNavigator scrolls the strip and does not attack the enemy.
+- Dragging/swiping StageNavigator horizontally scrolls the strip without triggering stage travel.
+- Drag right reveals earlier stages; drag left reveals later stages.
 - StageNavigator clicks do not attack the enemy.
 - Enemy transition lock blocks travel requests.
 - Hero level 9 has damage 9 before other multipliers.
@@ -555,7 +560,7 @@ After each patch, validate manually in Godot:
 - Button color states: blue = current stage, white = unlocked, gray = locked.
 - Clicking an unlocked (white) stage emits `stage_selected(level)` and triggers `travel_to_level` in `ClickerScreen`.
 - Clicking the current (blue) stage or a locked (gray) stage does nothing.
-- `StageNavigator` clicks must not propagate to `GameField` and must not trigger attacks.
+- `StageNavigator` clicks, wheel, and drag must not propagate to `GameField` and must not trigger attacks.
 - `max_unlocked_level` in `ClickerState` tracks the highest stage naturally reached.
 - `max_unlocked_level` updates with `maxi(max_unlocked_level, current_level)` every time `current_level` increases in `resolve_defeated_target()`.
 - `max_unlocked_level` is not reduced by traveling backward, boss fail, or anything other than prestige.
@@ -563,11 +568,19 @@ After each patch, validate manually in Godot:
 - `can_travel_to_level(level)` returns true when `level >= 1` and `level <= max_unlocked_level`.
 - `travel_to_level(level)` sets `current_level`, resets `enemies_defeated_on_level` to 0, calls `setup_current_level()`, and returns a result dict with `"travelled": true`.
 - Traveling does not grant gold, does not count defeated enemies, and does not modify character/partner/settlement/prestige state.
-- After travel in `ClickerScreen._on_stage_selected`: reset `partner_damage_accumulator` and `autoclick_accumulator`, increment `enemy_transition_token` (invalidates in-flight transitions), call `_sync_boss_timer()`, then `_update_ui()` and `game_field.update_view(state)`.
+- After travel in `ClickerScreen._on_stage_selected`: reset `partner_damage_accumulator` and `autoclick_accumulator`, increment `enemy_transition_token` (invalidates in-flight transitions), call `stage_navigator.center_on_level(level)`, then `_sync_boss_timer()`, `_update_ui()`, and `game_field.update_view(state)`.
+- After prestige in `ClickerScreen._on_prestige_confirmed`: call `stage_navigator.center_on_level(1)` before `_update_ui()`.
 - Scroll left is disabled when `visible_center_level - SIDE_COUNT <= 1` (stage 1 is already leftmost).
 - Scroll right is disabled when `visible_center_level + SIDE_COUNT >= max_unlocked_level + SIDE_COUNT` (rightmost visible would exceed `max_unlocked_level + 3`).
-- Navigator center snaps to show `current_level` whenever it falls outside the visible 7-button window.
-- `ClickerScreen._update_ui()` calls `stage_navigator.update_view(state.current_level, state.max_unlocked_level)`.
+- `update_view(current_level, max_unlocked_level)` must NOT auto-snap `visible_center_level` to `current_level` on every call. It only sets the center once on the very first call (`_has_initialized_view` guard), then only clamps and refreshes.
+- `center_on_level(level)` sets `visible_center_level`, clamps, and refreshes. Call it only when intentional centering is required (initial setup, after travel, after prestige).
+- `ClickerScreen._update_ui()` calls `stage_navigator.update_view(state.current_level, state.max_unlocked_level)` without forcing a re-center.
+- The stage strip can be scrolled with left/right buttons, mouse wheel (up/left = scroll left, down/right = scroll right), and horizontal drag/swipe.
+- Dragging right reveals earlier stages; dragging left reveals later stages.
+- Drag threshold for scroll step is 36 px; drag movement threshold to suppress button click is 8 px.
+- Dragging must not accidentally emit `stage_selected`; the `_drag_moved` flag suppresses button presses when drag distance exceeds the movement threshold.
+- Mouse wheel is handled via `_gui_input` with `accept_event()` to prevent wheel events from reaching `GameField`.
+- Drag is tracked via `_input` using `get_global_rect().has_point` to restrict drag initiation to the navigator area.
 
 ## Documentation Update Rules
 

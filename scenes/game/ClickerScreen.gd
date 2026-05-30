@@ -308,6 +308,7 @@ func _on_prestige_confirmed() -> void:
 	combo_empowered_active = false
 	combo_empowered_time_left = 0.0
 	_handle_status_text(result.get("status_text", ""))
+	stage_navigator.center_on_level(1)
 	_update_ui()
 	_sync_boss_timer()
 
@@ -600,6 +601,7 @@ func _on_stage_selected(level: int) -> void:
 	autoclick_accumulator = 0.0
 	enemy_transition_token += 1
 	game_field.set_enemy_transition_locked(false)
+	stage_navigator.center_on_level(level)
 	_sync_boss_timer()
 	_update_ui()
 	game_field.update_view(state)

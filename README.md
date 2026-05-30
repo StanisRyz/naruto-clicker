@@ -256,7 +256,6 @@ The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes
 The "Naruto Clicker" title has been replaced by a horizontal Stage Navigator row at the top of `MainContent`.
 
 - Displays 7 small square buttons (40×40) centered on the current stage.
-- Scroll left `<` / right `>` buttons shift the visible window one step at a time.
 - Button color states:
   - **Blue** — current selected stage.
   - **White** — unlocked/opened stage (reachable for farming).
@@ -266,6 +265,20 @@ The "Naruto Clicker" title has been replaced by a horizontal Stage Navigator row
 - Traveling resets the current enemy, enemies-defeated counter, and boss timer.
 - Traveling to a previous boss level starts the boss timer again (farmable).
 - Clearing a traveled level advances normally: defeat required enemies → level +1.
+
+### Scrolling
+
+The stage strip can be scrolled three ways:
+
+- **Left/right buttons** (`<` / `>`) — shift the visible window one step at a time.
+- **Mouse wheel** — wheel up/left scrolls left; wheel down/right scrolls right.
+- **Drag/swipe** — drag or swipe horizontally; dragging right reveals earlier stages, dragging left reveals later stages. Dragging does not accidentally trigger stage travel.
+
+### Scroll position
+
+- Manual scrolling is always preserved. Normal UI updates (`update_view`) do not auto-center the strip.
+- The first time the navigator displays, it centers on `current_level`.
+- `center_on_level(level)` is called explicitly after a travel action and after prestige to snap the strip to the new position.
 
 ### Scroll bounds
 
