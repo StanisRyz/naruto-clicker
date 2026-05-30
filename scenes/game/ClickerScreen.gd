@@ -148,13 +148,32 @@ func _process(delta: float) -> void:
 
 func _update_ui() -> void:
 	_update_bottom_bar_view()
+	_update_main_hud()
+	_update_stage_ui()
+	_update_combat_ui()
+	_update_ability_bar()
+	_update_active_sheet()
+	_update_tasks_if_visible()
+	_update_settings_if_visible()
+
+
+func _update_main_hud() -> void:
 	primary_stats_panel.update_view(state)
-	stage_navigator.update_view(state.current_level, state.max_unlocked_level)
-	stage_navigator.set_auto_transition_enabled(state.auto_stage_advance_enabled)
 	progress_info_panel.update_view(state)
 	_update_combo_panel()
+
+
+func _update_stage_ui() -> void:
+	stage_navigator.update_view(state.current_level, state.max_unlocked_level)
+	stage_navigator.set_auto_transition_enabled(state.auto_stage_advance_enabled)
+
+
+func _update_combat_ui() -> void:
 	game_field.update_view(state)
 	game_field.update_boss_timer(boss_time_left, boss_timer_active)
+
+
+func _update_ability_bar() -> void:
 	ability_bar.update_view(
 		state,
 		autoclick_time_left,
@@ -166,13 +185,28 @@ func _update_ui() -> void:
 		focus_burst_cooldown_left,
 		rally_cooldown_left
 	)
-	upgrade_sheet.update_view(state)
-	partner_sheet.update_view(state)
-	settlement_sheet.update_view(state)
-	prestige_sheet.update_view(state)
-	shop_sheet.update_view(state)
+
+
+func _update_active_sheet() -> void:
+	match active_bottom_tab:
+		"upgrades":
+			upgrade_sheet.update_view(state)
+		"partners":
+			partner_sheet.update_view(state)
+		"settlement":
+			settlement_sheet.update_view(state)
+		"prestige":
+			prestige_sheet.update_view(state)
+		"shop":
+			shop_sheet.update_view(state)
+
+
+func _update_tasks_if_visible() -> void:
 	if tasks_window.visible:
 		tasks_window.refresh_progress_only(state)
+
+
+func _update_settings_if_visible() -> void:
 	if settings_window.visible:
 		settings_window.refresh_view(state)
 
@@ -448,6 +482,7 @@ func _toggle_bottom_sheet(tab_name: String) -> void:
 			shop_sheet.show_sheet()
 
 	active_bottom_tab = tab_name
+	_update_active_sheet()
 	_update_bottom_bar_view()
 
 
@@ -496,7 +531,8 @@ func _apply_attack_result(result: Dictionary, show_hit_feedback: bool, was_boss_
 	if show_hit_feedback:
 		game_field.play_hit_feedback(result.get("damage_dealt", 0))
 	_handle_status_text(result.get("status_text", ""))
-	_update_ui()
+	progress_info_panel.update_view(state)
+	game_field.update_view(state)
 	_sync_boss_timer()
 
 
@@ -708,7 +744,6 @@ func _on_stage_selected(level: int) -> void:
 	game_field.set_enemy_transition_locked(false)
 	_sync_boss_timer()
 	_update_ui()
-	game_field.update_view(state)
 	_save_game_now()
 
 
@@ -755,7 +790,6 @@ func _finish_enemy_transition_after_delay(transition_token: int) -> void:
 		stage_navigator.center_on_level(state.current_level)
 	_update_ui()
 	_sync_boss_timer()
-	game_field.update_view(state)
 	if result.get("level_unlocked", false):
 		_save_game_now()
 
