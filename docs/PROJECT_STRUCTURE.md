@@ -15,16 +15,18 @@ naruto-clicker/
 │   │   ├── ClickerState.gd         # Runtime state, economy formulas, and gameplay API
 │   │   ├── BalanceConfig.gd        # Central economy coefficients; ClickerState and config files read from here
 │   │   ├── ProgressionSimulator.gd # Debug-only: estimates progression curves without saving
-│   │   └── config/                 # Static game definitions (no runtime state, no SaveManager)
-│   │       ├── ZoneConfig.gd       # ZONE_DATA: zone names, level ranges, enemy lists, multipliers
-│   │       ├── PartnerConfig.gd    # Partner names; DPS/costs delegate to BalanceConfig
-│   │       ├── PartnerSkillConfig.gd # All 65 partner skill definitions (13 partners × 5 skills)
-│   │       ├── HeroSkillConfig.gd  # 5 hero passive skill definitions
-│   │       ├── AbilityConfig.gd    # 20 ability rank skill definitions + unlock/cost helpers
-│   │       ├── SettlementConfig.gd # Building names and bonus types; costs delegate to BalanceConfig
-│   │       ├── PrestigeConfig.gd   # Prestige talent names and bonus types
-│   │       ├── TaskConfig.gd       # 10 task definitions (id, goal type, target delta, reward scale)
-│   │       └── ShopConfig.gd       # 5 shop product definitions
+│   │   ├── config/                 # Static game definitions (no runtime state, no SaveManager)
+│   │   │   ├── ZoneConfig.gd       # ZONE_DATA: zone names, level ranges, enemy lists, multipliers
+│   │   │   ├── PartnerConfig.gd    # Partner names; DPS/costs delegate to BalanceConfig
+│   │   │   ├── PartnerSkillConfig.gd # All 65 partner skill definitions (13 partners × 5 skills)
+│   │   │   ├── HeroSkillConfig.gd  # 5 hero passive skill definitions
+│   │   │   ├── AbilityConfig.gd    # 20 ability rank skill definitions + unlock/cost helpers
+│   │   │   ├── SettlementConfig.gd # Building names and bonus types; costs delegate to BalanceConfig
+│   │   │   ├── PrestigeConfig.gd   # Prestige talent names and bonus types
+│   │   │   ├── TaskConfig.gd       # 10 task definitions (id, goal type, target delta, reward scale)
+│   │   │   └── ShopConfig.gd       # 5 shop product definitions
+│   │   └── save/                   # Save serialization layer (no gameplay logic, no file IO)
+│   │       └── ClickerStateSaveAdapter.gd # Builds and applies Save System v1 dictionaries
 │   └── ui/
 │       ├── GameAssetCatalog.gd       # Central registry: all UI image keys → file paths
 │       ├── ImageSlot.gd              # Drop-in ColorRect with texture + fallback color
@@ -113,6 +115,7 @@ naruto-clicker/
 - **Asset catalogs** (GameAssetCatalog, EnemyAssetCatalog, BackgroundAssetCatalog) are stateless helpers — they build paths and load textures but hold no runtime state.
 - **ImageSlot** is a drop-in ColorRect replacement. Missing image files never crash — it falls back to the placeholder color.
 - **SaveManager** writes atomically: temp file then rename. It validates `save_version` and exposes `migrate_save_data()` for future format upgrades.
+- **ClickerStateSaveAdapter** (`scripts/game/save/`) handles serialization only — it builds and applies Save System v1 dictionaries. ClickerState keeps the public `get_save_data`/`apply_save_data` API; callers do not need to know about the adapter.
 
 ## Config file rules
 

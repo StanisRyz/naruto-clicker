@@ -27,6 +27,8 @@ Naruto Clicker is a vertical idle/clicker game targeting Web / Yandex Games, wit
 - To add a new task, partner skill, or shop product, edit the matching config file in `scripts/game/config/`.
 - Do not add new static data arrays to ClickerState.gd; put them in the appropriate config file instead.
 - Numeric balance values (costs, DPS, multipliers) belong in BalanceConfig, not in config files.
+- Save serialization (building/reading save dictionaries) lives in `scripts/game/save/ClickerStateSaveAdapter.gd`. Do not add save field logic to ClickerState or SaveManager directly.
+- Save field names (keys in the save dictionary) are part of Save System v1 and must not be renamed without a migration.
 - Keep `PrimaryStatsPanel`, `ProgressInfoPanel`, `GameField`, and `UpgradePanel` as focused UI components.
 - Main screen primary stats and progress info are independent UI components; do not use a combined `StatsPanel` for new main screen UI.
 - `PrimaryStatsPanel` shows only gold, Gems, character level, click damage, and partner DPS numeric stat cards.
