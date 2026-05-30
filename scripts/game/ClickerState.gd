@@ -1607,15 +1607,6 @@ func _sync_ability_rank_fields() -> void:
 	rally_rank = get_ability_rank("rally")
 
 
-func _get_legacy_ability_rank(ability_id: String) -> int:
-	match ability_id:
-		"autoclick": return autoclick_rank
-		"gold_bonus": return gold_bonus_rank
-		"focus_burst": return focus_burst_rank
-		"rally": return rally_rank
-	return 0
-
-
 func is_ability_purchased(ability_id: String) -> bool:
 	match ability_id:
 		"autoclick": return autoclick_purchased

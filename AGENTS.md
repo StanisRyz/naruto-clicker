@@ -4,7 +4,7 @@ Development rules for AI coding agents working on this repository.
 
 ## Project Context
 
-Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targeting Web / Yandex Games. The project should stay small, stable, and easy to validate.
+Naruto Clicker is a vertical idle/clicker game targeting Web / Yandex Games, with an Android export also configured. The project should stay small, stable, and easy to validate.
 
 ## Tech Stack
 
@@ -233,7 +233,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Enemy, elite enemy, and boss names come from the active zone; do not hard-code "Enemy" or "Boss" strings.
 - Zone transition is detected in `attack_with_damage()` and included in the result dict as `zone_changed` and `zone_name`.
 - Status text priority on level-up: zone change > boss defeated > normal level up.
-- No background images or audio assets should be added for zones.
+- No audio assets should be added for zones yet; audio is not implemented.
 - Prefer small, safe, isolated patches.
 - Preserve existing project settings unless the task requires a specific change.
 
@@ -559,7 +559,7 @@ After each patch, validate manually in Godot:
 ## Stage Navigator Rules
 
 - `StageNavigator` replaces the "Naruto Clicker" `TitleLabel` in `MainContent/VBoxContainer`.
-- It shows exactly 7 stage buttons (40×40 ColorRect-backed squares) at a time.
+- It shows exactly 7 stage buttons (60×60 ImageSlot-backed squares) at a time.
 - Button color states: blue = current stage, white = unlocked, gray = locked.
 - Clicking an unlocked (white) stage emits `stage_selected(level)` and triggers `travel_to_level` in `ClickerScreen`.
 - Clicking the current (blue) stage or a locked (gray) stage does nothing.
@@ -567,7 +567,7 @@ After each patch, validate manually in Godot:
 - There are no left/right step-scroll arrow buttons. The strip is scrolled only via mouse wheel and drag/swipe.
 - To the right of the 7 stage buttons: a **latest button** (`>>`, yellow) and an **auto-transition button** (`A`, green/gray).
 - The latest button emits `latest_requested`; `ClickerScreen` responds by calling `stage_navigator.center_on_latest_level()`.
-- The auto-transition button emits `auto_transition_popup_requested(anchor_global_position)` with its own `global_position`; `ClickerScreen` opens `AutoTransitionPopup`.
+- The auto-transition button emits `auto_transition_popup_requested(anchor_global_position: Vector2, button_global_rect: Rect2)` with its own global position; `ClickerScreen` immediately toggles `auto_stage_advance_enabled`, updates the navigator color, and opens `AutoTransitionPopup` as an info popup.
 - `center_on_latest_level()` sets `visible_center_level = max_unlocked_level`, clamps, and refreshes.
 - `set_auto_transition_enabled(enabled)` updates `_auto_btn_rect.color`: green when ON, gray when OFF.
 - `max_unlocked_level` in `ClickerState` tracks the highest stage naturally reached.
@@ -600,7 +600,9 @@ After each patch, validate manually in Godot:
 - Task counters (`total_enemies_defeated`, `total_bosses_defeated`, etc.) are always incremented regardless of auto-transition.
 - `game_level_delta` tasks track `current_level`; farming the same level with auto OFF does not advance these tasks.
 - `AutoTransitionPopup` is a full-screen Control overlay (mouse_filter STOP when visible, PASS when hidden). The inner PanelContainer has mouse_filter STOP. Outside clicks close the popup via `_gui_input` checking `_panel.get_global_rect().has_point`.
-- Popup signals: `auto_transition_toggled(enabled: bool)`. ClickerScreen calls `state.set_auto_stage_advance_enabled(enabled)`, `auto_transition_popup.refresh_view(state)`, `stage_navigator.set_auto_transition_enabled(enabled)`, `_update_ui()`.
+- The popup is info-only: it shows current ON/OFF status and has only a close button. There is no toggle button inside the popup.
+- Pressing the `A` button triggers `ClickerScreen._toggle_auto_transition_and_show_popup()`, which immediately toggles `auto_stage_advance_enabled`, calls `stage_navigator.set_auto_transition_enabled()`, `_update_ui()`, and then opens the popup.
+- Popup signals: `auto_button_pressed_through(anchor: Vector2, button_global_rect: Rect2)` — emitted when the user clicks the `A` button area while the popup is already visible, re-triggering the same toggle+show flow.
 
 ## Image Asset System Rules
 

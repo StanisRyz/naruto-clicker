@@ -4,7 +4,7 @@ Naruto Clicker is a vertical idle/clicker game prototype for Yandex Games.
 
 ## Status
 
-Early setup/prototype. The project currently has a playable clicker loop, local Save System v1, and a YandexBridge autoload as a future integration point.
+Pre-release. The project has a complete clicker loop with all major gameplay systems working: partners, settlement, prestige, shop, tasks, active abilities, stage navigation, auto-transition, Save System v1, SettingsWindow with Reset Progress, and exports configured for Web (Yandex Games) and Android.
 
 Heroes, loot/items, ads, cloud saves, and real-money payments are intentionally not implemented yet.
 
@@ -258,7 +258,7 @@ The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes
 
 The "Naruto Clicker" title has been replaced by a horizontal Stage Navigator row at the top of `MainContent`.
 
-- Displays 7 small square buttons (40×40) centered on the current stage.
+- Displays 7 small square buttons (60×60) centered on the current stage.
 - Button color states:
   - **Blue** — current selected stage.
   - **White** — unlocked/opened stage (reachable for farming).
@@ -273,7 +273,7 @@ The "Naruto Clicker" title has been replaced by a horizontal Stage Navigator row
 To the right of the 7 stage buttons:
 
 - **Latest button** (`>>`, yellow) — jumps the visible strip to `max_unlocked_level`. Does not travel there; only scrolls the view.
-- **Auto-transition button** (`A`) — opens the Auto-transition popup. Green when ON, gray when OFF.
+- **Auto-transition button** (`A`) — immediately toggles Auto-transition ON/OFF and opens the info popup. Green when ON, gray when OFF.
 
 ### Scrolling
 
@@ -318,16 +318,17 @@ Controls whether the game automatically moves to the next level after a stage is
 
 ### Auto-transition popup
 
-Opened by the `A` button in the stage strip row. A compact popup that:
+Pressing the `A` button immediately toggles Auto-transition ON/OFF and then opens a compact info popup. The popup:
 - Shows the current status (ON / OFF).
-- Has a toggle button to switch the state.
 - Closes with the X button or by clicking outside the popup.
 - Clicking inside the popup does not attack the GameField.
+- The popup is info-only; the toggle happens the moment the `A` button is pressed.
 
 ## Project Structure
 
 - `project.godot` - Godot project settings, main scene, display, renderer, and autoload configuration.
 - `autoload/YandexBridge.gd` - Yandex Games integration placeholder/autoload.
+- `autoload/SaveManager.gd` - Local save autoload. Atomic JSON write to `user://save_v1.json`, version validation, and migration hook.
 - `scenes/main/Main.tscn` - App/root scene. It hosts the clicker screen and remains the project main scene.
 - `scenes/main/Main.gd` - Root startup script for YandexBridge ready/gameplay calls.
 - `scenes/game/ClickerScreen.tscn` - Main gameplay screen and layout.
@@ -351,7 +352,7 @@ Opened by the `A` button in the stage strip row. A compact popup that:
 - `scenes/ui/PrestigeSheet.tscn` - Bottom-half prestige sheet with header prestige points and the opaque confirmation dialog.
 - `scenes/ui/ShopPanel.tscn` - Prototype shop panel with product cards and a temporary test Gems grant.
 - `scenes/ui/ShopSheet.tscn` - Bottom-half shop sheet with header Gems that hosts ShopPanel.
-- `scripts/game/ClickerState.gd` - Temporary prototype state and formulas.
+- `scripts/game/ClickerState.gd` - Prototype state, economy formulas, and all static game data arrays.
 - `scenes/ui/StageNavigator.tscn` / `StageNavigator.gd` - Horizontal 7-button stage navigator; replaces the "Naruto Clicker" title label.
 
 ## Image Asset System
@@ -486,3 +487,7 @@ No code changes are needed.
 The project is intended for Yandex Games Web export. Keep the 720x1280 portrait setup, GL Compatibility renderer, and Web-friendly Control-based UI layout.
 
 YandexBridge is present for future platform integration, but real ads, payments, cloud saves, cloud features, authentication, heroes, loot/items, and additional enemy systems should not be added until explicitly requested.
+
+## Android Export Notes
+
+An Android export preset is configured in `export_presets.cfg` targeting `arm64-v8a`. The export path is `../../godot_apk/narclick/naruto.apk`. No Android-specific APIs are used; the GL Compatibility renderer and Control-based UI are compatible with Android.

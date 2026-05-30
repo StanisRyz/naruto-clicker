@@ -1,0 +1,114 @@
+# Project Structure
+
+Reference guide for the Naruto Clicker project layout. Intended for future refactors and onboarding.
+
+## Directory Map
+
+```
+naruto-clicker/
+├── autoload/               # Godot autoloads (always-available singletons)
+│   ├── SaveManager.gd      # Local save: atomic JSON write, version check, migration hook
+│   └── YandexBridge.gd     # Yandex Games SDK placeholder; no-ops outside Web export
+│
+├── scripts/
+│   ├── game/
+│   │   └── ClickerState.gd # All prototype state, economy formulas, and static game data
+│   └── ui/
+│       ├── GameAssetCatalog.gd       # Central registry: all UI image keys → file paths
+│       ├── ImageSlot.gd              # Drop-in ColorRect with texture + fallback color
+│       ├── EnemyAssetCatalog.gd      # Per-enemy/per-state image path helpers
+│       └── BackgroundAssetCatalog.gd # Per-zone background image path helpers
+│
+├── scenes/
+│   ├── main/
+│   │   ├── Main.tscn   # App/root scene
+│   │   └── Main.gd     # Root startup: YandexBridge ready/gameplay calls
+│   ├── game/
+│   │   ├── ClickerScreen.tscn  # Main gameplay screen and layout
+│   │   └── ClickerScreen.gd    # Owns gameplay flow and all UI update calls
+│   └── ui/             # All UI panels, sheets, and popups (see below)
+│
+├── assets/
+│   └── images/
+│       ├── ui/           # Core UI icons (gold, gems, hero level, etc.)
+│       ├── game/         # Game-field images (field background, enemy defaults)
+│       ├── abilities/    # Ability button icons
+│       ├── upgrades/     # Upgrade card icons
+│       ├── partners/
+│       │   └── skills/   # Partner skill icons
+│       ├── buildings/    # Settlement building icons
+│       ├── prestige/     # Prestige action + talent icons
+│       ├── shop/         # Shop product icons
+│       ├── tasks/        # Task type icons
+│       ├── enemies/
+│       │   ├── zone_01/  # Zone 1 (levels 1–10)
+│       │   │   ├── enemy_01/ … enemy_03/   # Normal enemies (healthy/hit/wounded/defeated)
+│       │   │   ├── elite_01/               # Elite enemy
+│       │   │   └── boss_01/                # Boss
+│       │   ├── zone_02/ … zone_04/         # Same structure for each zone
+│       └── backgrounds/
+│           ├── zone_01/  # background.png for Training Grounds
+│           ├── zone_02/  # Forest Path
+│           ├── zone_03/  # Stone Valley
+│           └── zone_04/  # Shadow Camp
+│
+├── docs/
+│   └── PROJECT_STRUCTURE.md  # This file
+│
+├── export_presets.cfg   # Web (Yandex) and Android export configurations
+├── project.godot        # Engine settings, autoloads, display, renderer
+├── README.md            # Gameplay documentation and system reference
+└── AGENTS.md            # Development rules for AI coding agents
+```
+
+## scenes/ui/ — UI component inventory
+
+| File | Purpose |
+|------|---------|
+| `PrimaryStatsPanel.tscn/.gd` | Compact top-centered stat overlay (gold, gems, level, damage, DPS, settings) |
+| `ProgressInfoPanel.tscn/.gd` | Level, zone, enemy name, HP bar |
+| `ComboPanel.tscn/.gd` | Right-side vertical combo/chakra meter |
+| `GameField.tscn/.gd` | Fullscreen tap/click layer; enemy and background visuals |
+| `AbilityBar.tscn/.gd` | Left-side active ability buttons |
+| `StageNavigator.tscn/.gd` | Horizontal 7-button stage strip with scroll/drag |
+| `AutoTransitionPopup.tscn/.gd` | Info-only popup showing auto-transition ON/OFF status |
+| `SettingsWindow.tscn/.gd` | Modal: sound/music toggles, Save Now, Reset Progress |
+| `TasksWindow.tscn/.gd` | Modal: 5 active tasks, claim rewards, rotation |
+| `BuyModeSelector.tscn/.gd` | Reusable x1/x10/x100/Max purchase mode selector |
+| `UpgradePanel.tscn/.gd` | Hero level + ability upgrade cards with skill icon rows |
+| `UpgradeSheet.tscn/.gd` | Bottom-half sheet hosting UpgradePanel |
+| `UpgradeSkillPopup.tscn/.gd` | Compact popup for hero/ability skill purchases |
+| `PartnerPanel.tscn/.gd` | Partner hire cards with skill icon rows |
+| `PartnerSheet.tscn/.gd` | Bottom-half sheet hosting PartnerPanel |
+| `PartnerSkillPopup.tscn/.gd` | Compact popup for partner skill purchases |
+| `SettlementPanel.tscn/.gd` | Settlement building cards |
+| `SettlementSheet.tscn/.gd` | Bottom-half sheet hosting SettlementPanel |
+| `PrestigePanel.tscn/.gd` | Prestige action card + talent rows |
+| `PrestigeSheet.tscn/.gd` | Bottom-half sheet hosting PrestigePanel |
+| `PrestigeConfirmDialog.tscn/.gd` | Fully opaque prestige confirmation overlay |
+| `ShopPanel.tscn/.gd` | Shop product cards + dev gems button |
+| `ShopSheet.tscn/.gd` | Bottom-half sheet hosting ShopPanel |
+
+## Key architectural rules
+
+- **ClickerState** owns all game data and formulas. It has no UI references.
+- **ClickerScreen** owns all gameplay flow: processes timers, calls state methods, and pushes results to UI components.
+- **UI components** are read-only from the state's perspective; they emit signals upward to ClickerScreen.
+- **Asset catalogs** (GameAssetCatalog, EnemyAssetCatalog, BackgroundAssetCatalog) are stateless helpers — they build paths and load textures but hold no runtime state.
+- **ImageSlot** is a drop-in ColorRect replacement. Missing image files never crash — it falls back to the placeholder color.
+- **SaveManager** writes atomically: temp file then rename. It validates `save_version` and exposes `migrate_save_data()` for future format upgrades.
+
+## Future extraction candidates (deferred, not yet extracted)
+
+The following large static data blocks live in `ClickerState.gd` and are candidates for dedicated config files in a future pass:
+
+| Candidate | Data | Suggested file |
+|-----------|------|----------------|
+| Zone data | `ZONE_DATA` array | `scripts/game/ZoneConfig.gd` |
+| Partner data | names, DPS, costs, skill definitions | `scripts/game/PartnerConfig.gd` |
+| Ability data | unlock levels, costs, skill definitions | `scripts/game/AbilityConfig.gd` |
+| Settlement data | building names, costs, effects | `scripts/game/SettlementConfig.gd` |
+| Task definitions | task id, type, scale values | `scripts/game/TaskConfig.gd` |
+| Shop products | product id, cost, reward type | `scripts/game/ShopConfig.gd` |
+
+**Do not extract these in the current pass.** Extraction requires updating all callers and must not change save field names or player-visible values.
