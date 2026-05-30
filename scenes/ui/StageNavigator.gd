@@ -2,28 +2,35 @@ class_name StageNavigator
 extends Control
 
 signal stage_selected(level: int)
+signal latest_requested
+signal auto_transition_popup_requested(anchor_global_position: Vector2)
 
 const DISPLAY_COUNT: int = 7
 const SIDE_COUNT: int = 3
 const BUTTON_SIZE: int = 40
-const SCROLL_BUTTON_WIDTH: int = 28
+const SIDE_BUTTON_SIZE: int = 28
 const DRAG_STAGE_THRESHOLD: float = 36.0
 const DRAG_MOVED_THRESHOLD: float = 8.0
 
 const COLOR_CURRENT: Color = Color(0.2, 0.4, 0.9, 1.0)
 const COLOR_UNLOCKED: Color = Color(1.0, 1.0, 1.0, 1.0)
 const COLOR_LOCKED: Color = Color(0.35, 0.35, 0.35, 1.0)
+const COLOR_LATEST: Color = Color(0.8, 0.7, 0.1, 1.0)
+const COLOR_AUTO_ON: Color = Color(0.2, 0.75, 0.2, 1.0)
+const COLOR_AUTO_OFF: Color = Color(0.45, 0.45, 0.45, 1.0)
 
 var visible_center_level: int = SIDE_COUNT + 1
 var _current_level: int = 1
 var _max_unlocked_level: int = 1
 var _has_initialized_view: bool = false
+var _auto_transition_enabled: bool = true
 
 var _stage_buttons: Array = []
 var _stage_rects: Array = []
 var _stage_labels: Array = []
-var _left_button: Button
-var _right_button: Button
+var _latest_button: Button
+var _auto_btn: Button
+var _auto_btn_rect: ColorRect
 
 var _is_dragging: bool = false
 var _drag_start_x: float = 0.0
@@ -46,10 +53,6 @@ func _build_ui() -> void:
 	hbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	hbox.mouse_filter = MOUSE_FILTER_PASS
 	add_child(hbox)
-
-	_left_button = _make_scroll_button("<")
-	_left_button.pressed.connect(_on_scroll_left)
-	hbox.add_child(_left_button)
 
 	for i: int in DISPLAY_COUNT:
 		var btn: Button = Button.new()
@@ -78,16 +81,37 @@ func _build_ui() -> void:
 		_stage_rects.append(rect)
 		_stage_labels.append(label)
 
-	_right_button = _make_scroll_button(">")
-	_right_button.pressed.connect(_on_scroll_right)
-	hbox.add_child(_right_button)
+	_latest_button = _make_side_button(COLOR_LATEST, ">>")
+	_latest_button.pressed.connect(_on_latest_button_pressed)
+	hbox.add_child(_latest_button)
+
+	_auto_btn = _make_side_button(COLOR_AUTO_ON, "A")
+	_auto_btn_rect = _auto_btn.get_child(0) as ColorRect
+	_auto_btn.pressed.connect(_on_auto_transition_button_pressed)
+	hbox.add_child(_auto_btn)
 
 
-func _make_scroll_button(label_text: String) -> Button:
+func _make_side_button(bg_color: Color, label_text: String) -> Button:
 	var btn: Button = Button.new()
-	btn.custom_minimum_size = Vector2(SCROLL_BUTTON_WIDTH, BUTTON_SIZE)
-	btn.text = label_text
+	btn.custom_minimum_size = Vector2(SIDE_BUTTON_SIZE, BUTTON_SIZE)
+	btn.flat = true
 	btn.mouse_filter = MOUSE_FILTER_STOP
+
+	var rect: ColorRect = ColorRect.new()
+	rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	rect.mouse_filter = MOUSE_FILTER_IGNORE
+	rect.color = bg_color
+	btn.add_child(rect)
+
+	var label: Label = Label.new()
+	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 9)
+	label.mouse_filter = MOUSE_FILTER_IGNORE
+	label.text = label_text
+	btn.add_child(label)
+
 	return btn
 
 
@@ -165,6 +189,18 @@ func center_on_level(level: int) -> void:
 	_refresh_buttons()
 
 
+func center_on_latest_level() -> void:
+	visible_center_level = _max_unlocked_level
+	_clamp_center()
+	_refresh_buttons()
+
+
+func set_auto_transition_enabled(enabled: bool) -> void:
+	_auto_transition_enabled = enabled
+	if _auto_btn_rect != null:
+		_auto_btn_rect.color = COLOR_AUTO_ON if enabled else COLOR_AUTO_OFF
+
+
 func _clamp_center() -> void:
 	var min_center: int = SIDE_COUNT + 1
 	var max_center: int = maxi(_max_unlocked_level, min_center)
@@ -199,17 +235,6 @@ func _refresh_buttons() -> void:
 			rect.color = COLOR_LOCKED
 			btn.disabled = true
 
-	_update_scroll_buttons()
-
-
-func _update_scroll_buttons() -> void:
-	var leftmost: int = visible_center_level - SIDE_COUNT
-	_left_button.disabled = leftmost <= 1
-
-	var rightmost: int = visible_center_level + SIDE_COUNT
-	var farthest_allowed: int = _max_unlocked_level + SIDE_COUNT
-	_right_button.disabled = rightmost >= farthest_allowed
-
 
 func _on_stage_button_pressed(button_index: int) -> void:
 	if _drag_moved:
@@ -222,9 +247,9 @@ func _on_stage_button_pressed(button_index: int) -> void:
 	stage_selected.emit(stage_level)
 
 
-func _on_scroll_left() -> void:
-	_scroll_by(-1)
+func _on_latest_button_pressed() -> void:
+	latest_requested.emit()
 
 
-func _on_scroll_right() -> void:
-	_scroll_by(1)
+func _on_auto_transition_button_pressed() -> void:
+	auto_transition_popup_requested.emit(_auto_btn.global_position)

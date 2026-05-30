@@ -40,6 +40,7 @@ var combo_empowered_multiplier: float = 3.0
 
 @onready var primary_stats_panel: PrimaryStatsPanel = $PrimaryStatsPanel
 @onready var stage_navigator: Control = $MainContent/VBoxContainer/StageNavigator
+@onready var auto_transition_popup: Control = $AutoTransitionPopup
 @onready var progress_info_panel: ProgressInfoPanel = $MainContent/VBoxContainer/ProgressInfoPanel
 @onready var combo_panel: ComboPanel = $ComboPanel
 @onready var tasks_button: Button = $TasksButton
@@ -61,6 +62,9 @@ var combo_empowered_multiplier: float = 3.0
 
 func _ready() -> void:
 	stage_navigator.stage_selected.connect(_on_stage_selected)
+	stage_navigator.latest_requested.connect(_on_stage_latest_requested)
+	stage_navigator.auto_transition_popup_requested.connect(_on_auto_transition_popup_requested)
+	auto_transition_popup.auto_transition_toggled.connect(_on_auto_transition_toggled)
 	game_field.attack_requested.connect(_on_attack_requested)
 	ability_bar.autoclick_requested.connect(_on_autoclick_requested)
 	ability_bar.gold_bonus_requested.connect(_on_gold_bonus_requested)
@@ -133,6 +137,7 @@ func _update_ui() -> void:
 	_update_bottom_bar_view()
 	primary_stats_panel.update_view(state)
 	stage_navigator.update_view(state.current_level, state.max_unlocked_level)
+	stage_navigator.set_auto_transition_enabled(state.auto_stage_advance_enabled)
 	progress_info_panel.update_view(state)
 	_update_combo_panel()
 	game_field.update_view(state)
@@ -601,10 +606,24 @@ func _on_stage_selected(level: int) -> void:
 	autoclick_accumulator = 0.0
 	enemy_transition_token += 1
 	game_field.set_enemy_transition_locked(false)
-	stage_navigator.center_on_level(level)
 	_sync_boss_timer()
 	_update_ui()
 	game_field.update_view(state)
+
+
+func _on_stage_latest_requested() -> void:
+	stage_navigator.center_on_latest_level()
+
+
+func _on_auto_transition_popup_requested(anchor_global_position: Vector2) -> void:
+	auto_transition_popup.show_popup(state, anchor_global_position)
+
+
+func _on_auto_transition_toggled(enabled: bool) -> void:
+	state.set_auto_stage_advance_enabled(enabled)
+	auto_transition_popup.refresh_view(state)
+	stage_navigator.set_auto_transition_enabled(enabled)
+	_update_ui()
 
 
 func _handle_status_text(_text: String) -> void:
@@ -620,6 +639,8 @@ func _finish_enemy_transition_after_delay(transition_token: int) -> void:
 	_handle_status_text(result.get("status_text", ""))
 	enemy_transition_locked = false
 	game_field.set_enemy_transition_locked(false)
+	if result.get("advanced_to_next_level", false):
+		stage_navigator.center_on_level(state.current_level)
 	_update_ui()
 	_sync_boss_timer()
 	game_field.update_view(state)

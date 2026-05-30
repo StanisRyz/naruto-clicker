@@ -51,6 +51,7 @@ var character_level: int = 1
 var character_level_upgrade_cost: int = 5
 var current_level: int = 1
 var max_unlocked_level: int = 1
+var auto_stage_advance_enabled: bool = true
 var enemies_defeated_on_level: int = 0
 var enemies_required_per_level: int = 10
 var target_hp: int = 10
@@ -839,25 +840,45 @@ func resolve_defeated_target() -> Dictionary:
 	var status_text: String = "Enemy defeated! +%d gold" % earned_gold
 	var zone_changed: bool = false
 	var new_zone_name: String = ""
+	var advanced_to_next_level: bool = false
+	var level_unlocked: bool = false
+	var unlocked_level: int = max_unlocked_level
 
 	if did_level_up:
-		var old_zone_index: int = current_zone_index
-		current_level += 1
-		max_unlocked_level = maxi(max_unlocked_level, current_level)
-		enemies_defeated_on_level = 0
-		setup_current_level()
-		zone_changed = current_zone_index != old_zone_index
-		new_zone_name = zone_name
-		if zone_changed:
-			status_text = "New zone: %s" % zone_name
-		elif defeated_boss:
-			status_text = "Boss defeated! +%d gold. Level %d" % [earned_gold, current_level]
+		var next_level: int = current_level + 1
+		level_unlocked = max_unlocked_level < next_level
+		max_unlocked_level = maxi(max_unlocked_level, next_level)
+		unlocked_level = max_unlocked_level
+
+		if auto_stage_advance_enabled:
+			var old_zone_index: int = current_zone_index
+			current_level += 1
+			enemies_defeated_on_level = 0
+			setup_current_level()
+			zone_changed = current_zone_index != old_zone_index
+			new_zone_name = zone_name
+			advanced_to_next_level = true
+			if zone_changed:
+				status_text = "New zone: %s" % zone_name
+			elif defeated_boss:
+				status_text = "Boss defeated! +%d gold. Level %d" % [earned_gold, current_level]
+			else:
+				status_text = "Level up! Level %d" % current_level
 		else:
-			status_text = "Level up! Level %d" % current_level
+			enemies_defeated_on_level = 0
+			setup_current_level()
+			if defeated_boss:
+				status_text = "Boss defeated! +%d gold. Stage %d unlocked." % [earned_gold, next_level]
+			else:
+				status_text = "+%d gold. Stage %d unlocked." % [earned_gold, next_level]
 	else:
 		reset_target()
 
-	return _make_attack_result(true, did_level_up, earned_gold, damage_dealt, target_hp_before, 0, status_text, zone_changed, new_zone_name)
+	var base_result: Dictionary = _make_attack_result(true, did_level_up, earned_gold, damage_dealt, target_hp_before, 0, status_text, zone_changed, new_zone_name)
+	base_result["advanced_to_next_level"] = advanced_to_next_level
+	base_result["level_unlocked"] = level_unlocked
+	base_result["unlocked_level"] = unlocked_level
+	return base_result
 
 
 func buy_character_level_upgrade() -> Dictionary:
@@ -1981,6 +2002,10 @@ func update_ability_unlocks() -> void:
 
 	if not is_ability_purchased("rally"):
 		rally_active = false
+
+
+func set_auto_stage_advance_enabled(enabled: bool) -> void:
+	auto_stage_advance_enabled = enabled
 
 
 func fail_boss_level() -> Dictionary:

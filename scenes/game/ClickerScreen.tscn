@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/TasksWindow.tscn" id="11_tasks"]
 [ext_resource type="PackedScene" path="res://scenes/ui/ShopSheet.tscn" id="12_shop"]
 [ext_resource type="PackedScene" path="res://scenes/ui/StageNavigator.tscn" id="13_nav"]
+[ext_resource type="PackedScene" path="res://scenes/ui/AutoTransitionPopup.tscn" id="14_atp"]
 
 [node name="ClickerScreen" type="Control"]
 layout_mode = 3
@@ -179,6 +180,9 @@ custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Shop"
+
+[node name="AutoTransitionPopup" parent="." instance=ExtResource("14_atp")]
+layout_mode = 1
 
 [node name="TasksWindow" parent="." instance=ExtResource("11_tasks")]
 layout_mode = 1

@@ -264,13 +264,18 @@ The "Naruto Clicker" title has been replaced by a horizontal Stage Navigator row
 - Clicking a gray (locked) or the current (blue) stage does nothing.
 - Traveling resets the current enemy, enemies-defeated counter, and boss timer.
 - Traveling to a previous boss level starts the boss timer again (farmable).
-- Clearing a traveled level advances normally: defeat required enemies → level +1.
+
+### Side buttons
+
+To the right of the 7 stage buttons:
+
+- **Latest button** (`>>`, yellow) — jumps the visible strip to `max_unlocked_level`. Does not travel there; only scrolls the view.
+- **Auto-transition button** (`A`) — opens the Auto-transition popup. Green when ON, gray when OFF.
 
 ### Scrolling
 
-The stage strip can be scrolled three ways:
+The stage strip can be scrolled two ways (step-scroll buttons have been removed):
 
-- **Left/right buttons** (`<` / `>`) — shift the visible window one step at a time.
 - **Mouse wheel** — wheel up/left scrolls left; wheel down/right scrolls right.
 - **Drag/swipe** — drag or swipe horizontally; dragging right reveals earlier stages, dragging left reveals later stages. Dragging does not accidentally trigger stage travel.
 
@@ -278,7 +283,8 @@ The stage strip can be scrolled three ways:
 
 - Manual scrolling is always preserved. Normal UI updates (`update_view`) do not auto-center the strip.
 - The first time the navigator displays, it centers on `current_level`.
-- `center_on_level(level)` is called explicitly after a travel action and after prestige to snap the strip to the new position.
+- `center_on_level(level)` is called explicitly only when the player actually advances to a new level through gameplay, and after prestige.
+- Manual stage travel via the strip does **not** force a re-center.
 
 ### Scroll bounds
 
@@ -288,10 +294,32 @@ The stage strip can be scrolled three ways:
 ### max_unlocked_level
 
 - Tracks the highest stage the player has reached naturally.
-- Updated whenever `current_level` increases beyond the previous maximum.
+- Updated whenever `current_level` clears its objective (regardless of Auto-transition setting).
+- Only unlocks `current_level + 1` per clear — farming the same cleared stage never unlocks beyond the immediately next level.
 - Traveling backward does **not** reduce `max_unlocked_level`.
 - Boss fail returns to the previous level but does **not** reduce `max_unlocked_level`.
 - Resets to 1 on prestige alongside normal progression reset.
+
+## Auto-transition
+
+Controls whether the game automatically moves to the next level after a stage is cleared.
+
+- **ON (default)** — after defeating all required enemies (10 normals or 1 boss), the player automatically advances to `current_level + 1`.
+- **OFF** — the stage objective is still cleared and the next level is unlocked (becomes white in the strip), but `current_level` stays the same. The enemy resets for farming. The player must manually click the next stage in the strip to move forward, or re-enable Auto-transition.
+
+### Boss behavior with Auto-transition OFF
+
+- Defeating the boss grants the reward and unlocks the next stage.
+- The boss timer restarts for the same boss level.
+- The player can farm the boss repeatedly; `max_unlocked_level` does not increase further from repeated boss clears on the same level.
+
+### Auto-transition popup
+
+Opened by the `A` button in the stage strip row. A compact popup that:
+- Shows the current status (ON / OFF).
+- Has a toggle button to switch the state.
+- Closes with the X button or by clicking outside the popup.
+- Clicking inside the popup does not attack the GameField.
 
 ## Project Structure
 

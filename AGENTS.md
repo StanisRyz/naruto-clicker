@@ -561,26 +561,43 @@ After each patch, validate manually in Godot:
 - Clicking an unlocked (white) stage emits `stage_selected(level)` and triggers `travel_to_level` in `ClickerScreen`.
 - Clicking the current (blue) stage or a locked (gray) stage does nothing.
 - `StageNavigator` clicks, wheel, and drag must not propagate to `GameField` and must not trigger attacks.
+- There are no left/right step-scroll arrow buttons. The strip is scrolled only via mouse wheel and drag/swipe.
+- To the right of the 7 stage buttons: a **latest button** (`>>`, yellow) and an **auto-transition button** (`A`, green/gray).
+- The latest button emits `latest_requested`; `ClickerScreen` responds by calling `stage_navigator.center_on_latest_level()`.
+- The auto-transition button emits `auto_transition_popup_requested(anchor_global_position)` with its own `global_position`; `ClickerScreen` opens `AutoTransitionPopup`.
+- `center_on_latest_level()` sets `visible_center_level = max_unlocked_level`, clamps, and refreshes.
+- `set_auto_transition_enabled(enabled)` updates `_auto_btn_rect.color`: green when ON, gray when OFF.
 - `max_unlocked_level` in `ClickerState` tracks the highest stage naturally reached.
-- `max_unlocked_level` updates with `maxi(max_unlocked_level, current_level)` every time `current_level` increases in `resolve_defeated_target()`.
+- `max_unlocked_level` updates with `maxi(max_unlocked_level, current_level + 1)` when stage objective is cleared in `resolve_defeated_target()`, regardless of `auto_stage_advance_enabled`.
+- Only `current_level + 1` is ever unlocked per clear; farming the same cleared level cannot unlock levels beyond the immediately next one.
 - `max_unlocked_level` is not reduced by traveling backward, boss fail, or anything other than prestige.
 - `max_unlocked_level` resets to 1 on prestige alongside `current_level`.
 - `can_travel_to_level(level)` returns true when `level >= 1` and `level <= max_unlocked_level`.
 - `travel_to_level(level)` sets `current_level`, resets `enemies_defeated_on_level` to 0, calls `setup_current_level()`, and returns a result dict with `"travelled": true`.
 - Traveling does not grant gold, does not count defeated enemies, and does not modify character/partner/settlement/prestige state.
-- After travel in `ClickerScreen._on_stage_selected`: reset `partner_damage_accumulator` and `autoclick_accumulator`, increment `enemy_transition_token` (invalidates in-flight transitions), call `stage_navigator.center_on_level(level)`, then `_sync_boss_timer()`, `_update_ui()`, and `game_field.update_view(state)`.
+- After travel in `ClickerScreen._on_stage_selected`: reset `partner_damage_accumulator` and `autoclick_accumulator`, increment `enemy_transition_token`, then call `_sync_boss_timer()`, `_update_ui()`, and `game_field.update_view(state)`. Do NOT call `center_on_level` after manual travel.
 - After prestige in `ClickerScreen._on_prestige_confirmed`: call `stage_navigator.center_on_level(1)` before `_update_ui()`.
-- Scroll left is disabled when `visible_center_level - SIDE_COUNT <= 1` (stage 1 is already leftmost).
-- Scroll right is disabled when `visible_center_level + SIDE_COUNT >= max_unlocked_level + SIDE_COUNT` (rightmost visible would exceed `max_unlocked_level + 3`).
-- `update_view(current_level, max_unlocked_level)` must NOT auto-snap `visible_center_level` to `current_level` on every call. It only sets the center once on the very first call (`_has_initialized_view` guard), then only clamps and refreshes.
-- `center_on_level(level)` sets `visible_center_level`, clamps, and refreshes. Call it only when intentional centering is required (initial setup, after travel, after prestige).
-- `ClickerScreen._update_ui()` calls `stage_navigator.update_view(state.current_level, state.max_unlocked_level)` without forcing a re-center.
-- The stage strip can be scrolled with left/right buttons, mouse wheel (up/left = scroll left, down/right = scroll right), and horizontal drag/swipe.
-- Dragging right reveals earlier stages; dragging left reveals later stages.
+- `update_view(current_level, max_unlocked_level)` must NOT auto-snap `visible_center_level` on every call. It sets the center only once via the `_has_initialized_view` guard, then only clamps and refreshes.
+- `center_on_level(level)` is called ONLY when the player actually advances to a new level via gameplay: when `resolve_defeated_target()` returns `advanced_to_next_level: true`, ClickerScreen calls `stage_navigator.center_on_level(state.current_level)`.
+- `ClickerScreen._update_ui()` calls `stage_navigator.update_view(state.current_level, state.max_unlocked_level)` and `stage_navigator.set_auto_transition_enabled(state.auto_stage_advance_enabled)`.
 - Drag threshold for scroll step is 36 px; drag movement threshold to suppress button click is 8 px.
 - Dragging must not accidentally emit `stage_selected`; the `_drag_moved` flag suppresses button presses when drag distance exceeds the movement threshold.
 - Mouse wheel is handled via `_gui_input` with `accept_event()` to prevent wheel events from reaching `GameField`.
 - Drag is tracked via `_input` using `get_global_rect().has_point` to restrict drag initiation to the navigator area.
+
+## Auto-transition Rules
+
+- `ClickerState.auto_stage_advance_enabled: bool = true` — runtime flag, not saved, not reset on prestige.
+- `set_auto_stage_advance_enabled(enabled)` is the only setter.
+- When `auto_stage_advance_enabled` is ON and `resolve_defeated_target()` detects `did_level_up`: `current_level += 1`, `setup_current_level()`, returns `advanced_to_next_level: true`.
+- When `auto_stage_advance_enabled` is OFF and `resolve_defeated_target()` detects `did_level_up`: next level is unlocked (`max_unlocked_level` updated), `enemies_defeated_on_level = 0`, `setup_current_level()` resets the same level's target for farming, returns `advanced_to_next_level: false`.
+- Reward gold is always granted on defeat regardless of auto-transition setting.
+- `resolve_defeated_target()` result always includes `advanced_to_next_level: bool`, `level_unlocked: bool`, `unlocked_level: int`.
+- Boss defeated with auto OFF: boss target resets, boss timer restarts via `_sync_boss_timer()` in `_finish_enemy_transition_after_delay`.
+- Task counters (`total_enemies_defeated`, `total_bosses_defeated`, etc.) are always incremented regardless of auto-transition.
+- `game_level_delta` tasks track `current_level`; farming the same level with auto OFF does not advance these tasks.
+- `AutoTransitionPopup` is a full-screen Control overlay (mouse_filter STOP when visible, PASS when hidden). The inner PanelContainer has mouse_filter STOP. Outside clicks close the popup via `_gui_input` checking `_panel.get_global_rect().has_point`.
+- Popup signals: `auto_transition_toggled(enabled: bool)`. ClickerScreen calls `state.set_auto_stage_advance_enabled(enabled)`, `auto_transition_popup.refresh_view(state)`, `stage_navigator.set_auto_transition_enabled(enabled)`, `_update_ui()`.
 
 ## Documentation Update Rules
 
