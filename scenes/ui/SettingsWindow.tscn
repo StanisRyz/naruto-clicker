@@ -147,6 +147,12 @@ layout_mode = 2
 text = ""
 horizontal_alignment = 1
 
+[node name="VersionLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
+modulate = Color(0.55, 0.55, 0.55, 1)
+
 [node name="ResetConfirmDialog" type="Control" parent="."]
 visible = false
 layout_mode = 1

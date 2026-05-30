@@ -664,6 +664,29 @@ After each patch, validate manually in Godot:
 - Do not add `const BackgroundAssetCatalog = preload(...)` in `GameField` — `BackgroundAssetCatalog` is a global class_name and a local const with the same name causes `SHADOWED_GLOBAL_IDENTIFIER` warnings. The LSP "not declared" error after creating the file is transient and resolves when Godot rescans `scripts/ui/`.
 - Recommended image size: 720×1600 minimum, 1080×2400 recommended, portrait 9:20 safe.
 
+## BuildConfig Rules
+
+`BuildConfig` is a global autoload registered in `project.godot`. It lives at `res://scripts/game/BuildConfig.gd`.
+
+- `APP_VERSION` — the human-readable version string shown in SettingsWindow.
+- `IS_DEBUG_BUILD` — controls all dev-only visibility. Do not rely on `OS.is_debug_build()` for this purpose: Web and Android test builds need manual control.
+
+**Debug mode** (`IS_DEBUG_BUILD = true`):
+- Shop `TestGemsButton` ("Prototype: Get 50 Gems") is visible.
+- SettingsWindow version label reads "Version X.Y.Z-dev".
+- `ClickerScreen._input` F5/F9/F10 debug shortcuts are active.
+
+**Release mode** (`IS_DEBUG_BUILD = false`):
+- `TestGemsButton` is hidden; VBoxContainer layout collapses the gap automatically.
+- SettingsWindow version label reads "Version X.Y.Z".
+- All keyboard debug shortcuts are disabled.
+
+**Rules:**
+- Do not remove `_on_test_gems_requested` or the `test_gems_requested` signal — they are used during development.
+- Do not add new debug tools without wrapping them in `if BuildConfig.IS_DEBUG_BUILD`.
+- Before public release, set `IS_DEBUG_BUILD = false` and verify no dev UI is visible.
+- Real ads, payments, and cloud saves are still not implemented.
+
 ## Documentation Update Rules
 
 Update this file when adding important systems, scenes, architecture decisions, workflow rules, or validation requirements. Keep README.md aligned with major project setup or workflow changes.

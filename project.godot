@@ -17,6 +17,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+BuildConfig="*res://scripts/game/BuildConfig.gd"
 YandexBridge="*res://autoload/YandexBridge.gd"
 SaveManager="*res://autoload/SaveManager.gd"
 

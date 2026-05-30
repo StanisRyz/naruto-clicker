@@ -491,3 +491,28 @@ YandexBridge is present for future platform integration, but real ads, payments,
 ## Android Export Notes
 
 An Android export preset is configured in `export_presets.cfg` targeting `arm64-v8a`. The export path is `../../godot_apk/narclick/naruto.apk`. No Android-specific APIs are used; the GL Compatibility renderer and Control-based UI are compatible with Android.
+
+## BuildConfig and Release Checklist
+
+`res://scripts/game/BuildConfig.gd` is registered as a global autoload and controls app version and debug/release visibility:
+
+- `APP_VERSION: String = "0.1.0"` — displayed in SettingsWindow.
+- `IS_DEBUG_BUILD: bool = true` — set to `false` before public release.
+
+**Debug mode** (`IS_DEBUG_BUILD = true`):
+- Shop shows the "Prototype: Get 50 Gems" button.
+- SettingsWindow shows "Version 0.1.0-dev".
+- F5/F9/F10 keyboard shortcuts (save/load/delete save) are active.
+
+**Release mode** (`IS_DEBUG_BUILD = false`):
+- Shop hides the Prototype Gems button; no empty spacing is left.
+- SettingsWindow shows "Version 0.1.0".
+- Keyboard debug shortcuts are disabled.
+
+**Before public release:**
+1. Set `IS_DEBUG_BUILD = false` in `BuildConfig.gd`.
+2. Verify the Shop has no dev buttons.
+3. Verify SettingsWindow shows the plain version string.
+4. Export for Web and/or Android.
+
+Real ads, payments, and cloud saves are still not implemented.

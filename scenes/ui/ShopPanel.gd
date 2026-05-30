@@ -14,6 +14,7 @@ var product_rows: Dictionary = {}
 
 func _ready() -> void:
 	test_gems_button.pressed.connect(func() -> void: test_gems_requested.emit())
+	test_gems_button.visible = BuildConfig.IS_DEBUG_BUILD
 
 
 func update_view(state: ClickerState) -> void:

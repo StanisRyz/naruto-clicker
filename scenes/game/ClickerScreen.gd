@@ -773,7 +773,7 @@ func _load_game_on_start() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if not OS.is_debug_build():
+	if not BuildConfig.IS_DEBUG_BUILD:
 		return
 	if not (event is InputEventKey) or not event.pressed or event.echo:
 		return

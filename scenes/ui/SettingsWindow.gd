@@ -15,6 +15,7 @@ signal reset_confirmed
 @onready var save_button: Button = $PanelContainer/MarginContainer/VBoxContainer/SaveButton
 @onready var reset_button: Button = $PanelContainer/MarginContainer/VBoxContainer/ResetButton
 @onready var status_label: Label = $PanelContainer/MarginContainer/VBoxContainer/StatusLabel
+@onready var version_label: Label = $PanelContainer/MarginContainer/VBoxContainer/VersionLabel
 @onready var reset_confirm_dialog: Control = $ResetConfirmDialog
 @onready var reset_confirm_overlay: ColorRect = $ResetConfirmDialog/Overlay
 @onready var reset_dialog_panel: PanelContainer = $ResetConfirmDialog/PanelContainer
@@ -37,6 +38,7 @@ func _ready() -> void:
 	reset_button.pressed.connect(_on_reset_button_pressed)
 	reset_cancel_button.pressed.connect(_hide_reset_confirm)
 	reset_confirm_button.pressed.connect(_on_reset_confirm_button_pressed)
+	version_label.text = "Version %s%s" % [BuildConfig.APP_VERSION, "-dev" if BuildConfig.IS_DEBUG_BUILD else ""]
 	hide()
 
 
