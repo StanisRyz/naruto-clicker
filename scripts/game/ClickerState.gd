@@ -299,6 +299,8 @@ var shop_product_definitions: Array[Dictionary] = [
 ]
 
 var current_zone_index: int = 0
+var current_enemy_zone_index: int = 0
+var current_enemy_slot: String = "enemy_01"
 var zone_name: String = "Training Grounds"
 var zone_level_start: int = 1
 var zone_level_end: int = 10
@@ -2192,23 +2194,29 @@ func reset_target() -> void:
 
 func choose_enemy_for_current_level() -> void:
 	var zone: Dictionary = ZONE_DATA[current_zone_index]
+	current_enemy_zone_index = current_zone_index
 	if is_boss_level:
 		is_elite_enemy = false
 		enemy_name = zone.boss
+		current_enemy_slot = "boss_01"
 		return
 
 	if rng.randf() < get_current_elite_spawn_chance():
 		is_elite_enemy = true
 		enemy_name = zone.elite_enemy
+		current_enemy_slot = "elite_01"
 		return
 
 	is_elite_enemy = false
 	var enemies: Array = zone.enemies
 	if enemies.is_empty():
 		enemy_name = "Enemy"
+		current_enemy_slot = "enemy_01"
 		return
 
-	enemy_name = enemies[rng.randi_range(0, enemies.size() - 1)]
+	var enemy_index: int = rng.randi_range(0, enemies.size() - 1)
+	enemy_name = enemies[enemy_index]
+	current_enemy_slot = "enemy_%02d" % (enemy_index + 1)
 
 
 func recalculate_level_values() -> void:

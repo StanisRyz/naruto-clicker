@@ -15,6 +15,14 @@ var enemy_transition_locked: bool = false
 var current_health_color: Color = HEALTHY_COLOR
 var current_asset_key: String = "enemy.default.healthy"
 
+var _cached_zone_index: int = -1
+var _cached_enemy_slot: String = ""
+var _tex_healthy: Texture2D = null
+var _tex_hit: Texture2D = null
+var _tex_wounded: Texture2D = null
+var _tex_defeated: Texture2D = null
+var _current_tex: Texture2D = null
+
 @onready var enemy_image_holder = $EnemyImageHolder  # ImageSlot (ColorRect subclass)
 @onready var boss_timer_label: Label = $GameFieldContent/BossTimerLabel
 @onready var defeat_feedback_label: Label = $FeedbackLayer/DefeatFeedbackLabel
@@ -38,16 +46,21 @@ func update_view(state: ClickerState) -> void:
 
 
 func update_enemy_visual_state(state: ClickerState) -> void:
+	_refresh_enemy_textures(state.current_enemy_zone_index, state.current_enemy_slot)
 	current_health_color = _get_health_color(state)
 	current_asset_key = _get_health_asset_key(state)
+
+	var is_wounded: bool = current_asset_key.ends_with("wounded")
+	_current_tex = _tex_wounded if is_wounded else _tex_healthy
+
 	if enemy_transition_locked:
-		enemy_image_holder.set_asset_key("enemy.default.defeated", DEFEATED_COLOR)
+		enemy_image_holder.set_direct_texture(_tex_defeated, DEFEATED_COLOR)
 		return
 
 	if hit_tween != null and hit_tween.is_running():
 		return
 
-	enemy_image_holder.set_asset_key(current_asset_key, current_health_color)
+	enemy_image_holder.set_direct_texture(_current_tex, current_health_color)
 
 
 func update_boss_timer(time_left: float, is_active: bool) -> void:
@@ -63,13 +76,13 @@ func play_hit_feedback(damage: int) -> void:
 	if hit_tween != null:
 		hit_tween.kill()
 
-	enemy_image_holder.set_asset_key("enemy.default.hit", HIT_COLOR)
+	enemy_image_holder.set_direct_texture(_tex_hit, HIT_COLOR)
 	hit_tween = create_tween()
 	hit_tween.tween_interval(HIT_STATE_DURATION)
 	hit_tween.tween_callback(func() -> void:
 		hit_tween = null
 		if not enemy_transition_locked:
-			enemy_image_holder.set_asset_key(current_asset_key, current_health_color)
+			enemy_image_holder.set_direct_texture(_current_tex, current_health_color)
 	)
 
 
@@ -78,7 +91,7 @@ func play_defeat_feedback(level_up: bool, zone_changed: bool = false) -> void:
 		hit_tween.kill()
 		hit_tween = null
 
-	enemy_image_holder.set_asset_key("enemy.default.defeated", DEFEATED_COLOR)
+	enemy_image_holder.set_direct_texture(_tex_defeated, DEFEATED_COLOR)
 
 	if zone_changed:
 		defeat_feedback_label.text = "New Zone!"
@@ -103,9 +116,27 @@ func set_enemy_transition_locked(is_locked: bool) -> void:
 		if hit_tween != null:
 			hit_tween.kill()
 			hit_tween = null
-		enemy_image_holder.set_asset_key("enemy.default.defeated", DEFEATED_COLOR)
+		enemy_image_holder.set_direct_texture(_tex_defeated, DEFEATED_COLOR)
 	else:
-		enemy_image_holder.set_asset_key(current_asset_key, current_health_color)
+		enemy_image_holder.set_direct_texture(_current_tex, current_health_color)
+
+
+func _refresh_enemy_textures(zone_index: int, enemy_slot: String) -> void:
+	if zone_index == _cached_zone_index and enemy_slot == _cached_enemy_slot:
+		return
+	_cached_zone_index = zone_index
+	_cached_enemy_slot = enemy_slot
+	_tex_healthy = _load_enemy_tex_with_fallback(zone_index, enemy_slot, "healthy")
+	_tex_hit = _load_enemy_tex_with_fallback(zone_index, enemy_slot, "hit")
+	_tex_wounded = _load_enemy_tex_with_fallback(zone_index, enemy_slot, "wounded")
+	_tex_defeated = _load_enemy_tex_with_fallback(zone_index, enemy_slot, "defeated")
+
+
+func _load_enemy_tex_with_fallback(zone_index: int, enemy_slot: String, state: String) -> Texture2D:
+	var tex: Texture2D = EnemyAssetCatalog.load_enemy_texture(zone_index, enemy_slot, state)
+	if tex != null:
+		return tex
+	return GameAssetCatalog.load_texture("enemy.default." + state)
 
 
 func _get_health_color(state: ClickerState) -> Color:

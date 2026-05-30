@@ -395,6 +395,47 @@ No code changes are needed in UI panels or scenes unless a new slot type is bein
 - Keep placeholder fallback colors in place until final art is ready.
 - Helper methods: `partner_icon_key(index)`, `partner_skill_key(index, level)`, `ability_skill_key(id, level)`, `hero_skill_key(level)`, `building_icon_key(index)`, `prestige_talent_icon_key(id)`, `shop_product_icon_key(id)`, `task_icon_key(id)`.
 
+## Enemy Image System
+
+Enemy visuals use a separate catalog from the general UI image system.
+
+- `scripts/ui/EnemyAssetCatalog.gd` — dedicated catalog for per-enemy, per-state image paths. Kept separate from `GameAssetCatalog` because enemy images scale with zones and enemy counts.
+- `ClickerState` stores `current_enemy_zone_index` and `current_enemy_slot` — set when an enemy is chosen for the current level. `GameField` reads these to load the correct images.
+
+### Folder structure
+
+```
+res://assets/images/enemies/zone_XX/enemy_YY/state.png
+```
+
+| Path segment | Mapping |
+|---|---|
+| `zone_01` | Zone index 0 (levels 1–10) |
+| `zone_02` | Zone index 1 (levels 11–20) |
+| `enemy_01` / `enemy_02` / `enemy_03` | Normal enemies 1–3 in ZONE_DATA |
+| `elite_01` | Elite enemy |
+| `boss_01` | Boss enemy |
+
+### State files per enemy folder
+
+`healthy.png`, `hit.png`, `wounded.png`, `defeated.png`
+
+### Fallback chain
+
+1. Exact enemy image (e.g. `zone_01/enemy_01/healthy.png`)
+2. Default enemy image from GameAssetCatalog (`enemy.default.healthy`)
+3. Placeholder color (white / blue / red / black)
+
+Missing files never crash the game. All fallbacks are automatic.
+
+### Adding enemy art
+
+1. Place PNGs under `res://assets/images/enemies/zone_XX/enemy_YY/`.
+2. File names must match the state: `healthy.png`, `hit.png`, `wounded.png`, `defeated.png`.
+3. Run the game — the correct image loads automatically for that enemy when it spawns.
+
+No code changes are needed unless a new zone or enemy slot type is added.
+
 ## Web Export Notes
 
 The project is intended for Yandex Games Web export. Keep the 720x1280 portrait setup, GL Compatibility renderer, and Web-friendly Control-based UI layout.

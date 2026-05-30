@@ -613,13 +613,37 @@ After each patch, validate manually in Godot:
 - Keep placeholder fallback colors in place until final art is ready.
 - To add a new image slot: add the key/path to `ASSET_PATHS`, create the `ImageSlot` node, set `asset_key`.
 - Use the catalog helper methods for dynamic keys: `partner_icon_key`, `partner_skill_key`, `ability_skill_key`, `hero_skill_key`, `building_icon_key`, `prestige_talent_icon_key`, `shop_product_icon_key`, `task_icon_key`.
-- In scripts that create `ImageSlot` dynamically, use `const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")` and `const GameAssetCatalog = preload("res://scripts/ui/GameAssetCatalog.gd")` to avoid relying on class_name indexing in the LSP.
+- In scripts that create `ImageSlot` dynamically, use `const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")` to avoid relying on class_name indexing in the LSP. Do NOT add `const GameAssetCatalog = preload(...)` — `GameAssetCatalog` is a global class_name and a local const with the same name causes SHADOWED_GLOBAL_IDENTIFIER warnings.
 - Skill icon fallback colors must still reflect state: gray = locked, blue = available, white = purchased. Use `set_fallback_color(color)` instead of `.color = color` on `ImageSlot` nodes.
-- Enemy state asset keys: `enemy.default.healthy`, `enemy.default.hit`, `enemy.default.wounded`, `enemy.default.defeated`. Use `set_asset_key(key, fallback_color)` when the enemy state changes.
+- Enemy state asset keys (GameAssetCatalog defaults): `enemy.default.healthy`, `enemy.default.hit`, `enemy.default.wounded`, `enemy.default.defeated`. These are fallbacks only — `GameField` now loads per-enemy textures via `EnemyAssetCatalog` first.
 - Stage navigator slot keys: `stage.current`, `stage.unlocked`, `stage.locked`, `stage.latest`, `stage.auto_on`, `stage.auto_off`.
 - Sheet header slot keys: `header.gold` (Upgrade/Partner/Settlement), `header.prestige_points` (Prestige), `header.gems` (Shop).
 - Asset image files go under `res://assets/images/` and its subdirectories, which already exist.
 - Do not add `.gdignore` to asset image directories.
+
+## Enemy Image System Rules
+
+- `scripts/ui/EnemyAssetCatalog.gd` is the dedicated catalog for per-enemy, per-state image paths. It is separate from `GameAssetCatalog` because enemy images scale with zones and enemy counts.
+- Every enemy has 4 visual state images: `healthy.png`, `hit.png`, `wounded.png`, `defeated.png`.
+- Folder structure: `res://assets/images/enemies/zone_XX/enemy_YY/state.png`.
+- Zone folders are 1-based: zone index 0 → `zone_01`, zone index 1 → `zone_02`, etc.
+- Normal enemy folders are 1-based by ZONE_DATA enemies array index: enemy_index 0 → `enemy_01`, 1 → `enemy_02`, 2 → `enemy_03`.
+- Elite enemy folder: `elite_01`. Boss enemy folder: `boss_01`.
+- `ClickerState` stores `current_enemy_zone_index` (int) and `current_enemy_slot` (String) set in `choose_enemy_for_current_level()`. These are runtime-only; do not save them.
+- `GameField` reads `state.current_enemy_zone_index` and `state.current_enemy_slot` and calls `EnemyAssetCatalog.load_enemy_texture()`.
+- Fallback chain in `GameField._load_enemy_tex_with_fallback()`:
+  1. Try exact enemy image via `EnemyAssetCatalog.load_enemy_texture(zone_index, enemy_slot, state)`.
+  2. If null, try default via `GameAssetCatalog.load_texture("enemy.default." + state)`.
+  3. If null, `set_direct_texture(null, fallback_color)` shows the placeholder color.
+- `GameField` caches textures per enemy identity (`_cached_zone_index`, `_cached_enemy_slot`). Textures are reloaded only when the enemy changes, not every frame.
+- `ImageSlot.set_direct_texture(texture, fallback_color)` applies a pre-loaded Texture2D directly without going through `GameAssetCatalog`.
+- Hit feedback still only triggers for manual clicks and Autoclick — not partner DPS.
+- Partner DPS must not show the hit (blue) state.
+- Defeated state shows during transition lock regardless of enemy identity.
+- Missing enemy image files must never crash the game.
+- Do not hardcode enemy image paths in `GameField`; all path logic belongs in `EnemyAssetCatalog`.
+- Do not save `current_enemy_slot` or `current_enemy_zone_index` to the save file; they are re-derived on each `choose_enemy_for_current_level()` call.
+- When adding a new zone, add its folder under `res://assets/images/enemies/` and extend zone data in `ClickerState.ZONE_DATA`.
 
 ## Documentation Update Rules
 
