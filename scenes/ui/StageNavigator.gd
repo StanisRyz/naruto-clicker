@@ -252,4 +252,5 @@ func _on_latest_button_pressed() -> void:
 
 
 func _on_auto_transition_button_pressed() -> void:
-	auto_transition_popup_requested.emit(_auto_btn.global_position)
+	var btn_rect: Rect2 = _auto_btn.get_global_rect()
+	auto_transition_popup_requested.emit(Vector2(btn_rect.get_center().x, btn_rect.end.y))

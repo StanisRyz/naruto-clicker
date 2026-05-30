@@ -64,7 +64,6 @@ func _ready() -> void:
 	stage_navigator.stage_selected.connect(_on_stage_selected)
 	stage_navigator.latest_requested.connect(_on_stage_latest_requested)
 	stage_navigator.auto_transition_popup_requested.connect(_on_auto_transition_popup_requested)
-	auto_transition_popup.auto_transition_toggled.connect(_on_auto_transition_toggled)
 	game_field.attack_requested.connect(_on_attack_requested)
 	ability_bar.autoclick_requested.connect(_on_autoclick_requested)
 	ability_bar.gold_bonus_requested.connect(_on_gold_bonus_requested)
@@ -618,11 +617,9 @@ func _on_stage_latest_requested() -> void:
 
 
 func _on_auto_transition_popup_requested(anchor_global_position: Vector2) -> void:
-	auto_transition_popup.show_popup(state, anchor_global_position)
-
-
-func _on_auto_transition_toggled(enabled: bool) -> void:
-	if enabled:
+	if state.auto_stage_advance_enabled:
+		state.set_auto_stage_advance_enabled(false)
+	else:
 		var jump_result: Dictionary = state.enable_auto_stage_advance_and_jump_if_needed()
 		if jump_result.get("moved_to_latest", false):
 			enemy_transition_token += 1
@@ -631,11 +628,9 @@ func _on_auto_transition_toggled(enabled: bool) -> void:
 			autoclick_accumulator = 0.0
 			_sync_boss_timer()
 			stage_navigator.center_on_level(state.current_level)
-	else:
-		state.set_auto_stage_advance_enabled(false)
-	auto_transition_popup.refresh_view(state)
 	stage_navigator.set_auto_transition_enabled(state.auto_stage_advance_enabled)
 	_update_ui()
+	auto_transition_popup.show_popup(state, anchor_global_position)
 
 
 func _handle_status_text(_text: String) -> void:
