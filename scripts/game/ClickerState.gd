@@ -2,6 +2,9 @@
 extends RefCounted
 
 const SaveAdapter = preload("res://scripts/game/save/ClickerStateSaveAdapter.gd")
+const MilestoneCalc = preload("res://scripts/game/calculators/MilestoneCalculator.gd")
+const CostCalc = preload("res://scripts/game/calculators/CostCalculator.gd")
+const EnemyCalc = preload("res://scripts/game/calculators/EnemyScalingCalculator.gd")
 
 
 var gold: int = 0
@@ -1028,31 +1031,19 @@ func get_partner_description(partner_index: int) -> String:
 
 
 func get_milestone_multiplier(level: int) -> int:
-	var multiplier: int = 1
-	for milestone in BalanceConfig.MILESTONE_LEVELS:
-		if level >= milestone:
-			multiplier *= milestone_multiplier_per_reached
-
-	return multiplier
+	return MilestoneCalc.get_milestone_multiplier(level, BalanceConfig.MILESTONE_LEVELS, milestone_multiplier_per_reached)
 
 
 func get_next_milestone(level: int) -> int:
-	for milestone in BalanceConfig.MILESTONE_LEVELS:
-		if level < milestone:
-			return milestone
-
-	return 0
+	return MilestoneCalc.get_next_milestone(level, BalanceConfig.MILESTONE_LEVELS)
 
 
 func is_milestone_target(target_level_or_count: int) -> bool:
-	return BalanceConfig.MILESTONE_LEVELS.has(target_level_or_count)
+	return MilestoneCalc.is_milestone_target(target_level_or_count, BalanceConfig.MILESTONE_LEVELS)
 
 
 func apply_milestone_cost_multiplier(cost: int, target_level_or_count: int) -> int:
-	if is_milestone_target(target_level_or_count):
-		return cost * milestone_cost_multiplier
-
-	return cost
+	return MilestoneCalc.apply_milestone_cost_multiplier(cost, target_level_or_count, BalanceConfig.MILESTONE_LEVELS, milestone_cost_multiplier)
 
 
 func get_character_milestone_multiplier() -> int:
@@ -1678,17 +1669,15 @@ func _get_character_level_bulk_cost_for_count(count: int) -> int:
 
 
 func _get_character_level_cost_for_level(level: int) -> int:
-	# Non-linear, not exponential: target level is current + 1, and milestone targets cost x3.
-	var current_hero_level: int = maxi(1, level)
-	var target_level: int = current_hero_level + 1
-	var progress: float = float(current_hero_level - 1)
-	var raw_cost: float = (
-		float(character_cost_base)
-		+ character_cost_linear * progress
-		+ character_cost_curve * pow(progress, character_cost_power)
+	return CostCalc.get_hero_level_cost(
+		level,
+		character_cost_base,
+		character_cost_linear,
+		character_cost_curve,
+		character_cost_power,
+		BalanceConfig.MILESTONE_LEVELS,
+		milestone_cost_multiplier
 	)
-	var cost: int = maxi(1, ceili(raw_cost))
-	return apply_milestone_cost_multiplier(cost, target_level)
 
 
 func _get_partner_bulk_cost_for_count(partner_index: int, count: int) -> int:
@@ -1705,21 +1694,16 @@ func _get_partner_bulk_cost_for_count(partner_index: int, count: int) -> int:
 
 
 func _get_partner_cost_for_count(partner_index: int, count: int) -> int:
-	if partner_index >= 0 and partner_index < BalanceConfig.PARTNER_BASE_COSTS.size():
-		# Non-linear, not exponential: target count is current + 1, and milestone targets cost x3.
-		var current_count: int = maxi(0, count)
-		var target_count: int = current_count + 1
-		var base: int = BalanceConfig.PARTNER_BASE_COSTS[partner_index]
-		var step: int = BalanceConfig.PARTNER_COST_STEPS[partner_index]
-		var raw_cost: float = (
-			float(base)
-			+ float(step * current_count)
-			+ float(base) * partner_cost_curve_multiplier * pow(float(current_count), partner_cost_power)
-		)
-		var cost: int = maxi(1, ceili(raw_cost))
-		return apply_milestone_cost_multiplier(cost, target_count)
-
-	return 0
+	return CostCalc.get_partner_cost(
+		partner_index,
+		count,
+		BalanceConfig.PARTNER_BASE_COSTS,
+		BalanceConfig.PARTNER_COST_STEPS,
+		partner_cost_curve_multiplier,
+		partner_cost_power,
+		BalanceConfig.MILESTONE_LEVELS,
+		milestone_cost_multiplier
+	)
 
 
 func _get_total_partner_count() -> int:
@@ -1752,10 +1736,12 @@ func _get_building_bulk_cost_for_count(building_index: int, count: int) -> int:
 
 
 func _get_building_cost_for_count(building_index: int, count: int) -> int:
-	if building_index >= 0 and building_index < BalanceConfig.BUILDING_BASE_COSTS.size():
-		return BalanceConfig.BUILDING_BASE_COSTS[building_index] + count * BalanceConfig.BUILDING_COST_STEPS[building_index]
-
-	return 0
+	return CostCalc.get_building_cost(
+		building_index,
+		count,
+		BalanceConfig.BUILDING_BASE_COSTS,
+		BalanceConfig.BUILDING_COST_STEPS
+	)
 
 
 func _reset_partner_state() -> void:
@@ -1984,39 +1970,16 @@ func recalculate_level_values() -> void:
 	var zone: Dictionary = ZoneConfig.ZONE_DATA[current_zone_index]
 	var base_hp: int = get_base_enemy_hp_for_level(current_level)
 	var base_reward: int = get_base_enemy_reward_for_level(current_level)
-	var scaled_hp: int = ceili(base_hp * zone.hp_multiplier)
-	var scaled_reward: int = ceili(base_reward * zone.reward_multiplier)
-	if is_boss_level:
-		target_max_hp = scaled_hp * 5
-		reward_gold = scaled_reward * 5
-	elif is_elite_enemy:
-		target_max_hp = scaled_hp * elite_hp_multiplier
-		reward_gold = scaled_reward * elite_reward_multiplier
-	else:
-		target_max_hp = scaled_hp
-		reward_gold = scaled_reward
+	target_max_hp = EnemyCalc.get_scaled_hp(base_hp, zone.hp_multiplier, is_boss_level, is_elite_enemy, BalanceConfig.BOSS_HP_MULTIPLIER, elite_hp_multiplier)
+	reward_gold = EnemyCalc.get_scaled_reward(base_reward, zone.reward_multiplier, is_boss_level, is_elite_enemy, BalanceConfig.BOSS_REWARD_MULTIPLIER, elite_reward_multiplier)
 
 
 func get_base_enemy_hp_for_level(level: int) -> int:
-	# HP uses the stronger curve; rewards grow slower so progression increasingly needs power spikes.
-	var stage: float = float(maxi(0, level - 1))
-	var base_hp: float = (
-		float(enemy_hp_base)
-		+ enemy_hp_linear * stage
-		+ enemy_hp_curve * pow(stage, enemy_hp_power)
-	)
-	return maxi(1, ceili(base_hp))
+	return EnemyCalc.get_base_hp(level, enemy_hp_base, enemy_hp_linear, enemy_hp_curve, enemy_hp_power)
 
 
 func get_base_enemy_reward_for_level(level: int) -> int:
-	# Prototype balance values: tune these alongside partner DPS and milestone x2 spikes.
-	var stage: float = float(maxi(0, level - 1))
-	var base_reward: float = (
-		float(enemy_reward_base)
-		+ enemy_reward_linear * stage
-		+ enemy_reward_curve * pow(stage, enemy_reward_power)
-	)
-	return maxi(1, ceili(base_reward))
+	return EnemyCalc.get_base_reward(level, enemy_reward_base, enemy_reward_linear, enemy_reward_curve, enemy_reward_power)
 
 
 func get_current_zone_index() -> int:
