@@ -12,9 +12,19 @@ naruto-clicker/
 │
 ├── scripts/
 │   ├── game/
-│   │   ├── ClickerState.gd         # All prototype state, economy formulas, and static game data
-│   │   ├── BalanceConfig.gd        # Central economy coefficients; ClickerState reads from here
-│   │   └── ProgressionSimulator.gd # Debug-only: estimates progression curves without saving
+│   │   ├── ClickerState.gd         # Runtime state, economy formulas, and gameplay API
+│   │   ├── BalanceConfig.gd        # Central economy coefficients; ClickerState and config files read from here
+│   │   ├── ProgressionSimulator.gd # Debug-only: estimates progression curves without saving
+│   │   └── config/                 # Static game definitions (no runtime state, no SaveManager)
+│   │       ├── ZoneConfig.gd       # ZONE_DATA: zone names, level ranges, enemy lists, multipliers
+│   │       ├── PartnerConfig.gd    # Partner names; DPS/costs delegate to BalanceConfig
+│   │       ├── PartnerSkillConfig.gd # All 65 partner skill definitions (13 partners × 5 skills)
+│   │       ├── HeroSkillConfig.gd  # 5 hero passive skill definitions
+│   │       ├── AbilityConfig.gd    # 20 ability rank skill definitions + unlock/cost helpers
+│   │       ├── SettlementConfig.gd # Building names and bonus types; costs delegate to BalanceConfig
+│   │       ├── PrestigeConfig.gd   # Prestige talent names and bonus types
+│   │       ├── TaskConfig.gd       # 10 task definitions (id, goal type, target delta, reward scale)
+│   │       └── ShopConfig.gd       # 5 shop product definitions
 │   └── ui/
 │       ├── GameAssetCatalog.gd       # Central registry: all UI image keys → file paths
 │       ├── ImageSlot.gd              # Drop-in ColorRect with texture + fallback color
@@ -94,24 +104,21 @@ naruto-clicker/
 
 ## Key architectural rules
 
-- **ClickerState** owns all game data and formulas. It has no UI references.
+- **ClickerState** owns runtime player state, economy formulas, and the gameplay API. It has no UI references.
+- **Config files** (`scripts/game/config/`) hold static definitions only — no runtime player state, no SaveManager calls, no scene references.
+- **BalanceConfig** owns numeric economy coefficients. Config files delegate to it for numeric arrays (DPS, costs, multipliers).
 - **ClickerScreen** owns all gameplay flow: processes timers, calls state methods, and pushes results to UI components.
 - **UI components** are read-only from the state's perspective; they emit signals upward to ClickerScreen.
+- **UI components** that need only static config data (partner names, building names, talent names) read directly from config classes — they do not need to go through ClickerState.
 - **Asset catalogs** (GameAssetCatalog, EnemyAssetCatalog, BackgroundAssetCatalog) are stateless helpers — they build paths and load textures but hold no runtime state.
 - **ImageSlot** is a drop-in ColorRect replacement. Missing image files never crash — it falls back to the placeholder color.
 - **SaveManager** writes atomically: temp file then rename. It validates `save_version` and exposes `migrate_save_data()` for future format upgrades.
 
-## Future extraction candidates (deferred, not yet extracted)
+## Config file rules
 
-The following large static data blocks live in `ClickerState.gd` and are candidates for dedicated config files in a future pass:
-
-| Candidate | Data | Suggested file |
-|-----------|------|----------------|
-| Zone data | `ZONE_DATA` array | `scripts/game/ZoneConfig.gd` |
-| Partner data | names, DPS, costs, skill definitions | `scripts/game/PartnerConfig.gd` |
-| Ability data | unlock levels, costs, skill definitions | `scripts/game/AbilityConfig.gd` |
-| Settlement data | building names, costs, effects | `scripts/game/SettlementConfig.gd` |
-| Task definitions | task id, type, scale values | `scripts/game/TaskConfig.gd` |
-| Shop products | product id, cost, reward type | `scripts/game/ShopConfig.gd` |
-
-**Do not extract these in the current pass.** Extraction requires updating all callers and must not change save field names or player-visible values.
+- Config files must not store runtime player state.
+- Config files must not call SaveManager.
+- Config files must not hold scene or node references.
+- Save field names, task ids, skill ids, product ids, and ability ids must not change.
+- To add a new task, skill, or shop product: edit the matching config file only.
+- Numeric balance values (DPS, costs, multipliers) live in BalanceConfig, not in config files.

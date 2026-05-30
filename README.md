@@ -352,7 +352,16 @@ Pressing the `A` button immediately toggles Auto-transition ON/OFF and then open
 - `scenes/ui/PrestigeSheet.tscn` - Bottom-half prestige sheet with header prestige points and the opaque confirmation dialog.
 - `scenes/ui/ShopPanel.tscn` - Prototype shop panel with product cards and a temporary test Gems grant.
 - `scenes/ui/ShopSheet.tscn` - Bottom-half shop sheet with header Gems that hosts ShopPanel.
-- `scripts/game/ClickerState.gd` - Prototype state, economy formulas, and all static game data arrays.
+- `scripts/game/ClickerState.gd` - Runtime state, economy formulas, and gameplay API. Static definitions have been moved to `scripts/game/config/`.
+- `scripts/game/config/ZoneConfig.gd` - Zone definitions (names, level ranges, enemy lists, HP/reward multipliers).
+- `scripts/game/config/PartnerConfig.gd` - Partner names; DPS and costs delegate to BalanceConfig.
+- `scripts/game/config/PartnerSkillConfig.gd` - All 65 partner skill definitions.
+- `scripts/game/config/HeroSkillConfig.gd` - Hero passive skill definitions.
+- `scripts/game/config/AbilityConfig.gd` - Ability rank skill definitions and unlock/cost helpers.
+- `scripts/game/config/SettlementConfig.gd` - Building names and bonus types.
+- `scripts/game/config/PrestigeConfig.gd` - Prestige talent names and bonus types.
+- `scripts/game/config/TaskConfig.gd` - Task definitions (id, goal type, target, reward scale).
+- `scripts/game/config/ShopConfig.gd` - Shop product definitions.
 - `scenes/ui/StageNavigator.tscn` / `StageNavigator.gd` - Horizontal 7-button stage navigator; replaces the "Naruto Clicker" title label.
 
 ## Image Asset System

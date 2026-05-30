@@ -96,10 +96,10 @@ func _update_prestige_action_row(total_reward: int) -> void:
 	button.text = "Prestige"
 
 
-func _ensure_talent_rows(state: ClickerState) -> void:
-	while talent_rows.size() < state.prestige_talent_names.size():
+func _ensure_talent_rows(_state: ClickerState) -> void:
+	while talent_rows.size() < PrestigeConfig.TALENT_NAMES.size():
 		var talent_index: int = talent_rows.size()
-		var talent_name: String = state.prestige_talent_names[talent_index]
+		var talent_name: String = PrestigeConfig.TALENT_NAMES[talent_index]
 		var talent_id: String = talent_name.to_lower().replace(" ", "_")
 		talent_rows.append(_create_talent_row(talent_index, talent_id))
 
@@ -172,7 +172,7 @@ func _update_talent_row(state: ClickerState, talent_index: int, row: Dictionary)
 	var level: int = state.prestige_talent_levels[talent_index]
 	var cost: int = state.get_prestige_talent_cost(talent_index)
 
-	name_level_label.text = "%s | Lv %d" % [state.prestige_talent_names[talent_index], level]
+	name_level_label.text = "%s | Lv %d" % [PrestigeConfig.TALENT_NAMES[talent_index], level]
 	effect_label.text = state.get_prestige_talent_description(talent_index)
 	button.disabled = state.prestige_points_available < cost
 	button.text = "Upgrade - Cost: %d" % cost

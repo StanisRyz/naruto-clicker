@@ -1,48 +1,6 @@
-class_name ClickerState
+﻿class_name ClickerState
 extends RefCounted
 
-const ZONE_DATA: Array = [
-	{
-		"name": "Training Grounds",
-		"level_start": 1,
-		"level_end": 10,
-		"enemies": ["Rogue Ninja", "Novice Bandit", "Training Outcast"],
-		"elite_enemy": "Elite Rogue Ninja",
-		"boss": "Training Master",
-		"hp_multiplier": 1.0,
-		"reward_multiplier": 1.0,
-	},
-	{
-		"name": "Forest Path",
-		"level_start": 11,
-		"level_end": 20,
-		"enemies": ["Forest Bandit", "Wild Scout", "Hidden Archer"],
-		"elite_enemy": "Elite Forest Bandit",
-		"boss": "Forest Guardian",
-		"hp_multiplier": 1.4,
-		"reward_multiplier": 1.3,
-	},
-	{
-		"name": "Stone Valley",
-		"level_start": 21,
-		"level_end": 30,
-		"enemies": ["Stone Warrior", "Valley Raider", "Rock Sentinel"],
-		"elite_enemy": "Elite Stone Warrior",
-		"boss": "Valley Warlord",
-		"hp_multiplier": 1.9,
-		"reward_multiplier": 1.7,
-	},
-	{
-		"name": "Shadow Camp",
-		"level_start": 31,
-		"level_end": 40,
-		"enemies": ["Shadow Fighter", "Camp Assassin", "Dark Scout"],
-		"elite_enemy": "Elite Shadow Fighter",
-		"boss": "Shadow Commander",
-		"hp_multiplier": 2.5,
-		"reward_multiplier": 2.2,
-	},
-]
 
 var gold: int = 0
 var gems: int = 0
@@ -92,144 +50,11 @@ var gold_bonus_purchase_cost: int = BalanceConfig.GOLD_BONUS_PURCHASE_COST
 var focus_burst_purchase_cost: int = BalanceConfig.FOCUS_BURST_PURCHASE_COST
 var rally_purchase_cost: int = BalanceConfig.RALLY_PURCHASE_COST
 var gold_bonus_multiplier: int = 2  # kept literal; see BalanceConfig for rank-based formula
-var partner_names: Array[String] = [
-	"Partner 1",
-	"Partner 2",
-	"Partner 3",
-	"Field Scout",
-	"Spear Guard",
-	"Iron Defender",
-	"Battle Monk",
-	"Elite Samurai",
-	"Shadow Captain",
-	"War Sage",
-	"Beast Tamer",
-	"Blade Master",
-	"Legendary Commander",
-]
-# Partner DPS tiers are prototype balance values tuned around milestone x2 spikes.
-var partner_dps_values: Array[int] = [10, 20, 35, 65, 120, 220, 410, 750, 1400, 2600, 4800, 9000, 16500]
-var partner_base_costs: Array[int] = [10, 50, 150, 400, 900, 1800, 3500, 7000, 14000, 28000, 56000, 110000, 220000]
-var partner_cost_steps: Array[int] = [10, 30, 50, 100, 180, 300, 500, 900, 1600, 2800, 5000, 9000, 16000]
 var partner_counts: Array[int] = []
 var partner_purchase_costs: Array[int] = []
-var partner_skill_unlock_counts: Array[int] = [10, 25, 50, 100, 250]
-var partner_skill_cost_multipliers: Array[int] = [3, 5, 8, 12, 20]
-var hero_skill_cost_multipliers: Array[int] = [5, 8, 12, 18, 30]
-var ability_skill_cost_multipliers: Array[int] = [1, 4, 9, 16, 25]
-var partner_skill_definitions: Array[Dictionary] = [
-	# Partner 1 (index 0) — Click Damage
-	{"id": "p0_s1", "partner_index": 0, "skill_level": 1, "unlock_count": 10, "name": "Click Training I", "description": "+20% Click Damage", "bonus_type": "click_damage", "bonus_value": 0.20},
-	{"id": "p0_s2", "partner_index": 0, "skill_level": 2, "unlock_count": 25, "name": "Click Training II", "description": "+25% Click Damage", "bonus_type": "click_damage", "bonus_value": 0.25},
-	{"id": "p0_s3", "partner_index": 0, "skill_level": 3, "unlock_count": 50, "name": "Click Training III", "description": "+50% Click Damage", "bonus_type": "click_damage", "bonus_value": 0.50},
-	{"id": "p0_s4", "partner_index": 0, "skill_level": 4, "unlock_count": 100, "name": "Click Training IV", "description": "+100% Click Damage", "bonus_type": "click_damage", "bonus_value": 1.00},
-	{"id": "p0_s5", "partner_index": 0, "skill_level": 5, "unlock_count": 250, "name": "Click Training V", "description": "+100% Click Damage", "bonus_type": "click_damage", "bonus_value": 1.00},
-	# Partner 2 (index 1) — Own Partner DPS
-	{"id": "p1_s1", "partner_index": 1, "skill_level": 1, "unlock_count": 10, "name": "Personal Mastery I", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p1_s2", "partner_index": 1, "skill_level": 2, "unlock_count": 25, "name": "Personal Mastery II", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p1_s3", "partner_index": 1, "skill_level": 3, "unlock_count": 50, "name": "Personal Mastery III", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p1_s4", "partner_index": 1, "skill_level": 4, "unlock_count": 100, "name": "Personal Mastery IV", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
-	{"id": "p1_s5", "partner_index": 1, "skill_level": 5, "unlock_count": 250, "name": "Personal Mastery V", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
-	# Partner 3 (index 2) — Own Partner DPS
-	{"id": "p2_s1", "partner_index": 2, "skill_level": 1, "unlock_count": 10, "name": "Personal Mastery I", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p2_s2", "partner_index": 2, "skill_level": 2, "unlock_count": 25, "name": "Personal Mastery II", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p2_s3", "partner_index": 2, "skill_level": 3, "unlock_count": 50, "name": "Personal Mastery III", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p2_s4", "partner_index": 2, "skill_level": 4, "unlock_count": 100, "name": "Personal Mastery IV", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
-	{"id": "p2_s5", "partner_index": 2, "skill_level": 5, "unlock_count": 250, "name": "Personal Mastery V", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
-	# Field Scout (index 3) — Click Damage
-	{"id": "p3_s1", "partner_index": 3, "skill_level": 1, "unlock_count": 10, "name": "Click Training I", "description": "+20% Click Damage", "bonus_type": "click_damage", "bonus_value": 0.20},
-	{"id": "p3_s2", "partner_index": 3, "skill_level": 2, "unlock_count": 25, "name": "Click Training II", "description": "+25% Click Damage", "bonus_type": "click_damage", "bonus_value": 0.25},
-	{"id": "p3_s3", "partner_index": 3, "skill_level": 3, "unlock_count": 50, "name": "Click Training III", "description": "+50% Click Damage", "bonus_type": "click_damage", "bonus_value": 0.50},
-	{"id": "p3_s4", "partner_index": 3, "skill_level": 4, "unlock_count": 100, "name": "Click Training IV", "description": "+100% Click Damage", "bonus_type": "click_damage", "bonus_value": 1.00},
-	{"id": "p3_s5", "partner_index": 3, "skill_level": 5, "unlock_count": 250, "name": "Click Training V", "description": "+100% Click Damage", "bonus_type": "click_damage", "bonus_value": 1.00},
-	# Spear Guard (index 4) — Total Partner DPS
-	{"id": "p4_s1", "partner_index": 4, "skill_level": 1, "unlock_count": 10, "name": "Team Command I", "description": "+25% Total Partner DPS", "bonus_type": "partner_dps", "bonus_value": 0.25},
-	{"id": "p4_s2", "partner_index": 4, "skill_level": 2, "unlock_count": 25, "name": "Team Command II", "description": "+40% Total Partner DPS", "bonus_type": "partner_dps", "bonus_value": 0.40},
-	{"id": "p4_s3", "partner_index": 4, "skill_level": 3, "unlock_count": 50, "name": "Team Command III", "description": "+60% Total Partner DPS", "bonus_type": "partner_dps", "bonus_value": 0.60},
-	{"id": "p4_s4", "partner_index": 4, "skill_level": 4, "unlock_count": 100, "name": "Team Command IV", "description": "+60% Total Partner DPS", "bonus_type": "partner_dps", "bonus_value": 0.60},
-	{"id": "p4_s5", "partner_index": 4, "skill_level": 5, "unlock_count": 250, "name": "Team Command V", "description": "+100% Total Partner DPS", "bonus_type": "partner_dps", "bonus_value": 1.00},
-	# Iron Defender (index 5) — Gold Gain
-	{"id": "p5_s1", "partner_index": 5, "skill_level": 1, "unlock_count": 10, "name": "Gold Sense I", "description": "+25% Gold Gain", "bonus_type": "gold", "bonus_value": 0.25},
-	{"id": "p5_s2", "partner_index": 5, "skill_level": 2, "unlock_count": 25, "name": "Gold Sense II", "description": "+50% Gold Gain", "bonus_type": "gold", "bonus_value": 0.50},
-	{"id": "p5_s3", "partner_index": 5, "skill_level": 3, "unlock_count": 50, "name": "Gold Sense III", "description": "+50% Gold Gain", "bonus_type": "gold", "bonus_value": 0.50},
-	{"id": "p5_s4", "partner_index": 5, "skill_level": 4, "unlock_count": 100, "name": "Gold Sense IV", "description": "+50% Gold Gain", "bonus_type": "gold", "bonus_value": 0.50},
-	{"id": "p5_s5", "partner_index": 5, "skill_level": 5, "unlock_count": 250, "name": "Gold Sense V", "description": "+50% Gold Gain", "bonus_type": "gold", "bonus_value": 0.50},
-	# Battle Monk (index 6) — Own Partner DPS
-	{"id": "p6_s1", "partner_index": 6, "skill_level": 1, "unlock_count": 10, "name": "Personal Mastery I", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p6_s2", "partner_index": 6, "skill_level": 2, "unlock_count": 25, "name": "Personal Mastery II", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p6_s3", "partner_index": 6, "skill_level": 3, "unlock_count": 50, "name": "Personal Mastery III", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p6_s4", "partner_index": 6, "skill_level": 4, "unlock_count": 100, "name": "Personal Mastery IV", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
-	{"id": "p6_s5", "partner_index": 6, "skill_level": 5, "unlock_count": 250, "name": "Personal Mastery V", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
-	# Elite Samurai (index 7) — Own Partner DPS
-	{"id": "p7_s1", "partner_index": 7, "skill_level": 1, "unlock_count": 10, "name": "Personal Mastery I", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p7_s2", "partner_index": 7, "skill_level": 2, "unlock_count": 25, "name": "Personal Mastery II", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p7_s3", "partner_index": 7, "skill_level": 3, "unlock_count": 50, "name": "Personal Mastery III", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p7_s4", "partner_index": 7, "skill_level": 4, "unlock_count": 100, "name": "Personal Mastery IV", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
-	{"id": "p7_s5", "partner_index": 7, "skill_level": 5, "unlock_count": 250, "name": "Personal Mastery V", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
-	# Shadow Captain (index 8) — Own Partner DPS
-	{"id": "p8_s1", "partner_index": 8, "skill_level": 1, "unlock_count": 10, "name": "Personal Mastery I", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p8_s2", "partner_index": 8, "skill_level": 2, "unlock_count": 25, "name": "Personal Mastery II", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p8_s3", "partner_index": 8, "skill_level": 3, "unlock_count": 50, "name": "Personal Mastery III", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p8_s4", "partner_index": 8, "skill_level": 4, "unlock_count": 100, "name": "Personal Mastery IV", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
-	{"id": "p8_s5", "partner_index": 8, "skill_level": 5, "unlock_count": 250, "name": "Personal Mastery V", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
-	# War Sage (index 9) — Own Partner DPS
-	{"id": "p9_s1", "partner_index": 9, "skill_level": 1, "unlock_count": 10, "name": "Personal Mastery I", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p9_s2", "partner_index": 9, "skill_level": 2, "unlock_count": 25, "name": "Personal Mastery II", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p9_s3", "partner_index": 9, "skill_level": 3, "unlock_count": 50, "name": "Personal Mastery III", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p9_s4", "partner_index": 9, "skill_level": 4, "unlock_count": 100, "name": "Personal Mastery IV", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
-	{"id": "p9_s5", "partner_index": 9, "skill_level": 5, "unlock_count": 250, "name": "Personal Mastery V", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
-	# Beast Tamer (index 10) — Own Partner DPS
-	{"id": "p10_s1", "partner_index": 10, "skill_level": 1, "unlock_count": 10, "name": "Personal Mastery I", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p10_s2", "partner_index": 10, "skill_level": 2, "unlock_count": 25, "name": "Personal Mastery II", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p10_s3", "partner_index": 10, "skill_level": 3, "unlock_count": 50, "name": "Personal Mastery III", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p10_s4", "partner_index": 10, "skill_level": 4, "unlock_count": 100, "name": "Personal Mastery IV", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
-	{"id": "p10_s5", "partner_index": 10, "skill_level": 5, "unlock_count": 250, "name": "Personal Mastery V", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
-	# Blade Master (index 11) — Own Partner DPS
-	{"id": "p11_s1", "partner_index": 11, "skill_level": 1, "unlock_count": 10, "name": "Personal Mastery I", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p11_s2", "partner_index": 11, "skill_level": 2, "unlock_count": 25, "name": "Personal Mastery II", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p11_s3", "partner_index": 11, "skill_level": 3, "unlock_count": 50, "name": "Personal Mastery III", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p11_s4", "partner_index": 11, "skill_level": 4, "unlock_count": 100, "name": "Personal Mastery IV", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
-	{"id": "p11_s5", "partner_index": 11, "skill_level": 5, "unlock_count": 250, "name": "Personal Mastery V", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
-	# Legendary Commander (index 12) — Own Partner DPS
-	{"id": "p12_s1", "partner_index": 12, "skill_level": 1, "unlock_count": 10, "name": "Personal Mastery I", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p12_s2", "partner_index": 12, "skill_level": 2, "unlock_count": 25, "name": "Personal Mastery II", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p12_s3", "partner_index": 12, "skill_level": 3, "unlock_count": 50, "name": "Personal Mastery III", "description": "+50% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 0.50},
-	{"id": "p12_s4", "partner_index": 12, "skill_level": 4, "unlock_count": 100, "name": "Personal Mastery IV", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
-	{"id": "p12_s5", "partner_index": 12, "skill_level": 5, "unlock_count": 250, "name": "Personal Mastery V", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
-]
 var purchased_partner_skill_ids: Array[String] = []
-var hero_skill_definitions: Array[Dictionary] = [
-	{"id": "hero_click_damage_1", "owner_type": "hero", "ability_id": "", "skill_level": 1, "unlock_character_level": 10, "name": "Hero Strike I", "description": "+100% Click Damage", "bonus_type": "click_damage", "bonus_value": 1.00},
-	{"id": "hero_partner_dps_1", "owner_type": "hero", "ability_id": "", "skill_level": 2, "unlock_character_level": 25, "name": "Hero Command I", "description": "+100% Partner DPS", "bonus_type": "partner_dps", "bonus_value": 1.00},
-	{"id": "hero_gold_1", "owner_type": "hero", "ability_id": "", "skill_level": 3, "unlock_character_level": 50, "name": "Treasure Sense I", "description": "+25% Gold Gain", "bonus_type": "gold", "bonus_value": 0.25},
-	{"id": "hero_gold_2", "owner_type": "hero", "ability_id": "", "skill_level": 4, "unlock_character_level": 100, "name": "Treasure Sense II", "description": "+25% Gold Gain", "bonus_type": "gold", "bonus_value": 0.25},
-	{"id": "hero_gold_3", "owner_type": "hero", "ability_id": "", "skill_level": 5, "unlock_character_level": 250, "name": "Treasure Sense III", "description": "+50% Gold Gain", "bonus_type": "gold", "bonus_value": 0.50},
-]
 var purchased_hero_skill_ids: Array[String] = []
-var ability_skill_definitions: Array[Dictionary] = [
-	{"id": "autoclick_rank_1", "owner_type": "ability", "ability_id": "autoclick", "skill_level": 1, "unlock_character_level": 15, "name": "Autoclick I", "description": "+15% rate, +2s duration", "bonus_type": "autoclick_rank", "bonus_value": 1.0},
-	{"id": "autoclick_rank_2", "owner_type": "ability", "ability_id": "autoclick", "skill_level": 2, "unlock_character_level": 30, "name": "Autoclick II", "description": "+15% rate, +2s duration", "bonus_type": "autoclick_rank", "bonus_value": 1.0},
-	{"id": "autoclick_rank_3", "owner_type": "ability", "ability_id": "autoclick", "skill_level": 3, "unlock_character_level": 60, "name": "Autoclick III", "description": "+15% rate, +2s duration", "bonus_type": "autoclick_rank", "bonus_value": 1.0},
-	{"id": "autoclick_rank_4", "owner_type": "ability", "ability_id": "autoclick", "skill_level": 4, "unlock_character_level": 100, "name": "Autoclick IV", "description": "+15% rate, +2s duration", "bonus_type": "autoclick_rank", "bonus_value": 1.0},
-	{"id": "autoclick_rank_5", "owner_type": "ability", "ability_id": "autoclick", "skill_level": 5, "unlock_character_level": 150, "name": "Autoclick V", "description": "+15% rate, +2s duration", "bonus_type": "autoclick_rank", "bonus_value": 1.0},
-	{"id": "gold_bonus_rank_1", "owner_type": "ability", "ability_id": "gold_bonus", "skill_level": 1, "unlock_character_level": 30, "name": "Gold Bonus I", "description": "Improves to x2.25 gold", "bonus_type": "gold_bonus_rank", "bonus_value": 1.0},
-	{"id": "gold_bonus_rank_2", "owner_type": "ability", "ability_id": "gold_bonus", "skill_level": 2, "unlock_character_level": 60, "name": "Gold Bonus II", "description": "Improves to x2.50 gold", "bonus_type": "gold_bonus_rank", "bonus_value": 1.0},
-	{"id": "gold_bonus_rank_3", "owner_type": "ability", "ability_id": "gold_bonus", "skill_level": 3, "unlock_character_level": 100, "name": "Gold Bonus III", "description": "Improves to x2.75 gold", "bonus_type": "gold_bonus_rank", "bonus_value": 1.0},
-	{"id": "gold_bonus_rank_4", "owner_type": "ability", "ability_id": "gold_bonus", "skill_level": 4, "unlock_character_level": 150, "name": "Gold Bonus IV", "description": "Improves to x3.00 gold", "bonus_type": "gold_bonus_rank", "bonus_value": 1.0},
-	{"id": "gold_bonus_rank_5", "owner_type": "ability", "ability_id": "gold_bonus", "skill_level": 5, "unlock_character_level": 250, "name": "Gold Bonus V", "description": "Improves to x3.25 gold", "bonus_type": "gold_bonus_rank", "bonus_value": 1.0},
-	{"id": "focus_burst_rank_1", "owner_type": "ability", "ability_id": "focus_burst", "skill_level": 1, "unlock_character_level": 60, "name": "Focus Burst I", "description": "Improves to x2.25 damage", "bonus_type": "focus_burst_rank", "bonus_value": 1.0},
-	{"id": "focus_burst_rank_2", "owner_type": "ability", "ability_id": "focus_burst", "skill_level": 2, "unlock_character_level": 100, "name": "Focus Burst II", "description": "Improves to x2.50 damage", "bonus_type": "focus_burst_rank", "bonus_value": 1.0},
-	{"id": "focus_burst_rank_3", "owner_type": "ability", "ability_id": "focus_burst", "skill_level": 3, "unlock_character_level": 150, "name": "Focus Burst III", "description": "Improves to x2.75 damage", "bonus_type": "focus_burst_rank", "bonus_value": 1.0},
-	{"id": "focus_burst_rank_4", "owner_type": "ability", "ability_id": "focus_burst", "skill_level": 4, "unlock_character_level": 250, "name": "Focus Burst IV", "description": "Improves to x3.00 damage", "bonus_type": "focus_burst_rank", "bonus_value": 1.0},
-	{"id": "focus_burst_rank_5", "owner_type": "ability", "ability_id": "focus_burst", "skill_level": 5, "unlock_character_level": 500, "name": "Focus Burst V", "description": "Improves to x3.25 damage", "bonus_type": "focus_burst_rank", "bonus_value": 1.0},
-	{"id": "rally_rank_1", "owner_type": "ability", "ability_id": "rally", "skill_level": 1, "unlock_character_level": 80, "name": "Rally I", "description": "Improves to x2.25 partner DPS", "bonus_type": "rally_rank", "bonus_value": 1.0},
-	{"id": "rally_rank_2", "owner_type": "ability", "ability_id": "rally", "skill_level": 2, "unlock_character_level": 125, "name": "Rally II", "description": "Improves to x2.50 partner DPS", "bonus_type": "rally_rank", "bonus_value": 1.0},
-	{"id": "rally_rank_3", "owner_type": "ability", "ability_id": "rally", "skill_level": 3, "unlock_character_level": 200, "name": "Rally III", "description": "Improves to x2.75 partner DPS", "bonus_type": "rally_rank", "bonus_value": 1.0},
-	{"id": "rally_rank_4", "owner_type": "ability", "ability_id": "rally", "skill_level": 4, "unlock_character_level": 350, "name": "Rally IV", "description": "Improves to x3.00 partner DPS", "bonus_type": "rally_rank", "bonus_value": 1.0},
-	{"id": "rally_rank_5", "owner_type": "ability", "ability_id": "rally", "skill_level": 5, "unlock_character_level": 500, "name": "Rally V", "description": "Improves to x3.25 partner DPS", "bonus_type": "rally_rank", "bonus_value": 1.0},
-]
 var purchased_ability_skill_ids: Array[String] = []
-var milestone_levels: Array[int] = [10, 25, 50, 100, 250, 500]
 var milestone_multiplier_per_reached: int = BalanceConfig.MILESTONE_MULTIPLIER_PER_REACHED
 var milestone_cost_multiplier: int = BalanceConfig.MILESTONE_COST_MULTIPLIER
 var character_cost_base: int = BalanceConfig.HERO_COST_BASE
@@ -246,57 +71,11 @@ var enemy_reward_base: int = BalanceConfig.ENEMY_REWARD_BASE
 var enemy_reward_linear: float = BalanceConfig.ENEMY_REWARD_LINEAR
 var enemy_reward_curve: float = BalanceConfig.ENEMY_REWARD_CURVE
 var enemy_reward_power: float = BalanceConfig.ENEMY_REWARD_POWER
-var building_names: Array[String] = ["Training Camp", "Market", "Knight Hut", "War Banner", "Clock Tower", "Boss Shrine"]
-var building_bonus_types: Array[String] = ["partner_dps", "gold", "click_damage", "ability_duration", "ability_cooldown", "boss_gold"]
-var building_base_costs: Array[int] = [25, 75, 150, 500, 1200, 3000]
-var building_cost_steps: Array[int] = [25, 50, 100, 250, 600, 1500]
 var building_counts: Array[int] = []
 var building_bonus_percent_per_level: int = BalanceConfig.BUILDING_BONUS_PERCENT_PER_LEVEL
 var building_purchase_costs: Array[int] = []
 var boss_retry_tokens: int = 0
 var task_reward_boost_multiplier: float = 1.0
-var shop_product_definitions: Array[Dictionary] = [
-	{
-		"id": "gold_pack_small",
-		"name": "Small Gold Pack",
-		"description": "Gain stage-scaled gold",
-		"cost_gems": 10,
-		"reward_type": "gold",
-		"reward_scale": 120,
-	},
-	{
-		"id": "gold_pack_large",
-		"name": "Large Gold Pack",
-		"description": "Gain a large stage-scaled gold reward",
-		"cost_gems": 25,
-		"reward_type": "gold",
-		"reward_scale": 350,
-	},
-	{
-		"id": "instant_combo",
-		"name": "Instant Combo",
-		"description": "Fill Combo Meter to 100%",
-		"cost_gems": 15,
-		"reward_type": "combo_fill",
-		"reward_amount": 100,
-	},
-	{
-		"id": "boss_retry_token",
-		"name": "Boss Retry",
-		"description": "Return to the failed boss level",
-		"cost_gems": 20,
-		"reward_type": "boss_retry_token",
-		"reward_amount": 1,
-	},
-	{
-		"id": "task_boost",
-		"name": "Task Reward Boost",
-		"description": "Next claimed task gives x2 gold",
-		"cost_gems": 30,
-		"reward_type": "task_reward_boost",
-		"reward_multiplier": 2.0,
-	},
-]
 
 var current_zone_index: int = 0
 var current_enemy_zone_index: int = 0
@@ -314,21 +93,7 @@ var prestige_points_total_earned: int = 0
 var total_prestiges: int = 0
 var prestige_required_level: int = BalanceConfig.PRESTIGE_REQUIRED_LEVEL
 var prestige_talent_levels: Array[int] = [0, 0, 0, 0, 0, 0]
-var prestige_talent_names: Array[String] = ["Focus Training", "Trade Routes", "Command Aura", "Quick Hands", "Builder Wisdom", "Boss Hunter"]
-var prestige_talent_bonus_types: Array[String] = ["click_damage", "gold", "partner_dps", "autoclick_rate", "settlement_effect", "boss_damage"]
 var prestige_talent_bonus_percent_per_level: int = BalanceConfig.PRESTIGE_TALENT_BONUS_PERCENT_PER_LEVEL
-var task_definitions: Array[Dictionary] = [
-	{"id": "manual_damage_500", "title": "Deal 500 manual damage", "goal_type": "manual_damage_delta", "target_delta": 500, "reward_scale": 20},
-	{"id": "defeat_25_enemies", "title": "Defeat 25 enemies", "goal_type": "enemies_defeated_delta", "target_delta": 25, "reward_scale": 30},
-	{"id": "defeat_2_elites", "title": "Defeat 2 elite enemies", "goal_type": "elite_enemies_defeated_delta", "target_delta": 2, "reward_scale": 60},
-	{"id": "defeat_1_boss", "title": "Defeat 1 boss", "goal_type": "bosses_defeated_delta", "target_delta": 1, "reward_scale": 100},
-	{"id": "gain_10_hero_levels", "title": "Gain 10 Hero Levels", "goal_type": "hero_level_delta", "target_delta": 10, "reward_scale": 50},
-	{"id": "hire_10_partners", "title": "Hire 10 partners", "goal_type": "partners_total_delta", "target_delta": 10, "reward_scale": 70},
-	{"id": "build_5_buildings", "title": "Build 5 settlement buildings", "goal_type": "buildings_total_delta", "target_delta": 5, "reward_scale": 80},
-	{"id": "activate_autoclick_1", "title": "Activate Autoclick 1 time", "goal_type": "autoclick_activations_delta", "target_delta": 1, "reward_scale": 40},
-	{"id": "combo_empowered_1", "title": "Fill Combo Meter to 100%", "goal_type": "combo_empowered_delta", "target_delta": 1, "reward_scale": 90},
-	{"id": "gain_10_game_levels", "title": "Reach 10 more levels", "goal_type": "game_level_delta", "target_delta": 10, "reward_scale": 120},
-]
 var active_task_ids: Array[String] = []
 var inactive_task_ids: Array[String] = []
 var active_task_states: Dictionary = {}
@@ -380,7 +145,7 @@ func initialize_tasks() -> void:
 	active_task_states.clear()
 
 	var task_ids: Array[String] = []
-	for task: Dictionary in task_definitions:
+	for task: Dictionary in TaskConfig.TASK_DEFINITIONS:
 		var task_id: String = String(task.get("id", ""))
 		if task_id != "":
 			task_ids.append(task_id)
@@ -449,7 +214,7 @@ func _get_task_current_value(task_id: String) -> int:
 
 
 func get_task_definition(task_id: String) -> Dictionary:
-	for task: Dictionary in task_definitions:
+	for task: Dictionary in TaskConfig.TASK_DEFINITIONS:
 		if String(task.get("id", "")) == task_id:
 			return task
 
@@ -671,7 +436,7 @@ func grant_test_gems(amount: int = 50) -> Dictionary:
 
 
 func get_shop_product(product_id: String) -> Dictionary:
-	for product: Dictionary in shop_product_definitions:
+	for product: Dictionary in ShopConfig.SHOP_PRODUCTS:
 		if String(product.get("id", "")) == product_id:
 			return product
 
@@ -680,7 +445,7 @@ func get_shop_product(product_id: String) -> Dictionary:
 
 func get_shop_product_view_data() -> Array[Dictionary]:
 	var product_view_data: Array[Dictionary] = []
-	for product: Dictionary in shop_product_definitions:
+	for product: Dictionary in ShopConfig.SHOP_PRODUCTS:
 		var cost_gems: int = int(product.get("cost_gems", 0))
 		product_view_data.append({
 			"id": String(product.get("id", "")),
@@ -810,7 +575,7 @@ func attack_with_damage(damage: int) -> Dictionary:
 		var next_zone_index: int = _get_zone_index_for_level(next_level)
 		zone_changed = next_zone_index != current_zone_index
 		if zone_changed:
-			var next_zone: Dictionary = ZONE_DATA[next_zone_index]
+			var next_zone: Dictionary = ZoneConfig.ZONE_DATA[next_zone_index]
 			new_zone_name = next_zone.name
 
 	return _make_attack_result(true, did_level_up, 0, damage_dealt, target_hp_before, 0, "Enemy defeated!", zone_changed, new_zone_name)
@@ -1053,7 +818,7 @@ func buy_partners(partner_index: int, mode: String) -> Dictionary:
 		return _make_purchase_result("Invalid partner")
 
 	if not can_buy_partner(partner_index):
-		return _make_purchase_result("Requires %s" % partner_names[partner_index - 1])
+		return _make_purchase_result("Requires %s" % PartnerConfig.PARTNER_NAMES[partner_index - 1])
 
 	var bought: int = get_partner_bulk_count(partner_index, mode)
 	var total_cost: int = get_partner_bulk_cost(partner_index, mode)
@@ -1065,7 +830,7 @@ func buy_partners(partner_index: int, mode: String) -> Dictionary:
 	partner_counts[partner_index] += bought
 	recalculate_partner_cost(partner_index)
 	_update_character_state()
-	return _make_purchase_result("%s hired x%d!" % [partner_names[partner_index], bought], false, true)
+	return _make_purchase_result("%s hired x%d!" % [PartnerConfig.PARTNER_NAMES[partner_index], bought], false, true)
 
 
 func get_partner_bulk_count(partner_index: int, mode: String) -> int:
@@ -1148,7 +913,7 @@ func buy_buildings(building_index: int, mode: String) -> Dictionary:
 		return _make_purchase_result("Invalid building")
 
 	if not can_buy_building(building_index):
-		return _make_purchase_result("Requires %s" % building_names[building_index - 1])
+		return _make_purchase_result("Requires %s" % SettlementConfig.BUILDING_NAMES[building_index - 1])
 
 	var bought: int = get_building_bulk_count(building_index, mode)
 	var total_cost: int = get_building_bulk_cost(building_index, mode)
@@ -1160,7 +925,7 @@ func buy_buildings(building_index: int, mode: String) -> Dictionary:
 	building_counts[building_index] += bought
 	recalculate_building_cost(building_index)
 	_update_character_state()
-	return _make_purchase_result("%s built x%d!" % [building_names[building_index], bought], false, true)
+	return _make_purchase_result("%s built x%d!" % [SettlementConfig.BUILDING_NAMES[building_index], bought], false, true)
 
 
 func get_building_bulk_count(building_index: int, mode: String) -> int:
@@ -1229,14 +994,14 @@ func get_building_effect_description(building_index: int) -> String:
 
 
 func get_building_short_effect_description(building_index: int) -> String:
-	if building_index < 0 or building_index >= building_names.size():
+	if building_index < 0 or building_index >= SettlementConfig.BUILDING_NAMES.size():
 		return ""
 
 	var amount: int = building_bonus_percent_per_level
-	if building_index >= building_bonus_types.size():
+	if building_index >= SettlementConfig.BUILDING_BONUS_TYPES.size():
 		return "+%d%% Bonus" % amount
 
-	match building_bonus_types[building_index]:
+	match SettlementConfig.BUILDING_BONUS_TYPES[building_index]:
 		"partner_dps":
 			return "+%d%% DPS" % amount
 		"gold":
@@ -1254,15 +1019,15 @@ func get_building_short_effect_description(building_index: int) -> String:
 
 
 func get_partner_description(partner_index: int) -> String:
-	if partner_index < 0 or partner_index >= partner_dps_values.size():
+	if partner_index < 0 or partner_index >= BalanceConfig.PARTNER_DPS_VALUES.size():
 		return ""
 
-	return "%d DPS" % partner_dps_values[partner_index]
+	return "%d DPS" % BalanceConfig.PARTNER_DPS_VALUES[partner_index]
 
 
 func get_milestone_multiplier(level: int) -> int:
 	var multiplier: int = 1
-	for milestone in milestone_levels:
+	for milestone in BalanceConfig.MILESTONE_LEVELS:
 		if level >= milestone:
 			multiplier *= milestone_multiplier_per_reached
 
@@ -1270,7 +1035,7 @@ func get_milestone_multiplier(level: int) -> int:
 
 
 func get_next_milestone(level: int) -> int:
-	for milestone in milestone_levels:
+	for milestone in BalanceConfig.MILESTONE_LEVELS:
 		if level < milestone:
 			return milestone
 
@@ -1278,7 +1043,7 @@ func get_next_milestone(level: int) -> int:
 
 
 func is_milestone_target(target_level_or_count: int) -> bool:
-	return milestone_levels.has(target_level_or_count)
+	return BalanceConfig.MILESTONE_LEVELS.has(target_level_or_count)
 
 
 func apply_milestone_cost_multiplier(cost: int, target_level_or_count: int) -> int:
@@ -1301,14 +1066,14 @@ func get_partner_milestone_multiplier(partner_index: int) -> int:
 
 func get_partner_skills_for_partner(partner_index: int) -> Array[Dictionary]:
 	var skills: Array[Dictionary] = []
-	for skill: Dictionary in partner_skill_definitions:
+	for skill: Dictionary in PartnerSkillConfig.SKILL_DEFINITIONS:
 		if int(skill.get("partner_index", -1)) == partner_index:
 			skills.append(skill)
 	return skills
 
 
 func get_partner_skill(skill_id: String) -> Dictionary:
-	for skill: Dictionary in partner_skill_definitions:
+	for skill: Dictionary in PartnerSkillConfig.SKILL_DEFINITIONS:
 		if String(skill.get("id", "")) == skill_id:
 			return skill
 
@@ -1316,11 +1081,14 @@ func get_partner_skill(skill_id: String) -> Dictionary:
 
 
 func get_hero_skills() -> Array[Dictionary]:
-	return hero_skill_definitions
+	var result: Array[Dictionary] = []
+	for s in HeroSkillConfig.SKILL_DEFINITIONS:
+		result.append(s)
+	return result
 
 
 func get_hero_skill(skill_id: String) -> Dictionary:
-	for skill: Dictionary in hero_skill_definitions:
+	for skill: Dictionary in HeroSkillConfig.SKILL_DEFINITIONS:
 		if String(skill.get("id", "")) == skill_id:
 			return skill
 	return {}
@@ -1358,10 +1126,10 @@ func get_hero_skill_cost(skill_id: String) -> int:
 		return 0
 	var skill_level: int = int(skill.get("skill_level", 0))
 	var unlock_level: int = int(skill.get("unlock_character_level", 0))
-	if skill_level < 1 or skill_level > hero_skill_cost_multipliers.size() or unlock_level <= 1:
+	if skill_level < 1 or skill_level > BalanceConfig.HERO_SKILL_COST_MULTIPLIERS.size() or unlock_level <= 1:
 		return 0
 	var base_cost: int = _get_character_level_cost_for_level(unlock_level - 1)
-	return base_cost * hero_skill_cost_multipliers[skill_level - 1]
+	return base_cost * BalanceConfig.HERO_SKILL_COST_MULTIPLIERS[skill_level - 1]
 
 
 func buy_hero_skill(skill_id: String) -> Dictionary:
@@ -1383,14 +1151,14 @@ func buy_hero_skill(skill_id: String) -> Dictionary:
 
 func get_ability_skills(ability_id: String) -> Array[Dictionary]:
 	var skills: Array[Dictionary] = []
-	for skill: Dictionary in ability_skill_definitions:
+	for skill: Dictionary in AbilityConfig.SKILL_DEFINITIONS:
 		if String(skill.get("ability_id", "")) == ability_id:
 			skills.append(skill)
 	return skills
 
 
 func get_ability_skill(skill_id: String) -> Dictionary:
-	for skill: Dictionary in ability_skill_definitions:
+	for skill: Dictionary in AbilityConfig.SKILL_DEFINITIONS:
 		if String(skill.get("id", "")) == skill_id:
 			return skill
 	return {}
@@ -1427,10 +1195,10 @@ func get_ability_skill_cost(skill_id: String) -> int:
 	if skill.is_empty():
 		return 0
 	var skill_level: int = int(skill.get("skill_level", 0))
-	if skill_level < 1 or skill_level > ability_skill_cost_multipliers.size():
+	if skill_level < 1 or skill_level > BalanceConfig.ABILITY_SKILL_COST_MULTIPLIERS.size():
 		return 0
 	var base_cost: int = _get_ability_base_cost(String(skill.get("ability_id", "")))
-	return base_cost * ability_skill_cost_multipliers[skill_level - 1]
+	return base_cost * BalanceConfig.ABILITY_SKILL_COST_MULTIPLIERS[skill_level - 1]
 
 
 func buy_ability_skill(skill_id: String) -> Dictionary:
@@ -1456,7 +1224,7 @@ func buy_ability_skill(skill_id: String) -> Dictionary:
 
 func get_hero_skill_bonus_multiplier(bonus_type: String) -> float:
 	var total_bonus: float = 0.0
-	for skill: Dictionary in hero_skill_definitions:
+	for skill: Dictionary in HeroSkillConfig.SKILL_DEFINITIONS:
 		var skill_id: String = String(skill.get("id", ""))
 		if not is_hero_skill_purchased(skill_id):
 			continue
@@ -1473,13 +1241,13 @@ func get_partner_skill_cost(skill_id: String) -> int:
 	var partner_index: int = int(skill.get("partner_index", -1))
 	var unlock_count: int = int(skill.get("unlock_count", 0))
 	var skill_level: int = int(skill.get("skill_level", 1))
-	if partner_index < 0 or partner_index >= partner_base_costs.size() or unlock_count <= 0:
+	if partner_index < 0 or partner_index >= BalanceConfig.PARTNER_BASE_COSTS.size() or unlock_count <= 0:
 		return 0
-	if skill_level < 1 or skill_level > partner_skill_cost_multipliers.size():
+	if skill_level < 1 or skill_level > BalanceConfig.PARTNER_SKILL_COST_MULTIPLIERS.size():
 		return 0
 
 	var base_milestone_cost: int = _get_partner_cost_for_count(partner_index, unlock_count - 1)
-	return base_milestone_cost * partner_skill_cost_multipliers[skill_level - 1]
+	return base_milestone_cost * BalanceConfig.PARTNER_SKILL_COST_MULTIPLIERS[skill_level - 1]
 
 
 func is_partner_skill_unlocked(skill_id: String) -> bool:
@@ -1527,8 +1295,8 @@ func buy_partner_skill(skill_id: String) -> Dictionary:
 	if not is_partner_skill_unlocked(skill_id):
 		var partner_index: int = int(skill.get("partner_index", -1))
 		var partner_name: String = "Partner"
-		if partner_index >= 0 and partner_index < partner_names.size():
-			partner_name = partner_names[partner_index]
+		if partner_index >= 0 and partner_index < PartnerConfig.PARTNER_NAMES.size():
+			partner_name = PartnerConfig.PARTNER_NAMES[partner_index]
 		return _make_purchase_result("Requires %s x%d" % [
 			partner_name,
 			int(skill.get("unlock_count", 0)),
@@ -1554,7 +1322,7 @@ func get_partner_skill_additive_bonus(bonus_type: String) -> float:
 
 func get_own_partner_skill_multiplier(partner_index: int) -> float:
 	var total_bonus: float = 0.0
-	for skill: Dictionary in partner_skill_definitions:
+	for skill: Dictionary in PartnerSkillConfig.SKILL_DEFINITIONS:
 		if int(skill.get("partner_index", -1)) != partner_index:
 			continue
 		if String(skill.get("bonus_type", "")) != "own_partner_dps":
@@ -1567,12 +1335,12 @@ func get_own_partner_skill_multiplier(partner_index: int) -> float:
 
 
 func get_partner_tier_total_dps(partner_index: int) -> int:
-	if partner_index < 0 or partner_index >= partner_counts.size() or partner_index >= partner_dps_values.size():
+	if partner_index < 0 or partner_index >= partner_counts.size() or partner_index >= BalanceConfig.PARTNER_DPS_VALUES.size():
 		return 0
 
 	return int(
 		partner_counts[partner_index]
-		* partner_dps_values[partner_index]
+		* BalanceConfig.PARTNER_DPS_VALUES[partner_index]
 		* get_partner_milestone_multiplier(partner_index)
 		* get_own_partner_skill_multiplier(partner_index)
 	)
@@ -1580,7 +1348,7 @@ func get_partner_tier_total_dps(partner_index: int) -> int:
 
 func _get_partner_skill_total_bonus(bonus_type: String) -> float:
 	var total_bonus: float = 0.0
-	for skill: Dictionary in partner_skill_definitions:
+	for skill: Dictionary in PartnerSkillConfig.SKILL_DEFINITIONS:
 		var skill_id: String = String(skill.get("id", ""))
 		if not is_partner_skill_purchased(skill_id):
 			continue
@@ -1592,7 +1360,7 @@ func _get_partner_skill_total_bonus(bonus_type: String) -> float:
 
 func get_ability_rank(ability_id: String) -> int:
 	var rank: int = 0
-	for skill: Dictionary in ability_skill_definitions:
+	for skill: Dictionary in AbilityConfig.SKILL_DEFINITIONS:
 		if String(skill.get("ability_id", "")) != ability_id:
 			continue
 		if is_ability_skill_purchased(String(skill.get("id", ""))):
@@ -1757,11 +1525,11 @@ func get_ability_description(ability_id: String) -> String:
 
 
 func get_prestige_talent_description(talent_index: int) -> String:
-	if talent_index < 0 or talent_index >= prestige_talent_bonus_types.size():
+	if talent_index < 0 or talent_index >= PrestigeConfig.TALENT_BONUS_TYPES.size():
 		return ""
 
 	var amount: int = prestige_talent_bonus_percent_per_level
-	match prestige_talent_bonus_types[talent_index]:
+	match PrestigeConfig.TALENT_BONUS_TYPES[talent_index]:
 		"click_damage":
 			return "+%d%% Click Damage per level" % amount
 		"gold":
@@ -1935,12 +1703,12 @@ func _get_partner_bulk_cost_for_count(partner_index: int, count: int) -> int:
 
 
 func _get_partner_cost_for_count(partner_index: int, count: int) -> int:
-	if partner_index >= 0 and partner_index < partner_base_costs.size():
+	if partner_index >= 0 and partner_index < BalanceConfig.PARTNER_BASE_COSTS.size():
 		# Non-linear, not exponential: target count is current + 1, and milestone targets cost x3.
 		var current_count: int = maxi(0, count)
 		var target_count: int = current_count + 1
-		var base: int = partner_base_costs[partner_index]
-		var step: int = partner_cost_steps[partner_index]
+		var base: int = BalanceConfig.PARTNER_BASE_COSTS[partner_index]
+		var step: int = BalanceConfig.PARTNER_COST_STEPS[partner_index]
 		var raw_cost: float = (
 			float(base)
 			+ float(step * current_count)
@@ -1982,8 +1750,8 @@ func _get_building_bulk_cost_for_count(building_index: int, count: int) -> int:
 
 
 func _get_building_cost_for_count(building_index: int, count: int) -> int:
-	if building_index >= 0 and building_index < building_base_costs.size():
-		return building_base_costs[building_index] + count * building_cost_steps[building_index]
+	if building_index >= 0 and building_index < BalanceConfig.BUILDING_BASE_COSTS.size():
+		return BalanceConfig.BUILDING_BASE_COSTS[building_index] + count * BalanceConfig.BUILDING_COST_STEPS[building_index]
 
 	return 0
 
@@ -1991,17 +1759,17 @@ func _get_building_cost_for_count(building_index: int, count: int) -> int:
 func _reset_partner_state() -> void:
 	partner_counts.clear()
 	partner_purchase_costs.clear()
-	for i in range(partner_base_costs.size()):
+	for i in range(BalanceConfig.PARTNER_BASE_COSTS.size()):
 		partner_counts.append(0)
-		partner_purchase_costs.append(partner_base_costs[i])
+		partner_purchase_costs.append(BalanceConfig.PARTNER_BASE_COSTS[i])
 
 
 func _reset_building_state() -> void:
 	building_counts.clear()
 	building_purchase_costs.clear()
-	for i in range(building_base_costs.size()):
+	for i in range(BalanceConfig.BUILDING_BASE_COSTS.size()):
 		building_counts.append(0)
-		building_purchase_costs.append(building_base_costs[i])
+		building_purchase_costs.append(BalanceConfig.BUILDING_BASE_COSTS[i])
 
 
 func is_current_level_boss() -> bool:
@@ -2184,7 +1952,7 @@ func reset_target() -> void:
 
 
 func choose_enemy_for_current_level() -> void:
-	var zone: Dictionary = ZONE_DATA[current_zone_index]
+	var zone: Dictionary = ZoneConfig.ZONE_DATA[current_zone_index]
 	current_enemy_zone_index = current_zone_index
 	if is_boss_level:
 		is_elite_enemy = false
@@ -2211,7 +1979,7 @@ func choose_enemy_for_current_level() -> void:
 
 
 func recalculate_level_values() -> void:
-	var zone: Dictionary = ZONE_DATA[current_zone_index]
+	var zone: Dictionary = ZoneConfig.ZONE_DATA[current_zone_index]
 	var base_hp: int = get_base_enemy_hp_for_level(current_level)
 	var base_reward: int = get_base_enemy_reward_for_level(current_level)
 	var scaled_hp: int = ceili(base_hp * zone.hp_multiplier)
@@ -2254,15 +2022,15 @@ func get_current_zone_index() -> int:
 
 
 func _get_zone_index_for_level(level: int) -> int:
-	for i in range(ZONE_DATA.size()):
-		if level <= ZONE_DATA[i].level_end:
+	for i in range(ZoneConfig.ZONE_DATA.size()):
+		if level <= ZoneConfig.ZONE_DATA[i].level_end:
 			return i
-	return ZONE_DATA.size() - 1
+	return ZoneConfig.ZONE_DATA.size() - 1
 
 
 func _update_zone() -> void:
 	var idx: int = _get_zone_index_for_level(current_level)
-	var zone: Dictionary = ZONE_DATA[idx]
+	var zone: Dictionary = ZoneConfig.ZONE_DATA[idx]
 	current_zone_index = idx
 	zone_name = zone.name
 	zone_level_start = zone.level_start
@@ -2511,7 +2279,7 @@ func _try_restore_tasks(data: Dictionary) -> bool:
 		return false
 
 	var all_valid_ids: Array[String] = []
-	for task: Dictionary in task_definitions:
+	for task: Dictionary in TaskConfig.TASK_DEFINITIONS:
 		var tid: String = String(task.get("id", ""))
 		if tid != "":
 			all_valid_ids.append(tid)

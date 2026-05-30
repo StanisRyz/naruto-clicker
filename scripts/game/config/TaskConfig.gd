@@ -1,0 +1,35 @@
+class_name TaskConfig
+extends RefCounted
+
+const TASK_DEFINITIONS: Array = [
+	{"id": "manual_damage_500", "title": "Deal 500 manual damage", "goal_type": "manual_damage_delta", "target_delta": 500, "reward_scale": 20},
+	{"id": "defeat_25_enemies", "title": "Defeat 25 enemies", "goal_type": "enemies_defeated_delta", "target_delta": 25, "reward_scale": 30},
+	{"id": "defeat_2_elites", "title": "Defeat 2 elite enemies", "goal_type": "elite_enemies_defeated_delta", "target_delta": 2, "reward_scale": 60},
+	{"id": "defeat_1_boss", "title": "Defeat 1 boss", "goal_type": "bosses_defeated_delta", "target_delta": 1, "reward_scale": 100},
+	{"id": "gain_10_hero_levels", "title": "Gain 10 Hero Levels", "goal_type": "hero_level_delta", "target_delta": 10, "reward_scale": 50},
+	{"id": "hire_10_partners", "title": "Hire 10 partners", "goal_type": "partners_total_delta", "target_delta": 10, "reward_scale": 70},
+	{"id": "build_5_buildings", "title": "Build 5 settlement buildings", "goal_type": "buildings_total_delta", "target_delta": 5, "reward_scale": 80},
+	{"id": "activate_autoclick_1", "title": "Activate Autoclick 1 time", "goal_type": "autoclick_activations_delta", "target_delta": 1, "reward_scale": 40},
+	{"id": "combo_empowered_1", "title": "Fill Combo Meter to 100%", "goal_type": "combo_empowered_delta", "target_delta": 1, "reward_scale": 90},
+	{"id": "gain_10_game_levels", "title": "Reach 10 more levels", "goal_type": "game_level_delta", "target_delta": 10, "reward_scale": 120},
+]
+
+
+static func get_all() -> Array:
+	return TASK_DEFINITIONS
+
+
+static func get_by_id(task_id: String) -> Dictionary:
+	for task: Dictionary in TASK_DEFINITIONS:
+		if String(task.get("id", "")) == task_id:
+			return task
+	return {}
+
+
+static func get_ids() -> Array[String]:
+	var ids: Array[String] = []
+	for task: Dictionary in TASK_DEFINITIONS:
+		var tid: String = String(task.get("id", ""))
+		if tid != "":
+			ids.append(tid)
+	return ids

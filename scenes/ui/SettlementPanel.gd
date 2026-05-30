@@ -24,8 +24,8 @@ func update_view(state: ClickerState) -> void:
 		_update_building_row(state, building_index, building_rows[building_index])
 
 
-func _ensure_building_rows(state: ClickerState) -> void:
-	while building_rows.size() < state.building_names.size():
+func _ensure_building_rows(_state: ClickerState) -> void:
+	while building_rows.size() < SettlementConfig.BUILDING_NAMES.size():
 		var building_index: int = building_rows.size()
 		building_rows.append(_create_building_row(building_index))
 
@@ -92,14 +92,14 @@ func _update_building_row(state: ClickerState, building_index: int, row: Diction
 	var name_count_label: Label = row["name_count_label"]
 	var effect_label: Label = row["effect_label"]
 	var button: Button = row["button"]
-	var building_name: String = state.building_names[building_index]
+	var building_name: String = SettlementConfig.BUILDING_NAMES[building_index]
 	var owned_count: int = state.building_counts[building_index]
 	name_count_label.text = "%s | %d" % [building_name, owned_count]
 	effect_label.text = _get_building_effect_with_milestone_text(state, building_index, owned_count)
 
 	if not state.can_buy_building(building_index):
 		button.disabled = true
-		button.text = "Requires %s" % state.building_names[building_index - 1]
+		button.text = "Requires %s" % SettlementConfig.BUILDING_NAMES[building_index - 1]
 		return
 
 	var bulk_count: int = state.get_building_bulk_display_count(building_index, selected_buy_mode)

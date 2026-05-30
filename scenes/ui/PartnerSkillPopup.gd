@@ -50,8 +50,8 @@ func _update_view(state: ClickerState) -> void:
 	var partner_index: int = int(skill.get("partner_index", -1))
 	var unlock_count: int = int(skill.get("unlock_count", 0))
 	var partner_name: String = "Partner"
-	if partner_index >= 0 and partner_index < state.partner_names.size():
-		partner_name = state.partner_names[partner_index]
+	if partner_index >= 0 and partner_index < PartnerConfig.PARTNER_NAMES.size():
+		partner_name = PartnerConfig.PARTNER_NAMES[partner_index]
 	var current_count: int = 0
 	if partner_index >= 0 and partner_index < state.partner_counts.size():
 		current_count = state.partner_counts[partner_index]

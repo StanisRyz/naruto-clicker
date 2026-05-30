@@ -21,7 +21,12 @@ Naruto Clicker is a vertical idle/clicker game targeting Web / Yandex Games, wit
 - Keep YandexBridge as a future integration point.
 - Keep `Main.tscn` as the app/root scene.
 - Keep `ClickerScreen` responsible for gameplay flow and UI updates.
-- Keep prototype state and formulas in `scripts/game/ClickerState.gd`.
+- Keep runtime state and formulas in `scripts/game/ClickerState.gd`.
+- Keep static game definitions (zone data, skill definitions, task definitions, shop products) in `scripts/game/config/`.
+- Config files must contain only static data — no runtime player state, no SaveManager calls, no scene references.
+- To add a new task, partner skill, or shop product, edit the matching config file in `scripts/game/config/`.
+- Do not add new static data arrays to ClickerState.gd; put them in the appropriate config file instead.
+- Numeric balance values (costs, DPS, multipliers) belong in BalanceConfig, not in config files.
 - Keep `PrimaryStatsPanel`, `ProgressInfoPanel`, `GameField`, and `UpgradePanel` as focused UI components.
 - Main screen primary stats and progress info are independent UI components; do not use a combined `StatsPanel` for new main screen UI.
 - `PrimaryStatsPanel` shows only gold, Gems, character level, click damage, and partner DPS numeric stat cards.

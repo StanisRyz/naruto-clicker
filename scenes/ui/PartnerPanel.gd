@@ -33,8 +33,8 @@ func update_view(state: ClickerState) -> void:
 		_update_partner_row(state, partner_index, partner_rows[partner_index])
 
 
-func _ensure_partner_rows(state: ClickerState) -> void:
-	while partner_rows.size() < state.partner_names.size():
+func _ensure_partner_rows(_state: ClickerState) -> void:
+	while partner_rows.size() < PartnerConfig.PARTNER_NAMES.size():
 		var partner_index: int = partner_rows.size()
 		partner_rows.append(_create_partner_row(partner_index))
 
@@ -145,18 +145,18 @@ func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionar
 	var skill_buttons: Array = row["skill_buttons"]
 	var skill_image_holders: Array = row["skill_image_holders"]
 	var button: Button = row["button"]
-	var partner_name: String = state.partner_names[partner_index]
+	var partner_name: String = PartnerConfig.PARTNER_NAMES[partner_index]
 	var partner_count: int = state.partner_counts[partner_index]
 	var tier_total_dps: int = state.get_partner_tier_total_dps(partner_index)
 	var next_milestone: int = state.get_next_milestone(partner_count)
 	name_count_label.text = "%s | %d | DPS %d" % [partner_name, partner_count, tier_total_dps]
 	if next_milestone > 0:
 		effect_label.text = "+%d DPS | Next x2 at %d" % [
-			state.partner_dps_values[partner_index],
+			BalanceConfig.PARTNER_DPS_VALUES[partner_index],
 			next_milestone,
 		]
 	else:
-		effect_label.text = "+%d DPS | Max milestones" % state.partner_dps_values[partner_index]
+		effect_label.text = "+%d DPS | Max milestones" % BalanceConfig.PARTNER_DPS_VALUES[partner_index]
 
 	var skills: Array[Dictionary] = state.get_partner_skills_for_partner(partner_index)
 	for i in range(skill_buttons.size()):
