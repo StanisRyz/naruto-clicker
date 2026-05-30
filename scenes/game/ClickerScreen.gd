@@ -386,6 +386,8 @@ func _fail_boss_level() -> void:
 	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
 	_sync_boss_timer()
+	if auto_transition_popup.visible:
+		auto_transition_popup.refresh_view(state)
 
 
 func _apply_attack_result(result: Dictionary, show_hit_feedback: bool, was_boss_level: bool = false) -> void:

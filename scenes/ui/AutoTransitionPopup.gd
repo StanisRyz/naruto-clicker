@@ -18,7 +18,7 @@ func _ready() -> void:
 	_toggle_button.pressed.connect(_on_toggle_pressed)
 
 
-func show_popup(state: ClickerState, anchor_global_position: Vector2) -> void:
+func show_popup(state: ClickerState, _anchor_global_position: Vector2) -> void:
 	_state = state
 	refresh_view(state)
 	mouse_filter = MOUSE_FILTER_STOP

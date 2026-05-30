@@ -53,6 +53,7 @@ var current_level: int = 1
 var max_unlocked_level: int = 1
 var auto_stage_advance_enabled: bool = true
 var cleared_level_ids: Dictionary = {}
+var level_enemy_progress: Dictionary = {}
 var enemies_defeated_on_level: int = 0
 var enemies_required_per_level: int = 10
 var target_hp: int = 10
@@ -742,6 +743,7 @@ func perform_prestige() -> Dictionary:
 	max_unlocked_level = 1
 	enemies_defeated_on_level = 0
 	clear_cleared_levels()
+	clear_all_level_progress()
 	auto_stage_advance_enabled = true
 	autoclick_purchased = false
 	autoclick_rank = 0
@@ -851,6 +853,7 @@ func resolve_defeated_target() -> Dictionary:
 		# Farming a previously cleared level
 		if auto_stage_advance_enabled:
 			# Auto ON: advance to current_level + 1 on this kill
+			save_current_level_progress()
 			var old_zone_index: int = current_zone_index
 			current_level += 1
 			enemies_defeated_on_level = 0
@@ -868,6 +871,7 @@ func resolve_defeated_target() -> Dictionary:
 			# Stay farming; no new stage unlock
 			enemies_defeated_on_level = enemies_required_per_level
 			reset_target()
+			save_current_level_progress()
 			if defeated_boss:
 				status_text = "Boss defeated! +%d gold. Farming stage %d." % [earned_gold, current_level]
 			else:
@@ -880,6 +884,7 @@ func resolve_defeated_target() -> Dictionary:
 		unlocked_level = max_unlocked_level
 
 		if auto_stage_advance_enabled:
+			save_current_level_progress()
 			var old_zone_index: int = current_zone_index
 			current_level += 1
 			enemies_defeated_on_level = 0
@@ -896,12 +901,14 @@ func resolve_defeated_target() -> Dictionary:
 		else:
 			enemies_defeated_on_level = enemies_required_per_level
 			reset_target()
+			save_current_level_progress()
 			if defeated_boss:
 				status_text = "Boss defeated! +%d gold. Stage %d unlocked." % [earned_gold, next_level]
 			else:
 				status_text = "+%d gold. Stage %d unlocked." % [earned_gold, next_level]
 	else:
 		reset_target()
+		save_current_level_progress()
 
 	var base_result: Dictionary = _make_attack_result(true, did_level_up, earned_gold, damage_dealt, target_hp_before, 0, status_text, zone_changed, new_zone_name)
 	base_result["advanced_to_next_level"] = advanced_to_next_level
@@ -2049,6 +2056,27 @@ func clear_cleared_levels() -> void:
 	cleared_level_ids.clear()
 
 
+func save_current_level_progress() -> void:
+	var progress: int = enemies_required_per_level if is_level_cleared(current_level) else clampi(enemies_defeated_on_level, 0, enemies_required_per_level)
+	level_enemy_progress[current_level] = progress
+
+
+func get_saved_level_progress(level: int) -> int:
+	return int(level_enemy_progress.get(level, 0))
+
+
+func set_saved_level_progress(level: int, progress: int) -> void:
+	level_enemy_progress[level] = clampi(progress, 0, enemies_required_per_level)
+
+
+func clear_level_progress(level: int) -> void:
+	level_enemy_progress.erase(level)
+
+
+func clear_all_level_progress() -> void:
+	level_enemy_progress.clear()
+
+
 func get_latest_available_level() -> int:
 	return max_unlocked_level
 
@@ -2056,12 +2084,13 @@ func get_latest_available_level() -> int:
 func enable_auto_stage_advance_and_jump_if_needed() -> Dictionary:
 	auto_stage_advance_enabled = true
 	if is_level_cleared(current_level) and current_level < max_unlocked_level:
+		save_current_level_progress()
 		current_level = max_unlocked_level
 		setup_current_level()
 		if is_level_cleared(current_level):
 			enemies_defeated_on_level = enemies_required_per_level
 		else:
-			enemies_defeated_on_level = 0
+			enemies_defeated_on_level = get_saved_level_progress(current_level)
 		return {
 			"moved_to_latest": true,
 			"advanced_to_next_level": true,
@@ -2100,7 +2129,10 @@ func fail_boss_level() -> Dictionary:
 	current_level = maxi(1, current_level - 1)
 	auto_stage_advance_enabled = false
 	setup_current_level()
-	enemies_defeated_on_level = enemies_required_per_level if is_level_cleared(current_level) else 0
+	if is_level_cleared(current_level):
+		enemies_defeated_on_level = enemies_required_per_level
+	else:
+		enemies_defeated_on_level = get_saved_level_progress(current_level)
 
 	return {
 		"defeated": false,
@@ -2127,9 +2159,13 @@ func travel_to_level(level: int) -> Dictionary:
 		return _make_purchase_result("Level %d is locked" % level)
 	if level < max_unlocked_level:
 		auto_stage_advance_enabled = false
+	save_current_level_progress()
 	current_level = level
 	setup_current_level()
-	enemies_defeated_on_level = enemies_required_per_level if is_level_cleared(current_level) else 0
+	if is_level_cleared(current_level):
+		enemies_defeated_on_level = enemies_required_per_level
+	else:
+		enemies_defeated_on_level = get_saved_level_progress(current_level)
 	return {
 		"defeated": false,
 		"level_up": false,
