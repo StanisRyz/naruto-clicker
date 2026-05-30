@@ -251,6 +251,35 @@ Levels are grouped into zones. Each zone has three normal enemies, one elite ene
 
 The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes/game/ClickerScreen.gd` owns the gameplay flow and updates the UI components.
 
+## Stage Navigator
+
+The "Naruto Clicker" title has been replaced by a horizontal Stage Navigator row at the top of `MainContent`.
+
+- Displays 7 small square buttons (40×40) centered on the current stage.
+- Scroll left `<` / right `>` buttons shift the visible window one step at a time.
+- Button color states:
+  - **Blue** — current selected stage.
+  - **White** — unlocked/opened stage (reachable for farming).
+  - **Gray** — locked future stage (not yet reached).
+- Player can click any white (unlocked) stage to travel there instantly.
+- Clicking a gray (locked) or the current (blue) stage does nothing.
+- Traveling resets the current enemy, enemies-defeated counter, and boss timer.
+- Traveling to a previous boss level starts the boss timer again (farmable).
+- Clearing a traveled level advances normally: defeat required enemies → level +1.
+
+### Scroll bounds
+
+- Scroll left stops when stage 1 is the leftmost visible button.
+- Scroll right stops when the rightmost visible button equals `max_unlocked_level + 3` (shows up to 3 locked future stages).
+
+### max_unlocked_level
+
+- Tracks the highest stage the player has reached naturally.
+- Updated whenever `current_level` increases beyond the previous maximum.
+- Traveling backward does **not** reduce `max_unlocked_level`.
+- Boss fail returns to the previous level but does **not** reduce `max_unlocked_level`.
+- Resets to 1 on prestige alongside normal progression reset.
+
 ## Project Structure
 
 - `project.godot` - Godot project settings, main scene, display, renderer, and autoload configuration.
@@ -278,6 +307,7 @@ The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes
 - `scenes/ui/ShopPanel.tscn` - Prototype shop panel with product cards and a temporary test Gems grant.
 - `scenes/ui/ShopSheet.tscn` - Bottom-half shop sheet with header Gems that hosts ShopPanel.
 - `scripts/game/ClickerState.gd` - Temporary prototype state and formulas.
+- `scenes/ui/StageNavigator.tscn` / `StageNavigator.gd` - Horizontal 7-button stage navigator; replaces the "Naruto Clicker" title label.
 
 ## Web Export Notes
 

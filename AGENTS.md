@@ -444,6 +444,22 @@ After each patch, validate manually in Godot:
 - Renderer remains GL Compatibility.
 - No missing scene/script errors.
 - No external plugins/assets were added.
+- "Naruto Clicker" title label is gone from the main screen.
+- StageNavigator appears at the top of MainContent showing 7 square buttons.
+- Stage 1 / current stage button is blue on start.
+- Locked future stages are gray and unclickable.
+- Clicking a gray locked stage does nothing.
+- Clicking the current blue stage does nothing.
+- Clicking an unlocked white stage travels to that stage without granting gold.
+- ProgressInfoPanel updates correctly after travel.
+- Traveling to a previous boss level restarts the boss timer.
+- Traveling to a non-boss level stops/clears the boss timer.
+- Boss fail does not reduce max_unlocked_level.
+- Prestige resets max_unlocked_level to 1.
+- StageNavigator scroll left stops when stage 1 is leftmost visible.
+- StageNavigator scroll right stops when rightmost visible is max_unlocked_level + 3.
+- StageNavigator clicks do not attack the enemy.
+- Enemy transition lock blocks travel requests.
 - Hero level 9 has damage 9 before other multipliers.
 - Buying level 10 changes hero damage to 20.
 - Hero level 25 changes hero damage to 100.
@@ -531,6 +547,27 @@ After each patch, validate manually in Godot:
 - Boss Hunter increases manual, autoclick, and partner damage against bosses.
 - PrimaryStatsPanel and ProgressInfoPanel do not show Prestige points or total runs; prestige details belong in PrestigeSheet.
 - After prestige, all timers (boss, autoclick, gold bonus, ability cooldowns, accumulators) are reset in ClickerScreen.
+
+## Stage Navigator Rules
+
+- `StageNavigator` replaces the "Naruto Clicker" `TitleLabel` in `MainContent/VBoxContainer`.
+- It shows exactly 7 stage buttons (40×40 ColorRect-backed squares) at a time.
+- Button color states: blue = current stage, white = unlocked, gray = locked.
+- Clicking an unlocked (white) stage emits `stage_selected(level)` and triggers `travel_to_level` in `ClickerScreen`.
+- Clicking the current (blue) stage or a locked (gray) stage does nothing.
+- `StageNavigator` clicks must not propagate to `GameField` and must not trigger attacks.
+- `max_unlocked_level` in `ClickerState` tracks the highest stage naturally reached.
+- `max_unlocked_level` updates with `maxi(max_unlocked_level, current_level)` every time `current_level` increases in `resolve_defeated_target()`.
+- `max_unlocked_level` is not reduced by traveling backward, boss fail, or anything other than prestige.
+- `max_unlocked_level` resets to 1 on prestige alongside `current_level`.
+- `can_travel_to_level(level)` returns true when `level >= 1` and `level <= max_unlocked_level`.
+- `travel_to_level(level)` sets `current_level`, resets `enemies_defeated_on_level` to 0, calls `setup_current_level()`, and returns a result dict with `"travelled": true`.
+- Traveling does not grant gold, does not count defeated enemies, and does not modify character/partner/settlement/prestige state.
+- After travel in `ClickerScreen._on_stage_selected`: reset `partner_damage_accumulator` and `autoclick_accumulator`, increment `enemy_transition_token` (invalidates in-flight transitions), call `_sync_boss_timer()`, then `_update_ui()` and `game_field.update_view(state)`.
+- Scroll left is disabled when `visible_center_level - SIDE_COUNT <= 1` (stage 1 is already leftmost).
+- Scroll right is disabled when `visible_center_level + SIDE_COUNT >= max_unlocked_level + SIDE_COUNT` (rightmost visible would exceed `max_unlocked_level + 3`).
+- Navigator center snaps to show `current_level` whenever it falls outside the visible 7-button window.
+- `ClickerScreen._update_ui()` calls `stage_navigator.update_view(state.current_level, state.max_unlocked_level)`.
 
 ## Documentation Update Rules
 

@@ -39,6 +39,7 @@ var combo_empowered_duration: float = 10.0
 var combo_empowered_multiplier: float = 3.0
 
 @onready var primary_stats_panel: PrimaryStatsPanel = $PrimaryStatsPanel
+@onready var stage_navigator: Control = $MainContent/VBoxContainer/StageNavigator
 @onready var progress_info_panel: ProgressInfoPanel = $MainContent/VBoxContainer/ProgressInfoPanel
 @onready var combo_panel: ComboPanel = $ComboPanel
 @onready var tasks_button: Button = $TasksButton
@@ -59,6 +60,7 @@ var combo_empowered_multiplier: float = 3.0
 
 
 func _ready() -> void:
+	stage_navigator.stage_selected.connect(_on_stage_selected)
 	game_field.attack_requested.connect(_on_attack_requested)
 	ability_bar.autoclick_requested.connect(_on_autoclick_requested)
 	ability_bar.gold_bonus_requested.connect(_on_gold_bonus_requested)
@@ -130,6 +132,7 @@ func _process(delta: float) -> void:
 func _update_ui() -> void:
 	_update_bottom_bar_view()
 	primary_stats_panel.update_view(state)
+	stage_navigator.update_view(state.current_level, state.max_unlocked_level)
 	progress_info_panel.update_view(state)
 	_update_combo_panel()
 	game_field.update_view(state)
@@ -583,6 +586,23 @@ func _handle_defeat_result(result: Dictionary, was_boss_level: bool) -> void:
 
 	_update_ui()
 	_finish_enemy_transition_after_delay(transition_token)
+
+
+func _on_stage_selected(level: int) -> void:
+	if enemy_transition_locked:
+		return
+	if level == state.current_level:
+		return
+	var result: Dictionary = state.travel_to_level(level)
+	if not result.get("travelled", false):
+		return
+	partner_damage_accumulator = 0.0
+	autoclick_accumulator = 0.0
+	enemy_transition_token += 1
+	game_field.set_enemy_transition_locked(false)
+	_sync_boss_timer()
+	_update_ui()
+	game_field.update_view(state)
 
 
 func _handle_status_text(_text: String) -> void:

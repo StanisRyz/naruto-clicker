@@ -50,6 +50,7 @@ var click_damage: int = 1
 var character_level: int = 1
 var character_level_upgrade_cost: int = 5
 var current_level: int = 1
+var max_unlocked_level: int = 1
 var enemies_defeated_on_level: int = 0
 var enemies_required_per_level: int = 10
 var target_hp: int = 10
@@ -736,6 +737,7 @@ func perform_prestige() -> Dictionary:
 	gold = 0
 	character_level = 1
 	current_level = 1
+	max_unlocked_level = 1
 	enemies_defeated_on_level = 0
 	autoclick_purchased = false
 	autoclick_rank = 0
@@ -841,6 +843,7 @@ func resolve_defeated_target() -> Dictionary:
 	if did_level_up:
 		var old_zone_index: int = current_zone_index
 		current_level += 1
+		max_unlocked_level = maxi(max_unlocked_level, current_level)
 		enemies_defeated_on_level = 0
 		setup_current_level()
 		zone_changed = current_zone_index != old_zone_index
@@ -2018,6 +2021,32 @@ func fail_boss_level() -> Dictionary:
 		"status_text": "Boss failed! Returned to Level %d" % current_level,
 		"zone_changed": false,
 		"zone_name": "",
+	}
+
+
+func can_travel_to_level(level: int) -> bool:
+	return level >= 1 and level <= max_unlocked_level
+
+
+func travel_to_level(level: int) -> Dictionary:
+	if not can_travel_to_level(level):
+		return _make_purchase_result("Level %d is locked" % level)
+	current_level = level
+	enemies_defeated_on_level = 0
+	setup_current_level()
+	return {
+		"defeated": false,
+		"level_up": false,
+		"reward_gold": 0,
+		"damage_dealt": 0,
+		"target_hp_before": target_hp,
+		"target_hp_after": target_hp,
+		"upgraded": false,
+		"not_enough_gold": false,
+		"status_text": "Travelled to Level %d" % current_level,
+		"zone_changed": false,
+		"zone_name": "",
+		"travelled": true,
 	}
 
 

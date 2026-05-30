@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scenes/game/ClickerScreen.gd" id="1_ymqc8"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PrimaryStatsPanel.tscn" id="2_primary"]
@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/ComboPanel.tscn" id="10_combo"]
 [ext_resource type="PackedScene" path="res://scenes/ui/TasksWindow.tscn" id="11_tasks"]
 [ext_resource type="PackedScene" path="res://scenes/ui/ShopSheet.tscn" id="12_shop"]
+[ext_resource type="PackedScene" path="res://scenes/ui/StageNavigator.tscn" id="13_nav"]
 
 [node name="ClickerScreen" type="Control"]
 layout_mode = 3
@@ -62,11 +63,8 @@ layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 18
 
-[node name="TitleLabel" type="Label" parent="MainContent/VBoxContainer"]
+[node name="StageNavigator" parent="MainContent/VBoxContainer" instance=ExtResource("13_nav")]
 layout_mode = 2
-mouse_filter = 2
-text = "Naruto Clicker"
-horizontal_alignment = 1
 
 [node name="ProgressInfoPanel" parent="MainContent/VBoxContainer" instance=ExtResource("9_progress")]
 layout_mode = 2
