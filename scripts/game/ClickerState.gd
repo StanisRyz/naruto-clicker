@@ -231,22 +231,22 @@ func get_boss_timer_multiplier() -> float:
 
 func get_focus_burst_multiplier() -> float:
 	var rank: int = get_ability_rank("focus_burst")
-	return 2.0 + 0.25 * rank if focus_burst_active and is_ability_purchased("focus_burst") else 1.0
+	return BalanceConfig.ABILITY_BASE_MULTIPLIER + BalanceConfig.ABILITY_RANK_MULTIPLIER_STEP * rank if focus_burst_active and is_ability_purchased("focus_burst") else 1.0
 
 
 func get_rally_multiplier() -> float:
 	var rank: int = get_ability_rank("rally")
-	return 2.0 + 0.25 * rank if rally_active and is_ability_purchased("rally") else 1.0
+	return BalanceConfig.ABILITY_BASE_MULTIPLIER + BalanceConfig.ABILITY_RANK_MULTIPLIER_STEP * rank if rally_active and is_ability_purchased("rally") else 1.0
 
 
 func get_gold_bonus_multiplier() -> float:
 	var rank: int = get_ability_rank("gold_bonus")
-	return 2.0 + 0.25 * rank if gold_bonus_active and is_ability_purchased("gold_bonus") else 1.0
+	return BalanceConfig.ABILITY_BASE_MULTIPLIER + BalanceConfig.ABILITY_RANK_MULTIPLIER_STEP * rank if gold_bonus_active and is_ability_purchased("gold_bonus") else 1.0
 
 
 func get_autoclick_rank_rate_multiplier() -> float:
 	var rank: int = get_ability_rank("autoclick")
-	return 1.0 + 0.15 * rank
+	return 1.0 + BalanceConfig.AUTOCLICK_RANK_RATE_STEP * rank
 
 
 func get_boss_damage_multiplier() -> float:
@@ -1719,7 +1719,7 @@ func _update_zone() -> void:
 
 
 func _update_character_state() -> void:
-	var base_damage: int = character_level * get_character_milestone_multiplier()
+	var base_damage: int = int(BalanceConfig.HERO_BASE_DAMAGE + float(character_level) * BalanceConfig.HERO_DAMAGE_PER_LEVEL) * get_character_milestone_multiplier()
 	click_damage = maxi(
 		1,
 		int(

@@ -6,6 +6,75 @@ Do not edit formula vars directly in ClickerState.gd.
 
 ---
 
+## Power Progression Model C v1 (implemented 2026-05-30)
+
+Goals:
+- Hero click damage formula centralised into BalanceConfig constants
+- Ability purchase costs tuned to new exponential economy
+- Skill cost multipliers adjusted to make skills reachable at their unlock points
+- Ability multiplier magic numbers extracted into BalanceConfig constants
+- Partner DPS values unchanged — current ~1.85× per tier is within the 1.7–2.2× target
+
+### Hero damage formula
+
+```
+base_damage = HERO_BASE_DAMAGE + character_level * HERO_DAMAGE_PER_LEVEL
+click_damage = base_damage * milestone_multiplier * passive_multipliers
+```
+
+| Constant | Value | Note |
+|----------|-------|------|
+| `HERO_BASE_DAMAGE` | 1.0 | Flat base (gives level 1 = 2 damage instead of 1) |
+| `HERO_DAMAGE_PER_LEVEL` | 1.0 | Linear per-level contribution |
+
+The +1 base makes the very first clicks feel slightly more impactful.
+
+### Ability purchase costs (tuned for new economy)
+
+| Ability | Old cost | New cost | Target feeling |
+|---------|----------|----------|----------------|
+| Autoclick | 50 | 300 | Reachable near first wall |
+| Gold Bonus | 150 | 1200 | Reachable after first farming loop |
+| Focus Burst | 500 | 5000 | Mid-game boss/checkpoint tool |
+| Rally | 1000 | 15000 | Mid-game partner accelerator |
+
+### Ability multiplier constants
+
+```
+focus_burst / rally / gold_bonus: multiplier = ABILITY_BASE_MULTIPLIER + ABILITY_RANK_MULTIPLIER_STEP * rank
+autoclick rate: 1.0 + AUTOCLICK_RANK_RATE_STEP * rank
+```
+
+| Constant | Value |
+|----------|-------|
+| `ABILITY_BASE_MULTIPLIER` | 2.0 |
+| `ABILITY_RANK_MULTIPLIER_STEP` | 0.25 |
+| `AUTOCLICK_BASE_HITS_PER_SEC` | 20.0 |
+| `AUTOCLICK_BASE_DURATION_SEC` | 15 |
+| `AUTOCLICK_RANK_DURATION_BONUS_SEC` | 2 |
+| `AUTOCLICK_RANK_RATE_STEP` | 0.15 |
+
+Behavior unchanged from previous values — only magic numbers centralised.
+
+### Skill cost multipliers (minor adjustments)
+
+| Array | Old | New | Direction |
+|-------|-----|-----|-----------|
+| `HERO_SKILL_COST_MULTIPLIERS` | [5, 8, 12, 18, 30] | [4, 7, 11, 17, 26] | Slightly cheaper |
+| `PARTNER_SKILL_COST_MULTIPLIERS` | [3, 5, 8, 12, 20] | [4, 6, 9, 14, 22] | Skill 1 slightly pricier, rest adjusted |
+| `ABILITY_SKILL_COST_MULTIPLIERS` | [1, 4, 9, 16, 25] | [1, 3, 7, 13, 22] | Ranks 2–5 more accessible |
+
+### Intentionally not changed in this pass
+
+- Partner DPS values — ~1.85× per tier, within the 1.7–2.2× target range
+- Milestone levels and multipliers — unchanged
+- Settlement building effects — unchanged (1% per level)
+- Prestige talent bonus — unchanged (5% per level)
+- Ability max rank and base multiplier behavior — unchanged
+- Research suggested ability ×5 multiplier — deferred; current ×2.0–×3.25 safer for first test
+
+---
+
 ## Core Economy Model C v1 (implemented 2026-05-30)
 
 Goals:

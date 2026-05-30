@@ -72,34 +72,41 @@ static func get_ability_description(state: ClickerState, ability_id: String) -> 
 	var purchased: bool = state.is_ability_purchased(ability_id)
 	match ability_id:
 		"autoclick":
-			var hits: int = roundi(20.0 * (1.0 + 0.15 * rank))
-			var dur: int = 15 + 2 * rank
+			var base_hits: float = BalanceConfig.AUTOCLICK_BASE_HITS_PER_SEC
+			var hits: int = roundi(base_hits * (1.0 + BalanceConfig.AUTOCLICK_RANK_RATE_STEP * rank))
+			var dur: int = BalanceConfig.AUTOCLICK_BASE_DURATION_SEC + BalanceConfig.AUTOCLICK_RANK_DURATION_BONUS_SEC * rank
+			var base_dur: int = BalanceConfig.AUTOCLICK_BASE_DURATION_SEC
+			var rate_pct: int = roundi(BalanceConfig.AUTOCLICK_RANK_RATE_STEP * 100.0)
+			var dur_bonus: int = BalanceConfig.AUTOCLICK_RANK_DURATION_BONUS_SEC
 			if not purchased:
-				return "Unlock: 20 hits/sec | 15s"
+				return "Unlock: %d hits/sec | %ds" % [int(base_hits), base_dur]
 			if rank >= state.ability_max_rank:
 				return "%d hits/sec | %ds" % [hits, dur]
-			return "%d hits/sec | %ds | Next: +15%% rate, +2s" % [hits, dur]
+			return "%d hits/sec | %ds | Next: +%d%% rate, +%ds" % [hits, dur, rate_pct, dur_bonus]
 		"gold_bonus":
-			var mult: float = 2.0 + 0.25 * rank
+			var mult: float = BalanceConfig.ABILITY_BASE_MULTIPLIER + BalanceConfig.ABILITY_RANK_MULTIPLIER_STEP * rank
+			var next_mult: float = mult + BalanceConfig.ABILITY_RANK_MULTIPLIER_STEP
 			if not purchased:
-				return "Unlock: x2.00 gold | 45s"
+				return "Unlock: x%.2f gold | 45s" % BalanceConfig.ABILITY_BASE_MULTIPLIER
 			if rank >= state.ability_max_rank:
 				return "x%.2f gold" % mult
-			return "x%.2f gold | Next: x%.2f" % [mult, mult + 0.25]
+			return "x%.2f gold | Next: x%.2f" % [mult, next_mult]
 		"focus_burst":
-			var mult: float = 2.0 + 0.25 * rank
+			var mult: float = BalanceConfig.ABILITY_BASE_MULTIPLIER + BalanceConfig.ABILITY_RANK_MULTIPLIER_STEP * rank
+			var next_mult: float = mult + BalanceConfig.ABILITY_RANK_MULTIPLIER_STEP
 			if not purchased:
-				return "Unlock: x2.00 damage | 20s"
+				return "Unlock: x%.2f damage | 20s" % BalanceConfig.ABILITY_BASE_MULTIPLIER
 			if rank >= state.ability_max_rank:
 				return "x%.2f damage" % mult
-			return "x%.2f damage | Next: x%.2f" % [mult, mult + 0.25]
+			return "x%.2f damage | Next: x%.2f" % [mult, next_mult]
 		"rally":
-			var mult: float = 2.0 + 0.25 * rank
+			var mult: float = BalanceConfig.ABILITY_BASE_MULTIPLIER + BalanceConfig.ABILITY_RANK_MULTIPLIER_STEP * rank
+			var next_mult: float = mult + BalanceConfig.ABILITY_RANK_MULTIPLIER_STEP
 			if not purchased:
-				return "Unlock: x2.00 partner DPS | 30s"
+				return "Unlock: x%.2f partner DPS | 30s" % BalanceConfig.ABILITY_BASE_MULTIPLIER
 			if rank >= state.ability_max_rank:
 				return "x%.2f partner DPS" % mult
-			return "x%.2f partner DPS | Next: x%.2f" % [mult, mult + 0.25]
+			return "x%.2f partner DPS | Next: x%.2f" % [mult, next_mult]
 		_:
 			return ""
 

@@ -2,22 +2,35 @@ class_name BalanceConfig
 extends RefCounted
 
 # Central source for economy coefficients and formulas.
-# Tune values here; ClickerState and calculators pick them up automatically.
+# Tune values here; ClickerState, calculators, and presentation pick them up automatically.
 #
 # Core Economy Model C v1 (2026-05-30):
-#   - Explosive early game (fast first ~10 levels)
-#   - Smoother mid-game slowdown
-#   - Harder late-game friction
-#   Costs: segmented adaptive exponential (hero, partners)
-#   Enemies: exponential HP / reward curves
-#   Buildings: exponential cost growth
-#   Boss/elite multipliers adjusted upward from prototype values
+#   Explosive early game, smoother mid-game, harder late-game friction.
+#   Exponential cost and enemy curves replace old polynomial prototype values.
+#
+# Power Progression Model C v1 (2026-05-30):
+#   Hero damage formula centralised.
+#   Ability costs and skill cost multipliers tuned to new economy.
+#   Ability multiplier constants extracted from magic numbers.
 
 
 # --- Milestones ---
+# Apply to both hero damage and partner DPS: each reached milestone ×MULTIPLIER_PER_REACHED.
+# Milestone purchase cost spike: ×COST_MULTIPLIER at the milestone target level/count.
 const MILESTONE_LEVELS: Array = [10, 25, 50, 100, 250, 500]
-const MILESTONE_MULTIPLIER_PER_REACHED: int = 2   # DPS ×2 per reached milestone
+const MILESTONE_MULTIPLIER_PER_REACHED: int = 2   # hero and partner milestone DPS/damage ×2
 const MILESTONE_COST_MULTIPLIER: int = 3           # purchase cost ×3 at milestone target
+
+# Alias constants for clarity (same value as MILESTONE_MULTIPLIER_PER_REACHED):
+const HERO_MILESTONE_DAMAGE_MULTIPLIER: int = 2
+const PARTNER_MILESTONE_DPS_MULTIPLIER: int = 2
+
+
+# --- Hero damage formula ---
+# base_click_damage = HERO_BASE_DAMAGE + character_level * HERO_DAMAGE_PER_LEVEL
+# then × milestone multiplier × all passive multipliers
+const HERO_BASE_DAMAGE: float = 1.0
+const HERO_DAMAGE_PER_LEVEL: float = 1.0
 
 
 # --- Hero cost — segmented adaptive exponential ---
@@ -29,11 +42,14 @@ const HERO_COST_GROWTH_LATE: float = 1.15    # levels 501+
 const HERO_COST_MID_START_LEVEL: int = 101
 const HERO_COST_LATE_START_LEVEL: int = 501
 
-const HERO_SKILL_COST_MULTIPLIERS: Array = [5, 8, 12, 18, 30]  # per skill_level index
+# Hero skill cost = hero_level_cost(unlock_level - 1) * multiplier_at_skill_index
+const HERO_SKILL_COST_MULTIPLIERS: Array = [4, 7, 11, 17, 26]
 
 
 # --- Partners ---
 const PARTNER_DPS_VALUES: Array = [10, 20, 35, 65, 120, 220, 410, 750, 1400, 2600, 4800, 9000, 16500]
+# Ratios ~1.85× per tier — within the 1.7–2.2× target range. No change in this pass.
+
 const PARTNER_BASE_COSTS: Array = [10, 50, 150, 400, 900, 1800, 3500, 7000, 14000, 28000, 56000, 110000, 220000]
 
 # Segmented adaptive exponential cost by owned count:
@@ -45,7 +61,8 @@ const PARTNER_COST_MID_START_COUNT: int = 100
 const PARTNER_COST_LATE_START_COUNT: int = 250
 
 const PARTNER_SKILL_UNLOCK_COUNTS: Array = [10, 25, 50, 100, 250]
-const PARTNER_SKILL_COST_MULTIPLIERS: Array = [3, 5, 8, 12, 20]
+# Partner skill cost = partner_cost_at_unlock_count * multiplier_at_skill_index
+const PARTNER_SKILL_COST_MULTIPLIERS: Array = [4, 6, 9, 14, 22]
 
 
 # --- Abilities ---
@@ -54,13 +71,27 @@ const GOLD_BONUS_UNLOCK_LEVEL: int = 30
 const FOCUS_BURST_UNLOCK_LEVEL: int = 60
 const RALLY_UNLOCK_LEVEL: int = 80
 
-const AUTOCLICK_PURCHASE_COST: int = 50
-const GOLD_BONUS_PURCHASE_COST: int = 150
-const FOCUS_BURST_PURCHASE_COST: int = 500
-const RALLY_PURCHASE_COST: int = 1000
+# Tuned to new exponential economy (Power Progression Model C v1):
+const AUTOCLICK_PURCHASE_COST: int = 300
+const GOLD_BONUS_PURCHASE_COST: int = 1200
+const FOCUS_BURST_PURCHASE_COST: int = 5000
+const RALLY_PURCHASE_COST: int = 15000
 
 const ABILITY_MAX_RANK: int = 5
-const ABILITY_SKILL_COST_MULTIPLIERS: Array = [1, 4, 9, 16, 25]
+
+# focus_burst / rally / gold_bonus: multiplier = BASE + STEP * rank
+# rank 0 = ×2.0, rank 5 = ×3.25
+const ABILITY_BASE_MULTIPLIER: float = 2.0
+const ABILITY_RANK_MULTIPLIER_STEP: float = 0.25
+
+# Autoclick: rate multiplier = 1.0 + RATE_STEP * rank (base 20 hits/sec at rank 0)
+const AUTOCLICK_BASE_HITS_PER_SEC: float = 20.0
+const AUTOCLICK_BASE_DURATION_SEC: int = 15
+const AUTOCLICK_RANK_DURATION_BONUS_SEC: int = 2
+const AUTOCLICK_RANK_RATE_STEP: float = 0.15
+
+# Ability skill cost = ability_purchase_cost * multiplier_at_skill_index
+const ABILITY_SKILL_COST_MULTIPLIERS: Array = [1, 3, 7, 13, 22]
 
 
 # --- Settlement — exponential building cost growth ---
@@ -93,17 +124,12 @@ const BOSS_TIME_LIMIT: float = 30.0
 
 
 # --- Tasks — ETV baseline (for documentation; formula uses unit * reward_scale) ---
-# ETV = expected time value. TTK = time-to-kill (seconds per enemy).
 const TASK_BASELINE_TTK_SECONDS: float = 2.0
 const TASK_REWARD_SECONDS_BASE: float = 60.0
-# task_reward ≈ (enemy_reward / TTK) * REWARD_SECONDS * reward_scale_normalized
-# Current implementation: task_reward = current_task_reward_unit * reward_scale
-# Both forms are equivalent when reward_scale_normalized = reward_scale / REWARD_SECONDS.
 
 
 # --- Shop gold packs — ETV seconds ---
 # shop_gold = (enemy_reward / TASK_BASELINE_TTK_SECONDS) * etv_seconds
-# First-pass values; raise after testing.
 const SHOP_SMALL_GOLD_ETV_SECONDS: float = 300.0    # 5 minutes ETV
 const SHOP_LARGE_GOLD_ETV_SECONDS: float = 1200.0   # 20 minutes ETV
 
