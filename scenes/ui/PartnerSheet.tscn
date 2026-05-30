@@ -1,6 +1,7 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/PartnerSheet.gd" id="1_3y6h2"]
+[ext_resource type="Script" path="res://scripts/ui/ImageSlot.gd" id="5_image_slot"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PartnerPanel.tscn" id="2_vu4ke"]
 [ext_resource type="PackedScene" path="res://scenes/ui/BuyModeSelector.tscn" id="3_buy_mode"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PartnerSkillPopup.tscn" id="4_skill_popup"]
@@ -60,6 +61,8 @@ custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 mouse_filter = 2
 color = Color(1, 1, 1, 1)
+script = ExtResource("5_image_slot")
+asset_key = "header.gold"
 
 [node name="ResourceValueLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/Header/HeaderResourceContainer"]
 custom_minimum_size = Vector2(96, 32)

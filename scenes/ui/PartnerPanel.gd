@@ -14,6 +14,8 @@ const SKILL_ICON_COLORS: Dictionary = {
 	"purchased": Color.WHITE,
 }
 
+const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
+
 var selected_buy_mode: String = "x1"
 var current_state: ClickerState = null
 var partner_rows: Array[Dictionary] = []
@@ -56,12 +58,13 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 	content.add_theme_constant_override("separation", 12)
 	margin.add_child(content)
 
-	var image_holder := ColorRect.new()
+	var image_holder = ImageSlotClass.new()
 	image_holder.name = "ImageHolder"
-	image_holder.color = Color.WHITE
+	image_holder.fallback_color = Color.WHITE
 	image_holder.custom_minimum_size = PARTNER_IMAGE_SIZE
 	image_holder.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	content.add_child(image_holder)
+	image_holder.set_asset_key(GameAssetCatalog.partner_icon_key(partner_index))
 
 	var right_content := VBoxContainer.new()
 	right_content.name = "RightContent"
@@ -88,7 +91,7 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 	right_content.add_child(skill_row)
 
 	var skill_buttons: Array[Button] = []
-	var skill_image_holders: Array[ColorRect] = []
+	var skill_image_holders: Array = []
 
 	for i in range(SKILL_COUNT):
 		var skill_button := Button.new()
@@ -103,12 +106,13 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 		)
 		skill_row.add_child(skill_button)
 
-		var skill_image_holder := ColorRect.new()
+		var skill_image_holder = ImageSlotClass.new()
 		skill_image_holder.name = "ImageHolder"
-		skill_image_holder.color = SKILL_ICON_COLORS["locked"]
+		skill_image_holder.fallback_color = SKILL_ICON_COLORS["locked"]
 		skill_image_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		skill_image_holder.set_anchors_preset(Control.PRESET_FULL_RECT)
 		skill_button.add_child(skill_image_holder)
+		skill_image_holder.set_asset_key(GameAssetCatalog.partner_skill_key(partner_index, i + 1), SKILL_ICON_COLORS["locked"])
 
 		skill_buttons.append(skill_button)
 		skill_image_holders.append(skill_image_holder)
@@ -157,15 +161,15 @@ func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionar
 	var skills: Array[Dictionary] = state.get_partner_skills_for_partner(partner_index)
 	for i in range(skill_buttons.size()):
 		var skill_button: Button = skill_buttons[i]
-		var skill_image_holder: ColorRect = skill_image_holders[i]
+		var skill_image_holder = skill_image_holders[i]
 		if i >= skills.size():
 			skill_button.disabled = true
-			skill_image_holder.color = SKILL_ICON_COLORS["locked"]
+			skill_image_holder.set_fallback_color(SKILL_ICON_COLORS["locked"])
 		else:
 			skill_button.disabled = false
 			var skill_id: String = String(skills[i].get("id", ""))
 			var skill_state: String = state.get_partner_skill_state(skill_id)
-			skill_image_holder.color = SKILL_ICON_COLORS.get(skill_state, SKILL_ICON_COLORS["locked"])
+			skill_image_holder.set_fallback_color(SKILL_ICON_COLORS.get(skill_state, SKILL_ICON_COLORS["locked"]))
 
 	if not state.can_buy_partner(partner_index):
 		button.disabled = true

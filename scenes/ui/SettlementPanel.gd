@@ -5,6 +5,8 @@ signal building_purchase_requested(building_index: int, mode: String)
 
 const BUY_MODES: Array[String] = ["x1", "x10", "x100", "max"]
 
+const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
+
 var selected_buy_mode: String = "x1"
 var current_state: ClickerState = null
 var building_rows: Array[Dictionary] = []
@@ -47,11 +49,12 @@ func _create_building_row(building_index: int) -> Dictionary:
 	content.add_theme_constant_override("separation", 12)
 	margin.add_child(content)
 
-	var image_holder := ColorRect.new()
+	var image_holder = ImageSlotClass.new()
 	image_holder.name = "ImageHolder"
-	image_holder.color = Color.WHITE
+	image_holder.fallback_color = Color.WHITE
 	image_holder.custom_minimum_size = Vector2(72, 72)
 	content.add_child(image_holder)
+	image_holder.set_asset_key(GameAssetCatalog.building_icon_key(building_index))
 
 	var info_container := VBoxContainer.new()
 	info_container.name = "InfoContainer"

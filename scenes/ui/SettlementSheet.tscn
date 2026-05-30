@@ -1,6 +1,7 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/SettlementSheet.gd" id="1_setsheet"]
+[ext_resource type="Script" path="res://scripts/ui/ImageSlot.gd" id="4_image_slot"]
 [ext_resource type="PackedScene" path="res://scenes/ui/SettlementPanel.tscn" id="2_setpanel"]
 [ext_resource type="PackedScene" path="res://scenes/ui/BuyModeSelector.tscn" id="3_buy_mode"]
 
@@ -59,6 +60,8 @@ custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 mouse_filter = 2
 color = Color(1, 1, 1, 1)
+script = ExtResource("4_image_slot")
+asset_key = "header.gold"
 
 [node name="ResourceValueLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/Header/HeaderResourceContainer"]
 custom_minimum_size = Vector2(96, 32)

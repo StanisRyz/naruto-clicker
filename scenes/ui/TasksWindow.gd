@@ -3,6 +3,8 @@ extends Control
 
 signal task_claim_requested(task_id: String)
 
+const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
+
 @onready var outside_click_area: Control = $OutsideClickArea
 @onready var panel_container: PanelContainer = $PanelContainer
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
@@ -122,12 +124,15 @@ func _create_task_row(task_data: Dictionary) -> PanelContainer:
 	content.add_theme_constant_override("separation", 12)
 	margin.add_child(content)
 
-	var image_holder := ColorRect.new()
+	var task_id: String = String(task_data.get("id", ""))
+
+	var image_holder = ImageSlotClass.new()
 	image_holder.name = "ImageHolder"
-	image_holder.color = Color.WHITE
+	image_holder.fallback_color = Color.WHITE
 	image_holder.custom_minimum_size = Vector2(56, 56)
 	image_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.add_child(image_holder)
+	image_holder.set_asset_key(GameAssetCatalog.task_icon_key(task_id))
 
 	var info_container := VBoxContainer.new()
 	info_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -151,7 +156,6 @@ func _create_task_row(task_data: Dictionary) -> PanelContainer:
 
 	var claim_button := Button.new()
 	claim_button.custom_minimum_size = Vector2(160, 56)
-	var task_id: String = String(task_data.get("id", ""))
 	if bool(task_data.get("completed", false)):
 		claim_button.disabled = false
 		claim_button.text = "Claim"

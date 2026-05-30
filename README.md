@@ -354,6 +354,47 @@ Opened by the `A` button in the stage strip row. A compact popup that:
 - `scripts/game/ClickerState.gd` - Temporary prototype state and formulas.
 - `scenes/ui/StageNavigator.tscn` / `StageNavigator.gd` - Horizontal 7-button stage navigator; replaces the "Naruto Clicker" title label.
 
+## Image Asset System
+
+The project uses a centralized image placeholder system. All UI elements that will eventually show images use `ImageSlot` nodes backed by `GameAssetCatalog`.
+
+### How it works
+
+- `scripts/ui/GameAssetCatalog.gd` — single editable file listing every image slot key and its file path.
+- `scripts/ui/ImageSlot.gd` — drop-in replacement for ColorRect placeholders. Shows a texture when the file exists; falls back to the placeholder color when the file is missing.
+
+### Adding an image
+
+1. Put the PNG file under `res://assets/images/...` (e.g. `res://assets/images/ui/gold.png`).
+2. Make sure the matching key in `GameAssetCatalog.ASSET_PATHS` points to that path.
+3. Run the game — the slot will automatically show the image.
+
+No code changes are needed in UI panels or scenes unless a new slot type is being added.
+
+### Asset key groups
+
+| Group | Example keys |
+|-------|-------------|
+| Core UI | `ui.gold`, `ui.gems`, `ui.hero_level`, `ui.click_damage`, `ui.partner_dps`, `ui.settings` |
+| Sheet headers | `header.gold`, `header.prestige_points`, `header.gems` |
+| Game field | `game.field_background`, `enemy.default.healthy/hit/wounded/defeated` |
+| Stage navigator | `stage.current`, `stage.unlocked`, `stage.locked`, `stage.latest`, `stage.auto_on/off` |
+| Abilities | `ability.autoclick`, `ability.gold_bonus`, `ability.focus_burst`, `ability.rally` |
+| Upgrade cards | `upgrade.hero`, `upgrade.autoclick`, etc. |
+| Partners | `partner.0.icon` … `partner.12.icon`, `partner.0.skill.1` … |
+| Buildings | `building.0.icon` … `building.5.icon` |
+| Prestige | `prestige.action`, `prestige.focus_training`, etc. |
+| Shop | `shop.gold_pack_small`, `shop.boss_retry_token`, etc. |
+| Tasks | `task.manual_damage_500`, `task.defeat_25_enemies`, etc. |
+
+### Rules
+
+- Missing image files never crash the game — the placeholder color is shown instead.
+- Do not hardcode image paths in UI panels; always use `GameAssetCatalog`.
+- New ImageHolder nodes should use `ImageSlot` and a key registered in `GameAssetCatalog.ASSET_PATHS`.
+- Keep placeholder fallback colors in place until final art is ready.
+- Helper methods: `partner_icon_key(index)`, `partner_skill_key(index, level)`, `ability_skill_key(id, level)`, `hero_skill_key(level)`, `building_icon_key(index)`, `prestige_talent_icon_key(id)`, `shop_product_icon_key(id)`, `task_icon_key(id)`.
+
 ## Web Export Notes
 
 The project is intended for Yandex Games Web export. Keep the 720x1280 portrait setup, GL Compatibility renderer, and Web-friendly Control-based UI layout.

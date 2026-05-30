@@ -19,6 +19,8 @@ const COLOR_LATEST: Color = Color(0.8, 0.7, 0.1, 1.0)
 const COLOR_AUTO_ON: Color = Color(0.2, 0.75, 0.2, 1.0)
 const COLOR_AUTO_OFF: Color = Color(0.45, 0.45, 0.45, 1.0)
 
+const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
+
 var visible_center_level: int = SIDE_COUNT + 1
 var _current_level: int = 1
 var _max_unlocked_level: int = 1
@@ -30,7 +32,7 @@ var _stage_rects: Array = []
 var _stage_labels: Array = []
 var _latest_button: Button
 var _auto_btn: Button
-var _auto_btn_rect: ColorRect
+var _auto_btn_rect = null
 
 var _is_dragging: bool = false
 var _drag_start_x: float = 0.0
@@ -60,9 +62,10 @@ func _build_ui() -> void:
 		btn.flat = true
 		btn.mouse_filter = MOUSE_FILTER_STOP
 
-		var rect: ColorRect = ColorRect.new()
+		var rect = ImageSlotClass.new()
 		rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		rect.mouse_filter = MOUSE_FILTER_IGNORE
+		rect.fallback_color = COLOR_LOCKED
 		btn.add_child(rect)
 
 		var label: Label = Label.new()
@@ -84,11 +87,13 @@ func _build_ui() -> void:
 	_latest_button = _make_side_button(COLOR_LATEST, ">>")
 	_latest_button.pressed.connect(_on_latest_button_pressed)
 	hbox.add_child(_latest_button)
+	_latest_button.get_child(0).set_asset_key("stage.latest", COLOR_LATEST)
 
 	_auto_btn = _make_side_button(COLOR_AUTO_ON, "A")
-	_auto_btn_rect = _auto_btn.get_child(0) as ColorRect
+	_auto_btn_rect = _auto_btn.get_child(0)
 	_auto_btn.pressed.connect(_on_auto_transition_button_pressed)
 	hbox.add_child(_auto_btn)
+	_auto_btn_rect.set_asset_key("stage.auto_on", COLOR_AUTO_ON)
 
 
 func _make_side_button(bg_color: Color, label_text: String) -> Button:
@@ -97,10 +102,10 @@ func _make_side_button(bg_color: Color, label_text: String) -> Button:
 	btn.flat = true
 	btn.mouse_filter = MOUSE_FILTER_STOP
 
-	var rect: ColorRect = ColorRect.new()
+	var rect = ImageSlotClass.new()
 	rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	rect.mouse_filter = MOUSE_FILTER_IGNORE
-	rect.color = bg_color
+	rect.fallback_color = bg_color
 	btn.add_child(rect)
 
 	var label: Label = Label.new()
@@ -198,7 +203,10 @@ func center_on_latest_level() -> void:
 func set_auto_transition_enabled(enabled: bool) -> void:
 	_auto_transition_enabled = enabled
 	if _auto_btn_rect != null:
-		_auto_btn_rect.color = COLOR_AUTO_ON if enabled else COLOR_AUTO_OFF
+		if enabled:
+			_auto_btn_rect.set_asset_key("stage.auto_on", COLOR_AUTO_ON)
+		else:
+			_auto_btn_rect.set_asset_key("stage.auto_off", COLOR_AUTO_OFF)
 
 
 func _clamp_center() -> void:
@@ -217,7 +225,7 @@ func _refresh_buttons() -> void:
 	for i: int in DISPLAY_COUNT:
 		var stage_level: int = visible_center_level - SIDE_COUNT + i
 		var btn: Button = _stage_buttons[i]
-		var rect: ColorRect = _stage_rects[i]
+		var rect = _stage_rects[i]
 		var label: Label = _stage_labels[i]
 
 		label.text = str(stage_level)
@@ -226,13 +234,13 @@ func _refresh_buttons() -> void:
 		var is_unlocked: bool = stage_level <= _max_unlocked_level
 
 		if is_current:
-			rect.color = COLOR_CURRENT
+			rect.set_asset_key("stage.current", COLOR_CURRENT)
 			btn.disabled = false
 		elif is_unlocked:
-			rect.color = COLOR_UNLOCKED
+			rect.set_asset_key("stage.unlocked", COLOR_UNLOCKED)
 			btn.disabled = false
 		else:
-			rect.color = COLOR_LOCKED
+			rect.set_asset_key("stage.locked", COLOR_LOCKED)
 			btn.disabled = true
 
 

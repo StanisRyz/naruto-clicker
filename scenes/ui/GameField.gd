@@ -13,8 +13,9 @@ var hit_tween: Tween = null
 var defeat_tween: Tween = null
 var enemy_transition_locked: bool = false
 var current_health_color: Color = HEALTHY_COLOR
+var current_asset_key: String = "enemy.default.healthy"
 
-@onready var enemy_image_holder: ColorRect = $EnemyImageHolder
+@onready var enemy_image_holder = $EnemyImageHolder  # ImageSlot (ColorRect subclass)
 @onready var boss_timer_label: Label = $GameFieldContent/BossTimerLabel
 @onready var defeat_feedback_label: Label = $FeedbackLayer/DefeatFeedbackLabel
 
@@ -38,14 +39,15 @@ func update_view(state: ClickerState) -> void:
 
 func update_enemy_visual_state(state: ClickerState) -> void:
 	current_health_color = _get_health_color(state)
+	current_asset_key = _get_health_asset_key(state)
 	if enemy_transition_locked:
-		enemy_image_holder.color = DEFEATED_COLOR
+		enemy_image_holder.set_asset_key("enemy.default.defeated", DEFEATED_COLOR)
 		return
 
 	if hit_tween != null and hit_tween.is_running():
 		return
 
-	enemy_image_holder.color = current_health_color
+	enemy_image_holder.set_asset_key(current_asset_key, current_health_color)
 
 
 func update_boss_timer(time_left: float, is_active: bool) -> void:
@@ -61,13 +63,13 @@ func play_hit_feedback(damage: int) -> void:
 	if hit_tween != null:
 		hit_tween.kill()
 
-	enemy_image_holder.color = HIT_COLOR
+	enemy_image_holder.set_asset_key("enemy.default.hit", HIT_COLOR)
 	hit_tween = create_tween()
 	hit_tween.tween_interval(HIT_STATE_DURATION)
 	hit_tween.tween_callback(func() -> void:
 		hit_tween = null
 		if not enemy_transition_locked:
-			enemy_image_holder.color = current_health_color
+			enemy_image_holder.set_asset_key(current_asset_key, current_health_color)
 	)
 
 
@@ -76,7 +78,7 @@ func play_defeat_feedback(level_up: bool, zone_changed: bool = false) -> void:
 		hit_tween.kill()
 		hit_tween = null
 
-	enemy_image_holder.color = DEFEATED_COLOR
+	enemy_image_holder.set_asset_key("enemy.default.defeated", DEFEATED_COLOR)
 
 	if zone_changed:
 		defeat_feedback_label.text = "New Zone!"
@@ -101,9 +103,9 @@ func set_enemy_transition_locked(is_locked: bool) -> void:
 		if hit_tween != null:
 			hit_tween.kill()
 			hit_tween = null
-		enemy_image_holder.color = DEFEATED_COLOR
+		enemy_image_holder.set_asset_key("enemy.default.defeated", DEFEATED_COLOR)
 	else:
-		enemy_image_holder.color = current_health_color
+		enemy_image_holder.set_asset_key(current_asset_key, current_health_color)
 
 
 func _get_health_color(state: ClickerState) -> Color:
@@ -112,3 +114,11 @@ func _get_health_color(state: ClickerState) -> Color:
 
 	var hp_ratio: float = float(state.target_hp) / maxf(float(state.target_max_hp), 1.0)
 	return WOUNDED_COLOR if hp_ratio <= 0.5 else HEALTHY_COLOR
+
+
+func _get_health_asset_key(state: ClickerState) -> String:
+	if state.target_hp <= 0:
+		return "enemy.default.defeated"
+
+	var hp_ratio: float = float(state.target_hp) / maxf(float(state.target_max_hp), 1.0)
+	return "enemy.default.wounded" if hp_ratio <= 0.5 else "enemy.default.healthy"

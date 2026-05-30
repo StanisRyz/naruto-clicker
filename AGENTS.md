@@ -602,6 +602,25 @@ After each patch, validate manually in Godot:
 - `AutoTransitionPopup` is a full-screen Control overlay (mouse_filter STOP when visible, PASS when hidden). The inner PanelContainer has mouse_filter STOP. Outside clicks close the popup via `_gui_input` checking `_panel.get_global_rect().has_point`.
 - Popup signals: `auto_transition_toggled(enabled: bool)`. ClickerScreen calls `state.set_auto_stage_advance_enabled(enabled)`, `auto_transition_popup.refresh_view(state)`, `stage_navigator.set_auto_transition_enabled(enabled)`, `_update_ui()`.
 
+## Image Asset System Rules
+
+- `scripts/ui/GameAssetCatalog.gd` is the single source of truth for all image slot keys and file paths.
+- `scripts/ui/ImageSlot.gd` is the reusable component that replaces ColorRect image placeholders.
+- `ImageSlot extends ColorRect` — it is a drop-in replacement with identical layout behavior.
+- Every ImageHolder-style placeholder (ColorRect used as an image slot) must be converted to `ImageSlot`.
+- Do not hardcode image paths in UI panels or scenes; always register keys in `GameAssetCatalog.ASSET_PATHS`.
+- Missing image files must never crash the game; `ImageSlot` falls back to `fallback_color` when the file is absent.
+- Keep placeholder fallback colors in place until final art is ready.
+- To add a new image slot: add the key/path to `ASSET_PATHS`, create the `ImageSlot` node, set `asset_key`.
+- Use the catalog helper methods for dynamic keys: `partner_icon_key`, `partner_skill_key`, `ability_skill_key`, `hero_skill_key`, `building_icon_key`, `prestige_talent_icon_key`, `shop_product_icon_key`, `task_icon_key`.
+- In scripts that create `ImageSlot` dynamically, use `const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")` and `const GameAssetCatalog = preload("res://scripts/ui/GameAssetCatalog.gd")` to avoid relying on class_name indexing in the LSP.
+- Skill icon fallback colors must still reflect state: gray = locked, blue = available, white = purchased. Use `set_fallback_color(color)` instead of `.color = color` on `ImageSlot` nodes.
+- Enemy state asset keys: `enemy.default.healthy`, `enemy.default.hit`, `enemy.default.wounded`, `enemy.default.defeated`. Use `set_asset_key(key, fallback_color)` when the enemy state changes.
+- Stage navigator slot keys: `stage.current`, `stage.unlocked`, `stage.locked`, `stage.latest`, `stage.auto_on`, `stage.auto_off`.
+- Sheet header slot keys: `header.gold` (Upgrade/Partner/Settlement), `header.prestige_points` (Prestige), `header.gems` (Shop).
+- Asset image files go under `res://assets/images/` and its subdirectories, which already exist.
+- Do not add `.gdignore` to asset image directories.
+
 ## Documentation Update Rules
 
 Update this file when adding important systems, scenes, architecture decisions, workflow rules, or validation requirements. Keep README.md aligned with major project setup or workflow changes.

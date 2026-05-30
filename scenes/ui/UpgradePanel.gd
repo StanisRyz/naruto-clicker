@@ -23,6 +23,8 @@ const SKILL_ICON_COLORS: Dictionary = {
 	"purchased": Color.WHITE,
 }
 
+const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
+
 var selected_buy_mode: String = "x1"
 var current_state: ClickerState = null
 var hero_level_row: Dictionary = {}
@@ -65,6 +67,12 @@ func _create_hero_level_row() -> Dictionary:
 		var skill_button: Button = skill_buttons[i]
 		var captured_index: int = i
 		skill_button.pressed.connect(func() -> void: _on_hero_skill_button_pressed(captured_index, skill_button))
+
+	row_content["image_holder"].set_asset_key("upgrade.hero")
+	var skill_holders: Array = row_content["skill_image_holders"]
+	for i in range(skill_holders.size()):
+		skill_holders[i].set_asset_key(GameAssetCatalog.hero_skill_key(i + 1), SKILL_ICON_COLORS["locked"])
+
 	return row_content
 
 
@@ -91,6 +99,7 @@ func _update_hero_level_row(state: ClickerState) -> void:
 
 func _create_ability_row(ability_index: int) -> Dictionary:
 	var ability: Dictionary = ABILITIES[ability_index]
+	var ability_id: String = String(ability["id"])
 	var row := PanelContainer.new()
 	row.name = "%sRow" % String(ability["name"]).replace(" ", "")
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -99,12 +108,18 @@ func _create_ability_row(ability_index: int) -> Dictionary:
 
 	var row_content: Dictionary = _add_card_content(row, "BuyButton")
 	var button: Button = row_content["button"]
-	button.pressed.connect(func() -> void: ability_unlock_requested.emit(String(ability["id"])))
+	button.pressed.connect(func() -> void: ability_unlock_requested.emit(ability_id))
 	var skill_buttons: Array = row_content["skill_buttons"]
 	for i in range(skill_buttons.size()):
 		var skill_button: Button = skill_buttons[i]
 		var captured_index: int = i
-		skill_button.pressed.connect(func() -> void: _on_ability_skill_button_pressed(String(ability["id"]), captured_index, skill_button))
+		skill_button.pressed.connect(func() -> void: _on_ability_skill_button_pressed(ability_id, captured_index, skill_button))
+
+	row_content["image_holder"].set_asset_key("upgrade.%s" % ability_id)
+	var skill_holders: Array = row_content["skill_image_holders"]
+	for i in range(skill_holders.size()):
+		skill_holders[i].set_asset_key(GameAssetCatalog.ability_skill_key(ability_id, i + 1), SKILL_ICON_COLORS["locked"])
+
 	return row_content
 
 
@@ -143,9 +158,9 @@ func _add_card_content(row: PanelContainer, button_name: String) -> Dictionary:
 	content.add_theme_constant_override("separation", 12)
 	margin.add_child(content)
 
-	var image_holder := ColorRect.new()
+	var image_holder = ImageSlotClass.new()
 	image_holder.name = "ImageHolder"
-	image_holder.color = Color.WHITE
+	image_holder.fallback_color = Color.WHITE
 	image_holder.custom_minimum_size = UPGRADE_IMAGE_SIZE
 	image_holder.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	content.add_child(image_holder)
@@ -175,7 +190,7 @@ func _add_card_content(row: PanelContainer, button_name: String) -> Dictionary:
 	info_container.add_child(skill_row)
 
 	var skill_buttons: Array[Button] = []
-	var skill_image_holders: Array[ColorRect] = []
+	var skill_image_holders: Array = []
 	for i in range(SKILL_COUNT):
 		var skill_button := Button.new()
 		skill_button.name = "SkillButton%d" % (i + 1)
@@ -185,9 +200,9 @@ func _add_card_content(row: PanelContainer, button_name: String) -> Dictionary:
 		skill_button.text = ""
 		skill_row.add_child(skill_button)
 
-		var skill_image_holder := ColorRect.new()
+		var skill_image_holder = ImageSlotClass.new()
 		skill_image_holder.name = "ImageHolder"
-		skill_image_holder.color = SKILL_ICON_COLORS["locked"]
+		skill_image_holder.fallback_color = SKILL_ICON_COLORS["locked"]
 		skill_image_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		skill_image_holder.set_anchors_preset(Control.PRESET_FULL_RECT)
 		skill_button.add_child(skill_image_holder)
@@ -212,6 +227,7 @@ func _add_card_content(row: PanelContainer, button_name: String) -> Dictionary:
 		"skill_buttons": skill_buttons,
 		"skill_image_holders": skill_image_holders,
 		"button": button,
+		"image_holder": image_holder,
 	}
 
 
@@ -231,16 +247,16 @@ func _update_ability_unlock_button(state: ClickerState, ability_id: String, butt
 func _update_skill_icon_row(skills: Array[Dictionary], skill_buttons: Array, skill_image_holders: Array, state: ClickerState, is_hero: bool) -> void:
 	for i in range(skill_buttons.size()):
 		var skill_button: Button = skill_buttons[i]
-		var skill_image_holder: ColorRect = skill_image_holders[i]
+		var skill_image_holder = skill_image_holders[i]
 		if i >= skills.size():
 			skill_button.disabled = true
-			skill_image_holder.color = SKILL_ICON_COLORS["locked"]
+			skill_image_holder.set_fallback_color(SKILL_ICON_COLORS["locked"])
 			continue
 
 		skill_button.disabled = false
 		var skill_id: String = String(skills[i].get("id", ""))
 		var skill_state: String = state.get_hero_skill_state(skill_id) if is_hero else state.get_ability_skill_state(skill_id)
-		skill_image_holder.color = SKILL_ICON_COLORS.get(skill_state, SKILL_ICON_COLORS["locked"])
+		skill_image_holder.set_fallback_color(SKILL_ICON_COLORS.get(skill_state, SKILL_ICON_COLORS["locked"]))
 
 
 func _on_hero_skill_button_pressed(skill_index: int, skill_button: Button) -> void:

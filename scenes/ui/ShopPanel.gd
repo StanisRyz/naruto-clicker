@@ -4,6 +4,8 @@ extends VBoxContainer
 signal product_purchase_requested(product_id: String)
 signal test_gems_requested
 
+const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
+
 var product_rows: Dictionary = {}
 
 @onready var test_gems_button: Button = $TestGemsButton
@@ -49,11 +51,12 @@ func _create_product_row(product_id: String) -> Dictionary:
 	content.add_theme_constant_override("separation", 12)
 	margin.add_child(content)
 
-	var image_holder := ColorRect.new()
+	var image_holder = ImageSlotClass.new()
 	image_holder.name = "ImageHolder"
-	image_holder.color = Color.WHITE
+	image_holder.fallback_color = Color.WHITE
 	image_holder.custom_minimum_size = Vector2(72, 72)
 	content.add_child(image_holder)
+	image_holder.set_asset_key(GameAssetCatalog.shop_product_icon_key(product_id))
 
 	var info_container := VBoxContainer.new()
 	info_container.name = "InfoContainer"

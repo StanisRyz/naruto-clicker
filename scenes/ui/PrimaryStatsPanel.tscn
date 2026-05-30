@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/PrimaryStatsPanel.gd" id="1_primary_stats"]
+[ext_resource type="Script" path="res://scripts/ui/ImageSlot.gd" id="2_image_slot"]
 
 [node name="PrimaryStatsPanel" type="Control"]
 custom_minimum_size = Vector2(560, 48)
@@ -28,6 +29,8 @@ custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 mouse_filter = 2
 color = Color(1, 1, 1, 1)
+script = ExtResource("2_image_slot")
+asset_key = "ui.gold"
 
 [node name="GoldValueLabel" type="Label" parent="HBoxContainer/GoldCard"]
 custom_minimum_size = Vector2(46, 40)
@@ -47,6 +50,8 @@ custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 mouse_filter = 2
 color = Color(1, 1, 1, 1)
+script = ExtResource("2_image_slot")
+asset_key = "ui.gems"
 
 [node name="GemsValueLabel" type="Label" parent="HBoxContainer/GemsCard"]
 custom_minimum_size = Vector2(46, 40)
@@ -66,6 +71,8 @@ custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 mouse_filter = 2
 color = Color(1, 1, 1, 1)
+script = ExtResource("2_image_slot")
+asset_key = "ui.hero_level"
 
 [node name="CharacterLevelValueLabel" type="Label" parent="HBoxContainer/CharacterLevelCard"]
 custom_minimum_size = Vector2(46, 40)
@@ -85,6 +92,8 @@ custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 mouse_filter = 2
 color = Color(1, 1, 1, 1)
+script = ExtResource("2_image_slot")
+asset_key = "ui.click_damage"
 
 [node name="DamageValueLabel" type="Label" parent="HBoxContainer/DamageCard"]
 custom_minimum_size = Vector2(46, 40)
@@ -104,6 +113,8 @@ custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 mouse_filter = 2
 color = Color(1, 1, 1, 1)
+script = ExtResource("2_image_slot")
+asset_key = "ui.partner_dps"
 
 [node name="PartnerDpsValueLabel" type="Label" parent="HBoxContainer/PartnerDpsCard"]
 custom_minimum_size = Vector2(46, 40)
@@ -127,3 +138,5 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(1, 1, 1, 1)
+script = ExtResource("2_image_slot")
+asset_key = "ui.settings"

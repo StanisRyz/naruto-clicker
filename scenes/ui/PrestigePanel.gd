@@ -4,6 +4,8 @@ extends VBoxContainer
 signal prestige_requested
 signal prestige_talent_purchase_requested(talent_index: int)
 
+const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
+
 var prestige_action_row: Dictionary = {}
 var talent_rows: Array[Dictionary] = []
 
@@ -44,11 +46,12 @@ func _create_prestige_action_row() -> Dictionary:
 	content.add_theme_constant_override("separation", 12)
 	margin.add_child(content)
 
-	var image_holder := ColorRect.new()
+	var image_holder = ImageSlotClass.new()
 	image_holder.name = "ImageHolder"
-	image_holder.color = Color.WHITE
+	image_holder.fallback_color = Color.WHITE
 	image_holder.custom_minimum_size = Vector2(72, 72)
 	content.add_child(image_holder)
+	image_holder.set_asset_key("prestige.action")
 
 	var info_container := VBoxContainer.new()
 	info_container.name = "InfoContainer"
@@ -96,10 +99,12 @@ func _update_prestige_action_row(total_reward: int) -> void:
 func _ensure_talent_rows(state: ClickerState) -> void:
 	while talent_rows.size() < state.prestige_talent_names.size():
 		var talent_index: int = talent_rows.size()
-		talent_rows.append(_create_talent_row(talent_index))
+		var talent_name: String = state.prestige_talent_names[talent_index]
+		var talent_id: String = talent_name.to_lower().replace(" ", "_")
+		talent_rows.append(_create_talent_row(talent_index, talent_id))
 
 
-func _create_talent_row(talent_index: int) -> Dictionary:
+func _create_talent_row(talent_index: int, talent_id: String) -> Dictionary:
 	var row := PanelContainer.new()
 	row.name = "Talent%dRow" % (talent_index + 1)
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -118,11 +123,12 @@ func _create_talent_row(talent_index: int) -> Dictionary:
 	content.add_theme_constant_override("separation", 12)
 	margin.add_child(content)
 
-	var image_holder := ColorRect.new()
+	var image_holder = ImageSlotClass.new()
 	image_holder.name = "ImageHolder"
-	image_holder.color = Color.WHITE
+	image_holder.fallback_color = Color.WHITE
 	image_holder.custom_minimum_size = Vector2(72, 72)
 	content.add_child(image_holder)
+	image_holder.set_asset_key(GameAssetCatalog.prestige_talent_icon_key(talent_id))
 
 	var info_container := VBoxContainer.new()
 	info_container.name = "InfoContainer"

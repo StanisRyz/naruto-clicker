@@ -1,6 +1,7 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/ShopSheet.gd" id="1_shop_sheet"]
+[ext_resource type="Script" path="res://scripts/ui/ImageSlot.gd" id="3_image_slot"]
 [ext_resource type="PackedScene" path="res://scenes/ui/ShopPanel.tscn" id="2_shop_panel"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_shop_sheet_panel"]
@@ -58,6 +59,8 @@ custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 mouse_filter = 2
 color = Color(1, 1, 1, 1)
+script = ExtResource("3_image_slot")
+asset_key = "header.gems"
 
 [node name="ResourceValueLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/Header/HeaderResourceContainer"]
 custom_minimum_size = Vector2(96, 32)
