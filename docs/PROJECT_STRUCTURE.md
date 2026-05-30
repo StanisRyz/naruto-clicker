@@ -31,8 +31,10 @@ naruto-clicker/
 │   │   │   ├── MilestoneCalculator.gd     # Milestone multiplier and cost-spike logic
 │   │   │   ├── CostCalculator.gd          # Hero/partner/building cost formulas
 │   │   │   └── EnemyScalingCalculator.gd  # Base HP/reward formulas + zone/boss/elite scaling
-│   │   └── presentation/           # UI-facing formatting and view-data builders (read-only)
-│   │       └── ClickerStatePresentation.gd # Descriptions, skill states, task/shop view data
+│   │   ├── presentation/           # UI-facing formatting and view-data builders (read-only)
+│   │   │   └── ClickerStatePresentation.gd # Descriptions, skill states, task/shop view data
+│   │   └── runtime/                # Task runtime: initialization, progress, claim, rotation
+│   │       └── TaskRuntime.gd      # Mutates ClickerState task fields; no UI/SaveManager calls
 │   └── ui/
 │       ├── GameAssetCatalog.gd       # Central registry: all UI image keys → file paths
 │       ├── ImageSlot.gd              # Drop-in ColorRect with texture + fallback color
@@ -124,6 +126,7 @@ naruto-clicker/
 - **ClickerStateSaveAdapter** (`scripts/game/save/`) handles serialization only — it builds and applies Save System v1 dictionaries. ClickerState keeps the public `get_save_data`/`apply_save_data` API; callers do not need to know about the adapter.
 - **Calculators** (`scripts/game/calculators/`) contain pure formula functions — no runtime state, no side effects, no SaveManager calls. ClickerState delegates internal cost/milestone/enemy-scaling math to them.
 - **Presentation** (`scripts/game/presentation/`) contains UI-facing formatting, description strings, skill state labels, and view-data dictionary builders. Read-only access to ClickerState; must not mutate state or perform gameplay actions. UI panels continue calling ClickerState public methods, which delegate internally.
+- **TaskRuntime** (`scripts/game/runtime/`) owns task runtime operations: initialization, progress tracking, reward calculation, claim/rotation, and validation. Reads and mutates ClickerState task fields through a passed state reference. Must not call SaveManager, UI, or scene nodes. ClickerState owns the task state fields (active_task_ids, inactive_task_ids, active_task_states) for save compatibility. TasksWindow continues calling ClickerState public methods.
 
 ## Config file rules
 

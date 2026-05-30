@@ -6,6 +6,7 @@ const MilestoneCalc = preload("res://scripts/game/calculators/MilestoneCalculato
 const CostCalc = preload("res://scripts/game/calculators/CostCalculator.gd")
 const EnemyCalc = preload("res://scripts/game/calculators/EnemyScalingCalculator.gd")
 const Presentation = preload("res://scripts/game/presentation/ClickerStatePresentation.gd")
+const TaskRT = preload("res://scripts/game/runtime/TaskRuntime.gd")
 
 
 var gold: int = 0
@@ -146,129 +147,31 @@ func get_prestige_reward() -> int:
 
 
 func initialize_tasks() -> void:
-	active_task_ids.clear()
-	inactive_task_ids.clear()
-	active_task_states.clear()
-
-	var task_ids: Array[String] = []
-	for task: Dictionary in TaskConfig.TASK_DEFINITIONS:
-		var task_id: String = String(task.get("id", ""))
-		if task_id != "":
-			task_ids.append(task_id)
-
-	_shuffle_task_ids(task_ids)
-	for i in range(task_ids.size()):
-		var active_or_inactive_id: String = task_ids[i]
-		if i < 5:
-			active_task_ids.append(active_or_inactive_id)
-			_initialize_active_task_state(active_or_inactive_id)
-		else:
-			inactive_task_ids.append(active_or_inactive_id)
-
-
-func _shuffle_task_ids(task_ids: Array[String]) -> void:
-	if task_ids.size() < 2:
-		return
-
-	for i in range(task_ids.size() - 1, 0, -1):
-		var swap_index: int = rng.randi_range(0, i)
-		var original_id: String = task_ids[i]
-		task_ids[i] = task_ids[swap_index]
-		task_ids[swap_index] = original_id
-
-
-func _initialize_active_task_state(task_id: String) -> void:
-	var task: Dictionary = get_task_definition(task_id)
-	if task.is_empty():
-		return
-
-	var start_value: int = _get_task_current_value(task_id)
-	var target_delta: int = int(task.get("target_delta", 0))
-	active_task_states[task_id] = {
-		"start_value": start_value,
-		"target_delta": target_delta,
-		"target_value": start_value + target_delta,
-	}
-
-
-func _get_task_current_value(task_id: String) -> int:
-	var task: Dictionary = get_task_definition(task_id)
-	var goal_type: String = String(task.get("goal_type", ""))
-	match goal_type:
-		"manual_damage_delta":
-			return total_manual_click_damage_dealt
-		"enemies_defeated_delta":
-			return total_enemies_defeated
-		"elite_enemies_defeated_delta":
-			return total_elite_enemies_defeated
-		"bosses_defeated_delta":
-			return total_bosses_defeated
-		"hero_level_delta":
-			return character_level
-		"partners_total_delta":
-			return _get_total_partner_count()
-		"buildings_total_delta":
-			return _get_total_building_count()
-		"autoclick_activations_delta":
-			return total_autoclick_activations
-		"combo_empowered_delta":
-			return total_combo_empowered_activations
-		"game_level_delta":
-			return current_level
-
-	return 0
+	TaskRT.initialize_tasks(self)
 
 
 func get_task_definition(task_id: String) -> Dictionary:
-	for task: Dictionary in TaskConfig.TASK_DEFINITIONS:
-		if String(task.get("id", "")) == task_id:
-			return task
-
-	return {}
+	return TaskRT.get_task_definition(task_id)
 
 
 func get_task_progress(task_id: String) -> int:
-	if not active_task_ids.has(task_id) or not active_task_states.has(task_id):
-		return 0
-
-	var task_state: Dictionary = active_task_states[task_id]
-	var start_value: int = int(task_state.get("start_value", 0))
-	var target_delta: int = int(task_state.get("target_delta", 0))
-	var progress: int = _get_task_current_value(task_id) - start_value
-	return clampi(progress, 0, target_delta)
+	return TaskRT.get_task_progress(self, task_id)
 
 
 func get_task_target(task_id: String) -> int:
-	if not active_task_ids.has(task_id) or not active_task_states.has(task_id):
-		return 0
-
-	var task_state: Dictionary = active_task_states[task_id]
-	return int(task_state.get("target_delta", 0))
+	return TaskRT.get_task_target(self, task_id)
 
 
 func get_current_task_reward_unit() -> int:
-	var base_reward: int = get_base_enemy_reward_for_level(current_level)
-	var zone_scaled_reward: int = ceili(base_reward * zone_reward_multiplier)
-	return maxi(1, zone_scaled_reward)
+	return TaskRT.get_current_task_reward_unit(self)
 
 
 func get_task_reward_gold(task_id: String) -> int:
-	var task: Dictionary = get_task_definition(task_id)
-	if task.is_empty():
-		return 0
-
-	var reward_scale: int = int(task.get("reward_scale", 0))
-	if reward_scale <= 0:
-		return 0
-
-	return maxi(1, int(get_current_task_reward_unit() * reward_scale * get_partner_skill_bonus_multiplier("task_reward")))
+	return TaskRT.get_task_reward_gold(self, task_id)
 
 
 func is_task_completed(task_id: String) -> bool:
-	if not active_task_ids.has(task_id):
-		return false
-
-	return get_task_progress(task_id) >= get_task_target(task_id)
+	return TaskRT.is_task_completed(self, task_id)
 
 
 func get_active_task_view_data() -> Array[Dictionary]:
@@ -276,33 +179,7 @@ func get_active_task_view_data() -> Array[Dictionary]:
 
 
 func claim_task_reward(task_id: String) -> Dictionary:
-	if not active_task_ids.has(task_id):
-		return _make_purchase_result("Task is not active")
-
-	if not is_task_completed(task_id):
-		return _make_purchase_result("Task is not complete")
-
-	var reward: int = get_task_reward_gold(task_id)
-	if task_reward_boost_multiplier > 1.0:
-		reward = int(reward * task_reward_boost_multiplier)
-		task_reward_boost_multiplier = 1.0
-
-	gold += reward
-	active_task_ids.erase(task_id)
-	active_task_states.erase(task_id)
-
-	if inactive_task_ids.is_empty():
-		inactive_task_ids.append(task_id)
-		return _make_purchase_result("Task complete! +%d gold" % reward, false, true)
-
-	var replacement_index: int = rng.randi_range(0, inactive_task_ids.size() - 1)
-	var replacement_id: String = inactive_task_ids[replacement_index]
-	inactive_task_ids.remove_at(replacement_index)
-	active_task_ids.append(replacement_id)
-	_initialize_active_task_state(replacement_id)
-	inactive_task_ids.append(task_id)
-
-	return _make_purchase_result("Task complete! +%d gold" % reward, false, true)
+	return TaskRT.claim_task_reward(self, task_id)
 
 
 func get_focus_training_multiplier() -> float:
