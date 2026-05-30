@@ -1,5 +1,5 @@
 class_name UpgradePanel
-extends Control
+extends VBoxContainer
 
 signal character_level_upgrade_requested(mode: String)
 signal hero_skill_popup_requested(skill_id: String, anchor_global_position: Vector2)
@@ -27,7 +27,7 @@ var current_state: ClickerState = null
 var hero_level_row: Dictionary = {}
 var ability_rows: Array[Dictionary] = []
 
-@onready var rows_container: VBoxContainer = $VBoxContainer/ContentMargin/RowsContainer
+@onready var rows_container: VBoxContainer = $RowsContainer
 
 
 func _ready() -> void:

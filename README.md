@@ -128,7 +128,7 @@ The main scene contains the first local clicker loop:
   - All other partners (Partner 2, 3, 7–13): Own Partner DPS skills — Personal Mastery I–V (+50%/+50%/+50%/+100%/+100%) affecting only that partner tier's DPS.
 - Hero Level upgrades, partner hires, and settlement buildings use the reusable `BuyModeSelector` for horizontal bulk mode buttons: `x1`, `x10`, `x100`, and `Max`.
 - In `UpgradeSheet`, `PartnerSheet`, and `SettlementSheet`, the buy mode selector stays fixed under the sheet header while purchase lists scroll independently below it.
-- `UpgradePanel` content keeps top padding inside the scroll area so the Hero Level card is fully visible below the fixed buy mode selector.
+- `UpgradePanel` uses the same VBoxContainer-based layout pattern as `PartnerPanel`; it should not use a full-rect Control wrapper that can overlap the fixed buy mode selector.
 - `SettlementSheet` should use the same header / `BuyModeSelector` / scroll spacing as `UpgradeSheet` and `PartnerSheet`.
 - In `UpgradeSheet`, the buy mode selector affects only the Hero Level card; ability buy/upgrade actions never use bulk-buy modes.
 - Bulk cost displays show the total package cost. `x10` and `x100` are strict all-or-nothing purchases; `Max` buys as many as current gold allows.

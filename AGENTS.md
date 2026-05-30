@@ -75,7 +75,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - `ShopPanel` should not show separate Gems, Boss Retry token, or Task Reward Boost summary rows; Boss Retry tokens and Task Reward Boost remain runtime mechanics.
 - `BuyModeSelector` is the reusable UI for `x1`, `x10`, `x100`, and `Max` purchase modes.
 - `BuyModeSelector` must stay fixed under the sheet header in `UpgradeSheet`, `PartnerSheet`, and `SettlementSheet`; purchase lists should scroll independently below it.
-- `UpgradePanel` content must keep enough top spacing inside the scroll area so the Hero Level card is not covered by the fixed `BuyModeSelector`.
+- `UpgradePanel` should use the same VBoxContainer-based root layout as `PartnerPanel`; do not use a full-rect Control wrapper that can overlap the fixed `BuyModeSelector`.
 - In `UpgradeSheet`, `BuyModeSelector` affects only the Hero Level card; ability buy/upgrade actions must never use bulk-buy modes.
 - Do not add `BuyModeSelector` to `PrestigeSheet`.
 - Purchase tabs use card-style rows with a temporary white `ColorRect` image placeholder, two-line info text, and an action button.
