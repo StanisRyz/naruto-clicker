@@ -52,7 +52,7 @@ var character_level_upgrade_cost: int = 5
 var current_level: int = 1
 var max_unlocked_level: int = 1
 var auto_stage_advance_enabled: bool = true
-var current_level_cleared: bool = false
+var cleared_level_ids: Dictionary = {}
 var enemies_defeated_on_level: int = 0
 var enemies_required_per_level: int = 10
 var target_hp: int = 10
@@ -741,7 +741,8 @@ func perform_prestige() -> Dictionary:
 	current_level = 1
 	max_unlocked_level = 1
 	enemies_defeated_on_level = 0
-	current_level_cleared = false
+	clear_cleared_levels()
+	auto_stage_advance_enabled = true
 	autoclick_purchased = false
 	autoclick_rank = 0
 	autoclick_active = false
@@ -846,14 +847,13 @@ func resolve_defeated_target() -> Dictionary:
 	var level_unlocked: bool = false
 	var unlocked_level: int = max_unlocked_level
 
-	if current_level_cleared:
+	if is_level_cleared(current_level):
 		# Farming a previously cleared level
 		if auto_stage_advance_enabled:
-			# Auto-transition ON: advance to next level on this kill
+			# Auto ON: advance to current_level + 1 on this kill
 			var old_zone_index: int = current_zone_index
 			current_level += 1
 			enemies_defeated_on_level = 0
-			current_level_cleared = false
 			setup_current_level()
 			zone_changed = current_zone_index != old_zone_index
 			new_zone_name = zone_name
@@ -865,7 +865,7 @@ func resolve_defeated_target() -> Dictionary:
 			else:
 				status_text = "Level up! Level %d" % current_level
 		else:
-			# Stay on cleared level; no further stage unlocks from farming
+			# Stay farming; no new stage unlock
 			enemies_defeated_on_level = enemies_required_per_level
 			reset_target()
 			if defeated_boss:
@@ -873,6 +873,7 @@ func resolve_defeated_target() -> Dictionary:
 			else:
 				status_text = "+%d gold. Farming stage %d." % [earned_gold, current_level]
 	elif did_level_up:
+		mark_level_cleared(current_level)
 		var next_level: int = current_level + 1
 		level_unlocked = max_unlocked_level < next_level
 		max_unlocked_level = maxi(max_unlocked_level, next_level)
@@ -893,7 +894,6 @@ func resolve_defeated_target() -> Dictionary:
 			else:
 				status_text = "Level up! Level %d" % current_level
 		else:
-			current_level_cleared = true
 			enemies_defeated_on_level = enemies_required_per_level
 			reset_target()
 			if defeated_boss:
@@ -2037,12 +2037,50 @@ func set_auto_stage_advance_enabled(enabled: bool) -> void:
 	auto_stage_advance_enabled = enabled
 
 
+func mark_level_cleared(level: int) -> void:
+	cleared_level_ids[level] = true
+
+
+func is_level_cleared(level: int) -> bool:
+	return cleared_level_ids.has(level)
+
+
+func clear_cleared_levels() -> void:
+	cleared_level_ids.clear()
+
+
+func get_latest_available_level() -> int:
+	return max_unlocked_level
+
+
+func enable_auto_stage_advance_and_jump_if_needed() -> Dictionary:
+	auto_stage_advance_enabled = true
+	if is_level_cleared(current_level) and current_level < max_unlocked_level:
+		current_level = max_unlocked_level
+		setup_current_level()
+		if is_level_cleared(current_level):
+			enemies_defeated_on_level = enemies_required_per_level
+		else:
+			enemies_defeated_on_level = 0
+		return {
+			"moved_to_latest": true,
+			"advanced_to_next_level": true,
+			"current_level": current_level,
+			"status_text": "Auto-transition ON. Moved to level %d." % current_level,
+		}
+	return {
+		"moved_to_latest": false,
+		"advanced_to_next_level": false,
+		"current_level": current_level,
+		"status_text": "Auto-transition ON.",
+	}
+
+
 func fail_boss_level() -> Dictionary:
 	if is_boss_level and boss_retry_tokens > 0:
 		boss_retry_tokens -= 1
-		enemies_defeated_on_level = 0
-		current_level_cleared = false
 		setup_current_level()
+		enemies_defeated_on_level = 0
 		return {
 			"defeated": false,
 			"level_up": false,
@@ -2060,9 +2098,9 @@ func fail_boss_level() -> Dictionary:
 		}
 
 	current_level = maxi(1, current_level - 1)
-	enemies_defeated_on_level = 0
-	current_level_cleared = false
+	auto_stage_advance_enabled = false
 	setup_current_level()
+	enemies_defeated_on_level = enemies_required_per_level if is_level_cleared(current_level) else 0
 
 	return {
 		"defeated": false,
@@ -2087,10 +2125,11 @@ func can_travel_to_level(level: int) -> bool:
 func travel_to_level(level: int) -> Dictionary:
 	if not can_travel_to_level(level):
 		return _make_purchase_result("Level %d is locked" % level)
+	if level < max_unlocked_level:
+		auto_stage_advance_enabled = false
 	current_level = level
-	enemies_defeated_on_level = 0
-	current_level_cleared = false
 	setup_current_level()
+	enemies_defeated_on_level = enemies_required_per_level if is_level_cleared(current_level) else 0
 	return {
 		"defeated": false,
 		"level_up": false,

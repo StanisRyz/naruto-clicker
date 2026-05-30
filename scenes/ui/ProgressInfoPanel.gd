@@ -12,7 +12,7 @@ extends Control
 func update_view(state: ClickerState) -> void:
 	level_label.text = "Level %d" % state.current_level
 	zone_label.text = "%s" % state.zone_name
-	if state.current_level_cleared:
+	if state.is_level_cleared(state.current_level):
 		enemies_label.text = "Cleared"
 	else:
 		enemies_label.text = "Enemies %d / %d" % [

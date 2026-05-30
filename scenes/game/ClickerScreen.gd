@@ -620,9 +620,19 @@ func _on_auto_transition_popup_requested(anchor_global_position: Vector2) -> voi
 
 
 func _on_auto_transition_toggled(enabled: bool) -> void:
-	state.set_auto_stage_advance_enabled(enabled)
+	if enabled:
+		var jump_result: Dictionary = state.enable_auto_stage_advance_and_jump_if_needed()
+		if jump_result.get("moved_to_latest", false):
+			enemy_transition_token += 1
+			game_field.set_enemy_transition_locked(false)
+			partner_damage_accumulator = 0.0
+			autoclick_accumulator = 0.0
+			_sync_boss_timer()
+			stage_navigator.center_on_level(state.current_level)
+	else:
+		state.set_auto_stage_advance_enabled(false)
 	auto_transition_popup.refresh_view(state)
-	stage_navigator.set_auto_transition_enabled(enabled)
+	stage_navigator.set_auto_transition_enabled(state.auto_stage_advance_enabled)
 	_update_ui()
 
 
