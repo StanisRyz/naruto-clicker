@@ -12,10 +12,13 @@ extends Control
 func update_view(state: ClickerState) -> void:
 	level_label.text = "Level %d" % state.current_level
 	zone_label.text = "%s" % state.zone_name
-	enemies_label.text = "Enemies %d / %d" % [
-		state.enemies_defeated_on_level,
-		state.enemies_required_per_level,
-	]
+	if state.current_level_cleared:
+		enemies_label.text = "Cleared"
+	else:
+		enemies_label.text = "Enemies %d / %d" % [
+			state.enemies_defeated_on_level,
+			state.enemies_required_per_level,
+		]
 	enemy_name_label.text = "%s" % state.enemy_name
 	enemy_hp_label.text = "HP %d / %d" % [state.target_hp, state.target_max_hp]
 	enemy_hp_progress_bar.max_value = maxf(float(state.target_max_hp), 1.0)

@@ -52,6 +52,7 @@ var character_level_upgrade_cost: int = 5
 var current_level: int = 1
 var max_unlocked_level: int = 1
 var auto_stage_advance_enabled: bool = true
+var current_level_cleared: bool = false
 var enemies_defeated_on_level: int = 0
 var enemies_required_per_level: int = 10
 var target_hp: int = 10
@@ -740,6 +741,7 @@ func perform_prestige() -> Dictionary:
 	current_level = 1
 	max_unlocked_level = 1
 	enemies_defeated_on_level = 0
+	current_level_cleared = false
 	autoclick_purchased = false
 	autoclick_rank = 0
 	autoclick_active = false
@@ -844,7 +846,33 @@ func resolve_defeated_target() -> Dictionary:
 	var level_unlocked: bool = false
 	var unlocked_level: int = max_unlocked_level
 
-	if did_level_up:
+	if current_level_cleared:
+		# Farming a previously cleared level
+		if auto_stage_advance_enabled:
+			# Auto-transition ON: advance to next level on this kill
+			var old_zone_index: int = current_zone_index
+			current_level += 1
+			enemies_defeated_on_level = 0
+			current_level_cleared = false
+			setup_current_level()
+			zone_changed = current_zone_index != old_zone_index
+			new_zone_name = zone_name
+			advanced_to_next_level = true
+			if zone_changed:
+				status_text = "New zone: %s" % zone_name
+			elif defeated_boss:
+				status_text = "Boss defeated! +%d gold. Level %d" % [earned_gold, current_level]
+			else:
+				status_text = "Level up! Level %d" % current_level
+		else:
+			# Stay on cleared level; no further stage unlocks from farming
+			enemies_defeated_on_level = enemies_required_per_level
+			reset_target()
+			if defeated_boss:
+				status_text = "Boss defeated! +%d gold. Farming stage %d." % [earned_gold, current_level]
+			else:
+				status_text = "+%d gold. Farming stage %d." % [earned_gold, current_level]
+	elif did_level_up:
 		var next_level: int = current_level + 1
 		level_unlocked = max_unlocked_level < next_level
 		max_unlocked_level = maxi(max_unlocked_level, next_level)
@@ -865,8 +893,9 @@ func resolve_defeated_target() -> Dictionary:
 			else:
 				status_text = "Level up! Level %d" % current_level
 		else:
-			enemies_defeated_on_level = 0
-			setup_current_level()
+			current_level_cleared = true
+			enemies_defeated_on_level = enemies_required_per_level
+			reset_target()
 			if defeated_boss:
 				status_text = "Boss defeated! +%d gold. Stage %d unlocked." % [earned_gold, next_level]
 			else:
@@ -2012,6 +2041,7 @@ func fail_boss_level() -> Dictionary:
 	if is_boss_level and boss_retry_tokens > 0:
 		boss_retry_tokens -= 1
 		enemies_defeated_on_level = 0
+		current_level_cleared = false
 		setup_current_level()
 		return {
 			"defeated": false,
@@ -2031,6 +2061,7 @@ func fail_boss_level() -> Dictionary:
 
 	current_level = maxi(1, current_level - 1)
 	enemies_defeated_on_level = 0
+	current_level_cleared = false
 	setup_current_level()
 
 	return {
@@ -2058,6 +2089,7 @@ func travel_to_level(level: int) -> Dictionary:
 		return _make_purchase_result("Level %d is locked" % level)
 	current_level = level
 	enemies_defeated_on_level = 0
+	current_level_cleared = false
 	setup_current_level()
 	return {
 		"defeated": false,

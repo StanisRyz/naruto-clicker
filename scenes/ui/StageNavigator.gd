@@ -7,9 +7,9 @@ signal auto_transition_popup_requested(anchor_global_position: Vector2)
 
 const DISPLAY_COUNT: int = 7
 const SIDE_COUNT: int = 3
-const BUTTON_SIZE: int = 40
-const SIDE_BUTTON_SIZE: int = 28
-const DRAG_STAGE_THRESHOLD: float = 36.0
+const BUTTON_SIZE: int = 60
+const SIDE_BUTTON_SIZE: int = 60
+const DRAG_STAGE_THRESHOLD: float = 60.0
 const DRAG_MOVED_THRESHOLD: float = 8.0
 
 const COLOR_CURRENT: Color = Color(0.2, 0.4, 0.9, 1.0)
@@ -49,7 +49,7 @@ func _ready() -> void:
 func _build_ui() -> void:
 	var hbox: HBoxContainer = HBoxContainer.new()
 	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	hbox.add_theme_constant_override("separation", 4)
+	hbox.add_theme_constant_override("separation", 10)
 	hbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	hbox.mouse_filter = MOUSE_FILTER_PASS
 	add_child(hbox)
@@ -69,7 +69,7 @@ func _build_ui() -> void:
 		label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		label.add_theme_font_size_override("font_size", 10)
+		label.add_theme_font_size_override("font_size", 14)
 		label.mouse_filter = MOUSE_FILTER_IGNORE
 		btn.add_child(label)
 
@@ -107,7 +107,7 @@ func _make_side_button(bg_color: Color, label_text: String) -> Button:
 	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 9)
+	label.add_theme_font_size_override("font_size", 12)
 	label.mouse_filter = MOUSE_FILTER_IGNORE
 	label.text = label_text
 	btn.add_child(label)
