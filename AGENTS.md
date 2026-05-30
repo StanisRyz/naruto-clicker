@@ -666,7 +666,7 @@ After each patch, validate manually in Godot:
 
 ## BalanceConfig Rules
 
-`BalanceConfig` lives at `res://scripts/game/BalanceConfig.gd`. It is a plain `class_name` script (not an autoload). Files that use it add `const BalanceConfig = preload("res://scripts/game/BalanceConfig.gd")` at the top for LSP compatibility.
+`BalanceConfig` lives at `res://scripts/game/BalanceConfig.gd`. It is a plain `class_name` script (not an autoload). Reference it directly as `BalanceConfig.X` — do **not** add a local `const BalanceConfig = preload(...)`, as that shadows the global class name and produces `SHADOWED_GLOBAL_IDENTIFIER` warnings in Godot 4.5.1.
 
 - All economy numbers belong in `BalanceConfig`. Do not scatter magic numbers across `ClickerState`.
 - `ClickerState` reads BalanceConfig scalars at field initialisation time via `var x = BalanceConfig.X`.

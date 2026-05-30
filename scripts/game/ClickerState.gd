@@ -1,8 +1,6 @@
 class_name ClickerState
 extends RefCounted
 
-const BalanceConfig = preload("res://scripts/game/BalanceConfig.gd")
-
 const ZONE_DATA: Array = [
 	{
 		"name": "Training Grounds",

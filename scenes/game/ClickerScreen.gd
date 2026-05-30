@@ -1,7 +1,5 @@
 extends Control
 
-const ProgressionSimulator = preload("res://scripts/game/ProgressionSimulator.gd")
-
 var state: ClickerState = ClickerState.new()
 var boss_time_left: float = 0.0
 var boss_timer_active: bool = false
