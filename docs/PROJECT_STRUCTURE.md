@@ -12,7 +12,9 @@ naruto-clicker/
 │
 ├── scripts/
 │   ├── game/
-│   │   └── ClickerState.gd # All prototype state, economy formulas, and static game data
+│   │   ├── ClickerState.gd         # All prototype state, economy formulas, and static game data
+│   │   ├── BalanceConfig.gd        # Central economy coefficients; ClickerState reads from here
+│   │   └── ProgressionSimulator.gd # Debug-only: estimates progression curves without saving
 │   └── ui/
 │       ├── GameAssetCatalog.gd       # Central registry: all UI image keys → file paths
 │       ├── ImageSlot.gd              # Drop-in ColorRect with texture + fallback color
@@ -53,7 +55,8 @@ naruto-clicker/
 │           └── zone_04/  # Shadow Camp
 │
 ├── docs/
-│   └── PROJECT_STRUCTURE.md  # This file
+│   ├── PROJECT_STRUCTURE.md  # This file
+│   └── BALANCE.md            # Balance tuning guide and simulator instructions
 │
 ├── export_presets.cfg   # Web (Yandex) and Android export configurations
 ├── project.godot        # Engine settings, autoloads, display, renderer

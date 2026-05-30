@@ -1,6 +1,8 @@
 class_name ClickerState
 extends RefCounted
 
+const BalanceConfig = preload("res://scripts/game/BalanceConfig.gd")
+
 const ZONE_DATA: Array = [
 	{
 		"name": "Training Grounds",
@@ -61,10 +63,10 @@ var target_max_hp: int = 10
 var reward_gold: int = 5
 var is_boss_level: bool = false
 var is_elite_enemy: bool = false
-var elite_spawn_chance: float = 0.07
-var elite_hp_multiplier: int = 3
-var elite_reward_multiplier: int = 5
-var boss_time_limit: float = 30.0
+var elite_spawn_chance: float = BalanceConfig.ELITE_SPAWN_CHANCE
+var elite_hp_multiplier: int = BalanceConfig.ELITE_HP_MULTIPLIER
+var elite_reward_multiplier: int = BalanceConfig.ELITE_REWARD_MULTIPLIER
+var boss_time_limit: float = BalanceConfig.BOSS_TIME_LIMIT
 var enemy_name: String = "Enemy"
 var autoclick_unlocked: bool = false
 var gold_bonus_unlocked: bool = false
@@ -82,16 +84,16 @@ var autoclick_rank: int = 0
 var gold_bonus_rank: int = 0
 var focus_burst_rank: int = 0
 var rally_rank: int = 0
-var ability_max_rank: int = 5
-var autoclick_unlock_level: int = 15
-var gold_bonus_unlock_level: int = 30
-var focus_burst_unlock_level: int = 60
-var rally_unlock_level: int = 80
-var autoclick_purchase_cost: int = 50
-var gold_bonus_purchase_cost: int = 150
-var focus_burst_purchase_cost: int = 500
-var rally_purchase_cost: int = 1000
-var gold_bonus_multiplier: int = 2
+var ability_max_rank: int = BalanceConfig.ABILITY_MAX_RANK
+var autoclick_unlock_level: int = BalanceConfig.AUTOCLICK_UNLOCK_LEVEL
+var gold_bonus_unlock_level: int = BalanceConfig.GOLD_BONUS_UNLOCK_LEVEL
+var focus_burst_unlock_level: int = BalanceConfig.FOCUS_BURST_UNLOCK_LEVEL
+var rally_unlock_level: int = BalanceConfig.RALLY_UNLOCK_LEVEL
+var autoclick_purchase_cost: int = BalanceConfig.AUTOCLICK_PURCHASE_COST
+var gold_bonus_purchase_cost: int = BalanceConfig.GOLD_BONUS_PURCHASE_COST
+var focus_burst_purchase_cost: int = BalanceConfig.FOCUS_BURST_PURCHASE_COST
+var rally_purchase_cost: int = BalanceConfig.RALLY_PURCHASE_COST
+var gold_bonus_multiplier: int = 2  # kept literal; see BalanceConfig for rank-based formula
 var partner_names: Array[String] = [
 	"Partner 1",
 	"Partner 2",
@@ -230,28 +232,28 @@ var ability_skill_definitions: Array[Dictionary] = [
 ]
 var purchased_ability_skill_ids: Array[String] = []
 var milestone_levels: Array[int] = [10, 25, 50, 100, 250, 500]
-var milestone_multiplier_per_reached: int = 2
-var milestone_cost_multiplier: int = 3
-var character_cost_base: int = 5
-var character_cost_linear: float = 2.2
-var character_cost_curve: float = 0.18
-var character_cost_power: float = 2.35
-var partner_cost_curve_multiplier: float = 0.015
-var partner_cost_power: float = 2.15
-var enemy_hp_base: int = 10
-var enemy_hp_linear: float = 8.0
-var enemy_hp_curve: float = 1.15
-var enemy_hp_power: float = 2.10
-var enemy_reward_base: int = 5
-var enemy_reward_linear: float = 3.0
-var enemy_reward_curve: float = 0.22
-var enemy_reward_power: float = 1.80
+var milestone_multiplier_per_reached: int = BalanceConfig.MILESTONE_MULTIPLIER_PER_REACHED
+var milestone_cost_multiplier: int = BalanceConfig.MILESTONE_COST_MULTIPLIER
+var character_cost_base: int = BalanceConfig.HERO_COST_BASE
+var character_cost_linear: float = BalanceConfig.HERO_COST_LINEAR
+var character_cost_curve: float = BalanceConfig.HERO_COST_CURVE
+var character_cost_power: float = BalanceConfig.HERO_COST_POWER
+var partner_cost_curve_multiplier: float = BalanceConfig.PARTNER_COST_CURVE_MULT
+var partner_cost_power: float = BalanceConfig.PARTNER_COST_POWER
+var enemy_hp_base: int = BalanceConfig.ENEMY_HP_BASE
+var enemy_hp_linear: float = BalanceConfig.ENEMY_HP_LINEAR
+var enemy_hp_curve: float = BalanceConfig.ENEMY_HP_CURVE
+var enemy_hp_power: float = BalanceConfig.ENEMY_HP_POWER
+var enemy_reward_base: int = BalanceConfig.ENEMY_REWARD_BASE
+var enemy_reward_linear: float = BalanceConfig.ENEMY_REWARD_LINEAR
+var enemy_reward_curve: float = BalanceConfig.ENEMY_REWARD_CURVE
+var enemy_reward_power: float = BalanceConfig.ENEMY_REWARD_POWER
 var building_names: Array[String] = ["Training Camp", "Market", "Knight Hut", "War Banner", "Clock Tower", "Boss Shrine"]
 var building_bonus_types: Array[String] = ["partner_dps", "gold", "click_damage", "ability_duration", "ability_cooldown", "boss_gold"]
 var building_base_costs: Array[int] = [25, 75, 150, 500, 1200, 3000]
 var building_cost_steps: Array[int] = [25, 50, 100, 250, 600, 1500]
 var building_counts: Array[int] = []
-var building_bonus_percent_per_level: int = 1
+var building_bonus_percent_per_level: int = BalanceConfig.BUILDING_BONUS_PERCENT_PER_LEVEL
 var building_purchase_costs: Array[int] = []
 var boss_retry_tokens: int = 0
 var task_reward_boost_multiplier: float = 1.0
@@ -312,11 +314,11 @@ var music_enabled: bool = true
 var prestige_points_available: int = 0
 var prestige_points_total_earned: int = 0
 var total_prestiges: int = 0
-var prestige_required_level: int = 50
+var prestige_required_level: int = BalanceConfig.PRESTIGE_REQUIRED_LEVEL
 var prestige_talent_levels: Array[int] = [0, 0, 0, 0, 0, 0]
 var prestige_talent_names: Array[String] = ["Focus Training", "Trade Routes", "Command Aura", "Quick Hands", "Builder Wisdom", "Boss Hunter"]
 var prestige_talent_bonus_types: Array[String] = ["click_damage", "gold", "partner_dps", "autoclick_rate", "settlement_effect", "boss_damage"]
-var prestige_talent_bonus_percent_per_level: int = 5
+var prestige_talent_bonus_percent_per_level: int = BalanceConfig.PRESTIGE_TALENT_BONUS_PERCENT_PER_LEVEL
 var task_definitions: Array[Dictionary] = [
 	{"id": "manual_damage_500", "title": "Deal 500 manual damage", "goal_type": "manual_damage_delta", "target_delta": 500, "reward_scale": 20},
 	{"id": "defeat_25_enemies", "title": "Defeat 25 enemies", "goal_type": "enemies_defeated_delta", "target_delta": 25, "reward_scale": 30},

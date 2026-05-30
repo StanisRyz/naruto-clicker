@@ -664,6 +664,26 @@ After each patch, validate manually in Godot:
 - Do not add `const BackgroundAssetCatalog = preload(...)` in `GameField` — `BackgroundAssetCatalog` is a global class_name and a local const with the same name causes `SHADOWED_GLOBAL_IDENTIFIER` warnings. The LSP "not declared" error after creating the file is transient and resolves when Godot rescans `scripts/ui/`.
 - Recommended image size: 720×1600 minimum, 1080×2400 recommended, portrait 9:20 safe.
 
+## BalanceConfig Rules
+
+`BalanceConfig` lives at `res://scripts/game/BalanceConfig.gd`. It is a plain `class_name` script (not an autoload). Files that use it add `const BalanceConfig = preload("res://scripts/game/BalanceConfig.gd")` at the top for LSP compatibility.
+
+- All economy numbers belong in `BalanceConfig`. Do not scatter magic numbers across `ClickerState`.
+- `ClickerState` reads BalanceConfig scalars at field initialisation time via `var x = BalanceConfig.X`.
+- Large arrays (`PARTNER_DPS_VALUES`, skill definitions, etc.) are documented in `BalanceConfig` but kept as typed literals in `ClickerState` to avoid typed-array conversion risk.
+- Do not add runtime mutable state to `BalanceConfig` — consts only.
+- See `docs/BALANCE.md` for the full tuning guide.
+
+## ProgressionSimulator Rules
+
+`ProgressionSimulator` lives at `res://scripts/game/ProgressionSimulator.gd`. It is debug-only tooling.
+
+- It creates a local `ClickerState` instance and simulates progression without touching `SaveManager` or the real player save.
+- It is only invoked from `ClickerScreen._run_balance_simulation()`, which is guarded by `BuildConfig.IS_DEBUG_BUILD`.
+- Press **F8** in debug mode to print progression tables to the Godot console and export `user://balance_simulation.csv`.
+- Do not expose the simulator in any player-facing UI.
+- See `docs/BALANCE.md` for output format and tuning workflow.
+
 ## BuildConfig Rules
 
 `BuildConfig` is a global autoload registered in `project.godot`. It lives at `res://scripts/game/BuildConfig.gd`.

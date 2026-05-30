@@ -1,5 +1,7 @@
 extends Control
 
+const ProgressionSimulator = preload("res://scripts/game/ProgressionSimulator.gd")
+
 var state: ClickerState = ClickerState.new()
 var boss_time_left: float = 0.0
 var boss_timer_active: bool = false
@@ -772,6 +774,38 @@ func _load_game_on_start() -> void:
 	state.apply_save_data(data)
 
 
+func _run_balance_simulation() -> void:
+	var sim := ProgressionSimulator.new()
+	var minute_marks: Array = [5, 15, 30, 60, 180, 1440]
+	var profiles: Array = [
+		ProgressionSimulator.F2P_CASUAL,
+		ProgressionSimulator.AD_WATCHER,
+		ProgressionSimulator.LIGHT_SPENDER,
+	]
+	var all_rows: Array = []
+	print("=== BALANCE SIMULATION ===")
+	for profile in profiles:
+		print("--- %s ---" % profile.to_upper())
+		var rows: Array = sim.build_progression_table(minute_marks, profile)
+		all_rows.append_array(rows)
+		for row in rows:
+			print("  %4.0fmin | Lv%-3d | Hero%-4d | Dmg%-6d | PDPS%-7d | EHP%-8d | +%-6d g/min | %.1fs/lvl | %d pp" % [
+				float(row.get("minutes", 0)),
+				int(row.get("level", 0)),
+				int(row.get("hero_level", 0)),
+				int(row.get("click_damage", 0)),
+				int(row.get("partner_dps", 0)),
+				int(row.get("enemy_hp", 0)),
+				int(row.get("gold_per_minute", 0)),
+				float(row.get("time_to_clear_level", 0.0)),
+				int(row.get("prestige_points", 0)),
+			])
+	var csv_path: String = "user://balance_simulation.csv"
+	if sim.export_csv(csv_path, all_rows):
+		print("CSV exported to %s" % csv_path)
+	print("=== SIMULATION COMPLETE ===")
+
+
 func _input(event: InputEvent) -> void:
 	if not BuildConfig.IS_DEBUG_BUILD:
 		return
@@ -781,6 +815,8 @@ func _input(event: InputEvent) -> void:
 		KEY_F5:
 			_save_game_now()
 			print("Debug: game saved")
+		KEY_F8:
+			_run_balance_simulation()
 		KEY_F9:
 			var data: Dictionary = SaveManager.load_data()
 			if not data.is_empty():
