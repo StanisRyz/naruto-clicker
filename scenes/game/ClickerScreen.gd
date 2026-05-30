@@ -75,6 +75,7 @@ func _ready() -> void:
 	upgrade_sheet.character_level_upgrade_requested.connect(_on_character_level_upgrade_requested)
 	upgrade_sheet.hero_skill_purchase_requested.connect(_on_hero_skill_purchase_requested)
 	upgrade_sheet.ability_skill_purchase_requested.connect(_on_ability_skill_purchase_requested)
+	upgrade_sheet.ability_unlock_requested.connect(_on_ability_unlock_requested)
 	partner_sheet.partner_purchase_requested.connect(_on_partner_purchase_requested)
 	partner_sheet.skill_purchase_requested.connect(_on_partner_skill_purchase_requested)
 	settlement_sheet.building_purchase_requested.connect(_on_building_purchase_requested)
@@ -195,6 +196,12 @@ func _on_hero_skill_purchase_requested(skill_id: String) -> void:
 
 func _on_ability_skill_purchase_requested(skill_id: String) -> void:
 	var result: Dictionary = state.buy_ability_skill(skill_id)
+	_handle_status_text(result.get("status_text", ""))
+	_update_ui()
+
+
+func _on_ability_unlock_requested(ability_id: String) -> void:
+	var result: Dictionary = state.buy_ability_unlock(ability_id)
 	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
 
@@ -408,11 +415,11 @@ func _run_partner_damage_tick() -> void:
 
 func _on_autoclick_requested() -> void:
 	var rank: int = state.get_ability_rank("autoclick")
-	if rank <= 0 or state.autoclick_active or autoclick_cooldown_left > 0.0:
+	if not state.is_ability_purchased("autoclick") or state.autoclick_active or autoclick_cooldown_left > 0.0:
 		return
 
 	state.autoclick_active = true
-	var rank_bonus_seconds: float = 2.0 * maxi(0, rank - 1)
+	var rank_bonus_seconds: float = 2.0 * rank
 	autoclick_time_left = _get_scaled_duration(autoclick_duration + rank_bonus_seconds, false)
 	autoclick_accumulator = 0.0
 	state.total_autoclick_activations += 1
@@ -420,7 +427,7 @@ func _on_autoclick_requested() -> void:
 
 
 func _on_gold_bonus_requested() -> void:
-	if state.get_ability_rank("gold_bonus") <= 0 or state.gold_bonus_active or gold_bonus_cooldown_left > 0.0:
+	if not state.is_ability_purchased("gold_bonus") or state.gold_bonus_active or gold_bonus_cooldown_left > 0.0:
 		return
 
 	state.gold_bonus_active = true
@@ -429,7 +436,7 @@ func _on_gold_bonus_requested() -> void:
 
 
 func _on_focus_burst_requested() -> void:
-	if state.get_ability_rank("focus_burst") <= 0 or state.focus_burst_active or focus_burst_cooldown_left > 0.0:
+	if not state.is_ability_purchased("focus_burst") or state.focus_burst_active or focus_burst_cooldown_left > 0.0:
 		return
 
 	state.focus_burst_active = true
@@ -439,7 +446,7 @@ func _on_focus_burst_requested() -> void:
 
 
 func _on_rally_requested() -> void:
-	if state.get_ability_rank("rally") <= 0 or state.rally_active or rally_cooldown_left > 0.0:
+	if not state.is_ability_purchased("rally") or state.rally_active or rally_cooldown_left > 0.0:
 		return
 
 	state.rally_active = true

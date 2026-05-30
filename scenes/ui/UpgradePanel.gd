@@ -4,6 +4,7 @@ extends VBoxContainer
 signal character_level_upgrade_requested(mode: String)
 signal hero_skill_popup_requested(skill_id: String, anchor_global_position: Vector2)
 signal ability_skill_popup_requested(skill_id: String, anchor_global_position: Vector2)
+signal ability_unlock_requested(ability_id: String)
 
 const ABILITIES: Array[Dictionary] = [
 	{"id": "autoclick", "name": "Autoclick"},
@@ -98,7 +99,7 @@ func _create_ability_row(ability_index: int) -> Dictionary:
 
 	var row_content: Dictionary = _add_card_content(row, "BuyButton")
 	var button: Button = row_content["button"]
-	button.visible = false
+	button.pressed.connect(func() -> void: ability_unlock_requested.emit(String(ability["id"])))
 	var skill_buttons: Array = row_content["skill_buttons"]
 	for i in range(skill_buttons.size()):
 		var skill_button: Button = skill_buttons[i]
@@ -113,12 +114,14 @@ func _update_ability_row(state: ClickerState, ability_index: int, row: Dictionar
 	var ability_name: String = String(ability["name"])
 	var name_status_label: Label = row["name_status_label"]
 	var effect_label: Label = row["effect_label"]
+	var button: Button = row["button"]
 	var skill_buttons: Array = row["skill_buttons"]
 	var skill_image_holders: Array = row["skill_image_holders"]
 
 	var rank: int = state.get_ability_rank(ability_id)
 	name_status_label.text = "%s | Rank %d/%d" % [ability_name, rank, state.ability_max_rank]
 	effect_label.text = state.get_ability_description(ability_id)
+	_update_ability_unlock_button(state, ability_id, button)
 	var skills: Array[Dictionary] = state.get_ability_skills(ability_id)
 	_update_skill_icon_row(skills, skill_buttons, skill_image_holders, state, false)
 
@@ -199,9 +202,9 @@ func _add_card_content(row: PanelContainer, button_name: String) -> Dictionary:
 
 	var button := Button.new()
 	button.name = button_name
-	button.custom_minimum_size = Vector2(210, 48)
-	button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	skill_row.add_child(button)
+	button.custom_minimum_size = Vector2(210, 104)
+	button.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	content.add_child(button)
 
 	return {
 		"name_status_label": name_status_label,
@@ -210,6 +213,19 @@ func _add_card_content(row: PanelContainer, button_name: String) -> Dictionary:
 		"skill_image_holders": skill_image_holders,
 		"button": button,
 	}
+
+
+func _update_ability_unlock_button(state: ClickerState, ability_id: String, button: Button) -> void:
+	var cost: int = state.get_ability_unlock_cost(ability_id)
+	if state.is_ability_purchased(ability_id):
+		button.disabled = true
+		button.text = "Purchased"
+	elif not state.is_ability_unlocked(ability_id):
+		button.disabled = true
+		button.text = "Requires Lv %d" % state.get_ability_unlock_level(ability_id)
+	else:
+		button.text = "Buy: %d" % cost
+		button.disabled = not state.can_buy_ability_unlock(ability_id)
 
 
 func _update_skill_icon_row(skills: Array[Dictionary], skill_buttons: Array, skill_image_holders: Array, state: ClickerState, is_hero: bool) -> void:

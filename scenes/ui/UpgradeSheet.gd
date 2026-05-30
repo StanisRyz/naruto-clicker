@@ -4,6 +4,7 @@ extends Control
 signal character_level_upgrade_requested(mode: String)
 signal hero_skill_purchase_requested(skill_id: String)
 signal ability_skill_purchase_requested(skill_id: String)
+signal ability_unlock_requested(ability_id: String)
 signal closed
 
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
@@ -22,6 +23,7 @@ func _ready() -> void:
 	upgrade_panel.character_level_upgrade_requested.connect(_on_character_level_upgrade_requested)
 	upgrade_panel.hero_skill_popup_requested.connect(_on_hero_skill_popup_requested)
 	upgrade_panel.ability_skill_popup_requested.connect(_on_ability_skill_popup_requested)
+	upgrade_panel.ability_unlock_requested.connect(_on_ability_unlock_requested)
 	upgrade_skill_popup.hero_skill_purchase_requested.connect(_on_hero_skill_purchase_requested)
 	upgrade_skill_popup.ability_skill_purchase_requested.connect(_on_ability_skill_purchase_requested)
 	hide()
@@ -72,3 +74,7 @@ func _on_hero_skill_purchase_requested(skill_id: String) -> void:
 
 func _on_ability_skill_purchase_requested(skill_id: String) -> void:
 	ability_skill_purchase_requested.emit(skill_id)
+
+
+func _on_ability_unlock_requested(ability_id: String) -> void:
+	ability_unlock_requested.emit(ability_id)

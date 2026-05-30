@@ -53,10 +53,14 @@ func _update_view(state: ClickerState) -> void:
 	var unlock_level: int = int(skill.get("unlock_character_level", 0))
 	var cost: int = state.get_hero_skill_cost(current_skill_id) if current_owner_type == "hero" else state.get_ability_skill_cost(current_skill_id)
 	var skill_state: String = state.get_hero_skill_state(current_skill_id) if current_owner_type == "hero" else state.get_ability_skill_state(current_skill_id)
+	var ability_id: String = String(skill.get("ability_id", ""))
 
 	name_label.text = String(skill.get("name", "Upgrade Skill"))
 	description_label.text = String(skill.get("description", ""))
-	requirement_label.text = "Requires: Hero Level %d" % unlock_level
+	if current_owner_type == "ability" and not state.is_ability_purchased(ability_id):
+		requirement_label.text = "Requires: Buy %s first" % _get_ability_display_name(ability_id)
+	else:
+		requirement_label.text = "Requires: Hero Level %d" % unlock_level
 	current_label.text = "Current: %d / %d" % [state.character_level, unlock_level]
 	cost_label.text = "Cost: %d gold" % cost
 
@@ -111,6 +115,15 @@ func _position_panel(panel_size: Vector2) -> void:
 
 func _can_buy_current_skill(state: ClickerState) -> bool:
 	return state.can_buy_hero_skill(current_skill_id) if current_owner_type == "hero" else state.can_buy_ability_skill(current_skill_id)
+
+
+func _get_ability_display_name(ability_id: String) -> String:
+	match ability_id:
+		"autoclick": return "Autoclick"
+		"gold_bonus": return "Gold Bonus"
+		"focus_burst": return "Focus Burst"
+		"rally": return "Rally"
+	return "Ability"
 
 
 func _on_buy_button_pressed() -> void:

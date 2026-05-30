@@ -58,13 +58,13 @@ The main scene contains the first local clicker loop:
 - Hero level and each partner tier have milestone multipliers at 10, 25, 50, 100, 250, and 500 owned levels.
 - Each reached milestone doubles the total accumulated contribution of that source, applying to all owned levels rather than only future purchases.
 - Hero and each partner tier track milestones independently.
-- Active abilities have ranks 0–5. Rank 0 means not purchased. First purchase sets rank 1; ranks 2–5 are gold upgrades that increase the effect.
-- Autoclick unlocks at character level 15, base cost 50 gold. Each rank above 1 adds +15% attack rate and +2 seconds duration.
-- Gold Bonus unlocks at character level 30, base cost 150 gold. Multiplier: rank 1 = x2.00, rank 5 = x3.00 (steps of +0.25 per rank).
-- Focus Burst unlocks at character level 60, base cost 500 gold. Damage multiplier: rank 1 = x2.00, rank 5 = x3.00 (steps of +0.25 per rank).
-- Rally unlocks at character level 80, base cost 1000 gold. Partner DPS multiplier: rank 1 = x2.00, rank 5 = x3.00 (steps of +0.25 per rank).
+- Active abilities are unlocked once through the large card button, then improved by passive rank skill icons.
+- Autoclick unlocks at character level 15, base cost 50 gold. Each passive rank adds +15% attack rate and +2 seconds duration.
+- Gold Bonus unlocks at character level 30, base cost 150 gold. Base is x2.00, and passive ranks add +0.25 multiplier each.
+- Focus Burst unlocks at character level 60, base cost 500 gold. Base is x2.00, and passive ranks add +0.25 multiplier each.
+- Rally unlocks at character level 80, base cost 1000 gold. Base is x2.00, and passive ranks add +0.25 multiplier each.
 - Upgrade costs: base_cost × rank_to_buy² × 2 (e.g. Autoclick rank 2 costs 50×4×2 = 400 gold).
-- Prestige resets Hero skills and ability skill ranks to 0 along with normal progression.
+- Prestige resets purchased abilities, Hero skills, and ability passive ranks to 0 along with normal progression.
 - Ability buttons live on the left side of the game field.
 - Ability buttons are placeholder ImageHolder-style controls: textless white squares until real icons are added.
 - Ability state is shown with color/disabled feedback, not text inside the button.
@@ -95,10 +95,10 @@ The main scene contains the first local clicker loop:
 - The Shop includes a temporary dev-only `Prototype: Get 50 Gems` button for testing product flow without payments.
 - Boss Retry tokens automatically retry the same failed boss level once per token. Task Reward Boost doubles the next claimed task reward only once.
 - Gems, Boss Retry tokens, and Task Reward Boost state are runtime-only until a save system is explicitly added.
-- Autoclick base: 20 hits/sec for 15 s, 60 s cooldown. Each rank above 1 adds +15% rate and +2 s duration.
-- Gold Bonus base: x2 gold for 45 s, 300 s cooldown. Multiplier scales to x3 at rank 5.
-- Focus Burst base: x2 damage for 20 s, 120 s cooldown. Multiplier scales to x3 at rank 5.
-- Rally base: x2 partner DPS for 30 s, 180 s cooldown. Multiplier scales to x3 at rank 5.
+- Autoclick unlock base: 20 hits/sec for 15 s, 60 s cooldown. Each passive rank adds +15% rate and +2 s duration after Autoclick is purchased.
+- Gold Bonus base: x2 gold for 45 s, 300 s cooldown. Passive ranks add +0.25 multiplier each.
+- Focus Burst base: x2 damage for 20 s, 120 s cooldown. Passive ranks add +0.25 multiplier each.
+- Rally base: x2 partner DPS for 30 s, 180 s cooldown. Passive ranks add +0.25 multiplier each.
 - War Banner increases Focus Burst and Rally duration, and Clock Tower improves cooldown efficiency with diminishing returns.
 - Partners provide passive DPS and are managed from a separate bottom-half sheet.
 - Partner DPS tiers are data-driven: Partner 1 (10), Partner 2 (20), Partner 3 (35), Field Scout (65), Spear Guard (120), Iron Defender (220), Battle Monk (410), Elite Samurai (750), Shadow Captain (1400), War Sage (2600), Beast Tamer (4800), Blade Master (9000), and Legendary Commander (16500).
@@ -135,7 +135,7 @@ The main scene contains the first local clicker loop:
 - Partner buttons always show the required package cost when prerequisites are met; failed unaffordable purchases can return "Not enough gold" through the status helper, but no main-screen status label is currently shown.
 - Partner card first lines show partner name, owned count, and that tier's total DPS contribution: `Partner Name | Count | DPS X`.
 - Partner card second lines stay focused on per-purchase DPS and the next x2 milestone.
-- Purchase tabs use card-style rows with a temporary white `ColorRect` image placeholder, two-line info text, and an action button.
+- Purchase tabs use card-style rows with a temporary white `ColorRect` image placeholder, right-side info rows, skill icons where applicable, and a full-height action button in its own right column.
 These formulas are prototype balance values.
 
 ## Settlement
@@ -178,12 +178,12 @@ Prestige is an unlockable reset in its own bottom `Prestige` tab.
 
 - The bottom bar has `Upgrades`, `Partners`, `Settlement`, `Prestige`, and `Shop` buttons on one row.
 - `PrestigeSheet` does not use the buy mode selector.
-- `UpgradeSheet` contains Partner-style upgrade cards: Hero Level plus Autoclick, Gold Bonus, Focus Burst, and Rally. Each card uses a large square `ImageHolder`, right-side title/effect rows, and a row of 5 small skill icons.
+- `UpgradeSheet` contains Partner-style upgrade cards: Hero Level plus Autoclick, Gold Bonus, Focus Burst, and Rally. Each card uses a large square `ImageHolder`, right-side title/effect rows, a row of 5 small skill icons, and a full-height right-column action button.
 - Hero Level's first line shows current level and current click damage: `Hero Level | Level X | Damage Y`. Its second line still shows damage plus the next x2 milestone or max milestones.
 - Hero Level keeps its separate bulk-buy button and `BuyModeSelector` behavior; hero skill icon purchases do not use bulk-buy.
-- Hero Level has 5 purchasable passive skill icons unlocked by character level. Ability cards have 5 purchasable rank skill icons unlocked by character level.
+- Hero Level has 5 purchasable passive skill icons unlocked by character level. Ability cards are unlocked once through the main card button, then have 5 purchasable passive rank skill icons unlocked by character level.
 - Upgrade skill icon colors match partner skills: gray = locked, blue = available to buy, white = purchased.
-- Ability rank is derived from purchased ability skill icons. Rank 0 means the `AbilityBar` button remains locked; rank 1+ enables activation.
+- Ability activation uses the ability purchased flag. Ability rank/effects are derived from purchased passive skill icons, and passive ability skills require buying the ability first.
 - Hero skills and ability skills are normal progression and reset on prestige.
 - Reward: `floor(current_level / 50) + floor(character_level / 100)` prestige points per prestige action.
 - Stage level 52 and character level 102 gives 2 points.

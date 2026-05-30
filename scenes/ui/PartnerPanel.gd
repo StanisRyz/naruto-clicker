@@ -120,10 +120,10 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 
 	var button := Button.new()
 	button.name = "HireButton"
-	button.custom_minimum_size = Vector2(210, 48)
-	button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	button.custom_minimum_size = Vector2(210, 104)
+	button.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	button.pressed.connect(func() -> void: partner_purchase_requested.emit(partner_index, selected_buy_mode))
-	skill_row.add_child(button)
+	content.add_child(button)
 
 	return {
 		"row": row,
