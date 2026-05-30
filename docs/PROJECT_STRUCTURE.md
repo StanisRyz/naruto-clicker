@@ -33,8 +33,9 @@ naruto-clicker/
 │   │   │   └── EnemyScalingCalculator.gd  # Base HP/reward formulas + zone/boss/elite scaling
 │   │   ├── presentation/           # UI-facing formatting and view-data builders (read-only)
 │   │   │   └── ClickerStatePresentation.gd # Descriptions, skill states, task/shop view data
-│   │   └── runtime/                # Task runtime: initialization, progress, claim, rotation
-│   │       └── TaskRuntime.gd      # Mutates ClickerState task fields; no UI/SaveManager calls
+│   │   └── runtime/                # Runtime services: task and shop logic
+│   │       ├── TaskRuntime.gd      # Task init, progress, claim, rotation; no UI/SaveManager calls
+│   │       └── ShopRuntime.gd      # Local shop purchases, Gems helpers; no real payments/UI calls
 │   └── ui/
 │       ├── GameAssetCatalog.gd       # Central registry: all UI image keys → file paths
 │       ├── ImageSlot.gd              # Drop-in ColorRect with texture + fallback color
@@ -127,6 +128,7 @@ naruto-clicker/
 - **Calculators** (`scripts/game/calculators/`) contain pure formula functions — no runtime state, no side effects, no SaveManager calls. ClickerState delegates internal cost/milestone/enemy-scaling math to them.
 - **Presentation** (`scripts/game/presentation/`) contains UI-facing formatting, description strings, skill state labels, and view-data dictionary builders. Read-only access to ClickerState; must not mutate state or perform gameplay actions. UI panels continue calling ClickerState public methods, which delegate internally.
 - **TaskRuntime** (`scripts/game/runtime/`) owns task runtime operations: initialization, progress tracking, reward calculation, claim/rotation, and validation. Reads and mutates ClickerState task fields through a passed state reference. Must not call SaveManager, UI, or scene nodes. ClickerState owns the task state fields (active_task_ids, inactive_task_ids, active_task_states) for save compatibility. TasksWindow continues calling ClickerState public methods.
+- **ShopRuntime** (`scripts/game/runtime/`) owns local shop runtime behavior: Gems helpers, product lookup, and purchase logic. Prototype-only; does not implement real payments. Must not call SaveManager or UI nodes. ClickerState owns shop state fields (gems, boss_retry_tokens, task_reward_boost_multiplier) for save compatibility. ShopPanel continues calling ClickerState public methods.
 
 ## Config file rules
 

@@ -7,6 +7,7 @@ const CostCalc = preload("res://scripts/game/calculators/CostCalculator.gd")
 const EnemyCalc = preload("res://scripts/game/calculators/EnemyScalingCalculator.gd")
 const Presentation = preload("res://scripts/game/presentation/ClickerStatePresentation.gd")
 const TaskRT = preload("res://scripts/game/runtime/TaskRuntime.gd")
+const ShopRT = preload("res://scripts/game/runtime/ShopRuntime.gd")
 
 
 var gold: int = 0
@@ -295,20 +296,15 @@ func buy_prestige_talent(talent_index: int) -> Dictionary:
 
 
 func add_gems(amount: int) -> void:
-	gems = maxi(0, gems + amount)
+	ShopRT.add_gems(self, amount)
 
 
 func grant_test_gems(amount: int = 50) -> Dictionary:
-	add_gems(amount)
-	return _make_purchase_result("Prototype test grant: +%d Gems" % amount, false, true)
+	return ShopRT.grant_test_gems(self, amount)
 
 
 func get_shop_product(product_id: String) -> Dictionary:
-	for product: Dictionary in ShopConfig.SHOP_PRODUCTS:
-		if String(product.get("id", "")) == product_id:
-			return product
-
-	return {}
+	return ShopRT.get_shop_product(product_id)
 
 
 func get_shop_product_view_data() -> Array[Dictionary]:
@@ -316,42 +312,7 @@ func get_shop_product_view_data() -> Array[Dictionary]:
 
 
 func buy_shop_product(product_id: String) -> Dictionary:
-	var product: Dictionary = get_shop_product(product_id)
-	if product.is_empty():
-		return _make_purchase_result("Invalid shop product")
-
-	var cost_gems: int = int(product.get("cost_gems", 0))
-	if gems < cost_gems:
-		return _make_purchase_result("Not enough Gems")
-
-	gems -= cost_gems
-	var product_name: String = String(product.get("name", "Shop product"))
-	var reward_type: String = String(product.get("reward_type", ""))
-	var result: Dictionary = _make_purchase_result("%s purchased!" % product_name, false, true)
-
-	match reward_type:
-		"gold":
-			var reward_scale: int = int(product.get("reward_scale", 0))
-			var shop_gold: int = maxi(1, get_current_task_reward_unit() * reward_scale)
-			gold += shop_gold
-			result["reward_gold"] = shop_gold
-			result["status_text"] = "%s purchased! +%d gold" % [product_name, shop_gold]
-		"combo_fill":
-			var combo_reward_amount: int = int(product.get("reward_amount", 100))
-			result["combo_fill"] = combo_reward_amount
-			result["status_text"] = "%s purchased! Combo filled" % product_name
-		"boss_retry_token":
-			var boss_retry_reward_amount: int = int(product.get("reward_amount", 1))
-			boss_retry_tokens += boss_retry_reward_amount
-			result["status_text"] = "%s purchased! +%d Boss Retry" % [product_name, boss_retry_reward_amount]
-		"task_reward_boost":
-			var reward_multiplier: float = float(product.get("reward_multiplier", 1.0))
-			task_reward_boost_multiplier = maxf(task_reward_boost_multiplier, reward_multiplier)
-			result["status_text"] = "%s purchased! Next task reward x%.1f" % [product_name, task_reward_boost_multiplier]
-		_:
-			result["status_text"] = "Unknown shop reward"
-
-	return result
+	return ShopRT.buy_shop_product(self, product_id)
 
 
 func perform_prestige() -> Dictionary:
