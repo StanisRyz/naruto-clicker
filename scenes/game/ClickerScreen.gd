@@ -37,6 +37,8 @@ var combo_empowered_active: bool = false
 var combo_empowered_time_left: float = 0.0
 var combo_empowered_duration: float = 10.0
 var combo_empowered_multiplier: float = 3.0
+var _autosave_timer: float = 0.0
+const _AUTOSAVE_INTERVAL: float = 10.0
 
 @onready var primary_stats_panel: PrimaryStatsPanel = $PrimaryStatsPanel
 @onready var stage_navigator: Control = $MainContent/VBoxContainer/StageNavigator
@@ -96,11 +98,17 @@ func _ready() -> void:
 	settlement_sheet.closed.connect(_on_sheet_closed)
 	prestige_sheet.closed.connect(_on_sheet_closed)
 	shop_sheet.closed.connect(_on_sheet_closed)
+	_load_game_on_start()
 	_update_ui()
 	_sync_boss_timer()
 
 
 func _process(delta: float) -> void:
+	_autosave_timer += delta
+	if _autosave_timer >= _AUTOSAVE_INTERVAL:
+		_autosave_timer = 0.0
+		_save_game_now()
+
 	_process_combo_meter(delta)
 
 	if boss_timer_active and not enemy_transition_locked:
@@ -194,24 +202,32 @@ func _on_character_level_upgrade_requested(mode: String) -> void:
 	var result: Dictionary = state.buy_character_level_upgrades(mode)
 	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
+	if result.get("upgraded", false):
+		_save_game_now()
 
 
 func _on_hero_skill_purchase_requested(skill_id: String) -> void:
 	var result: Dictionary = state.buy_hero_skill(skill_id)
 	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
+	if result.get("upgraded", false):
+		_save_game_now()
 
 
 func _on_ability_skill_purchase_requested(skill_id: String) -> void:
 	var result: Dictionary = state.buy_ability_skill(skill_id)
 	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
+	if result.get("upgraded", false):
+		_save_game_now()
 
 
 func _on_ability_unlock_requested(ability_id: String) -> void:
 	var result: Dictionary = state.buy_ability_unlock(ability_id)
 	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
+	if result.get("upgraded", false):
+		_save_game_now()
 
 
 func _on_settings_requested() -> void:
@@ -228,24 +244,32 @@ func _on_task_claim_requested(task_id: String) -> void:
 	_update_ui()
 	if tasks_window.visible:
 		tasks_window.request_full_rebuild(state)
+	if result.get("upgraded", false):
+		_save_game_now()
 
 
 func _on_partner_purchase_requested(partner_index: int, mode: String) -> void:
 	var result: Dictionary = state.buy_partners(partner_index, mode)
 	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
+	if result.get("upgraded", false):
+		_save_game_now()
 
 
 func _on_partner_skill_purchase_requested(skill_id: String) -> void:
 	var result: Dictionary = state.buy_partner_skill(skill_id)
 	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
+	if result.get("upgraded", false):
+		_save_game_now()
 
 
 func _on_building_purchase_requested(building_index: int, mode: String) -> void:
 	var result: Dictionary = state.buy_buildings(building_index, mode)
 	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
+	if result.get("upgraded", false):
+		_save_game_now()
 
 
 func _on_upgrades_button_pressed() -> void:
@@ -276,6 +300,8 @@ func _on_prestige_talent_purchase_requested(talent_index: int) -> void:
 	var result: Dictionary = state.buy_prestige_talent(talent_index)
 	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
+	if result.get("upgraded", false):
+		_save_game_now()
 
 
 func _on_shop_product_purchase_requested(product_id: String) -> void:
@@ -284,12 +310,15 @@ func _on_shop_product_purchase_requested(product_id: String) -> void:
 	if result.has("combo_fill"):
 		_fill_combo_meter_from_shop(float(result.get("combo_fill", combo_meter_max)))
 	_update_ui()
+	if result.get("upgraded", false):
+		_save_game_now()
 
 
 func _on_test_gems_requested() -> void:
 	var result: Dictionary = state.grant_test_gems(50)
 	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
+	_save_game_now()
 
 
 func _on_prestige_confirmed() -> void:
@@ -316,6 +345,7 @@ func _on_prestige_confirmed() -> void:
 	stage_navigator.center_on_level(1)
 	_update_ui()
 	_sync_boss_timer()
+	_save_game_now()
 
 
 func _on_prestige_cancelled() -> void:
@@ -388,6 +418,7 @@ func _fail_boss_level() -> void:
 	_sync_boss_timer()
 	if auto_transition_popup.visible:
 		auto_transition_popup.refresh_view(state)
+	_save_game_now()
 
 
 func _apply_attack_result(result: Dictionary, show_hit_feedback: bool, was_boss_level: bool = false) -> void:
@@ -611,6 +642,7 @@ func _on_stage_selected(level: int) -> void:
 	_sync_boss_timer()
 	_update_ui()
 	game_field.update_view(state)
+	_save_game_now()
 
 
 func _on_stage_latest_requested() -> void:
@@ -636,6 +668,7 @@ func _toggle_auto_transition_and_show_popup(anchor: Vector2, button_global_rect:
 	stage_navigator.set_auto_transition_enabled(state.auto_stage_advance_enabled)
 	_update_ui()
 	auto_transition_popup.show_popup(state, anchor, button_global_rect)
+	_save_game_now()
 
 
 func _handle_status_text(_text: String) -> void:
@@ -656,3 +689,38 @@ func _finish_enemy_transition_after_delay(transition_token: int) -> void:
 	_update_ui()
 	_sync_boss_timer()
 	game_field.update_view(state)
+	if result.get("level_unlocked", false):
+		_save_game_now()
+
+
+func _save_game_now() -> void:
+	state.save_current_level_progress()
+	SaveManager.save_data(state.get_save_data())
+
+
+func _load_game_on_start() -> void:
+	var data: Dictionary = SaveManager.load_data()
+	if data.is_empty():
+		return
+	state.apply_save_data(data)
+
+
+func _input(event: InputEvent) -> void:
+	if not OS.is_debug_build():
+		return
+	if not (event is InputEventKey) or not event.pressed or event.echo:
+		return
+	match event.keycode:
+		KEY_F5:
+			_save_game_now()
+			print("Debug: game saved")
+		KEY_F9:
+			var data: Dictionary = SaveManager.load_data()
+			if not data.is_empty():
+				state.apply_save_data(data)
+				_update_ui()
+				_sync_boss_timer()
+				print("Debug: game loaded")
+		KEY_F10:
+			SaveManager.delete_save()
+			print("Debug: save deleted")

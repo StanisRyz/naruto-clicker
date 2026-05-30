@@ -2339,3 +2339,259 @@ func _make_attack_result(
 		"zone_changed": zone_changed,
 		"zone_name": new_zone_name,
 	}
+
+
+func get_save_data() -> Dictionary:
+	var cleared_str: Dictionary = {}
+	for k in cleared_level_ids:
+		cleared_str[str(k)] = true
+
+	var progress_str: Dictionary = {}
+	for k in level_enemy_progress:
+		progress_str[str(k)] = level_enemy_progress[k]
+
+	return {
+		"gold": gold,
+		"gems": gems,
+		"character_level": character_level,
+		"current_level": current_level,
+		"max_unlocked_level": max_unlocked_level,
+		"enemies_defeated_on_level": enemies_defeated_on_level,
+		"cleared_level_ids": cleared_str,
+		"level_enemy_progress": progress_str,
+		"auto_stage_advance_enabled": auto_stage_advance_enabled,
+		"autoclick_purchased": autoclick_purchased,
+		"gold_bonus_purchased": gold_bonus_purchased,
+		"focus_burst_purchased": focus_burst_purchased,
+		"rally_purchased": rally_purchased,
+		"purchased_hero_skill_ids": Array(purchased_hero_skill_ids),
+		"purchased_ability_skill_ids": Array(purchased_ability_skill_ids),
+		"purchased_partner_skill_ids": Array(purchased_partner_skill_ids),
+		"partner_counts": Array(partner_counts),
+		"building_counts": Array(building_counts),
+		"prestige_points_available": prestige_points_available,
+		"prestige_points_total_earned": prestige_points_total_earned,
+		"total_prestiges": total_prestiges,
+		"prestige_talent_levels": Array(prestige_talent_levels),
+		"boss_retry_tokens": boss_retry_tokens,
+		"task_reward_boost_multiplier": task_reward_boost_multiplier,
+		"active_task_ids": Array(active_task_ids),
+		"inactive_task_ids": Array(inactive_task_ids),
+		"active_task_states": active_task_states.duplicate(true),
+		"total_manual_click_damage_dealt": total_manual_click_damage_dealt,
+		"total_enemies_defeated": total_enemies_defeated,
+		"total_elite_enemies_defeated": total_elite_enemies_defeated,
+		"total_bosses_defeated": total_bosses_defeated,
+		"total_autoclick_activations": total_autoclick_activations,
+		"total_combo_empowered_activations": total_combo_empowered_activations,
+	}
+
+
+func apply_save_data(data: Dictionary) -> bool:
+	if data.is_empty():
+		return false
+
+	gold = maxi(0, int(data.get("gold", 0)))
+	gems = maxi(0, int(data.get("gems", 0)))
+	character_level = maxi(1, int(data.get("character_level", 1)))
+	current_level = maxi(1, int(data.get("current_level", 1)))
+	max_unlocked_level = maxi(current_level, int(data.get("max_unlocked_level", 1)))
+	auto_stage_advance_enabled = bool(data.get("auto_stage_advance_enabled", true))
+
+	cleared_level_ids.clear()
+	var raw_cleared = data.get("cleared_level_ids", {})
+	if raw_cleared is Dictionary:
+		for k in raw_cleared:
+			var lvl: int = int(str(k))
+			if lvl > 0:
+				cleared_level_ids[lvl] = true
+
+	level_enemy_progress.clear()
+	var raw_progress = data.get("level_enemy_progress", {})
+	if raw_progress is Dictionary:
+		for k in raw_progress:
+			var lvl: int = int(str(k))
+			if lvl > 0:
+				level_enemy_progress[lvl] = maxi(0, int(raw_progress[k]))
+
+	autoclick_purchased = bool(data.get("autoclick_purchased", false))
+	gold_bonus_purchased = bool(data.get("gold_bonus_purchased", false))
+	focus_burst_purchased = bool(data.get("focus_burst_purchased", false))
+	rally_purchased = bool(data.get("rally_purchased", false))
+
+	purchased_hero_skill_ids.clear()
+	var raw_hero_skills = data.get("purchased_hero_skill_ids", [])
+	if raw_hero_skills is Array:
+		for id in raw_hero_skills:
+			var sid: String = str(id)
+			if not get_hero_skill(sid).is_empty() and not purchased_hero_skill_ids.has(sid):
+				purchased_hero_skill_ids.append(sid)
+
+	purchased_ability_skill_ids.clear()
+	var raw_ability_skills = data.get("purchased_ability_skill_ids", [])
+	if raw_ability_skills is Array:
+		for id in raw_ability_skills:
+			var sid: String = str(id)
+			if not get_ability_skill(sid).is_empty() and not purchased_ability_skill_ids.has(sid):
+				purchased_ability_skill_ids.append(sid)
+
+	purchased_partner_skill_ids.clear()
+	var raw_partner_skills = data.get("purchased_partner_skill_ids", [])
+	if raw_partner_skills is Array:
+		for id in raw_partner_skills:
+			var sid: String = str(id)
+			if not get_partner_skill(sid).is_empty() and not purchased_partner_skill_ids.has(sid):
+				purchased_partner_skill_ids.append(sid)
+
+	_reset_partner_state()
+	var raw_partner_counts = data.get("partner_counts", [])
+	if raw_partner_counts is Array and raw_partner_counts.size() == partner_counts.size():
+		for i in range(partner_counts.size()):
+			partner_counts[i] = maxi(0, int(raw_partner_counts[i]))
+			recalculate_partner_cost(i)
+
+	_reset_building_state()
+	var raw_building_counts = data.get("building_counts", [])
+	if raw_building_counts is Array and raw_building_counts.size() == building_counts.size():
+		for i in range(building_counts.size()):
+			building_counts[i] = maxi(0, int(raw_building_counts[i]))
+			recalculate_building_cost(i)
+
+	prestige_points_available = maxi(0, int(data.get("prestige_points_available", 0)))
+	prestige_points_total_earned = maxi(prestige_points_available, int(data.get("prestige_points_total_earned", 0)))
+	total_prestiges = maxi(0, int(data.get("total_prestiges", 0)))
+
+	var raw_talent_levels = data.get("prestige_talent_levels", [])
+	if raw_talent_levels is Array and raw_talent_levels.size() == prestige_talent_levels.size():
+		for i in range(prestige_talent_levels.size()):
+			prestige_talent_levels[i] = maxi(0, int(raw_talent_levels[i]))
+
+	boss_retry_tokens = maxi(0, int(data.get("boss_retry_tokens", 0)))
+	task_reward_boost_multiplier = maxf(1.0, float(data.get("task_reward_boost_multiplier", 1.0)))
+
+	total_manual_click_damage_dealt = maxi(0, int(data.get("total_manual_click_damage_dealt", 0)))
+	total_enemies_defeated = maxi(0, int(data.get("total_enemies_defeated", 0)))
+	total_elite_enemies_defeated = maxi(0, int(data.get("total_elite_enemies_defeated", 0)))
+	total_bosses_defeated = maxi(0, int(data.get("total_bosses_defeated", 0)))
+	total_autoclick_activations = maxi(0, int(data.get("total_autoclick_activations", 0)))
+	total_combo_empowered_activations = maxi(0, int(data.get("total_combo_empowered_activations", 0)))
+
+	if not _try_restore_tasks(data):
+		initialize_tasks()
+
+	recalculate_character_level_cost()
+	_update_character_state()
+	setup_current_level()
+
+	var saved_progress: int = maxi(0, int(data.get("enemies_defeated_on_level", 0)))
+	if is_level_cleared(current_level):
+		enemies_defeated_on_level = enemies_required_per_level
+	else:
+		enemies_defeated_on_level = clampi(saved_progress, 0, enemies_required_per_level)
+	level_enemy_progress[current_level] = enemies_defeated_on_level
+
+	return true
+
+
+func _try_restore_tasks(data: Dictionary) -> bool:
+	var raw_active = data.get("active_task_ids", [])
+	var raw_inactive = data.get("inactive_task_ids", [])
+	var raw_states = data.get("active_task_states", {})
+
+	if not (raw_active is Array) or not (raw_inactive is Array) or not (raw_states is Dictionary):
+		return false
+
+	var all_valid_ids: Array[String] = []
+	for task: Dictionary in task_definitions:
+		var tid: String = String(task.get("id", ""))
+		if tid != "":
+			all_valid_ids.append(tid)
+
+	var seen_ids: Dictionary = {}
+	var restored_active: Array[String] = []
+	var restored_inactive: Array[String] = []
+
+	for id in raw_active:
+		var sid: String = str(id)
+		if not all_valid_ids.has(sid) or seen_ids.has(sid):
+			return false
+		seen_ids[sid] = true
+		restored_active.append(sid)
+
+	for id in raw_inactive:
+		var sid: String = str(id)
+		if not all_valid_ids.has(sid) or seen_ids.has(sid):
+			return false
+		seen_ids[sid] = true
+		restored_inactive.append(sid)
+
+	if seen_ids.size() != all_valid_ids.size():
+		return false
+
+	active_task_ids.clear()
+	inactive_task_ids.clear()
+	active_task_states.clear()
+
+	for id in restored_active:
+		active_task_ids.append(id)
+	for id in restored_inactive:
+		inactive_task_ids.append(id)
+
+	for task_id in active_task_ids:
+		if raw_states.has(task_id) and raw_states[task_id] is Dictionary:
+			var rs: Dictionary = raw_states[task_id]
+			active_task_states[task_id] = {
+				"start_value": int(rs.get("start_value", 0)),
+				"target_delta": int(rs.get("target_delta", 0)),
+				"target_value": int(rs.get("target_value", 0)),
+			}
+		else:
+			_initialize_active_task_state(task_id)
+
+	return true
+
+
+func reset_to_new_game() -> void:
+	gold = 0
+	gems = 0
+	character_level = 1
+	current_level = 1
+	max_unlocked_level = 1
+	enemies_defeated_on_level = 0
+	cleared_level_ids.clear()
+	level_enemy_progress.clear()
+	auto_stage_advance_enabled = true
+	autoclick_purchased = false
+	gold_bonus_purchased = false
+	focus_burst_purchased = false
+	rally_purchased = false
+	autoclick_rank = 0
+	gold_bonus_rank = 0
+	focus_burst_rank = 0
+	rally_rank = 0
+	autoclick_active = false
+	gold_bonus_active = false
+	focus_burst_active = false
+	rally_active = false
+	purchased_partner_skill_ids.clear()
+	purchased_hero_skill_ids.clear()
+	purchased_ability_skill_ids.clear()
+	prestige_points_available = 0
+	prestige_points_total_earned = 0
+	total_prestiges = 0
+	for i in range(prestige_talent_levels.size()):
+		prestige_talent_levels[i] = 0
+	boss_retry_tokens = 0
+	task_reward_boost_multiplier = 1.0
+	total_manual_click_damage_dealt = 0
+	total_enemies_defeated = 0
+	total_elite_enemies_defeated = 0
+	total_bosses_defeated = 0
+	total_autoclick_activations = 0
+	total_combo_empowered_activations = 0
+	_reset_partner_state()
+	_reset_building_state()
+	initialize_tasks()
+	recalculate_character_level_cost()
+	_update_character_state()
+	setup_current_level()
