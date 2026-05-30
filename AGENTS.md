@@ -75,6 +75,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - `ShopPanel` should not show separate Gems, Boss Retry token, or Task Reward Boost summary rows; Boss Retry tokens and Task Reward Boost remain runtime mechanics.
 - `BuyModeSelector` is the reusable UI for `x1`, `x10`, `x100`, and `Max` purchase modes.
 - `BuyModeSelector` must stay fixed under the sheet header in `UpgradeSheet`, `PartnerSheet`, and `SettlementSheet`; purchase lists should scroll independently below it.
+- `UpgradePanel` content must keep enough top spacing inside the scroll area so the Hero Level card is not covered by the fixed `BuyModeSelector`.
 - In `UpgradeSheet`, `BuyModeSelector` affects only the Hero Level card; ability buy/upgrade actions must never use bulk-buy modes.
 - Do not add `BuyModeSelector` to `PrestigeSheet`.
 - Purchase tabs use card-style rows with a temporary white `ColorRect` image placeholder, two-line info text, and an action button.
@@ -114,7 +115,8 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Partner `x10` and `x100` purchases are strict all-or-nothing packages; `Max` buys as many as current gold allows.
 - PartnerPanel should not show a Total DPS summary line above partner rows.
 - PartnerPanel uses progressive reveal: show Partner 1, all currently available partner cards, and exactly one next locked requirement card; deeper locked cards stay hidden and should not take scroll space.
-- Partner rows use three vertical info rows on the right: partner name/count, per-purchase DPS plus next x2 milestone, then the partner skill icon.
+- Partner rows use three vertical info rows on the right: partner name/count/total tier DPS, per-purchase DPS plus next x2 milestone, then the partner skill icon.
+- Partner row first lines show `Partner Name | Count | DPS X`, where DPS is this tier's total DPS contribution only.
 - Partner row second lines show per-purchase DPS and next x2 milestone, formatted `+%d DPS | Next x2 at %d` or `+%d DPS | Max milestones`.
 - Partner row second lines must not include `for each PartnerName`.
 - Partner rows show a horizontal row of 5 small clickable skill ImageHolder icons (32×32) below the DPS/milestone line, not Partner Mastery text.
@@ -139,7 +141,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - own_partner_dps bonuses must not be applied globally; they are multiplied per tier in get_partner_tier_total_dps and must never be passed to get_partner_skill_bonus_multiplier for global use.
 - Skill costs use partner_skill_cost_multipliers [3, 5, 8, 12, 20] applied to the base milestone cost: _get_partner_cost_for_count(partner_index, unlock_count - 1) * multiplier[skill_level - 1].
 - Skill IDs use the format "p{index}_s{level}" e.g. "p0_s1" through "p0_s5".
-- Total/final Partner DPS belongs in `PrimaryStatsPanel`; partner rows only show per-purchase DPS plus next milestone info.
+- Total/final Partner DPS belongs in `PrimaryStatsPanel`; partner rows may show only their own tier total DPS on the first line and per-purchase DPS plus next milestone info on the second line.
 - PartnerPanel should always show the required package cost when prerequisites are met; "Not enough gold" belongs in status handling after a failed purchase, not in partner button text.
 - Keep `PartnerSheet`, `SettlementSheet`, and `PrestigeSheet` as separate bottom-half overlays from `UpgradeSheet`.
 - Settlement tab sits between `Partners` and `Prestige` in the bottom bar.
@@ -177,6 +179,7 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Hero level upgrade costs use a controlled non-linear formula with affordable early levels and harder later levels.
 - Hero milestone target levels `[10, 25, 50, 100, 250, 500]` cost x3 for the purchase that reaches the milestone.
 - UpgradePanel cards match the Partner card structure and approximate sizes: large square `ImageHolder` on the left, right-side title/effect rows, and a row of 5 small skill icons.
+- Hero Level first line shows `Hero Level | Level X | Damage Y`; the second line still shows damage plus next x2 milestone or max milestones.
 - Hero Level keeps its bulk-buy button and BuyModeSelector behavior separate from hero skill purchases.
 - Hero Level has 5 purchasable passive skill icons unlocked by character level.
 - Ability cards have 5 purchasable rank skill icons unlocked by character level.

@@ -15,6 +15,11 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 12
 
-[node name="RowsContainer" type="VBoxContainer" parent="VBoxContainer"]
+[node name="ContentMargin" type="MarginContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_bottom = 4
+
+[node name="RowsContainer" type="VBoxContainer" parent="VBoxContainer/ContentMargin"]
 layout_mode = 2
 theme_override_constants/separation = 10

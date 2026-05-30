@@ -128,10 +128,13 @@ The main scene contains the first local clicker loop:
   - All other partners (Partner 2, 3, 7–13): Own Partner DPS skills — Personal Mastery I–V (+50%/+50%/+50%/+100%/+100%) affecting only that partner tier's DPS.
 - Hero Level upgrades, partner hires, and settlement buildings use the reusable `BuyModeSelector` for horizontal bulk mode buttons: `x1`, `x10`, `x100`, and `Max`.
 - In `UpgradeSheet`, `PartnerSheet`, and `SettlementSheet`, the buy mode selector stays fixed under the sheet header while purchase lists scroll independently below it.
+- `UpgradePanel` content keeps top padding inside the scroll area so the Hero Level card is fully visible below the fixed buy mode selector.
 - `SettlementSheet` should use the same header / `BuyModeSelector` / scroll spacing as `UpgradeSheet` and `PartnerSheet`.
 - In `UpgradeSheet`, the buy mode selector affects only the Hero Level card; ability buy/upgrade actions never use bulk-buy modes.
 - Bulk cost displays show the total package cost. `x10` and `x100` are strict all-or-nothing purchases; `Max` buys as many as current gold allows.
 - Partner buttons always show the required package cost when prerequisites are met; failed unaffordable purchases can return "Not enough gold" through the status helper, but no main-screen status label is currently shown.
+- Partner card first lines show partner name, owned count, and that tier's total DPS contribution: `Partner Name | Count | DPS X`.
+- Partner card second lines stay focused on per-purchase DPS and the next x2 milestone.
 - Purchase tabs use card-style rows with a temporary white `ColorRect` image placeholder, two-line info text, and an action button.
 These formulas are prototype balance values.
 
@@ -176,6 +179,7 @@ Prestige is an unlockable reset in its own bottom `Prestige` tab.
 - The bottom bar has `Upgrades`, `Partners`, `Settlement`, `Prestige`, and `Shop` buttons on one row.
 - `PrestigeSheet` does not use the buy mode selector.
 - `UpgradeSheet` contains Partner-style upgrade cards: Hero Level plus Autoclick, Gold Bonus, Focus Burst, and Rally. Each card uses a large square `ImageHolder`, right-side title/effect rows, and a row of 5 small skill icons.
+- Hero Level's first line shows current level and current click damage: `Hero Level | Level X | Damage Y`. Its second line still shows damage plus the next x2 milestone or max milestones.
 - Hero Level keeps its separate bulk-buy button and `BuyModeSelector` behavior; hero skill icon purchases do not use bulk-buy.
 - Hero Level has 5 purchasable passive skill icons unlocked by character level. Ability cards have 5 purchasable rank skill icons unlocked by character level.
 - Upgrade skill icon colors match partner skills: gray = locked, blue = available to buy, white = purchased.

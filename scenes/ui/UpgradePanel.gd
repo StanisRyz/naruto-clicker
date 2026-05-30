@@ -27,7 +27,7 @@ var current_state: ClickerState = null
 var hero_level_row: Dictionary = {}
 var ability_rows: Array[Dictionary] = []
 
-@onready var rows_container: VBoxContainer = $VBoxContainer/RowsContainer
+@onready var rows_container: VBoxContainer = $VBoxContainer/ContentMargin/RowsContainer
 
 
 func _ready() -> void:
@@ -77,7 +77,7 @@ func _update_hero_level_row(state: ClickerState) -> void:
 	var bulk_cost: int = state.get_character_level_bulk_display_cost(selected_buy_mode)
 	var next_milestone: int = state.get_next_milestone(state.character_level)
 
-	name_status_label.text = "Hero Level | %d" % state.character_level
+	name_status_label.text = "Hero Level | Level %d | Damage %d" % [state.character_level, state.click_damage]
 	if next_milestone > 0:
 		effect_label.text = "Damage %d | Next x2 at Lv %d" % [state.click_damage, next_milestone]
 	else:
