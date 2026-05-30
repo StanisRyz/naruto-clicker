@@ -5,6 +5,7 @@ const SaveAdapter = preload("res://scripts/game/save/ClickerStateSaveAdapter.gd"
 const MilestoneCalc = preload("res://scripts/game/calculators/MilestoneCalculator.gd")
 const CostCalc = preload("res://scripts/game/calculators/CostCalculator.gd")
 const EnemyCalc = preload("res://scripts/game/calculators/EnemyScalingCalculator.gd")
+const Presentation = preload("res://scripts/game/presentation/ClickerStatePresentation.gd")
 
 
 var gold: int = 0
@@ -271,22 +272,7 @@ func is_task_completed(task_id: String) -> bool:
 
 
 func get_active_task_view_data() -> Array[Dictionary]:
-	var task_view_data: Array[Dictionary] = []
-	for task_id in active_task_ids:
-		var task: Dictionary = get_task_definition(task_id)
-		if task.is_empty():
-			continue
-
-		task_view_data.append({
-			"id": task_id,
-			"title": String(task.get("title", "")),
-			"progress": get_task_progress(task_id),
-			"target": get_task_target(task_id),
-			"reward_gold": get_task_reward_gold(task_id),
-			"completed": is_task_completed(task_id),
-		})
-
-	return task_view_data
+	return Presentation.get_active_task_view_data(self)
 
 
 func claim_task_reward(task_id: String) -> Dictionary:
@@ -449,18 +435,7 @@ func get_shop_product(product_id: String) -> Dictionary:
 
 
 func get_shop_product_view_data() -> Array[Dictionary]:
-	var product_view_data: Array[Dictionary] = []
-	for product: Dictionary in ShopConfig.SHOP_PRODUCTS:
-		var cost_gems: int = int(product.get("cost_gems", 0))
-		product_view_data.append({
-			"id": String(product.get("id", "")),
-			"name": String(product.get("name", "")),
-			"description": String(product.get("description", "")),
-			"cost_gems": cost_gems,
-			"can_buy": gems >= cost_gems,
-		})
-
-	return product_view_data
+	return Presentation.get_shop_product_view_data(self)
 
 
 func buy_shop_product(product_id: String) -> Dictionary:
@@ -995,39 +970,15 @@ func get_building_bulk_display_cost(building_index: int, mode: String) -> int:
 
 
 func get_building_effect_description(building_index: int) -> String:
-	return get_building_short_effect_description(building_index)
+	return Presentation.get_building_short_effect_description(self, building_index)
 
 
 func get_building_short_effect_description(building_index: int) -> String:
-	if building_index < 0 or building_index >= SettlementConfig.BUILDING_NAMES.size():
-		return ""
-
-	var amount: int = building_bonus_percent_per_level
-	if building_index >= SettlementConfig.BUILDING_BONUS_TYPES.size():
-		return "+%d%% Bonus" % amount
-
-	match SettlementConfig.BUILDING_BONUS_TYPES[building_index]:
-		"partner_dps":
-			return "+%d%% DPS" % amount
-		"gold":
-			return "+%d%% Gold" % amount
-		"click_damage":
-			return "+%d%% Click Damage" % amount
-		"ability_duration":
-			return "+%d%% Focus/Rally Duration" % amount
-		"ability_cooldown":
-			return "+%d%% Cooldown Efficiency" % amount
-		"boss_gold":
-			return "+%d%% Boss Gold" % amount
-		_:
-			return "+%d%% Bonus" % amount
+	return Presentation.get_building_short_effect_description(self, building_index)
 
 
 func get_partner_description(partner_index: int) -> String:
-	if partner_index < 0 or partner_index >= BalanceConfig.PARTNER_DPS_VALUES.size():
-		return ""
-
-	return "%d DPS" % BalanceConfig.PARTNER_DPS_VALUES[partner_index]
+	return Presentation.get_partner_description(partner_index)
 
 
 func get_milestone_multiplier(level: int) -> int:
@@ -1106,11 +1057,7 @@ func can_buy_hero_skill(skill_id: String) -> bool:
 
 
 func get_hero_skill_state(skill_id: String) -> String:
-	if is_hero_skill_purchased(skill_id):
-		return "purchased"
-	if is_hero_skill_unlocked(skill_id):
-		return "available"
-	return "locked"
+	return Presentation.get_hero_skill_state(self, skill_id)
 
 
 func get_hero_skill_cost(skill_id: String) -> int:
@@ -1176,11 +1123,7 @@ func can_buy_ability_skill(skill_id: String) -> bool:
 
 
 func get_ability_skill_state(skill_id: String) -> String:
-	if is_ability_skill_purchased(skill_id):
-		return "purchased"
-	if is_ability_skill_unlocked(skill_id):
-		return "available"
-	return "locked"
+	return Presentation.get_ability_skill_state(self, skill_id)
 
 
 func get_ability_skill_cost(skill_id: String) -> int:
@@ -1268,13 +1211,7 @@ func can_buy_partner_skill(skill_id: String) -> bool:
 
 
 func get_partner_skill_state(skill_id: String) -> String:
-	if is_partner_skill_purchased(skill_id):
-		return "purchased"
-
-	if is_partner_skill_unlocked(skill_id):
-		return "available"
-
-	return "locked"
+	return Presentation.get_partner_skill_state(self, skill_id)
 
 
 func buy_partner_skill(skill_id: String) -> Dictionary:
@@ -1481,62 +1418,11 @@ func buy_or_upgrade_ability(ability_id: String) -> Dictionary:
 
 
 func get_ability_description(ability_id: String) -> String:
-	var rank: int = get_ability_rank(ability_id)
-	var purchased: bool = is_ability_purchased(ability_id)
-	match ability_id:
-		"autoclick":
-			var hits: int = roundi(20.0 * (1.0 + 0.15 * rank))
-			var dur: int = 15 + 2 * rank
-			if not purchased:
-				return "Unlock: 20 hits/sec | 15s"
-			if rank >= ability_max_rank:
-				return "%d hits/sec | %ds" % [hits, dur]
-			return "%d hits/sec | %ds | Next: +15%% rate, +2s" % [hits, dur]
-		"gold_bonus":
-			var mult: float = 2.0 + 0.25 * rank
-			if not purchased:
-				return "Unlock: x2.00 gold | 45s"
-			if rank >= ability_max_rank:
-				return "x%.2f gold" % mult
-			return "x%.2f gold | Next: x%.2f" % [mult, mult + 0.25]
-		"focus_burst":
-			var mult: float = 2.0 + 0.25 * rank
-			if not purchased:
-				return "Unlock: x2.00 damage | 20s"
-			if rank >= ability_max_rank:
-				return "x%.2f damage" % mult
-			return "x%.2f damage | Next: x%.2f" % [mult, mult + 0.25]
-		"rally":
-			var mult: float = 2.0 + 0.25 * rank
-			if not purchased:
-				return "Unlock: x2.00 partner DPS | 30s"
-			if rank >= ability_max_rank:
-				return "x%.2f partner DPS" % mult
-			return "x%.2f partner DPS | Next: x%.2f" % [mult, mult + 0.25]
-		_:
-			return ""
+	return Presentation.get_ability_description(self, ability_id)
 
 
 func get_prestige_talent_description(talent_index: int) -> String:
-	if talent_index < 0 or talent_index >= PrestigeConfig.TALENT_BONUS_TYPES.size():
-		return ""
-
-	var amount: int = prestige_talent_bonus_percent_per_level
-	match PrestigeConfig.TALENT_BONUS_TYPES[talent_index]:
-		"click_damage":
-			return "+%d%% Click Damage per level" % amount
-		"gold":
-			return "+%d%% Gold Gain per level" % amount
-		"partner_dps":
-			return "+%d%% Partner DPS per level" % amount
-		"autoclick_rate":
-			return "+%d%% Autoclick Rate per level" % amount
-		"settlement_effect":
-			return "+%d%% Settlement Bonus per level" % amount
-		"boss_damage":
-			return "+%d%% Boss Damage per level" % amount
-		_:
-			return "+%d%% Bonus per level" % amount
+	return Presentation.get_prestige_talent_description(self, talent_index)
 
 
 func recalculate_building_cost(building_index: int) -> void:

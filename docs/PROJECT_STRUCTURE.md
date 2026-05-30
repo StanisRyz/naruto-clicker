@@ -27,10 +27,12 @@ naruto-clicker/
 │   │   │   └── ShopConfig.gd       # 5 shop product definitions
 │   │   ├── save/                   # Save serialization layer (no gameplay logic, no file IO)
 │   │   │   └── ClickerStateSaveAdapter.gd # Builds and applies Save System v1 dictionaries
-│   │   └── calculators/            # Pure formula functions (no state, no side effects)
-│   │       ├── MilestoneCalculator.gd     # Milestone multiplier and cost-spike logic
-│   │       ├── CostCalculator.gd          # Hero/partner/building cost formulas
-│   │       └── EnemyScalingCalculator.gd  # Base HP/reward formulas + zone/boss/elite scaling
+│   │   ├── calculators/            # Pure formula functions (no state, no side effects)
+│   │   │   ├── MilestoneCalculator.gd     # Milestone multiplier and cost-spike logic
+│   │   │   ├── CostCalculator.gd          # Hero/partner/building cost formulas
+│   │   │   └── EnemyScalingCalculator.gd  # Base HP/reward formulas + zone/boss/elite scaling
+│   │   └── presentation/           # UI-facing formatting and view-data builders (read-only)
+│   │       └── ClickerStatePresentation.gd # Descriptions, skill states, task/shop view data
 │   └── ui/
 │       ├── GameAssetCatalog.gd       # Central registry: all UI image keys → file paths
 │       ├── ImageSlot.gd              # Drop-in ColorRect with texture + fallback color
@@ -121,6 +123,7 @@ naruto-clicker/
 - **SaveManager** writes atomically: temp file then rename. It validates `save_version` and exposes `migrate_save_data()` for future format upgrades.
 - **ClickerStateSaveAdapter** (`scripts/game/save/`) handles serialization only — it builds and applies Save System v1 dictionaries. ClickerState keeps the public `get_save_data`/`apply_save_data` API; callers do not need to know about the adapter.
 - **Calculators** (`scripts/game/calculators/`) contain pure formula functions — no runtime state, no side effects, no SaveManager calls. ClickerState delegates internal cost/milestone/enemy-scaling math to them.
+- **Presentation** (`scripts/game/presentation/`) contains UI-facing formatting, description strings, skill state labels, and view-data dictionary builders. Read-only access to ClickerState; must not mutate state or perform gameplay actions. UI panels continue calling ClickerState public methods, which delegate internally.
 
 ## Config file rules
 
