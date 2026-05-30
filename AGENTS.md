@@ -21,7 +21,7 @@ Naruto Clicker is a vertical idle/clicker game targeting Web / Yandex Games, wit
 - Keep YandexBridge as a future integration point.
 - Keep `Main.tscn` as the app/root scene.
 - Keep `ClickerScreen` responsible for gameplay flow and UI updates.
-- Keep runtime state and formulas in `scripts/game/ClickerState.gd`.
+- Keep runtime player state and the public gameplay API in `scripts/game/ClickerState.gd`. Pure formulas live in `scripts/game/calculators/`. Task and shop runtime logic live in `scripts/game/runtime/`. Save serialization lives in `scripts/game/save/`. UI formatting lives in `scripts/game/presentation/`.
 - Keep static game definitions (zone data, skill definitions, task definitions, shop products) in `scripts/game/config/`.
 - Config files must contain only static data — no runtime player state, no SaveManager calls, no scene references.
 - To add a new task, partner skill, or shop product, edit the matching config file in `scripts/game/config/`.

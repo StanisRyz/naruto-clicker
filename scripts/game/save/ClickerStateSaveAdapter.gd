@@ -4,6 +4,8 @@
 class_name ClickerStateSaveAdapter
 extends RefCounted
 
+const TaskRT = preload("res://scripts/game/runtime/TaskRuntime.gd")
+
 
 static func build_save_data(state: ClickerState) -> Dictionary:
 	var cleared_str: Dictionary = {}
@@ -214,6 +216,6 @@ static func _try_restore_tasks(state: ClickerState, data: Dictionary) -> bool:
 				"target_value": int(rs.get("target_value", 0)),
 			}
 		else:
-			state._initialize_active_task_state(task_id)
+			TaskRT._initialize_active_task_state(state, task_id)
 
 	return true

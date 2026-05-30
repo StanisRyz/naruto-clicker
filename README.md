@@ -249,10 +249,10 @@ Levels are grouped into zones. Each zone has three normal enemies, one elite ene
 - Base reward formula: `5 + 3.0 * stage + 0.22 * stage^1.80`. Zone reward multiplier is applied after.
 - HP grows faster than rewards so later progression leans on milestones, partners, settlement, prestige talents, and abilities.
 - Boss levels (every 10th level) still multiply the zone-scaled HP and reward by 5.
-- Zone data is stored as a constant array in `scripts/game/ClickerState.gd`.
+- Zone data is stored in `scripts/game/config/ZoneConfig.gd`.
 - Zone background images are loaded by `BackgroundAssetCatalog` and displayed in `GameField.BackgroundImageHolder`.
 
-The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes/game/ClickerScreen.gd` owns the gameplay flow and updates the UI components.
+The prototype runtime state lives in `scripts/game/ClickerState.gd`. Pure formulas live in `scripts/game/calculators/`. Task and shop runtime logic live in `scripts/game/runtime/`. Save serialization lives in `scripts/game/save/`. UI formatting lives in `scripts/game/presentation/`. `scenes/game/ClickerScreen.gd` owns the gameplay flow and updates the UI components.
 
 ## Stage Navigator
 
@@ -352,7 +352,12 @@ Pressing the `A` button immediately toggles Auto-transition ON/OFF and then open
 - `scenes/ui/PrestigeSheet.tscn` - Bottom-half prestige sheet with header prestige points and the opaque confirmation dialog.
 - `scenes/ui/ShopPanel.tscn` - Prototype shop panel with product cards and a temporary test Gems grant.
 - `scenes/ui/ShopSheet.tscn` - Bottom-half shop sheet with header Gems that hosts ShopPanel.
-- `scripts/game/ClickerState.gd` - Runtime state, economy formulas, and gameplay API. Static definitions have been moved to `scripts/game/config/`.
+- `scripts/game/ClickerState.gd` - Runtime player state and gameplay API. Static definitions live in `config/`. Pure formulas live in `calculators/`. Task and shop logic live in `runtime/`. Save serialization lives in `save/`. UI formatting lives in `presentation/`.
+- `scripts/game/save/ClickerStateSaveAdapter.gd` - Save System v1 serializer; builds and applies save dictionaries. File IO is handled by SaveManager.
+- `scripts/game/calculators/` - Stateless pure formula functions for milestone math, cost curves, and enemy scaling.
+- `scripts/game/runtime/TaskRuntime.gd` - Task initialization, progress, reward, claim, and rotation logic.
+- `scripts/game/runtime/ShopRuntime.gd` - Local shop purchase logic and Gems helpers. Prototype only; no real payments.
+- `scripts/game/presentation/ClickerStatePresentation.gd` - UI-facing formatting, description strings, and view-data builders. Read-only access to ClickerState.
 - `scripts/game/config/ZoneConfig.gd` - Zone definitions (names, level ranges, enemy lists, HP/reward multipliers).
 - `scripts/game/config/PartnerConfig.gd` - Partner names; DPS and costs delegate to BalanceConfig.
 - `scripts/game/config/PartnerSkillConfig.gd` - All 65 partner skill definitions.
