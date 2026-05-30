@@ -111,6 +111,8 @@ var partner_counts: Array[int] = []
 var partner_purchase_costs: Array[int] = []
 var partner_skill_unlock_counts: Array[int] = [10, 25, 50, 100, 250]
 var partner_skill_cost_multipliers: Array[int] = [3, 5, 8, 12, 20]
+var hero_skill_cost_multipliers: Array[int] = [5, 8, 12, 18, 30]
+var ability_skill_cost_multipliers: Array[int] = [1, 4, 9, 16, 25]
 var partner_skill_definitions: Array[Dictionary] = [
 	# Partner 1 (index 0) — Click Damage
 	{"id": "p0_s1", "partner_index": 0, "skill_level": 1, "unlock_count": 10, "name": "Click Training I", "description": "+20% Click Damage", "bonus_type": "click_damage", "bonus_value": 0.20},
@@ -192,6 +194,37 @@ var partner_skill_definitions: Array[Dictionary] = [
 	{"id": "p12_s5", "partner_index": 12, "skill_level": 5, "unlock_count": 250, "name": "Personal Mastery V", "description": "+100% This Partner DPS", "bonus_type": "own_partner_dps", "bonus_value": 1.00},
 ]
 var purchased_partner_skill_ids: Array[String] = []
+var hero_skill_definitions: Array[Dictionary] = [
+	{"id": "hero_click_damage_1", "owner_type": "hero", "ability_id": "", "skill_level": 1, "unlock_character_level": 10, "name": "Hero Strike I", "description": "+100% Click Damage", "bonus_type": "click_damage", "bonus_value": 1.00},
+	{"id": "hero_partner_dps_1", "owner_type": "hero", "ability_id": "", "skill_level": 2, "unlock_character_level": 25, "name": "Hero Command I", "description": "+100% Partner DPS", "bonus_type": "partner_dps", "bonus_value": 1.00},
+	{"id": "hero_gold_1", "owner_type": "hero", "ability_id": "", "skill_level": 3, "unlock_character_level": 50, "name": "Treasure Sense I", "description": "+25% Gold Gain", "bonus_type": "gold", "bonus_value": 0.25},
+	{"id": "hero_gold_2", "owner_type": "hero", "ability_id": "", "skill_level": 4, "unlock_character_level": 100, "name": "Treasure Sense II", "description": "+25% Gold Gain", "bonus_type": "gold", "bonus_value": 0.25},
+	{"id": "hero_gold_3", "owner_type": "hero", "ability_id": "", "skill_level": 5, "unlock_character_level": 250, "name": "Treasure Sense III", "description": "+50% Gold Gain", "bonus_type": "gold", "bonus_value": 0.50},
+]
+var purchased_hero_skill_ids: Array[String] = []
+var ability_skill_definitions: Array[Dictionary] = [
+	{"id": "autoclick_rank_1", "owner_type": "ability", "ability_id": "autoclick", "skill_level": 1, "unlock_character_level": 15, "name": "Autoclick I", "description": "Enables Autoclick", "bonus_type": "autoclick_rank", "bonus_value": 1.0},
+	{"id": "autoclick_rank_2", "owner_type": "ability", "ability_id": "autoclick", "skill_level": 2, "unlock_character_level": 30, "name": "Autoclick II", "description": "+15% rate, +2s duration", "bonus_type": "autoclick_rank", "bonus_value": 1.0},
+	{"id": "autoclick_rank_3", "owner_type": "ability", "ability_id": "autoclick", "skill_level": 3, "unlock_character_level": 60, "name": "Autoclick III", "description": "+15% rate, +2s duration", "bonus_type": "autoclick_rank", "bonus_value": 1.0},
+	{"id": "autoclick_rank_4", "owner_type": "ability", "ability_id": "autoclick", "skill_level": 4, "unlock_character_level": 100, "name": "Autoclick IV", "description": "+15% rate, +2s duration", "bonus_type": "autoclick_rank", "bonus_value": 1.0},
+	{"id": "autoclick_rank_5", "owner_type": "ability", "ability_id": "autoclick", "skill_level": 5, "unlock_character_level": 150, "name": "Autoclick V", "description": "+15% rate, +2s duration", "bonus_type": "autoclick_rank", "bonus_value": 1.0},
+	{"id": "gold_bonus_rank_1", "owner_type": "ability", "ability_id": "gold_bonus", "skill_level": 1, "unlock_character_level": 30, "name": "Gold Bonus I", "description": "x2.00 gold", "bonus_type": "gold_bonus_rank", "bonus_value": 1.0},
+	{"id": "gold_bonus_rank_2", "owner_type": "ability", "ability_id": "gold_bonus", "skill_level": 2, "unlock_character_level": 60, "name": "Gold Bonus II", "description": "x2.25 gold", "bonus_type": "gold_bonus_rank", "bonus_value": 1.0},
+	{"id": "gold_bonus_rank_3", "owner_type": "ability", "ability_id": "gold_bonus", "skill_level": 3, "unlock_character_level": 100, "name": "Gold Bonus III", "description": "x2.50 gold", "bonus_type": "gold_bonus_rank", "bonus_value": 1.0},
+	{"id": "gold_bonus_rank_4", "owner_type": "ability", "ability_id": "gold_bonus", "skill_level": 4, "unlock_character_level": 150, "name": "Gold Bonus IV", "description": "x2.75 gold", "bonus_type": "gold_bonus_rank", "bonus_value": 1.0},
+	{"id": "gold_bonus_rank_5", "owner_type": "ability", "ability_id": "gold_bonus", "skill_level": 5, "unlock_character_level": 250, "name": "Gold Bonus V", "description": "x3.00 gold", "bonus_type": "gold_bonus_rank", "bonus_value": 1.0},
+	{"id": "focus_burst_rank_1", "owner_type": "ability", "ability_id": "focus_burst", "skill_level": 1, "unlock_character_level": 60, "name": "Focus Burst I", "description": "x2.00 damage", "bonus_type": "focus_burst_rank", "bonus_value": 1.0},
+	{"id": "focus_burst_rank_2", "owner_type": "ability", "ability_id": "focus_burst", "skill_level": 2, "unlock_character_level": 100, "name": "Focus Burst II", "description": "x2.25 damage", "bonus_type": "focus_burst_rank", "bonus_value": 1.0},
+	{"id": "focus_burst_rank_3", "owner_type": "ability", "ability_id": "focus_burst", "skill_level": 3, "unlock_character_level": 150, "name": "Focus Burst III", "description": "x2.50 damage", "bonus_type": "focus_burst_rank", "bonus_value": 1.0},
+	{"id": "focus_burst_rank_4", "owner_type": "ability", "ability_id": "focus_burst", "skill_level": 4, "unlock_character_level": 250, "name": "Focus Burst IV", "description": "x2.75 damage", "bonus_type": "focus_burst_rank", "bonus_value": 1.0},
+	{"id": "focus_burst_rank_5", "owner_type": "ability", "ability_id": "focus_burst", "skill_level": 5, "unlock_character_level": 500, "name": "Focus Burst V", "description": "x3.00 damage", "bonus_type": "focus_burst_rank", "bonus_value": 1.0},
+	{"id": "rally_rank_1", "owner_type": "ability", "ability_id": "rally", "skill_level": 1, "unlock_character_level": 80, "name": "Rally I", "description": "x2.00 partner DPS", "bonus_type": "rally_rank", "bonus_value": 1.0},
+	{"id": "rally_rank_2", "owner_type": "ability", "ability_id": "rally", "skill_level": 2, "unlock_character_level": 125, "name": "Rally II", "description": "x2.25 partner DPS", "bonus_type": "rally_rank", "bonus_value": 1.0},
+	{"id": "rally_rank_3", "owner_type": "ability", "ability_id": "rally", "skill_level": 3, "unlock_character_level": 200, "name": "Rally III", "description": "x2.50 partner DPS", "bonus_type": "rally_rank", "bonus_value": 1.0},
+	{"id": "rally_rank_4", "owner_type": "ability", "ability_id": "rally", "skill_level": 4, "unlock_character_level": 350, "name": "Rally IV", "description": "x2.75 partner DPS", "bonus_type": "rally_rank", "bonus_value": 1.0},
+	{"id": "rally_rank_5", "owner_type": "ability", "ability_id": "rally", "skill_level": 5, "unlock_character_level": 500, "name": "Rally V", "description": "x3.00 partner DPS", "bonus_type": "rally_rank", "bonus_value": 1.0},
+]
+var purchased_ability_skill_ids: Array[String] = []
 var milestone_levels: Array[int] = [10, 25, 50, 100, 250, 500]
 var milestone_multiplier_per_reached: int = 2
 var milestone_cost_multiplier: int = 3
@@ -520,6 +553,10 @@ func get_partner_skill_gold_multiplier() -> float:
 	return get_partner_skill_bonus_multiplier("gold")
 
 
+func get_hero_skill_gold_multiplier() -> float:
+	return get_hero_skill_bonus_multiplier("gold")
+
+
 func get_command_aura_multiplier() -> float:
 	return 1.0 + get_command_aura_bonus_percent() / 100.0
 
@@ -565,21 +602,25 @@ func get_boss_timer_multiplier() -> float:
 
 
 func get_focus_burst_multiplier() -> float:
-	return 1.75 + 0.25 * focus_burst_rank if focus_burst_active else 1.0
+	var rank: int = get_ability_rank("focus_burst")
+	return 1.75 + 0.25 * rank if focus_burst_active and rank > 0 else 1.0
 
 
 func get_rally_multiplier() -> float:
-	return 1.75 + 0.25 * rally_rank if rally_active else 1.0
+	var rank: int = get_ability_rank("rally")
+	return 1.75 + 0.25 * rank if rally_active and rank > 0 else 1.0
 
 
 func get_gold_bonus_multiplier() -> float:
-	return 1.75 + 0.25 * gold_bonus_rank if gold_bonus_active else 1.0
+	var rank: int = get_ability_rank("gold_bonus")
+	return 1.75 + 0.25 * rank if gold_bonus_active and rank > 0 else 1.0
 
 
 func get_autoclick_rank_rate_multiplier() -> float:
-	if autoclick_rank <= 1:
+	var rank: int = get_ability_rank("autoclick")
+	if rank <= 1:
 		return 1.0
-	return 1.0 + 0.15 * (autoclick_rank - 1)
+	return 1.0 + 0.15 * (rank - 1)
 
 
 func get_boss_damage_multiplier() -> float:
@@ -711,6 +752,8 @@ func perform_prestige() -> Dictionary:
 	rally_rank = 0
 	rally_active = false
 	purchased_partner_skill_ids.clear()
+	purchased_hero_skill_ids.clear()
+	purchased_ability_skill_ids.clear()
 
 	_reset_partner_state()
 	_reset_building_state()
@@ -776,7 +819,12 @@ func resolve_defeated_target() -> Dictionary:
 		source_reward = int(source_reward * get_boss_reward_multiplier())
 	if defeated_elite:
 		source_reward = int(source_reward * get_partner_skill_bonus_multiplier("elite_reward"))
-	var talent_gold: int = int(source_reward * get_trade_routes_multiplier() * get_partner_skill_gold_multiplier())
+	var talent_gold: int = int(
+		source_reward
+		* get_trade_routes_multiplier()
+		* get_partner_skill_gold_multiplier()
+		* get_hero_skill_bonus_multiplier("gold")
+	)
 	var settlement_gold: int = int(talent_gold * get_settlement_gold_multiplier())
 	var earned_gold: int = int(settlement_gold * get_gold_bonus_multiplier()) if gold_bonus_active else settlement_gold
 	gold += earned_gold
@@ -872,67 +920,19 @@ func get_character_level_bulk_display_cost(mode: String) -> int:
 
 
 func buy_autoclick_ability() -> Dictionary:
-	if autoclick_purchased:
-		return _make_purchase_result("Already purchased")
-
-	if not autoclick_unlocked:
-		return _make_purchase_result("Requires character level %d" % autoclick_unlock_level)
-
-	if gold < autoclick_purchase_cost:
-		return _make_purchase_result("Not enough gold", true)
-
-	gold -= autoclick_purchase_cost
-	autoclick_purchased = true
-	autoclick_rank = 1
-	return _make_purchase_result("Autoclick purchased!", false, true)
+	return buy_ability_skill("autoclick_rank_1")
 
 
 func buy_gold_bonus_ability() -> Dictionary:
-	if gold_bonus_purchased:
-		return _make_purchase_result("Already purchased")
-
-	if not gold_bonus_unlocked:
-		return _make_purchase_result("Requires character level %d" % gold_bonus_unlock_level)
-
-	if gold < gold_bonus_purchase_cost:
-		return _make_purchase_result("Not enough gold", true)
-
-	gold -= gold_bonus_purchase_cost
-	gold_bonus_purchased = true
-	gold_bonus_rank = 1
-	return _make_purchase_result("Gold Bonus purchased!", false, true)
+	return buy_ability_skill("gold_bonus_rank_1")
 
 
 func buy_focus_burst_ability() -> Dictionary:
-	if focus_burst_purchased:
-		return _make_purchase_result("Already purchased")
-
-	if not focus_burst_unlocked:
-		return _make_purchase_result("Requires character level %d" % focus_burst_unlock_level)
-
-	if gold < focus_burst_purchase_cost:
-		return _make_purchase_result("Not enough gold", true)
-
-	gold -= focus_burst_purchase_cost
-	focus_burst_purchased = true
-	focus_burst_rank = 1
-	return _make_purchase_result("Focus Burst purchased!", false, true)
+	return buy_ability_skill("focus_burst_rank_1")
 
 
 func buy_rally_ability() -> Dictionary:
-	if rally_purchased:
-		return _make_purchase_result("Already purchased")
-
-	if not rally_unlocked:
-		return _make_purchase_result("Requires character level %d" % rally_unlock_level)
-
-	if gold < rally_purchase_cost:
-		return _make_purchase_result("Not enough gold", true)
-
-	gold -= rally_purchase_cost
-	rally_purchased = true
-	rally_rank = 1
-	return _make_purchase_result("Rally purchased!", false, true)
+	return buy_ability_skill("rally_rank_1")
 
 
 func get_base_partner_dps() -> int:
@@ -958,6 +958,7 @@ func get_final_partner_dps(include_contextual_boss_multiplier: bool = false) -> 
 		* get_command_aura_multiplier()
 		* get_settlement_partner_dps_multiplier()
 		* get_partner_skill_bonus_multiplier("partner_dps")
+		* get_hero_skill_bonus_multiplier("partner_dps")
 		* get_partner_skill_bonus_multiplier("all_damage")
 		* get_rally_multiplier()
 	)
@@ -1252,6 +1253,153 @@ func get_partner_skill(skill_id: String) -> Dictionary:
 	return {}
 
 
+func get_hero_skills() -> Array[Dictionary]:
+	return hero_skill_definitions
+
+
+func get_hero_skill(skill_id: String) -> Dictionary:
+	for skill: Dictionary in hero_skill_definitions:
+		if String(skill.get("id", "")) == skill_id:
+			return skill
+	return {}
+
+
+func is_hero_skill_unlocked(skill_id: String) -> bool:
+	var skill: Dictionary = get_hero_skill(skill_id)
+	if skill.is_empty():
+		return false
+	return character_level >= int(skill.get("unlock_character_level", 0))
+
+
+func is_hero_skill_purchased(skill_id: String) -> bool:
+	return purchased_hero_skill_ids.has(skill_id)
+
+
+func can_buy_hero_skill(skill_id: String) -> bool:
+	if is_hero_skill_purchased(skill_id) or not is_hero_skill_unlocked(skill_id):
+		return false
+	var cost: int = get_hero_skill_cost(skill_id)
+	return cost > 0 and gold >= cost
+
+
+func get_hero_skill_state(skill_id: String) -> String:
+	if is_hero_skill_purchased(skill_id):
+		return "purchased"
+	if is_hero_skill_unlocked(skill_id):
+		return "available"
+	return "locked"
+
+
+func get_hero_skill_cost(skill_id: String) -> int:
+	var skill: Dictionary = get_hero_skill(skill_id)
+	if skill.is_empty():
+		return 0
+	var skill_level: int = int(skill.get("skill_level", 0))
+	var unlock_level: int = int(skill.get("unlock_character_level", 0))
+	if skill_level < 1 or skill_level > hero_skill_cost_multipliers.size() or unlock_level <= 1:
+		return 0
+	var base_cost: int = _get_character_level_cost_for_level(unlock_level - 1)
+	return base_cost * hero_skill_cost_multipliers[skill_level - 1]
+
+
+func buy_hero_skill(skill_id: String) -> Dictionary:
+	var skill: Dictionary = get_hero_skill(skill_id)
+	if skill.is_empty():
+		return _make_purchase_result("Invalid hero skill")
+	if is_hero_skill_purchased(skill_id):
+		return _make_purchase_result("Hero skill already purchased")
+	if not is_hero_skill_unlocked(skill_id):
+		return _make_purchase_result("Requires Hero Level %d" % int(skill.get("unlock_character_level", 0)))
+	var cost: int = get_hero_skill_cost(skill_id)
+	if cost <= 0 or gold < cost:
+		return _make_purchase_result("Not enough gold", true)
+	gold -= cost
+	purchased_hero_skill_ids.append(skill_id)
+	_update_character_state()
+	return _make_purchase_result("%s purchased!" % String(skill.get("name", "Hero skill")), false, true)
+
+
+func get_ability_skills(ability_id: String) -> Array[Dictionary]:
+	var skills: Array[Dictionary] = []
+	for skill: Dictionary in ability_skill_definitions:
+		if String(skill.get("ability_id", "")) == ability_id:
+			skills.append(skill)
+	return skills
+
+
+func get_ability_skill(skill_id: String) -> Dictionary:
+	for skill: Dictionary in ability_skill_definitions:
+		if String(skill.get("id", "")) == skill_id:
+			return skill
+	return {}
+
+
+func is_ability_skill_unlocked(skill_id: String) -> bool:
+	var skill: Dictionary = get_ability_skill(skill_id)
+	if skill.is_empty():
+		return false
+	return character_level >= int(skill.get("unlock_character_level", 0))
+
+
+func is_ability_skill_purchased(skill_id: String) -> bool:
+	return purchased_ability_skill_ids.has(skill_id)
+
+
+func can_buy_ability_skill(skill_id: String) -> bool:
+	if is_ability_skill_purchased(skill_id) or not is_ability_skill_unlocked(skill_id):
+		return false
+	var cost: int = get_ability_skill_cost(skill_id)
+	return cost > 0 and gold >= cost
+
+
+func get_ability_skill_state(skill_id: String) -> String:
+	if is_ability_skill_purchased(skill_id):
+		return "purchased"
+	if is_ability_skill_unlocked(skill_id):
+		return "available"
+	return "locked"
+
+
+func get_ability_skill_cost(skill_id: String) -> int:
+	var skill: Dictionary = get_ability_skill(skill_id)
+	if skill.is_empty():
+		return 0
+	var skill_level: int = int(skill.get("skill_level", 0))
+	if skill_level < 1 or skill_level > ability_skill_cost_multipliers.size():
+		return 0
+	var base_cost: int = _get_ability_base_cost(String(skill.get("ability_id", "")))
+	return base_cost * ability_skill_cost_multipliers[skill_level - 1]
+
+
+func buy_ability_skill(skill_id: String) -> Dictionary:
+	var skill: Dictionary = get_ability_skill(skill_id)
+	if skill.is_empty():
+		return _make_purchase_result("Invalid ability skill")
+	if is_ability_skill_purchased(skill_id):
+		return _make_purchase_result("Ability skill already purchased")
+	if not is_ability_skill_unlocked(skill_id):
+		return _make_purchase_result("Requires Hero Level %d" % int(skill.get("unlock_character_level", 0)))
+	var cost: int = get_ability_skill_cost(skill_id)
+	if cost <= 0 or gold < cost:
+		return _make_purchase_result("Not enough gold", true)
+	gold -= cost
+	purchased_ability_skill_ids.append(skill_id)
+	_sync_ability_rank_fields()
+	_update_character_state()
+	return _make_purchase_result("%s purchased!" % String(skill.get("name", "Ability skill")), false, true)
+
+
+func get_hero_skill_bonus_multiplier(bonus_type: String) -> float:
+	var total_bonus: float = 0.0
+	for skill: Dictionary in hero_skill_definitions:
+		var skill_id: String = String(skill.get("id", ""))
+		if not is_hero_skill_purchased(skill_id):
+			continue
+		if String(skill.get("bonus_type", "")) == bonus_type:
+			total_bonus += float(skill.get("bonus_value", 0.0))
+	return 1.0 + total_bonus
+
+
 func get_partner_skill_cost(skill_id: String) -> int:
 	var skill: Dictionary = get_partner_skill(skill_id)
 	if skill.is_empty():
@@ -1378,6 +1526,27 @@ func _get_partner_skill_total_bonus(bonus_type: String) -> float:
 
 
 func get_ability_rank(ability_id: String) -> int:
+	var rank: int = 0
+	for skill: Dictionary in ability_skill_definitions:
+		if String(skill.get("ability_id", "")) != ability_id:
+			continue
+		if is_ability_skill_purchased(String(skill.get("id", ""))):
+			rank += 1
+	return clampi(rank, 0, ability_max_rank)
+
+
+func _sync_ability_rank_fields() -> void:
+	autoclick_rank = get_ability_rank("autoclick")
+	gold_bonus_rank = get_ability_rank("gold_bonus")
+	focus_burst_rank = get_ability_rank("focus_burst")
+	rally_rank = get_ability_rank("rally")
+	autoclick_purchased = autoclick_rank > 0
+	gold_bonus_purchased = gold_bonus_rank > 0
+	focus_burst_purchased = focus_burst_rank > 0
+	rally_purchased = rally_rank > 0
+
+
+func _get_legacy_ability_rank(ability_id: String) -> int:
 	match ability_id:
 		"autoclick": return autoclick_rank
 		"gold_bonus": return gold_bonus_rank
@@ -1409,18 +1578,19 @@ func get_ability_unlock_level(ability_id: String) -> int:
 
 
 func can_upgrade_ability(ability_id: String) -> bool:
-	if get_ability_rank(ability_id) >= ability_max_rank:
-		return false
-	return is_ability_unlocked(ability_id)
+	for skill: Dictionary in get_ability_skills(ability_id):
+		var skill_id: String = String(skill.get("id", ""))
+		if not is_ability_skill_purchased(skill_id):
+			return is_ability_skill_unlocked(skill_id)
+	return false
 
 
 func get_ability_upgrade_cost(ability_id: String) -> int:
-	var rank: int = get_ability_rank(ability_id)
-	var rank_to_buy: int = rank + 1
-	var base_cost: int = _get_ability_base_cost(ability_id)
-	if rank == 0:
-		return base_cost
-	return base_cost * rank_to_buy * rank_to_buy * 2
+	for skill: Dictionary in get_ability_skills(ability_id):
+		var skill_id: String = String(skill.get("id", ""))
+		if not is_ability_skill_purchased(skill_id):
+			return get_ability_skill_cost(skill_id)
+	return 0
 
 
 func _get_ability_base_cost(ability_id: String) -> int:
@@ -1433,32 +1603,12 @@ func _get_ability_base_cost(ability_id: String) -> int:
 
 
 func buy_or_upgrade_ability(ability_id: String) -> Dictionary:
-	if not can_upgrade_ability(ability_id):
-		if get_ability_rank(ability_id) >= ability_max_rank:
-			return _make_purchase_result("Already at max rank")
-		return _make_purchase_result("Requires character level %d" % get_ability_unlock_level(ability_id))
-	var cost: int = get_ability_upgrade_cost(ability_id)
-	if gold < cost:
-		return _make_purchase_result("Not enough gold", true)
-	gold -= cost
-	match ability_id:
-		"autoclick":
-			autoclick_rank += 1
-			autoclick_purchased = true
-		"gold_bonus":
-			gold_bonus_rank += 1
-			gold_bonus_purchased = true
-		"focus_burst":
-			focus_burst_rank += 1
-			focus_burst_purchased = true
-		"rally":
-			rally_rank += 1
-			rally_purchased = true
-	var new_rank: int = get_ability_rank(ability_id)
-	var ability_name: String = ability_id.replace("_", " ").capitalize()
-	if new_rank == 1:
-		return _make_purchase_result("%s purchased!" % ability_name, false, true)
-	return _make_purchase_result("%s rank %d!" % [ability_name, new_rank], false, true)
+	var skills: Array[Dictionary] = get_ability_skills(ability_id)
+	for skill: Dictionary in skills:
+		var skill_id: String = String(skill.get("id", ""))
+		if not is_ability_skill_purchased(skill_id):
+			return buy_ability_skill(skill_id)
+	return _make_purchase_result("Already at max rank")
 
 
 func get_ability_description(ability_id: String) -> String:
@@ -1761,26 +1911,19 @@ func update_ability_unlocks() -> void:
 	gold_bonus_unlocked = character_level >= gold_bonus_unlock_level
 	focus_burst_unlocked = character_level >= focus_burst_unlock_level
 	rally_unlocked = character_level >= rally_unlock_level
+	_sync_ability_rank_fields()
 
-	if not autoclick_unlocked:
+	if get_ability_rank("autoclick") == 0:
 		autoclick_active = false
-		autoclick_purchased = false
-		autoclick_rank = 0
 
-	if not gold_bonus_unlocked:
+	if get_ability_rank("gold_bonus") == 0:
 		gold_bonus_active = false
-		gold_bonus_purchased = false
-		gold_bonus_rank = 0
 
-	if not focus_burst_unlocked:
+	if get_ability_rank("focus_burst") == 0:
 		focus_burst_active = false
-		focus_burst_purchased = false
-		focus_burst_rank = 0
 
-	if not rally_unlocked:
+	if get_ability_rank("rally") == 0:
 		rally_active = false
-		rally_purchased = false
-		rally_rank = 0
 
 
 func fail_boss_level() -> Dictionary:
@@ -1916,6 +2059,7 @@ func _update_character_state() -> void:
 			base_damage
 			* get_focus_training_multiplier()
 			* get_partner_skill_bonus_multiplier("click_damage")
+			* get_hero_skill_bonus_multiplier("click_damage")
 			* get_partner_skill_bonus_multiplier("all_damage")
 			* get_focus_burst_multiplier()
 			* get_settlement_click_damage_multiplier()

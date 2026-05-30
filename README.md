@@ -64,7 +64,7 @@ The main scene contains the first local clicker loop:
 - Focus Burst unlocks at character level 60, base cost 500 gold. Damage multiplier: rank 1 = x2.00, rank 5 = x3.00 (steps of +0.25 per rank).
 - Rally unlocks at character level 80, base cost 1000 gold. Partner DPS multiplier: rank 1 = x2.00, rank 5 = x3.00 (steps of +0.25 per rank).
 - Upgrade costs: base_cost × rank_to_buy² × 2 (e.g. Autoclick rank 2 costs 50×4×2 = 400 gold).
-- Prestige resets all ability ranks to 0 along with normal progression.
+- Prestige resets Hero skills and ability skill ranks to 0 along with normal progression.
 - Ability buttons live on the left side of the game field.
 - Ability buttons are placeholder ImageHolder-style controls: textless white squares until real icons are added.
 - Ability state is shown with color/disabled feedback, not text inside the button.
@@ -175,7 +175,12 @@ Prestige is an unlockable reset in its own bottom `Prestige` tab.
 
 - The bottom bar has `Upgrades`, `Partners`, `Settlement`, `Prestige`, and `Shop` buttons on one row.
 - `PrestigeSheet` does not use the buy mode selector.
-- `UpgradeSheet` contains a bulk-buy Hero Level card plus one-time ability purchases for Autoclick, Gold Bonus, Focus Burst, and Rally.
+- `UpgradeSheet` contains Partner-style upgrade cards: Hero Level plus Autoclick, Gold Bonus, Focus Burst, and Rally. Each card uses a large square `ImageHolder`, right-side title/effect rows, and a row of 5 small skill icons.
+- Hero Level keeps its separate bulk-buy button and `BuyModeSelector` behavior; hero skill icon purchases do not use bulk-buy.
+- Hero Level has 5 purchasable passive skill icons unlocked by character level. Ability cards have 5 purchasable rank skill icons unlocked by character level.
+- Upgrade skill icon colors match partner skills: gray = locked, blue = available to buy, white = purchased.
+- Ability rank is derived from purchased ability skill icons. Rank 0 means the `AbilityBar` button remains locked; rank 1+ enables activation.
+- Hero skills and ability skills are normal progression and reset on prestige.
 - Reward: `floor(current_level / 50) + floor(character_level / 100)` prestige points per prestige action.
 - Stage level 52 and character level 102 gives 2 points.
 - Stage level 101 and character level 301 gives 5 points.
@@ -257,8 +262,9 @@ The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes
 - `scenes/ui/GameField.tscn` - Fullscreen tap/click attack field, muted green background placeholder, enemy placeholder states, boss timer, and defeat feedback.
 - `scenes/ui/AbilityBar.tscn` - Left-side textless placeholder-square active ability buttons.
 - `scenes/ui/BuyModeSelector.tscn` - Reusable fixed `x1` / `x10` / `x100` / `Max` selector for hero level, partner, and settlement purchase sheets.
-- `scenes/ui/UpgradePanel.tscn` - Card-style Hero Level upgrade row and one-time ability purchase rows.
-- `scenes/ui/UpgradeSheet.tscn` - Bottom-half upgrades sheet that hosts UpgradePanel.
+- `scenes/ui/UpgradePanel.tscn` - Partner-style Hero Level and ability upgrade cards with skill icon rows.
+- `scenes/ui/UpgradeSheet.tscn` - Bottom-half upgrades sheet that hosts UpgradePanel and the upgrade skill popup.
+- `scenes/ui/UpgradeSkillPopup.tscn` - Compact popup for Hero and ability skill purchases.
 - `scenes/ui/PartnerPanel.tscn` - Card-style partner hiring controls with per-purchase DPS effect rows.
 - `scenes/ui/PartnerSheet.tscn` - Bottom-half partners sheet that hosts PartnerPanel.
 - `scenes/ui/SettlementPanel.tscn` - Settlement building controls and bonus display.

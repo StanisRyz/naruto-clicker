@@ -90,15 +90,15 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Abilities must be purchased in `UpgradeSheet` before activation.
 - AbilityBar buttons are placeholder ImageHolder-style controls: textless white squares until real icons are added.
 - AbilityBar state should be represented by disabled/color feedback or optional tiny labels outside the square, not text inside the button.
-- Active abilities have ranks 0–5. Rank 0 = not purchased. First purchase via UpgradeSheet sets rank 1; ranks 2–5 are gold upgrades bought from the same card. Prestige resets all ranks to 0.
-- Ability upgrades must never use BuyModeSelector; each Buy/Upgrade action always buys exactly one rank. The same signal (e.g. autoclick_purchase_requested) serves both first purchase and upgrades; ClickerScreen routes all four to buy_or_upgrade_ability().
+- Active abilities have ranks 0–5. Rank 0 = not purchased. Ability ranks are gold-purchased skill icons on the ability card; purchased skill count determines rank. Prestige resets all ranks to 0.
+- Ability skill purchases must never use BuyModeSelector; each skill icon purchase buys exactly one rank through `UpgradeSkillPopup`, and ClickerScreen routes purchases to `buy_ability_skill()`.
 - Upgrade cost formula: base_cost × rank_to_buy² × 2 where rank_to_buy = current_rank + 1.
 - Autoclick unlocks at character level 15, base cost 50 gold. Base: 20 hits/sec for 15 s, 60 s cooldown. Each rank above 1 adds +15% attack rate (via get_autoclick_rank_rate_multiplier()) and +2 s duration.
 - Gold Bonus unlocks at character level 30, base cost 150 gold. Multiplier formula: 1.75 + 0.25 × rank (rank 1 = x2.00, rank 5 = x3.00), 45 s, 300 s cooldown.
 - Focus Burst unlocks at character level 60, base cost 500 gold. Damage multiplier: 1.75 + 0.25 × rank, 20 s, 120 s cooldown.
 - Rally unlocks at character level 80, base cost 1000 gold. Partner DPS multiplier: 1.75 + 0.25 × rank, 30 s, 180 s cooldown.
 - get_focus_burst_multiplier() and get_rally_multiplier() return rank-scaled values when active; get_gold_bonus_multiplier() does the same. All three return 1.0 when inactive.
-- AbilityBar uses rank > 0 (autoclick_rank, gold_bonus_rank, etc.) to determine purchased state; do not use the *_purchased booleans in new code.
+- AbilityBar uses `get_ability_rank(ability_id) > 0` to determine purchased state; do not use the *_purchased booleans in new code.
 - Make sure ability buttons do not trigger attacks.
 - Partners provide passive DPS through `ClickerState` state and `ClickerScreen` ticking.
 - Partner tiers are data-driven: Partner 1 (10 DPS), Partner 2 (20), Partner 3 (35), Field Scout (65), Spear Guard (120), Iron Defender (220), Battle Monk (410), Elite Samurai (750), Shadow Captain (1400), War Sage (2600), Beast Tamer (4800), Blade Master (9000), and Legendary Commander (16500).
@@ -176,7 +176,13 @@ Naruto Clicker is an early setup/prototype for a vertical idle/clicker game targ
 - Partner tier base DPS is `owned count * tier DPS * tier milestone multiplier` before settlement Training Camp, prestige Command Aura, Rally, and Boss Hunter.
 - Hero level upgrade costs use a controlled non-linear formula with affordable early levels and harder later levels.
 - Hero milestone target levels `[10, 25, 50, 100, 250, 500]` cost x3 for the purchase that reaches the milestone.
-- UpgradePanel contains a bulk-buy Hero Level card and ability rank cards (Buy at rank 0, Upgrade at rank 1–4, Max label at rank 5).
+- UpgradePanel cards match the Partner card structure and approximate sizes: large square `ImageHolder` on the left, right-side title/effect rows, and a row of 5 small skill icons.
+- Hero Level keeps its bulk-buy button and BuyModeSelector behavior separate from hero skill purchases.
+- Hero Level has 5 purchasable passive skill icons unlocked by character level.
+- Ability cards have 5 purchasable rank skill icons unlocked by character level.
+- Upgrade skill icon states match partner skills: gray = locked, blue = available to buy, white = purchased.
+- Ability rank is derived from purchased ability skill icons; rank 0 means locked in AbilityBar, and rank 1+ enables activation.
+- Hero skills and ability skills reset on prestige with normal progression.
 - Character level upgrades use horizontal bulk mode buttons `x1`, `x10`, `x100`, and `Max`; displayed costs must show total package cost.
 - Character level `x10` and `x100` purchases are strict all-or-nothing packages; `Max` buys as many as current gold allows.
 - Autoclick base purchase cost 50 gold (rank 1); upgrades: 50 × rank_to_buy² × 2.
@@ -299,9 +305,12 @@ After each patch, validate manually in Godot:
 - UpgradeSheet keeps `BuyModeSelector` fixed under the header while upgrade cards scroll.
 - UpgradeSheet header shows title, white `ImageHolder`, current gold, spacer, and Close button.
 - SettlementSheet should match UpgradeSheet and PartnerSheet spacing between header, fixed `BuyModeSelector`, and scroll content.
-- UpgradePanel uses a card-style Hero Level row and card-style ability purchase rows with white `ColorRect` image placeholders.
+- UpgradePanel uses Partner-style Hero Level and ability rows with white `ColorRect` image placeholders.
 - Hero Level card shows the current character level and selected bulk upgrade cost.
 - Hero Level card shows current damage and the next milestone, or Max milestones when all milestones are reached.
+- Hero Level card shows exactly 5 small skill icon squares in a horizontal row.
+- Ability cards show rank text and exactly 5 small skill icon squares in a horizontal row.
+- Ability ranks are purchased through skill icons and the `UpgradeSkillPopup`, not normal Buy/Upgrade buttons.
 - Autoclick button is visible but locked before character level 15.
 - Gold Bonus button is visible but locked before character level 30.
 - Focus Burst button is visible but locked before character level 60.

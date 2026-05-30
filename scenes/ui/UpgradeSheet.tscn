@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/UpgradeSheet.gd" id="1_wmn3s"]
 [ext_resource type="PackedScene" path="res://scenes/ui/UpgradePanel.tscn" id="2_ggq7k"]
 [ext_resource type="PackedScene" path="res://scenes/ui/BuyModeSelector.tscn" id="3_buy_mode"]
+[ext_resource type="PackedScene" path="res://scenes/ui/UpgradeSkillPopup.tscn" id="4_upgrade_skill_popup"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sheet_panel"]
 bg_color = Color(0.08, 0.085, 0.1, 1)
@@ -86,3 +87,6 @@ horizontal_scroll_mode = 0
 [node name="UpgradePanel" parent="PanelContainer/MarginContainer/VBoxContainer/ScrollContainer" instance=ExtResource("2_ggq7k")]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="UpgradeSkillPopup" parent="." instance=ExtResource("4_upgrade_skill_popup")]
+layout_mode = 1

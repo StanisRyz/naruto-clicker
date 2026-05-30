@@ -73,10 +73,8 @@ func _ready() -> void:
 	prestige_button.pressed.connect(_on_prestige_button_pressed)
 	shop_button.pressed.connect(_on_shop_button_pressed)
 	upgrade_sheet.character_level_upgrade_requested.connect(_on_character_level_upgrade_requested)
-	upgrade_sheet.autoclick_purchase_requested.connect(_on_autoclick_purchase_requested)
-	upgrade_sheet.gold_bonus_purchase_requested.connect(_on_gold_bonus_purchase_requested)
-	upgrade_sheet.focus_burst_purchase_requested.connect(_on_focus_burst_purchase_requested)
-	upgrade_sheet.rally_purchase_requested.connect(_on_rally_purchase_requested)
+	upgrade_sheet.hero_skill_purchase_requested.connect(_on_hero_skill_purchase_requested)
+	upgrade_sheet.ability_skill_purchase_requested.connect(_on_ability_skill_purchase_requested)
 	partner_sheet.partner_purchase_requested.connect(_on_partner_purchase_requested)
 	partner_sheet.skill_purchase_requested.connect(_on_partner_skill_purchase_requested)
 	settlement_sheet.building_purchase_requested.connect(_on_building_purchase_requested)
@@ -189,26 +187,14 @@ func _on_character_level_upgrade_requested(mode: String) -> void:
 	_update_ui()
 
 
-func _on_autoclick_purchase_requested() -> void:
-	var result: Dictionary = state.buy_or_upgrade_ability("autoclick")
+func _on_hero_skill_purchase_requested(skill_id: String) -> void:
+	var result: Dictionary = state.buy_hero_skill(skill_id)
 	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
 
 
-func _on_gold_bonus_purchase_requested() -> void:
-	var result: Dictionary = state.buy_or_upgrade_ability("gold_bonus")
-	_handle_status_text(result.get("status_text", ""))
-	_update_ui()
-
-
-func _on_focus_burst_purchase_requested() -> void:
-	var result: Dictionary = state.buy_or_upgrade_ability("focus_burst")
-	_handle_status_text(result.get("status_text", ""))
-	_update_ui()
-
-
-func _on_rally_purchase_requested() -> void:
-	var result: Dictionary = state.buy_or_upgrade_ability("rally")
+func _on_ability_skill_purchase_requested(skill_id: String) -> void:
+	var result: Dictionary = state.buy_ability_skill(skill_id)
 	_handle_status_text(result.get("status_text", ""))
 	_update_ui()
 
@@ -421,11 +407,12 @@ func _run_partner_damage_tick() -> void:
 
 
 func _on_autoclick_requested() -> void:
-	if not state.autoclick_purchased or state.autoclick_active or autoclick_cooldown_left > 0.0:
+	var rank: int = state.get_ability_rank("autoclick")
+	if rank <= 0 or state.autoclick_active or autoclick_cooldown_left > 0.0:
 		return
 
 	state.autoclick_active = true
-	var rank_bonus_seconds: float = 2.0 * maxi(0, state.autoclick_rank - 1)
+	var rank_bonus_seconds: float = 2.0 * maxi(0, rank - 1)
 	autoclick_time_left = _get_scaled_duration(autoclick_duration + rank_bonus_seconds, false)
 	autoclick_accumulator = 0.0
 	state.total_autoclick_activations += 1
@@ -433,7 +420,7 @@ func _on_autoclick_requested() -> void:
 
 
 func _on_gold_bonus_requested() -> void:
-	if not state.gold_bonus_purchased or state.gold_bonus_active or gold_bonus_cooldown_left > 0.0:
+	if state.get_ability_rank("gold_bonus") <= 0 or state.gold_bonus_active or gold_bonus_cooldown_left > 0.0:
 		return
 
 	state.gold_bonus_active = true
@@ -442,7 +429,7 @@ func _on_gold_bonus_requested() -> void:
 
 
 func _on_focus_burst_requested() -> void:
-	if not state.focus_burst_purchased or state.focus_burst_active or focus_burst_cooldown_left > 0.0:
+	if state.get_ability_rank("focus_burst") <= 0 or state.focus_burst_active or focus_burst_cooldown_left > 0.0:
 		return
 
 	state.focus_burst_active = true
@@ -452,7 +439,7 @@ func _on_focus_burst_requested() -> void:
 
 
 func _on_rally_requested() -> void:
-	if not state.rally_purchased or state.rally_active or rally_cooldown_left > 0.0:
+	if state.get_ability_rank("rally") <= 0 or state.rally_active or rally_cooldown_left > 0.0:
 		return
 
 	state.rally_active = true

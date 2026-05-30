@@ -34,23 +34,28 @@ func update_view(
 	focus_burst_cooldown_left: float,
 	rally_cooldown_left: float
 ) -> void:
+	var autoclick_rank: int = state.get_ability_rank("autoclick")
+	var gold_bonus_rank: int = state.get_ability_rank("gold_bonus")
+	var focus_burst_rank: int = state.get_ability_rank("focus_burst")
+	var rally_rank: int = state.get_ability_rank("rally")
+
 	autoclick_button.disabled = (
-		state.autoclick_rank == 0
+		autoclick_rank == 0
 		or state.autoclick_active
 		or autoclick_cooldown_left > 0.0
 	)
 	gold_bonus_button.disabled = (
-		state.gold_bonus_rank == 0
+		gold_bonus_rank == 0
 		or state.gold_bonus_active
 		or gold_bonus_cooldown_left > 0.0
 	)
 	focus_burst_button.disabled = (
-		state.focus_burst_rank == 0
+		focus_burst_rank == 0
 		or state.focus_burst_active
 		or focus_burst_cooldown_left > 0.0
 	)
 	rally_button.disabled = (
-		state.rally_rank == 0
+		rally_rank == 0
 		or state.rally_active
 		or rally_cooldown_left > 0.0
 	)
@@ -60,10 +65,10 @@ func update_view(
 	focus_burst_button.text = ""
 	rally_button.text = ""
 
-	_update_icon_color(autoclick_icon, state.autoclick_rank > 0, state.autoclick_active, autoclick_cooldown_left)
-	_update_icon_color(gold_bonus_icon, state.gold_bonus_rank > 0, state.gold_bonus_active, gold_bonus_cooldown_left)
-	_update_icon_color(focus_burst_icon, state.focus_burst_rank > 0, state.focus_burst_active, focus_burst_cooldown_left)
-	_update_icon_color(rally_icon, state.rally_rank > 0, state.rally_active, rally_cooldown_left)
+	_update_icon_color(autoclick_icon, autoclick_rank > 0, state.autoclick_active, autoclick_cooldown_left)
+	_update_icon_color(gold_bonus_icon, gold_bonus_rank > 0, state.gold_bonus_active, gold_bonus_cooldown_left)
+	_update_icon_color(focus_burst_icon, focus_burst_rank > 0, state.focus_burst_active, focus_burst_cooldown_left)
+	_update_icon_color(rally_icon, rally_rank > 0, state.rally_active, rally_cooldown_left)
 
 
 func _on_autoclick_button_pressed() -> void:
