@@ -8,6 +8,7 @@ const HIT_COLOR: Color = Color(0.15, 0.45, 1.0, 1.0)
 const WOUNDED_COLOR: Color = Color(1.0, 0.1, 0.1, 1.0)
 const DEFEATED_COLOR: Color = Color.BLACK
 const HIT_STATE_DURATION: float = 0.3
+const BACKGROUND_FALLBACK_COLOR: Color = Color(0.25, 0.42, 0.25, 1.0)
 
 var hit_tween: Tween = null
 var defeat_tween: Tween = null
@@ -15,6 +16,7 @@ var enemy_transition_locked: bool = false
 var current_health_color: Color = HEALTHY_COLOR
 var current_asset_key: String = "enemy.default.healthy"
 
+var _cached_background_zone_index: int = -1
 var _cached_zone_index: int = -1
 var _cached_enemy_slot: String = ""
 var _tex_healthy: Texture2D = null
@@ -23,6 +25,7 @@ var _tex_wounded: Texture2D = null
 var _tex_defeated: Texture2D = null
 var _current_tex: Texture2D = null
 
+@onready var background_image_holder = $BackgroundImageHolder  # ImageSlot (ColorRect subclass)
 @onready var enemy_image_holder = $EnemyImageHolder  # ImageSlot (ColorRect subclass)
 @onready var boss_timer_label: Label = $GameFieldContent/BossTimerLabel
 @onready var defeat_feedback_label: Label = $FeedbackLayer/DefeatFeedbackLabel
@@ -42,7 +45,17 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func update_view(state: ClickerState) -> void:
+	_update_background_visual(state)
 	update_enemy_visual_state(state)
+
+
+func _update_background_visual(state: ClickerState) -> void:
+	var zone_index: int = state.get_current_zone_index()
+	if zone_index == _cached_background_zone_index:
+		return
+	_cached_background_zone_index = zone_index
+	var texture: Texture2D = BackgroundAssetCatalog.load_zone_background(zone_index)
+	background_image_holder.set_direct_texture(texture, BACKGROUND_FALLBACK_COLOR, false)
 
 
 func update_enemy_visual_state(state: ClickerState) -> void:

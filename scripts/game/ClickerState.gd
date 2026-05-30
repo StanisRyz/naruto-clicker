@@ -2258,6 +2258,10 @@ func get_base_enemy_reward_for_level(level: int) -> int:
 	return maxi(1, ceili(base_reward))
 
 
+func get_current_zone_index() -> int:
+	return _get_zone_index_for_level(current_level)
+
+
 func _get_zone_index_for_level(level: int) -> int:
 	for i in range(ZONE_DATA.size()):
 		if level <= ZONE_DATA[i].level_end:

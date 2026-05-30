@@ -250,7 +250,7 @@ Levels are grouped into zones. Each zone has three normal enemies, one elite ene
 - HP grows faster than rewards so later progression leans on milestones, partners, settlement, prestige talents, and abilities.
 - Boss levels (every 10th level) still multiply the zone-scaled HP and reward by 5.
 - Zone data is stored as a constant array in `scripts/game/ClickerState.gd`.
-- No background images or audio assets are used for zones.
+- Zone background images are loaded by `BackgroundAssetCatalog` and displayed in `GameField.BackgroundImageHolder`.
 
 The prototype state and formulas live in `scripts/game/ClickerState.gd`. `scenes/game/ClickerScreen.gd` owns the gameplay flow and updates the UI components.
 
@@ -435,6 +435,51 @@ Missing files never crash the game. All fallbacks are automatic.
 3. Run the game — the correct image loads automatically for that enemy when it spawns.
 
 No code changes are needed unless a new zone or enemy slot type is added.
+
+## Zone Background Image System
+
+Zone backgrounds use a dedicated catalog separate from the general UI and enemy image systems.
+
+- `scripts/ui/BackgroundAssetCatalog.gd` — static helpers for zone background paths and safe texture loading.
+- `GameField.BackgroundImageHolder` — full-rect `ImageSlot` that displays the current zone background.
+- Background changes automatically when `current_zone_index` changes (zone travel, prestige, save/load).
+
+### Folder structure
+
+```
+res://assets/images/backgrounds/zone_XX/background.png
+```
+
+### Zone mapping
+
+| Folder  | Levels | Zone name        |
+|---------|--------|------------------|
+| zone_01 | 1–10   | Training Grounds |
+| zone_02 | 11–20  | Forest Path      |
+| zone_03 | 21–30  | Stone Valley     |
+| zone_04 | 31–40  | Shadow Camp      |
+
+### Recommended image format
+
+- Minimum: 720×1600 PNG or WebP
+- Recommended: 1080×2400 (portrait 9:20)
+- Keep important elements in the central 80% safe area
+- No UI, text, or icons in the image
+
+### Fallback chain
+
+1. `backgrounds/zone_XX/background.png` — zone-specific background
+2. `GameAssetCatalog "game.field_background"` — global default
+3. Muted green `Color(0.25, 0.42, 0.25, 1)` placeholder
+
+Missing files never crash the game.
+
+### Adding a zone background
+
+1. Place the PNG at `res://assets/images/backgrounds/zone_XX/background.png`.
+2. Run the game — the background loads automatically when that zone is entered.
+
+No code changes are needed.
 
 ## Web Export Notes
 

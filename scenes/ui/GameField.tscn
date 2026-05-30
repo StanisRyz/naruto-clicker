@@ -18,6 +18,10 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0.25, 0.42, 0.25, 1)
+script = ExtResource("2_image_slot")
+asset_key = "game.field_background"
+fallback_color = Color(0.25, 0.42, 0.25, 1)
+stretch_mode = 6
 
 [node name="EnemyImageHolder" type="ColorRect" parent="."]
 custom_minimum_size = Vector2(450, 450)

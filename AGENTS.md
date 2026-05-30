@@ -645,6 +645,23 @@ After each patch, validate manually in Godot:
 - Do not save `current_enemy_slot` or `current_enemy_zone_index` to the save file; they are re-derived on each `choose_enemy_for_current_level()` call.
 - When adding a new zone, add its folder under `res://assets/images/enemies/` and extend zone data in `ClickerState.ZONE_DATA`.
 
+## Background Image System Rules
+
+- `scripts/ui/BackgroundAssetCatalog.gd` is the dedicated catalog for zone background image paths. It is separate from `GameAssetCatalog` and `EnemyAssetCatalog`.
+- Folder structure: `res://assets/images/backgrounds/zone_XX/background.png`.
+- Zone folders are 1-based: zone index 0 → `zone_01`, zone index 1 → `zone_02`, etc.
+- `BackgroundAssetCatalog.load_zone_background(zone_index)` returns `Texture2D` or `null`. Never crashes on missing files.
+- Fallback chain: zone background → `GameAssetCatalog "game.field_background"` → muted green `Color(0.25, 0.42, 0.25, 1)`.
+- `GameField.BackgroundImageHolder` is an `ImageSlot` with `stretch_mode = STRETCH_KEEP_ASPECT_COVERED` and `mouse_filter = IGNORE`.
+- `GameField._update_background_visual(state)` is called from `update_view(state)`. It caches the zone index in `_cached_background_zone_index` and only reloads when the zone changes.
+- Background uses `set_direct_texture(texture, BACKGROUND_FALLBACK_COLOR, false)` — transparent behind texture when image exists, muted green when image is missing.
+- `ClickerState.get_current_zone_index()` is the public helper used by `GameField` for zone-index-to-background mapping.
+- Do not hardcode background paths in `GameField`; all path logic belongs in `BackgroundAssetCatalog`.
+- Missing background files must never crash the game.
+- When adding a new zone, add its folder under `res://assets/images/backgrounds/` and extend zone data in `ClickerState.ZONE_DATA`.
+- Do not add `const BackgroundAssetCatalog = preload(...)` in `GameField` — `BackgroundAssetCatalog` is a global class_name and a local const with the same name causes `SHADOWED_GLOBAL_IDENTIFIER` warnings. The LSP "not declared" error after creating the file is transient and resolves when Godot rescans `scripts/ui/`.
+- Recommended image size: 720×1600 minimum, 1080×2400 recommended, portrait 9:20 safe.
+
 ## Documentation Update Rules
 
 Update this file when adding important systems, scenes, architecture decisions, workflow rules, or validation requirements. Keep README.md aligned with major project setup or workflow changes.
