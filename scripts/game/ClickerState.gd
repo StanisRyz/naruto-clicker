@@ -99,6 +99,9 @@ var total_autoclick_activations: int = 0
 var total_combo_empowered_activations: int = 0
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
+var debug_visual_test_mode_enabled: bool = false
+const DEBUG_VISUAL_TEST_HP: int = 100000
+
 var prestige_points: int:
 	get:
 		return prestige_points_available
@@ -1651,6 +1654,7 @@ func reset_target() -> void:
 	choose_enemy_for_current_level()
 	recalculate_level_values()
 	target_hp = target_max_hp
+	_apply_debug_visual_test_hp_to_current_target()
 
 
 func choose_enemy_for_current_level() -> void:
@@ -1703,6 +1707,77 @@ func get_current_zone_index() -> int:
 
 func get_current_background_zone_index() -> int:
 	return ZoneConfig.get_background_asset_zone_index_for_level(current_level)
+
+
+func set_debug_visual_test_mode_enabled(enabled: bool) -> void:
+	debug_visual_test_mode_enabled = enabled
+	setup_current_level()
+	if debug_visual_test_mode_enabled:
+		_apply_debug_visual_test_hp_to_current_target()
+
+
+func is_debug_visual_test_mode_enabled() -> bool:
+	return debug_visual_test_mode_enabled
+
+
+func debug_damage_current_target_by_percent(percent: float) -> Dictionary:
+	if not debug_visual_test_mode_enabled:
+		return _make_attack_result(false, false, 0, 0, target_hp, target_hp, "Debug visual mode is OFF")
+	if target_hp <= 0:
+		return _make_attack_result(false, false, 0, 0, target_hp, target_hp, "Target already defeated")
+
+	var target_hp_before: int = target_hp
+	var damage: int = maxi(1, int(ceil(float(target_max_hp) * percent)))
+	target_hp = maxi(target_hp - damage, 0)
+	var damage_dealt: int = target_hp_before - target_hp
+
+	return _make_attack_result(
+		target_hp <= 0,
+		false,
+		0,
+		damage_dealt,
+		target_hp_before,
+		target_hp,
+		"Debug damage: -%d HP" % damage_dealt
+	)
+
+
+func debug_clear_current_level_for_visual_test() -> Dictionary:
+	if not debug_visual_test_mode_enabled:
+		return {
+			"cleared": false,
+			"advanced_to_next_level": false,
+			"status_text": "Debug visual mode is OFF"
+		}
+
+	mark_level_cleared(current_level)
+
+	var next_level: int = current_level + 1
+	var old_zone_index: int = current_zone_index
+
+	max_unlocked_level = maxi(max_unlocked_level, next_level)
+	current_level = next_level
+	enemies_defeated_on_level = 0
+	setup_current_level()
+
+	var zone_changed: bool = current_zone_index != old_zone_index
+
+	return {
+		"cleared": true,
+		"advanced_to_next_level": true,
+		"level_unlocked": true,
+		"unlocked_level": max_unlocked_level,
+		"zone_changed": zone_changed,
+		"zone_name": zone_name,
+		"status_text": "Debug: advanced to level %d" % current_level
+	}
+
+
+func _apply_debug_visual_test_hp_to_current_target() -> void:
+	if not debug_visual_test_mode_enabled:
+		return
+	target_max_hp = DEBUG_VISUAL_TEST_HP
+	target_hp = DEBUG_VISUAL_TEST_HP
 
 
 func _get_zone_index_for_level(level: int) -> int:

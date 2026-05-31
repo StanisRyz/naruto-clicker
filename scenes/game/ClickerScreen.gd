@@ -122,10 +122,11 @@ func _process(delta: float) -> void:
 	_process_combo_meter(delta)
 
 	if boss_timer_active and not enemy_transition_locked:
-		boss_time_left = maxf(boss_time_left - delta, 0.0)
+		if not state.is_debug_visual_test_mode_enabled():
+			boss_time_left = maxf(boss_time_left - delta, 0.0)
 		game_field.update_boss_timer(boss_time_left, boss_timer_active)
 
-		if boss_time_left <= 0.0:
+		if boss_time_left <= 0.0 and not state.is_debug_visual_test_mode_enabled():
 			_fail_boss_level()
 			return
 
@@ -874,6 +875,57 @@ func _load_game_on_start() -> void:
 	state.apply_save_data(data)
 
 
+func _toggle_debug_visual_test_mode() -> void:
+	var enabled: bool = not state.is_debug_visual_test_mode_enabled()
+	state.set_debug_visual_test_mode_enabled(enabled)
+	enemy_transition_locked = false
+	enemy_transition_token += 1
+	game_field.set_enemy_transition_locked(false)
+	partner_damage_accumulator = 0.0
+	autoclick_accumulator = 0.0
+	_sync_boss_timer()
+	_update_ui()
+	if balance_logger:
+		balance_logger.mark_enemy_spawned(state)
+	print("Debug visual test mode: %s" % ("ON (HP=100000)" if enabled else "OFF"))
+
+
+func _debug_visual_damage_51_percent() -> void:
+	if not state.is_debug_visual_test_mode_enabled():
+		print("Debug visual test mode is OFF")
+		return
+	if enemy_transition_locked:
+		return
+	var was_boss_level: bool = state.is_boss_level
+	var result: Dictionary = state.debug_damage_current_target_by_percent(0.51)
+	_apply_attack_result(result, true, was_boss_level)
+	_update_ui()
+	print("Debug visual damage: current HP %d/%d" % [state.target_hp, state.target_max_hp])
+
+
+func _debug_visual_clear_level() -> void:
+	if not state.is_debug_visual_test_mode_enabled():
+		print("Debug visual test mode is OFF")
+		return
+	if enemy_transition_locked:
+		return
+	var previous_level: int = state.current_level
+	var result: Dictionary = state.debug_clear_current_level_for_visual_test()
+	enemy_transition_token += 1
+	game_field.set_enemy_transition_locked(false)
+	partner_damage_accumulator = 0.0
+	autoclick_accumulator = 0.0
+	_handle_status_text(result.get("status_text", ""))
+	if result.get("advanced_to_next_level", false):
+		stage_navigator.center_on_level(state.current_level)
+		if balance_logger:
+			balance_logger.log_level_changed(state, previous_level, state.current_level)
+			balance_logger.mark_enemy_spawned(state)
+	_sync_boss_timer()
+	_update_ui()
+	print("Debug visual clear: level %d -> %d" % [previous_level, state.current_level])
+
+
 func _run_balance_simulation() -> void:
 	var sim := ProgressionSimulator.new()
 	var minute_marks: Array = [5, 15, 30, 60, 180, 1440]
@@ -950,3 +1002,9 @@ func _input(event: InputEvent) -> void:
 				balance_logger.start_session(state)
 				balance_logger.mark_enemy_spawned(state)
 				print("Balance playtest logger cleared and session restarted")
+		KEY_F12:
+			_toggle_debug_visual_test_mode()
+		KEY_L:
+			_debug_visual_damage_51_percent()
+		KEY_K:
+			_debug_visual_clear_level()

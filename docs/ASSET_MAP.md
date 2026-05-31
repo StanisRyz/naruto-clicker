@@ -1,5 +1,20 @@
 # Asset Map
 
+## Debug visual testing controls (debug builds only)
+
+These keys work only when `BuildConfig.IS_DEBUG_BUILD = true`. Nothing is saved after using them.
+
+| Key | Action |
+|-----|--------|
+| F12 | Toggle visual test mode. Current and future enemies get 100000 HP. Boss timer pauses. Press again to restore normal HP and resume timer. |
+| L | Deal 51% of max HP to current enemy. First press: ~49000/100000 HP (triggers wounded state). Second press: defeats or nearly defeats. |
+| K | Mark current level as cleared and advance to the next level. Updates StageNavigator. Useful for rapidly walking through zones. |
+
+- Not saved. Does not call SaveManager.
+- Does not grant gold or progress tasks.
+- Does not affect release builds (`IS_DEBUG_BUILD = false`).
+- Intended for validating zones 1–20 enemy textures, elite textures, boss textures, and backgrounds.
+
 ## Zone asset reuse
 
 Normal and elite enemy textures, and background textures, are shared across zones to reduce required assets.
