@@ -2,9 +2,58 @@
 
 ---
 
+## Zone Pacing Patch (2026-05-31)
+
+Reduced zone length from 10 levels to 5. Boss interval reduced from every 10th level to every 5th level.
+
+### Zone coverage
+
+- 21 zones × 5 levels = levels 1–105.
+- Each zone's final level (5, 10, 15, … 105) is a boss level.
+- Level 106+ clamps to Zone 21 via existing fallback behavior.
+
+### Boss frequency
+
+- Bosses now appear at levels 5, 10, 15, 20, … 105.
+- Boss encounters are now twice as frequent as before.
+- `BOSS_HP_MULTIPLIER`, `BOSS_REWARD_MULTIPLIER`, and `BOSS_TIME_LIMIT` are unchanged.
+- Boss economy and reward rates should be retested after a playtest session.
+
+### Debug visual mode
+
+- F12 / L / K keys still work.
+- K advances one level at a time; a boss appears every 5 presses.
+- Zone and background change every 5 levels according to the asset reuse map.
+
+### Constants added to ZoneConfig
+
+```
+ZoneConfig.LEVELS_PER_ZONE  = 5
+ZoneConfig.BOSS_LEVEL_INTERVAL = 5
+```
+
+`ClickerState.is_current_level_boss()` now uses `ZoneConfig.BOSS_LEVEL_INTERVAL`.
+
+### Intentionally not changed
+
+- Global enemy HP/reward formulas
+- `BOSS_HP_MULTIPLIER`, `BOSS_REWARD_MULTIPLIER`, `BOSS_TIME_LIMIT`
+- Zone multipliers (hp_multiplier, reward_multiplier per zone)
+- Asset reuse mapping
+- Save format and save_version
+- Public ClickerState API
+- UI layout
+- Android/Web export settings
+
+### Save compatibility note
+
+Existing saves keep their `current_level` value. After the patch, lower-numbered levels map to different zone names because zones are now shorter. This is acceptable during development — no migration is needed.
+
+---
+
 ## Zone Content Patch v2 (2026-05-31)
 
-Corrected ZoneConfig from 20 zones to 21 zones (levels 1–210). Inserted new Zone 6 "Scorched Outpost" after Zone 5, shifting old zones 6–20 to new zones 7–21. Corrected asset reuse mapping across all zones.
+Corrected ZoneConfig from 20 zones to 21 zones. Inserted new Zone 6 "Scorched Outpost" after Zone 5, shifting old zones 6–20 to new zones 7–21. Corrected asset reuse mapping across all zones. Zone length was later changed to 5 levels per zone by the Zone Pacing Patch above.
 
 ### Zone coverage
 

@@ -8,7 +8,7 @@ These keys work only when `BuildConfig.IS_DEBUG_BUILD = true`. Nothing is saved 
 |-----|--------|
 | F12 | Toggle visual test mode. Current and future enemies get 100000 HP. Boss timer pauses. Press again to restore normal HP and resume timer. |
 | L | Deal 51% of max HP to current enemy. First press: ~49000/100000 HP (triggers wounded state). Second press: defeats or nearly defeats. |
-| K | Mark current level as cleared and advance to the next level. Updates StageNavigator. Useful for rapidly walking through zones 1–21. |
+| K | Mark current level as cleared and advance to the next level. Updates StageNavigator. Zone changes every 5 levels; press K repeatedly to walk through all 21 zones in ~105 presses. |
 
 - Not saved. Does not call SaveManager.
 - Does not grant gold or progress tasks.
@@ -22,27 +22,27 @@ Every boss uses its own unique zone folder.
 
 | Gameplay Zone | Levels  | Enemy Asset Zone | Background Asset Zone | Boss Asset Zone |
 |---------------|---------|------------------|-----------------------|-----------------|
-| 1             | 1–10    | 1                | 1                     | 1               |
-| 2             | 11–20   | 1                | 2                     | 2               |
-| 3             | 21–30   | 3                | 3                     | 3               |
-| 4             | 31–40   | 3                | 4                     | 4               |
-| 5             | 41–50   | 5                | 5                     | 5               |
-| 6             | 51–60   | 5                | 5                     | 6               |
-| 7             | 61–70   | 1                | 1                     | 7               |
-| 8             | 71–80   | 8                | 8                     | 8               |
-| 9             | 81–90   | 8                | 8                     | 9               |
-| 10            | 91–100  | 10               | 10                    | 10              |
-| 11            | 101–110 | 11               | 11                    | 11              |
-| 12            | 111–120 | 11               | 11                    | 12              |
-| 13            | 121–130 | 1                | 1                     | 13              |
-| 14            | 131–140 | 1                | 1                     | 14              |
-| 15            | 141–150 | 8                | 8                     | 15              |
-| 16            | 151–160 | 16               | 16                    | 16              |
-| 17            | 161–170 | 17               | 17                    | 17              |
-| 18            | 171–180 | 17               | 17                    | 18              |
-| 19            | 181–190 | 17               | 17                    | 19              |
-| 20            | 191–200 | 20               | 20                    | 20              |
-| 21            | 201–210 | 10               | 10                    | 21              |
+| 1             | 1–5     | 1                | 1                     | 1               |
+| 2             | 6–10    | 1                | 2                     | 2               |
+| 3             | 11–15   | 3                | 3                     | 3               |
+| 4             | 16–20   | 3                | 4                     | 4               |
+| 5             | 21–25   | 5                | 5                     | 5               |
+| 6             | 26–30   | 5                | 5                     | 6               |
+| 7             | 31–35   | 1                | 1                     | 7               |
+| 8             | 36–40   | 8                | 8                     | 8               |
+| 9             | 41–45   | 8                | 8                     | 9               |
+| 10            | 46–50   | 10               | 10                    | 10              |
+| 11            | 51–55   | 11               | 11                    | 11              |
+| 12            | 56–60   | 11               | 11                    | 12              |
+| 13            | 61–65   | 1                | 1                     | 13              |
+| 14            | 66–70   | 1                | 1                     | 14              |
+| 15            | 71–75   | 8                | 8                     | 15              |
+| 16            | 76–80   | 16               | 16                    | 16              |
+| 17            | 81–85   | 17               | 17                    | 17              |
+| 18            | 86–90   | 17               | 17                    | 18              |
+| 19            | 91–95   | 17               | 17                    | 19              |
+| 20            | 96–100  | 20               | 20                    | 20              |
+| 21            | 101–105 | 10               | 10                    | 21              |
 
 **Key reuse notes:**
 - Zones 2, 7, 13, 14 reuse enemy assets from zone 1. Zone 2 has its own background.

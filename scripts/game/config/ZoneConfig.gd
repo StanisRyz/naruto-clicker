@@ -1,11 +1,14 @@
 class_name ZoneConfig
 extends RefCounted
 
+const LEVELS_PER_ZONE: int = 5
+const BOSS_LEVEL_INTERVAL: int = 5
+
 const ZONE_DATA: Array = [
 	{
 		"name": "Training Grounds",
 		"level_start": 1,
-		"level_end": 10,
+		"level_end": 5,
 		"enemies": ["Rogue Ninja", "Novice Bandit", "Training Outcast"],
 		"elite_enemy": "Elite Rogue Ninja",
 		"boss": "Training Master",
@@ -16,8 +19,8 @@ const ZONE_DATA: Array = [
 	},
 	{
 		"name": "Forest Path",
-		"level_start": 11,
-		"level_end": 20,
+		"level_start": 6,
+		"level_end": 10,
 		"enemies": ["Forest Bandit", "Wild Scout", "Hidden Archer"],
 		"elite_enemy": "Elite Forest Bandit",
 		"boss": "Forest Guardian",
@@ -28,8 +31,8 @@ const ZONE_DATA: Array = [
 	},
 	{
 		"name": "Stone Valley",
-		"level_start": 21,
-		"level_end": 30,
+		"level_start": 11,
+		"level_end": 15,
 		"enemies": ["Stone Warrior", "Valley Raider", "Rock Sentinel"],
 		"elite_enemy": "Elite Stone Warrior",
 		"boss": "Valley Warlord",
@@ -40,8 +43,8 @@ const ZONE_DATA: Array = [
 	},
 	{
 		"name": "Shadow Camp",
-		"level_start": 31,
-		"level_end": 40,
+		"level_start": 16,
+		"level_end": 20,
 		"enemies": ["Shadow Fighter", "Camp Assassin", "Dark Scout"],
 		"elite_enemy": "Elite Shadow Fighter",
 		"boss": "Shadow Commander",
@@ -52,8 +55,8 @@ const ZONE_DATA: Array = [
 	},
 	{
 		"name": "Burning Outpost",
-		"level_start": 41,
-		"level_end": 50,
+		"level_start": 21,
+		"level_end": 25,
 		"enemies": ["Ash Raider", "Flame Scout", "Cinder Guard"],
 		"elite_enemy": "Elite Ash Raider",
 		"boss": "Burning Outpost Chief",
@@ -64,8 +67,8 @@ const ZONE_DATA: Array = [
 	},
 	{
 		"name": "Scorched Outpost",
-		"level_start": 51,
-		"level_end": 60,
+		"level_start": 26,
+		"level_end": 30,
 		"enemies": ["Scorched Raider", "Outpost Scout", "Ash Guard"],
 		"elite_enemy": "Elite Scorched Raider",
 		"boss": "Scorched Outpost Captain",
@@ -76,8 +79,8 @@ const ZONE_DATA: Array = [
 	},
 	{
 		"name": "Old Training Grounds",
-		"level_start": 61,
-		"level_end": 70,
+		"level_start": 31,
+		"level_end": 35,
 		"enemies": ["Rogue Ninja", "Novice Bandit", "Training Outcast"],
 		"elite_enemy": "Elite Rogue Ninja",
 		"boss": "Old Grounds Champion",
@@ -88,8 +91,8 @@ const ZONE_DATA: Array = [
 	},
 	{
 		"name": "Mist River",
-		"level_start": 71,
-		"level_end": 80,
+		"level_start": 36,
+		"level_end": 40,
 		"enemies": ["Mist Rogue", "River Ambusher", "Fog Archer"],
 		"elite_enemy": "Elite Mist Rogue",
 		"boss": "Mist River Lord",
@@ -100,8 +103,8 @@ const ZONE_DATA: Array = [
 	},
 	{
 		"name": "Flooded Shrine",
-		"level_start": 81,
-		"level_end": 90,
+		"level_start": 41,
+		"level_end": 45,
 		"enemies": ["Mist Rogue", "River Ambusher", "Fog Archer"],
 		"elite_enemy": "Elite Mist Rogue",
 		"boss": "Flooded Shrine Keeper",
@@ -112,8 +115,8 @@ const ZONE_DATA: Array = [
 	},
 	{
 		"name": "Thunder Ridge",
-		"level_start": 91,
-		"level_end": 100,
+		"level_start": 46,
+		"level_end": 50,
 		"enemies": ["Thunder Bandit", "Storm Scout", "Ridge Spearman"],
 		"elite_enemy": "Elite Thunder Bandit",
 		"boss": "Thunder Ridge General",
@@ -124,8 +127,8 @@ const ZONE_DATA: Array = [
 	},
 	{
 		"name": "Iron Fortress",
-		"level_start": 101,
-		"level_end": 110,
+		"level_start": 51,
+		"level_end": 55,
 		"enemies": ["Iron Guard", "Fortress Spearman", "Steel Watcher"],
 		"elite_enemy": "Elite Iron Guard",
 		"boss": "Iron Fortress Commander",
@@ -136,8 +139,8 @@ const ZONE_DATA: Array = [
 	},
 	{
 		"name": "Broken Fortress",
-		"level_start": 111,
-		"level_end": 120,
+		"level_start": 56,
+		"level_end": 60,
 		"enemies": ["Iron Guard", "Fortress Spearman", "Steel Watcher"],
 		"elite_enemy": "Elite Iron Guard",
 		"boss": "Broken Fortress Tyrant",
@@ -148,8 +151,8 @@ const ZONE_DATA: Array = [
 	},
 	{
 		"name": "Training Ruins",
-		"level_start": 121,
-		"level_end": 130,
+		"level_start": 61,
+		"level_end": 65,
 		"enemies": ["Rogue Ninja", "Novice Bandit", "Training Outcast"],
 		"elite_enemy": "Elite Rogue Ninja",
 		"boss": "Ruined Dojo Master",
@@ -160,8 +163,8 @@ const ZONE_DATA: Array = [
 	},
 	{
 		"name": "Ancient Training Yard",
-		"level_start": 131,
-		"level_end": 140,
+		"level_start": 66,
+		"level_end": 70,
 		"enemies": ["Rogue Ninja", "Novice Bandit", "Training Outcast"],
 		"elite_enemy": "Elite Rogue Ninja",
 		"boss": "Ancient Yard Master",
@@ -172,8 +175,8 @@ const ZONE_DATA: Array = [
 	},
 	{
 		"name": "Hidden Waterfall",
-		"level_start": 141,
-		"level_end": 150,
+		"level_start": 71,
+		"level_end": 75,
 		"enemies": ["Mist Rogue", "River Ambusher", "Fog Archer"],
 		"elite_enemy": "Elite Mist Rogue",
 		"boss": "Hidden Waterfall Sage",
@@ -184,8 +187,8 @@ const ZONE_DATA: Array = [
 	},
 	{
 		"name": "Desert Camp",
-		"level_start": 151,
-		"level_end": 160,
+		"level_start": 76,
+		"level_end": 80,
 		"enemies": ["Desert Rogue", "Sand Raider", "Dune Guard"],
 		"elite_enemy": "Elite Desert Rogue",
 		"boss": "Desert Camp Warlord",
@@ -196,8 +199,8 @@ const ZONE_DATA: Array = [
 	},
 	{
 		"name": "Snow Pass",
-		"level_start": 161,
-		"level_end": 170,
+		"level_start": 81,
+		"level_end": 85,
 		"enemies": ["Snow Assassin", "Frost Scout", "Ice Guard"],
 		"elite_enemy": "Elite Snow Assassin",
 		"boss": "Snow Pass Captain",
@@ -208,8 +211,8 @@ const ZONE_DATA: Array = [
 	},
 	{
 		"name": "Frozen Village",
-		"level_start": 171,
-		"level_end": 180,
+		"level_start": 86,
+		"level_end": 90,
 		"enemies": ["Snow Assassin", "Frost Scout", "Ice Guard"],
 		"elite_enemy": "Elite Snow Assassin",
 		"boss": "Frozen Village Elder",
@@ -220,8 +223,8 @@ const ZONE_DATA: Array = [
 	},
 	{
 		"name": "Ice Shrine",
-		"level_start": 181,
-		"level_end": 190,
+		"level_start": 91,
+		"level_end": 95,
 		"enemies": ["Snow Assassin", "Frost Scout", "Ice Guard"],
 		"elite_enemy": "Elite Snow Assassin",
 		"boss": "Ice Shrine Guardian",
@@ -232,8 +235,8 @@ const ZONE_DATA: Array = [
 	},
 	{
 		"name": "Dark Temple",
-		"level_start": 191,
-		"level_end": 200,
+		"level_start": 96,
+		"level_end": 100,
 		"enemies": ["Temple Shade", "Dark Monk", "Cursed Guard"],
 		"elite_enemy": "Elite Temple Shade",
 		"boss": "Dark Temple Overlord",
@@ -244,8 +247,8 @@ const ZONE_DATA: Array = [
 	},
 	{
 		"name": "Storm Summit",
-		"level_start": 201,
-		"level_end": 210,
+		"level_start": 101,
+		"level_end": 105,
 		"enemies": ["Thunder Bandit", "Storm Scout", "Ridge Spearman"],
 		"elite_enemy": "Elite Thunder Bandit",
 		"boss": "Storm Summit Master",

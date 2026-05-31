@@ -1478,7 +1478,7 @@ func _reset_building_state() -> void:
 
 
 func is_current_level_boss() -> bool:
-	return current_level % 10 == 0
+	return current_level % ZoneConfig.BOSS_LEVEL_INTERVAL == 0
 
 
 func setup_current_level() -> void:
