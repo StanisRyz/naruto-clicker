@@ -2,6 +2,94 @@
 
 ---
 
+## Partner & Settlement Economy Pass v1 (2026-05-31)
+
+Latest session: ~7m 10s, level 40, 94% kill income, 5% task income, avg TTK 0.62s, boss TTK 6.6s, 0 boss fails, 0 abilities used.
+
+### Diagnosis
+
+- Partner 1 had too much DPS for its cost — made manual clicks irrelevant early.
+- Repeated Partner 1 purchases created a fast idle DPS snowball.
+- Later partners were not proportionally attractive vs massing Partner 1.
+- Settlement buildings were cheap relative to their % bonuses once partner DPS scaled.
+
+### Changes made
+
+**Partner DPS values** — reshaped to shift value toward mid/late partners:
+
+| Tier | Old DPS | New DPS |
+|------|---------|---------|
+| 1 | 10 | 4 |
+| 2 | 20 | 12 |
+| 3 | 35 | 30 |
+| 4 | 65 | 70 |
+| 5 | 120 | 150 |
+| 6 | 220 | 320 |
+| 7 | 410 | 680 |
+| 8 | 750 | 1,450 |
+| 9 | 1,400 | 3,100 |
+| 10 | 2,600 | 6,600 |
+| 11 | 4,800 | 14,000 |
+| 12 | 9,000 | 30,000 |
+| 13 | 16,500 | 64,000 |
+
+**Partner base costs** — raised across the board:
+
+| Tier | Old | New |
+|------|-----|-----|
+| 1 | 10 | 35 |
+| 2 | 50 | 110 |
+| 3 | 150 | 300 |
+| 4 | 400 | 750 |
+| 5 | 900 | 1,700 |
+| 6 | 1,800 | 3,800 |
+| 7 | 3,500 | 8,500 |
+| 8 | 7,000 | 19,000 |
+| 9 | 14,000 | 43,000 |
+| 10 | 28,000 | 96,000 |
+| 11 | 56,000 | 215,000 |
+| 12 | 110,000 | 480,000 |
+| 13 | 220,000 | 1,050,000 |
+
+**Partner cost growth** — slightly steeper:
+
+| Constant | Old | New |
+|----------|-----|-----|
+| `PARTNER_COST_GROWTH_EARLY` | 1.10 | 1.12 |
+| `PARTNER_COST_GROWTH_MID` | 1.13 | 1.145 |
+| `PARTNER_COST_GROWTH_LATE` | 1.16 | 1.17 |
+
+**Settlement building base costs** — raised to match % bonus value:
+
+| Building | Old | New |
+|----------|-----|-----|
+| Training Camp | 25 | 500 |
+| Market | 75 | 750 |
+| Knight Hut | 150 | 1,000 |
+| War Banner | 500 | 1,800 |
+| Clock Tower | 1,200 | 2,600 |
+| Boss Shrine | 3,000 | 4,000 |
+
+**Building cost growth**: 1.18 → **1.22**
+
+### Intentionally not changed
+
+- Partner count, names, IDs, skill IDs, milestone levels.
+- Building names, bonus types, effect per level (+1%/level).
+- Enemy HP/reward curves.
+- Task reward scales.
+- Hero cost growth, ability costs/durations, combo, shop, prestige.
+
+### Target metrics for next test
+
+- Manual clicks should remain relevant for the first several minutes.
+- Partner DPS should grow more gradually.
+- Later partner unlocks should feel attractive vs massing early ones.
+- Settlement buildings should feel like a mid-game investment.
+- Level ~25–35 in 7–10 minutes of almost-idle play.
+
+---
+
 ## Balance Adjustment Pass v2 (2026-05-31)
 
 Second real playtest after Pass v1. Same setup: fresh save, almost idle, ~8 minutes.

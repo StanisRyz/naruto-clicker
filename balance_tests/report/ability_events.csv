@@ -1,0 +1,4 @@
+timestamp_sec,event_type,current_level,max_unlocked_level,current_zone_index,enemy_type,enemy_name,gold,gems,character_level,click_damage,partner_dps,auto_transition_enabled,defeated_on_level,enemy_start_hp,enemy_reward_gold,enemy_ttk_sec,was_boss,was_elite,level_cleared,level_changed,new_level,enemies_defeated_total,boss_hp_remaining,boss_max_hp,boss_retry_tokens,retry_will_be_used,returned_to_level,purchase_category,item_id,cost,success,not_enough_gold,task_id,task_reward_gold,ability_id,ability_rank,previous_level,level_time_sec,gold_earned_on_level,kills_on_level
+406.35,ability_used,36,36,3,normal,Dark Scout,5449,0,65,1056,8382,true,,,,,,,,,,,,,,,,,,,,,,,autoclick,3,,,,
+406.57,ability_used,36,36,3,normal,Dark Scout,5449,0,65,1056,8382,true,,,,,,,,,,,,,,,,,,,,,,,gold_bonus,2,,,,
+406.85,ability_used,36,36,3,elite,Elite Shadow Fighter,6704,0,65,2112,8382,true,,,,,,,,,,,,,,,,,,,,,,,focus_burst,0,,,,

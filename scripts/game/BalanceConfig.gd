@@ -47,16 +47,16 @@ const HERO_SKILL_COST_MULTIPLIERS: Array = [4, 7, 11, 17, 26]
 
 
 # --- Partners ---
-const PARTNER_DPS_VALUES: Array = [10, 20, 35, 65, 120, 220, 410, 750, 1400, 2600, 4800, 9000, 16500]
-# Ratios ~1.85× per tier — within the 1.7–2.2× target range. No change in this pass.
+const PARTNER_DPS_VALUES: Array = [4, 12, 30, 70, 150, 320, 680, 1450, 3100, 6600, 14000, 30000, 64000]
+# Partner 1 is a weak idle assistant; mid partners carry mid game; later partners are long-term goals.
 
-const PARTNER_BASE_COSTS: Array = [10, 50, 150, 400, 900, 1800, 3500, 7000, 14000, 28000, 56000, 110000, 220000]
+const PARTNER_BASE_COSTS: Array = [35, 110, 300, 750, 1700, 3800, 8500, 19000, 43000, 96000, 215000, 480000, 1050000]
 
 # Segmented adaptive exponential cost by owned count:
 # cost(count) = base_cost * growth^count, boundary applied continuously
-const PARTNER_COST_GROWTH_EARLY: float = 1.10   # counts 0–99
-const PARTNER_COST_GROWTH_MID: float = 1.13     # counts 100–249
-const PARTNER_COST_GROWTH_LATE: float = 1.16    # counts 250+
+const PARTNER_COST_GROWTH_EARLY: float = 1.12   # counts 0–99
+const PARTNER_COST_GROWTH_MID: float = 1.145    # counts 100–249
+const PARTNER_COST_GROWTH_LATE: float = 1.17    # counts 250+
 const PARTNER_COST_MID_START_COUNT: int = 100
 const PARTNER_COST_LATE_START_COUNT: int = 250
 
@@ -116,8 +116,8 @@ const ABILITY_SKILL_COST_MULTIPLIERS: Array = [1, 3, 7, 13, 22]
 
 # --- Settlement — exponential building cost growth ---
 # cost(count) = base_cost * BUILDING_COST_GROWTH^count
-const BUILDING_BASE_COSTS: Array = [25, 75, 150, 500, 1200, 3000]
-const BUILDING_COST_GROWTH: float = 1.18
+const BUILDING_BASE_COSTS: Array = [500, 750, 1000, 1800, 2600, 4000]
+const BUILDING_COST_GROWTH: float = 1.22
 const BUILDING_BONUS_PERCENT_PER_LEVEL: int = 1
 # Positive effects (partner DPS, gold, click damage, boss gold): additive percent
 # Cooldown reduction uses diminishing returns: 100/(100+raw_percent)

@@ -1,24 +1,24 @@
 Balance Playtest Report
 ============================================================
   Source:                 balance_tests/balance_playtest.csv
-  Generated:              2026-05-31 10:23:53
-  Total CSV rows:         477
+  Generated:              2026-05-31 10:46:10
+  Total CSV rows:         523
 
 SESSION
 ----------------------------------------
-  Duration:               7m 10s  (431.0 s)
+  Duration:               7m 34s  (454.9 s)
   Highest level:          40
   Max unlocked:           41
 
 ENEMIES
 ----------------------------------------
-  Total killed:           391
-  Bosses killed:          31
+  Total killed:           404
+  Bosses killed:          43
   Boss fails:             0
-  Avg enemy TTK:          0.620 s
-  Median enemy TTK:       0.501 s
-  Avg boss TTK:           6.615 s
-  Median boss TTK:        6.298 s
+  Avg enemy TTK:          0.711 s
+  Median enemy TTK:       0.542 s
+  Avg boss TTK:           4.310 s
+  Median boss TTK:        3.301 s
 
 FRICTION MILESTONES
 ----------------------------------------
@@ -29,24 +29,22 @@ FRICTION MILESTONES
 
 GOLD ECONOMY
 ----------------------------------------
-  Kill rewards:                211,047  (94%)
-  Task rewards:                 13,286  (5%)
+  Kill rewards:                199,131  (86%)
+  Task rewards:                 31,352  (13%)
   Shop rewards:                      0  (0%)  (gold packs only)
-  Gold spent:                  209,467
+  Gold spent:                  216,642
 
 PLAYER ACTIONS
 ----------------------------------------
-  Purchases (ok):         37
-  Tasks claimed:          10
-  Abilities used:         0
-  Purchases <10m:         37
+  Purchases (ok):         61
+  Tasks claimed:          14
+  Abilities used:         3
+  Purchases <10m:         61
 
 TUNING HINTS
 ----------------------------------------
-  • No boss fails across 31 bosses. If the game feels too easy, consider
+  • No boss fails across 43 bosses. If the game feels too easy, consider
     raising BOSS_HP_MULTIPLIER.
-  • Player reached level 40 in 7.2 min (5.6 levels/min — fast). Consider
+  • Player reached level 40 in 7.6 min (5.3 levels/min — fast). Consider
     raising ENEMY_HP_GROWTH or HERO_COST_GROWTH_EARLY.
-  • No active abilities used. Player may not have unlocked them or may not
-    notice the ability bar — check unlock-level pacing.
 
