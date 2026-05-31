@@ -89,6 +89,26 @@ const AUTOCLICK_BASE_HITS_PER_SEC: float = 20.0
 const AUTOCLICK_BASE_DURATION_SEC: int = 15
 const AUTOCLICK_RANK_DURATION_BONUS_SEC: int = 2
 const AUTOCLICK_RANK_RATE_STEP: float = 0.15
+const AUTOCLICK_COOLDOWN_SEC: float = 90.0
+
+# Gold Bonus
+const GOLD_BONUS_BASE_DURATION_SEC: float = 30.0
+const GOLD_BONUS_COOLDOWN_SEC: float = 180.0
+
+# Focus Burst
+const FOCUS_BURST_BASE_DURATION_SEC: float = 12.0
+const FOCUS_BURST_COOLDOWN_SEC: float = 120.0
+
+# Rally
+const RALLY_BASE_DURATION_SEC: float = 20.0
+const RALLY_COOLDOWN_SEC: float = 150.0
+
+# Combo
+const COMBO_FILL_PER_CLICK: float = 1.0
+const COMBO_DECAY_PER_SECOND: float = 5.0
+const COMBO_DAMAGE_PER_PERCENT: float = 0.01
+const COMBO_EMPOWERED_MULTIPLIER: float = 3.0
+const COMBO_EMPOWERED_DURATION_SEC: float = 10.0
 
 # Ability skill cost = ability_purchase_cost * multiplier_at_skill_index
 const ABILITY_SKILL_COST_MULTIPLIERS: Array = [1, 3, 7, 13, 22]

@@ -8,17 +8,17 @@ var autoclick_time_left: float = 0.0
 var gold_bonus_time_left: float = 0.0
 var focus_burst_time_left: float = 0.0
 var rally_time_left: float = 0.0
-var autoclick_duration: float = 15.0
-var autoclick_cooldown_duration: float = 60.0
+var autoclick_duration: float = BalanceConfig.AUTOCLICK_BASE_DURATION_SEC
+var autoclick_cooldown_duration: float = BalanceConfig.AUTOCLICK_COOLDOWN_SEC
 var autoclick_cooldown_left: float = 0.0
-var gold_bonus_duration: float = 45.0
-var gold_bonus_cooldown_duration: float = 300.0
+var gold_bonus_duration: float = BalanceConfig.GOLD_BONUS_BASE_DURATION_SEC
+var gold_bonus_cooldown_duration: float = BalanceConfig.GOLD_BONUS_COOLDOWN_SEC
 var gold_bonus_cooldown_left: float = 0.0
-var focus_burst_duration: float = 20.0
-var focus_burst_cooldown_duration: float = 120.0
+var focus_burst_duration: float = BalanceConfig.FOCUS_BURST_BASE_DURATION_SEC
+var focus_burst_cooldown_duration: float = BalanceConfig.FOCUS_BURST_COOLDOWN_SEC
 var focus_burst_cooldown_left: float = 0.0
-var rally_duration: float = 30.0
-var rally_cooldown_duration: float = 180.0
+var rally_duration: float = BalanceConfig.RALLY_BASE_DURATION_SEC
+var rally_cooldown_duration: float = BalanceConfig.RALLY_COOLDOWN_SEC
 var rally_cooldown_left: float = 0.0
 var autoclick_interval: float = 0.05
 var autoclick_interval_epsilon: float = 0.000001
@@ -31,12 +31,12 @@ var enemy_respawn_delay: float = 0.2
 var enemy_transition_token: int = 0
 var combo_meter_value: float = 0.0
 var combo_meter_max: float = 100.0
-var combo_gain_per_manual_click: float = 1.0
-var combo_decay_per_second: float = 1.0
+var combo_gain_per_manual_click: float = BalanceConfig.COMBO_FILL_PER_CLICK
+var combo_decay_per_second: float = BalanceConfig.COMBO_DECAY_PER_SECOND
 var combo_empowered_active: bool = false
 var combo_empowered_time_left: float = 0.0
-var combo_empowered_duration: float = 10.0
-var combo_empowered_multiplier: float = 3.0
+var combo_empowered_duration: float = BalanceConfig.COMBO_EMPOWERED_DURATION_SEC
+var combo_empowered_multiplier: float = BalanceConfig.COMBO_EMPOWERED_MULTIPLIER
 var _autosave_timer: float = 0.0
 const _AUTOSAVE_INTERVAL: float = 10.0
 
@@ -564,7 +564,7 @@ func _on_autoclick_requested() -> void:
 		return
 
 	state.autoclick_active = true
-	var rank_bonus_seconds: float = 2.0 * rank
+	var rank_bonus_seconds: float = float(BalanceConfig.AUTOCLICK_RANK_DURATION_BONUS_SEC) * rank
 	autoclick_time_left = _get_scaled_duration(autoclick_duration + rank_bonus_seconds, false)
 	autoclick_accumulator = 0.0
 	state.total_autoclick_activations += 1
@@ -692,7 +692,7 @@ func _get_manual_combo_multiplier() -> float:
 	if combo_empowered_active:
 		return combo_empowered_multiplier
 
-	return 1.0 + combo_meter_value / 100.0
+	return 1.0 + combo_meter_value * BalanceConfig.COMBO_DAMAGE_PER_PERCENT
 
 
 func _update_combo_panel() -> void:

@@ -6,6 +6,100 @@ Do not edit formula vars directly in ClickerState.gd.
 
 ---
 
+## Active Systems & Friction Pass v1 (implemented 2026-05-31)
+
+Goals:
+- Centralize all ability duration, cooldown, and combo constants into BalanceConfig
+- Tune ability timings to match design identity (early helper vs farming vs boss tool vs DPS burst)
+- Tune combo decay to require active play for empowered state
+- Confirm boss friction, settlement, prestige, and task/shop values are consistent
+
+### Ability timing constants
+
+All durations and cooldowns are now defined in BalanceConfig and read by ClickerScreen.
+
+| Ability | Duration | Cooldown | Rank bonus | Multiplier formula |
+|---------|----------|----------|------------|-------------------|
+| Autoclick | 15s base | 90s | +2s/rank | rate ×(1 + 0.15×rank) |
+| Gold Bonus | 30s | 180s | — | 2.0 + 0.25×rank |
+| Focus Burst | 12s | 120s | War Banner | 2.0 + 0.25×rank |
+| Rally | 20s | 150s | War Banner | 2.0 + 0.25×rank |
+
+Ability identity:
+- **Autoclick** — early active helper; fills combo and helps beat early bosses.
+- **Gold Bonus** — farming/economy accelerator; 30s on, 3 min off.
+- **Focus Burst** — boss/checkpoint click damage burst; 12s on, 2 min off. Multiplier applied at activation.
+- **Rally** — partner DPS burst for sustained fights; 20s on, 2.5 min off.
+
+Previous untuned values (before this pass):
+- Autoclick cooldown: 60s (too short — felt free)
+- Gold Bonus: 45s duration, 300s cooldown (too long duration, too long cooldown)
+- Focus Burst: 20s duration (too long for a burst tool)
+- Rally: 30s duration, 180s cooldown
+
+### Combo constants
+
+| Constant | Value | Notes |
+|----------|-------|-------|
+| `COMBO_FILL_PER_CLICK` | 1.0 | Each manual click fills 1% |
+| `COMBO_DECAY_PER_SECOND` | 5.0 | Idle decay — 20s to empty from full |
+| `COMBO_DAMAGE_PER_PERCENT` | 0.01 | +1% damage per 1% combo fill |
+| `COMBO_EMPOWERED_MULTIPLIER` | 3.0 | ×3 click damage at 100% |
+| `COMBO_EMPOWERED_DURATION_SEC` | 10.0 | Empowered lasts 10s then resets |
+
+Decay changed from 1.0/s to 5.0/s so casual slow tapping stays below 50% and only active clicking or autoclick reaches empowered. Partner DPS does not fill combo.
+
+Damage formula: `multiplier = 1.0 + meter_value × COMBO_DAMAGE_PER_PERCENT`
+At 50%: ×1.5. At 100% (empowered): ×3.0 for 10s.
+
+### Boss friction (unchanged, confirmed correct)
+
+- Boss every 10th level; boss HP ×8, reward ×10, timer 30s.
+- Boss fail: returns one level back, disables auto-transition.
+- Boss Retry Token: prevents failure once (resets boss timer instead).
+- Boss HP multiplier was softened from research ×10 to ×8 for first pass. Raise after playtesting.
+
+### Settlement buildings (confirmed correct, unchanged)
+
+| Index | Name | Effect |
+|-------|------|--------|
+| 0 | Training Camp | +1%/level partner DPS (additive) |
+| 1 | Market | +1%/level gold from enemies (additive) |
+| 2 | Knight Hut | +1%/level click damage (additive) |
+| 3 | War Banner | +1%/level ability duration (additive) |
+| 4 | Clock Tower | cooldown reduction via diminishing returns: 100/(100+raw%) |
+| 5 | Boss Shrine | +1%/level boss gold reward (additive) |
+
+Settlement is meaningful after early game but not mandatory. Clock Tower cooldown reduction correctly uses diminishing returns (can never reach 0).
+
+### Prestige timing (unchanged, confirmed reasonable)
+
+- `PRESTIGE_REQUIRED_LEVEL = 50` — first prestige point available at stage 50.
+- `PRESTIGE_CHARACTER_INTERVAL = 100` — +1 point per 100 hero levels.
+- `PRESTIGE_TALENT_BONUS_PERCENT_PER_LEVEL = 5` — 5% bonus per talent level.
+
+First prestige expected at 1–3 hours depending on play style. Not changed in this pass.
+
+### Task and shop rewards (unchanged, confirmed consistent)
+
+- Task reward scales with current zone enemy reward × reward_scale coefficient.
+- Task Reward Boost (shop) applies once to next claimed task then resets to ×1.
+- Gold Bonus ability affects **enemy gold only**, not shop or task rewards.
+- Shop ETV values kept conservative: Small = 5 min ETV, Large = 20 min ETV.
+
+### Intentionally not changed in this pass
+
+- No new abilities, buildings, partners, or currencies.
+- No ability ×5 multiplier — current ×2.0–×3.25 range is safer for first test.
+- No real ads, Yandex payments, cloud saves, or analytics.
+- No save format changes.
+- No UI layout changes.
+- Prestige required level unchanged (50); lower to 40 only if first prestige proves too late.
+- Boss HP multiplier unchanged (×8); raise only after manual testing confirms game is too easy.
+- Shop ETV values unchanged; raise after real monetization pass.
+
+---
+
 ## Power Progression Model C v1 (implemented 2026-05-30)
 
 Goals:
