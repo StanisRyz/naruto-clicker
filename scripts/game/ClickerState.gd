@@ -1,4 +1,4 @@
-﻿class_name ClickerState
+class_name ClickerState
 extends RefCounted
 
 const SaveAdapter = preload("res://scripts/game/save/ClickerStateSaveAdapter.gd")
@@ -18,7 +18,7 @@ var character_level: int = 1
 var character_level_upgrade_cost: int = 5
 var current_level: int = 1
 var max_unlocked_level: int = 1
-var auto_stage_advance_enabled: bool = true
+var auto_stage_advance_enabled: bool =	 true
 var cleared_level_ids: Dictionary = {}
 var level_enemy_progress: Dictionary = {}
 var enemies_defeated_on_level: int = 0

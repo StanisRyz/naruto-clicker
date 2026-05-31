@@ -144,3 +144,13 @@ Missing files fall back to the default game asset catalog placeholder (no crash)
 | Prestige talent icons | `talent_01.png` … `talent_06.png` |
 
 See `docs/ASSET_FOLDERS.md` for a complete folder listing with full paths.
+
+## Top HUD layout
+
+The top HUD (`PrimaryStatsPanel`) uses a single horizontal row containing 6 elements:
+
+Gold | Gems | Hero Level | Click Damage | Partner DPS | Settings
+
+Each stat icon is displayed at **72×72 px**. Recommended source image size: 128×128 or 256×256 for sharper scaling. Each stat card is 108×72 px (72 px icon + 2 px gap + 34 px value label). The settings button is 72×72 px. Total panel width: 700 px, centered with at least 10 px side margins on a 720 px screen.
+
+Value labels use compact number formatting: `999`, `1.2K`, `45.0K`, `3.4M`, `1.2B` to prevent overflow.
