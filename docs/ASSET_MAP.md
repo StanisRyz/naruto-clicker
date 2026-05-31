@@ -112,3 +112,16 @@ Only these zone folders need a `background.png`:
 - `assets/images/backgrounds/zone_19/`
 
 Missing files fall back to the default game asset catalog placeholder (no crash).
+
+## Expected filenames
+
+| Asset type | Filename(s) |
+|------------|-------------|
+| Enemy state | `healthy.png`, `hit.png`, `wounded.png`, `defeated.png` |
+| Background | `background.png` |
+| Partner / ability / building / shop / task / UI icon | `icon.png` |
+| Partner skill icons | `skill_01.png` … `skill_05.png` |
+| Ability rank icons | `rank_01.png` … `rank_05.png` |
+| Prestige talent icons | `talent_01.png` … `talent_06.png` |
+
+See `docs/ASSET_FOLDERS.md` for a complete folder listing with full paths.
