@@ -32,15 +32,6 @@ Each slot folder (`enemy_01`, `enemy_02`, `enemy_03`, `elite_01`) needs four fil
 - `wounded.png`
 - `defeated.png`
 
-### Optional override folders
-
-These folders exist but are no longer required source folders. They may serve as future per-zone overrides without code changes. Do not delete them.
-
-- `assets/images/enemies/zone_07/` (enemy_01–03, elite_01)
-- `assets/images/enemies/zone_09/` (enemy_01–03, elite_01)
-- `assets/images/enemies/zone_15/` (enemy_01–03, elite_01)
-- `assets/images/enemies/zone_19/` (enemy_01–03, elite_01)
-
 ### Boss folders
 
 Every gameplay zone requires a unique `boss_01` folder, regardless of normal/elite reuse.
@@ -48,6 +39,8 @@ Every gameplay zone requires a unique `boss_01` folder, regardless of normal/eli
 Zones 1–21: `assets/images/enemies/zone_01/boss_01/` through `zone_21/boss_01/`
 
 Each boss folder needs the same four state files listed above.
+
+Note: zone_07, zone_09, zone_15, and zone_19 enemy directories exist with only `boss_01/` inside — this is correct, as those zones are not normal/elite source zones but do require unique bosses.
 
 ---
 
@@ -70,13 +63,6 @@ Only source zones listed in the reuse map need a `background.png`.
 | zone_16     | 16                   |
 | zone_17     | 17, 18, 19           |
 | zone_20     | 20                   |
-
-### Optional override background folders
-
-- `assets/images/backgrounds/zone_07/`
-- `assets/images/backgrounds/zone_09/`
-- `assets/images/backgrounds/zone_15/`
-- `assets/images/backgrounds/zone_19/`
 
 ---
 

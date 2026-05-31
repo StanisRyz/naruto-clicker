@@ -20,29 +20,29 @@ These keys work only when `BuildConfig.IS_DEBUG_BUILD = true`. Nothing is saved 
 Normal and elite enemy textures, and background textures, are shared across zones to reduce required assets.
 Every boss uses its own unique zone folder.
 
-| Zone | Levels  | Enemy asset zone | Background asset zone | Boss asset zone |
-|------|---------|------------------|-----------------------|-----------------|
-| 1    | 1–10    | 1                | 1                     | 1               |
-| 2    | 11–20   | 1                | 2                     | 2               |
-| 3    | 21–30   | 3                | 3                     | 3               |
-| 4    | 31–40   | 3                | 4                     | 4               |
-| 5    | 41–50   | 5                | 5                     | 5               |
-| 6    | 51–60   | 5                | 5                     | 6               |
-| 7    | 61–70   | 1                | 1                     | 7               |
-| 8    | 71–80   | 8                | 8                     | 8               |
-| 9    | 81–90   | 8                | 8                     | 9               |
-| 10   | 91–100  | 10               | 10                    | 10              |
-| 11   | 101–110 | 11               | 11                    | 11              |
-| 12   | 111–120 | 11               | 11                    | 12              |
-| 13   | 121–130 | 1                | 1                     | 13              |
-| 14   | 131–140 | 1                | 1                     | 14              |
-| 15   | 141–150 | 8                | 8                     | 15              |
-| 16   | 151–160 | 16               | 16                    | 16              |
-| 17   | 161–170 | 17               | 17                    | 17              |
-| 18   | 171–180 | 17               | 17                    | 18              |
-| 19   | 181–190 | 17               | 17                    | 19              |
-| 20   | 191–200 | 20               | 20                    | 20              |
-| 21   | 201–210 | 10               | 10                    | 21              |
+| Gameplay Zone | Levels  | Enemy Asset Zone | Background Asset Zone | Boss Asset Zone |
+|---------------|---------|------------------|-----------------------|-----------------|
+| 1             | 1–10    | 1                | 1                     | 1               |
+| 2             | 11–20   | 1                | 2                     | 2               |
+| 3             | 21–30   | 3                | 3                     | 3               |
+| 4             | 31–40   | 3                | 4                     | 4               |
+| 5             | 41–50   | 5                | 5                     | 5               |
+| 6             | 51–60   | 5                | 5                     | 6               |
+| 7             | 61–70   | 1                | 1                     | 7               |
+| 8             | 71–80   | 8                | 8                     | 8               |
+| 9             | 81–90   | 8                | 8                     | 9               |
+| 10            | 91–100  | 10               | 10                    | 10              |
+| 11            | 101–110 | 11               | 11                    | 11              |
+| 12            | 111–120 | 11               | 11                    | 12              |
+| 13            | 121–130 | 1                | 1                     | 13              |
+| 14            | 131–140 | 1                | 1                     | 14              |
+| 15            | 141–150 | 8                | 8                     | 15              |
+| 16            | 151–160 | 16               | 16                    | 16              |
+| 17            | 161–170 | 17               | 17                    | 17              |
+| 18            | 171–180 | 17               | 17                    | 18              |
+| 19            | 181–190 | 17               | 17                    | 19              |
+| 20            | 191–200 | 20               | 20                    | 20              |
+| 21            | 201–210 | 10               | 10                    | 21              |
 
 **Key reuse notes:**
 - Zones 2, 7, 13, 14 reuse enemy assets from zone 1. Zone 2 has its own background.
@@ -51,11 +51,11 @@ Every boss uses its own unique zone folder.
 - Zones 10, 21 share both enemies and background (zone 10 assets).
 - Zones 11, 12 share both enemies and background (zone 11 assets).
 - Zones 17, 18, 19 share both enemies and background (zone 17 assets).
-- Zone 3 has its own assets; zone 4 reuses zone 3 enemies but has its own background.
+- Zone 4 reuses zone 3 enemies but has its own background.
 
 ## Required image folders
 
-### Normal and elite enemy folders
+### Normal and elite enemy source folders
 
 Only these zone folders need `enemy_01`, `enemy_02`, `enemy_03`, and `elite_01` sub-folders:
 
@@ -96,19 +96,6 @@ Only these zone folders need a `background.png`:
 - `assets/images/backgrounds/zone_20/`
 
 Missing files fall back to the default game asset catalog placeholder (no crash).
-
-### Optional override folders
-
-These folders exist but are no longer required source folders. They may be used as optional per-zone overrides in the future. Do not delete them.
-
-- `assets/images/enemies/zone_07/` (enemy_01–03, elite_01)
-- `assets/images/enemies/zone_09/` (enemy_01–03, elite_01)
-- `assets/images/enemies/zone_15/` (enemy_01–03, elite_01)
-- `assets/images/enemies/zone_19/` (enemy_01–03, elite_01)
-- `assets/images/backgrounds/zone_07/`
-- `assets/images/backgrounds/zone_09/`
-- `assets/images/backgrounds/zone_15/`
-- `assets/images/backgrounds/zone_19/`
 
 ## Expected filenames
 
