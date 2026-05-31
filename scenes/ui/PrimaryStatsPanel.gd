@@ -5,7 +5,6 @@ signal settings_requested
 
 @onready var gold_value_label: Label = $HBoxContainer/GoldCard/GoldValueLabel
 @onready var gems_value_label: Label = $HBoxContainer/GemsCard/GemsValueLabel
-@onready var character_level_value_label: Label = $HBoxContainer/CharacterLevelCard/CharacterLevelValueLabel
 @onready var damage_value_label: Label = $HBoxContainer/DamageCard/DamageValueLabel
 @onready var partner_dps_value_label: Label = $HBoxContainer/PartnerDpsCard/PartnerDpsValueLabel
 @onready var settings_button: Button = $HBoxContainer/SettingsCard/SettingsButton
@@ -18,7 +17,6 @@ func _ready() -> void:
 func update_view(state: ClickerState) -> void:
 	gold_value_label.text = NumberFormatter.compact(state.gold)
 	gems_value_label.text = NumberFormatter.compact(state.gems)
-	character_level_value_label.text = NumberFormatter.compact(state.character_level)
 	damage_value_label.text = NumberFormatter.compact(state.click_damage)
 	partner_dps_value_label.text = NumberFormatter.compact(state.get_final_partner_dps(false))
 

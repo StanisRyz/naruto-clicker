@@ -41,7 +41,7 @@ func hide_sheet() -> void:
 
 func update_view(state: ClickerState) -> void:
 	current_state = state
-	header_resource_value_label.text = "%d" % state.gold
+	header_resource_value_label.text = NumberFormatter.compact(state.gold)
 	upgrade_panel.update_view(state)
 	upgrade_skill_popup.refresh_view(state)
 

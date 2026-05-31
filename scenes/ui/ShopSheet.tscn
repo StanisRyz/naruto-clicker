@@ -55,15 +55,16 @@ layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="ImageHolder" type="ColorRect" parent="PanelContainer/MarginContainer/VBoxContainer/Header/HeaderResourceContainer"]
-custom_minimum_size = Vector2(32, 32)
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
 mouse_filter = 2
 color = Color(1, 1, 1, 1)
 script = ExtResource("3_image_slot")
 asset_key = "header.gems"
+show_fallback_behind_texture = false
 
 [node name="ResourceValueLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/Header/HeaderResourceContainer"]
-custom_minimum_size = Vector2(96, 32)
+custom_minimum_size = Vector2(96, 56)
 layout_mode = 2
 text = "0"
 vertical_alignment = 1

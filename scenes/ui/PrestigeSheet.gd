@@ -29,7 +29,7 @@ func hide_sheet() -> void:
 
 
 func update_view(state: ClickerState) -> void:
-	header_resource_value_label.text = "%d" % state.prestige_points_available
+	header_resource_value_label.text = NumberFormatter.compact(state.prestige_points_available)
 	prestige_panel.update_view(state)
 
 
