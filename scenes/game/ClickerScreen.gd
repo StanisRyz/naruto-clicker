@@ -124,7 +124,7 @@ func _process(delta: float) -> void:
 	if boss_timer_active and not enemy_transition_locked:
 		if not state.is_debug_visual_test_mode_enabled():
 			boss_time_left = maxf(boss_time_left - delta, 0.0)
-		game_field.update_boss_timer(boss_time_left, boss_timer_active)
+		progress_info_panel.update_boss_timer(boss_time_left, boss_timer_active)
 
 		if boss_time_left <= 0.0 and not state.is_debug_visual_test_mode_enabled():
 			_fail_boss_level()
@@ -176,7 +176,7 @@ func _update_stage_ui() -> void:
 
 func _update_combat_ui() -> void:
 	game_field.update_view(state)
-	game_field.update_boss_timer(boss_time_left, boss_timer_active)
+	progress_info_panel.update_boss_timer(boss_time_left, boss_timer_active)
 
 
 func _update_ability_bar() -> void:
@@ -553,7 +553,7 @@ func _sync_boss_timer() -> void:
 		boss_timer_active = false
 		boss_time_left = 0.0
 
-	game_field.update_boss_timer(boss_time_left, boss_timer_active)
+	progress_info_panel.update_boss_timer(boss_time_left, boss_timer_active)
 
 
 func _fail_boss_level() -> void:
@@ -779,7 +779,7 @@ func _handle_defeat_result(result: Dictionary, was_boss_level: bool) -> void:
 	if was_boss_level:
 		boss_timer_active = false
 		boss_time_left = 0.0
-		game_field.update_boss_timer(boss_time_left, boss_timer_active)
+		progress_info_panel.update_boss_timer(boss_time_left, boss_timer_active)
 
 	_update_ui()
 	_finish_enemy_transition_after_delay(transition_token)

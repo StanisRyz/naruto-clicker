@@ -1,5 +1,6 @@
-[gd_scene load_steps=16 format=3 uid="uid://iyfdkc71gxgi"]
+[gd_scene load_steps=17 format=3 uid="uid://iyfdkc71gxgi"]
 
+[ext_resource type="Theme" path="res://themes/main_theme.tres" id="16_main_theme"]
 [ext_resource type="Script" uid="uid://dnim7mf4hei23" path="res://scenes/game/ClickerScreen.gd" id="1_ymqc8"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PrimaryStatsPanel.tscn" id="2_primary"]
 [ext_resource type="PackedScene" path="res://scenes/ui/GameField.tscn" id="3_uv1kb"]
@@ -23,6 +24,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("16_main_theme")
 script = ExtResource("1_ymqc8")
 metadata/_edit_horizontal_guides_ = [955.0]
 

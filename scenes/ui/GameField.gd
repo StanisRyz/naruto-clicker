@@ -27,7 +27,6 @@ var _current_tex: Texture2D = null
 
 @onready var background_image_holder = $BackgroundImageHolder  # ImageSlot (ColorRect subclass)
 @onready var enemy_image_holder = $EnemyImageHolder  # ImageSlot (ColorRect subclass)
-@onready var boss_timer_label: Label = $GameFieldContent/BossTimerLabel
 @onready var defeat_feedback_label: Label = $FeedbackLayer/DefeatFeedbackLabel
 
 
@@ -74,12 +73,6 @@ func update_enemy_visual_state(state: ClickerState) -> void:
 		return
 
 	enemy_image_holder.set_direct_texture(_current_tex, current_health_color, false)
-
-
-func update_boss_timer(time_left: float, is_active: bool) -> void:
-	boss_timer_label.visible = is_active
-	if is_active:
-		boss_timer_label.text = "Boss Time: %.1fs" % maxf(time_left, 0.0)
 
 
 func play_hit_feedback(damage: int) -> void:
