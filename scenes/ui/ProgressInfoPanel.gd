@@ -20,6 +20,6 @@ func update_view(state: ClickerState) -> void:
 			state.enemies_required_per_level,
 		]
 	enemy_name_label.text = "%s" % state.enemy_name
-	enemy_hp_label.text = "HP %d / %d" % [state.target_hp, state.target_max_hp]
+	enemy_hp_label.text = "HP %s / %s" % [NumberFormatter.compact(state.target_hp), NumberFormatter.compact(state.target_max_hp)]
 	enemy_hp_progress_bar.max_value = maxf(float(state.target_max_hp), 1.0)
 	enemy_hp_progress_bar.value = clampf(float(state.target_hp), 0.0, enemy_hp_progress_bar.max_value)

@@ -1,0 +1,17 @@
+class_name NumberFormatter
+extends RefCounted
+
+# Switches to the next suffix at 100 of the current unit to keep strings short.
+# Example: 304400 shows as 0.3M instead of 304.4K.
+static func compact(value: int) -> String:
+	var abs_value: float = abs(float(value))
+	var sign_str: String = "-" if value < 0 else ""
+	if abs_value >= 100_000_000_000.0:
+		return "%s%.1fT" % [sign_str, abs_value / 1_000_000_000_000.0]
+	if abs_value >= 100_000_000.0:
+		return "%s%.1fB" % [sign_str, abs_value / 1_000_000_000.0]
+	if abs_value >= 100_000.0:
+		return "%s%.1fM" % [sign_str, abs_value / 1_000_000.0]
+	if abs_value >= 1_000.0:
+		return "%s%.1fK" % [sign_str, abs_value / 1_000.0]
+	return str(value)

@@ -86,13 +86,13 @@ func _update_hero_level_row(state: ClickerState) -> void:
 	var bulk_cost: int = state.get_character_level_bulk_display_cost(selected_buy_mode)
 	var next_milestone: int = state.get_next_milestone(state.character_level)
 
-	name_status_label.text = "Hero Level | Level %d | Damage %d" % [state.character_level, state.click_damage]
+	name_status_label.text = "Hero Level | Level %d | Damage %s" % [state.character_level, NumberFormatter.compact(state.click_damage)]
 	if next_milestone > 0:
-		effect_label.text = "Damage %d | Next x2 at Lv %d" % [state.click_damage, next_milestone]
+		effect_label.text = "Damage %s | Next x2 at Lv %d" % [NumberFormatter.compact(state.click_damage), next_milestone]
 	else:
-		effect_label.text = "Damage %d | Max milestones" % state.click_damage
+		effect_label.text = "Damage %s | Max milestones" % NumberFormatter.compact(state.click_damage)
 	button.disabled = false
-	button.text = "Upgrade x%d - Cost: %d" % [bulk_count, bulk_cost]
+	button.text = "Upgrade x%d - Cost: %s" % [bulk_count, NumberFormatter.compact(bulk_cost)]
 	var skills: Array[Dictionary] = state.get_hero_skills()
 	_update_skill_icon_row(skills, skill_buttons, skill_image_holders, state, true)
 
@@ -240,7 +240,7 @@ func _update_ability_unlock_button(state: ClickerState, ability_id: String, butt
 		button.disabled = true
 		button.text = "Requires Lv %d" % state.get_ability_unlock_level(ability_id)
 	else:
-		button.text = "Buy: %d" % cost
+		button.text = "Buy: %s" % NumberFormatter.compact(cost)
 		button.disabled = not state.can_buy_ability_unlock(ability_id)
 
 

@@ -153,7 +153,7 @@ Gold | Gems | Hero Level | Click Damage | Partner DPS | Settings
 
 Each stat icon is displayed at **56×56 px**. Recommended source image size: 128×128 or 256×256 for sharper scaling. The panel spans the full screen width minus 15 px on each side (690 px on a 720 px screen). All 6 elements are evenly distributed via `SIZE_EXPAND_FILL` so spacing is equal on all sides. ImageSlot `show_fallback_behind_texture = false` is set on all HUD icons so that loaded PNG icons appear without a white square background; the fallback color is still shown when an image file is missing.
 
-Value labels use compact number formatting to prevent overflow:
+All player-facing economy and power values (costs, damage, DPS, HP, gold, rewards, gems, prestige points) use `NumberFormatter.compact()` from `res://scripts/ui/NumberFormatter.gd`. Raw values are preserved in save data, balance calculations, and the playtest logger. Value labels use compact number formatting to prevent overflow:
 
 | Raw value | Displayed |
 |-----------|-----------|

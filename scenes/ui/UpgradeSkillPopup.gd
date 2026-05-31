@@ -62,7 +62,7 @@ func _update_view(state: ClickerState) -> void:
 	else:
 		requirement_label.text = "Requires: Hero Level %d" % unlock_level
 	current_label.text = "Current: %d / %d" % [state.character_level, unlock_level]
-	cost_label.text = "Cost: %d gold" % cost
+	cost_label.text = "Cost: %s gold" % NumberFormatter.compact(cost)
 
 	match skill_state:
 		"purchased":
@@ -72,7 +72,7 @@ func _update_view(state: ClickerState) -> void:
 			buy_button.disabled = true
 			buy_button.text = "Locked"
 		_:
-			buy_button.text = "Buy: %d" % cost
+			buy_button.text = "Buy: %s" % NumberFormatter.compact(cost)
 			buy_button.disabled = not _can_buy_current_skill(state)
 
 

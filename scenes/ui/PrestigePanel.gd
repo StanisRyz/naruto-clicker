@@ -90,7 +90,7 @@ func _update_prestige_action_row(total_reward: int) -> void:
 	var effect_label: Label = prestige_action_row["effect_label"]
 	var button: Button = prestige_action_row["button"]
 
-	name_gain_label.text = "Prestige | Gain %d" % total_reward
+	name_gain_label.text = "Prestige | Gain %s" % NumberFormatter.compact(total_reward)
 	effect_label.text = "Reset progress for permanent points"
 	button.disabled = total_reward <= 0
 	button.text = "Prestige"
@@ -175,7 +175,7 @@ func _update_talent_row(state: ClickerState, talent_index: int, row: Dictionary)
 	name_level_label.text = "%s | Lv %d" % [PrestigeConfig.TALENT_NAMES[talent_index], level]
 	effect_label.text = state.get_prestige_talent_description(talent_index)
 	button.disabled = state.prestige_points_available < cost
-	button.text = "Upgrade - Cost: %d" % cost
+	button.text = "Upgrade - Cost: %s" % NumberFormatter.compact(cost)
 
 
 func _create_row_stylebox() -> StyleBoxFlat:

@@ -149,14 +149,14 @@ func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionar
 	var partner_count: int = state.partner_counts[partner_index]
 	var tier_total_dps: int = state.get_partner_tier_total_dps(partner_index)
 	var next_milestone: int = state.get_next_milestone(partner_count)
-	name_count_label.text = "%s | %d | DPS %d" % [partner_name, partner_count, tier_total_dps]
+	name_count_label.text = "%s | %d | DPS %s" % [partner_name, partner_count, NumberFormatter.compact(tier_total_dps)]
 	if next_milestone > 0:
-		effect_label.text = "+%d DPS | Next x2 at %d" % [
-			BalanceConfig.PARTNER_DPS_VALUES[partner_index],
+		effect_label.text = "+%s DPS | Next x2 at %d" % [
+			NumberFormatter.compact(BalanceConfig.PARTNER_DPS_VALUES[partner_index]),
 			next_milestone,
 		]
 	else:
-		effect_label.text = "+%d DPS | Max milestones" % BalanceConfig.PARTNER_DPS_VALUES[partner_index]
+		effect_label.text = "+%s DPS | Max milestones" % NumberFormatter.compact(BalanceConfig.PARTNER_DPS_VALUES[partner_index])
 
 	var skills: Array[Dictionary] = state.get_partner_skills_for_partner(partner_index)
 	for i in range(skill_buttons.size()):
@@ -179,7 +179,7 @@ func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionar
 	var bulk_count: int = state.get_partner_bulk_display_count(partner_index, selected_buy_mode)
 	var bulk_cost: int = state.get_partner_bulk_display_cost(partner_index, selected_buy_mode)
 	button.disabled = false
-	button.text = "Hire x%d - Cost: %d" % [bulk_count, bulk_cost]
+	button.text = "Hire x%d - Cost: %s" % [bulk_count, NumberFormatter.compact(bulk_cost)]
 
 
 func set_buy_mode(mode: String) -> void:

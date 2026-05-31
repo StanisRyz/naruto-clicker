@@ -97,7 +97,7 @@ func _update_product_row(product_data: Dictionary, row: Dictionary) -> void:
 	var button: Button = row["button"]
 	var cost_gems: int = int(product_data.get("cost_gems", 0))
 
-	name_cost_label.text = "%s | %d Gems" % [String(product_data.get("name", "")), cost_gems]
+	name_cost_label.text = "%s | %s Gems" % [String(product_data.get("name", "")), NumberFormatter.compact(cost_gems)]
 	description_label.text = String(product_data.get("description", ""))
 	button.disabled = not bool(product_data.get("can_buy", false))
 	button.text = "Buy"

@@ -63,7 +63,7 @@ func _update_view(state: ClickerState) -> void:
 	description_label.text = String(skill.get("description", ""))
 	requirement_label.text = "Requires: %d %s" % [unlock_count, partner_name]
 	current_label.text = "Current: %d / %d" % [current_count, unlock_count]
-	cost_label.text = "Cost: %d gold" % cost
+	cost_label.text = "Cost: %s gold" % NumberFormatter.compact(cost)
 
 	match skill_state:
 		"purchased":
@@ -73,7 +73,7 @@ func _update_view(state: ClickerState) -> void:
 			buy_button.disabled = true
 			buy_button.text = "Locked"
 		_:
-			buy_button.text = "Buy: %d" % cost
+			buy_button.text = "Buy: %s" % NumberFormatter.compact(cost)
 			buy_button.disabled = not state.can_buy_partner_skill(current_skill_id)
 
 

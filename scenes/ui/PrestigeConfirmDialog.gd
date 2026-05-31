@@ -24,11 +24,11 @@ func show_dialog(state: ClickerState) -> void:
 	info_label.text = (
 		"Stage level: %d\n" % state.current_level
 		+ "Character level: %d\n" % state.character_level
-		+ "Stage points: +%d\n" % stage_points
-		+ "Character points: +%d\n" % character_points
-		+ "Points to gain: +%d\n" % reward
-		+ "Available after: %d\n" % available_after
-		+ "Total earned after: %d\n\n" % total_earned_after
+		+ "Stage points: +%s\n" % NumberFormatter.compact(stage_points)
+		+ "Character points: +%s\n" % NumberFormatter.compact(character_points)
+		+ "Points to gain: +%s\n" % NumberFormatter.compact(reward)
+		+ "Available after: %s\n" % NumberFormatter.compact(available_after)
+		+ "Total earned after: %s\n\n" % NumberFormatter.compact(total_earned_after)
 		+ "All normal progress will reset.\n"
 		+ "Purchased prestige talents remain."
 	)

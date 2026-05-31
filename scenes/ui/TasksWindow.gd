@@ -181,10 +181,10 @@ func _create_task_row(task_data: Dictionary) -> PanelContainer:
 
 
 func _format_progress_text(task_data: Dictionary) -> String:
-	return "%d / %d | Reward: %d gold" % [
+	return "%d / %d | Reward: %s gold" % [
 		int(task_data.get("progress", 0)),
 		int(task_data.get("target", 0)),
-		int(task_data.get("reward_gold", 0)),
+		NumberFormatter.compact(int(task_data.get("reward_gold", 0))),
 	]
 
 
