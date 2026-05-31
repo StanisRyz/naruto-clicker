@@ -30,6 +30,22 @@ No data leaves the device. Release builds disable all logging automatically.
 
 ---
 
+## Playtest Log
+
+### Session 01 — 2026-05-31 (pre-patch baseline)
+
+- Duration: ~4m 20s
+- Reset: yes. Debug gems: no. Play style: almost idle.
+- Highest level: 62. Enemies killed: 562. Bosses: 6 killed / 0 fails.
+- Avg enemy TTK: 0.449s. Median: 0.423s.
+- Avg boss TTK: 1.780s. Median: 1.845s.
+- Income: kills 41%, tasks 58%, shop 0%.
+- Gold spent: 1,263,510. Purchases: 34. Tasks claimed: 13. Abilities used: 0.
+
+**Verdict:** Progression far too fast. Tasks dominated. Bosses trivial. Patch applied: Balance Adjustment Pass v1.
+
+---
+
 ## Recommended Playtest Sessions
 
 ### Session A — Early game (5–15 min)

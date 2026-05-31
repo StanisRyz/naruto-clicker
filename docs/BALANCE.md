@@ -1,5 +1,71 @@
 # Balance Tuning Guide
 
+---
+
+## Balance Adjustment Pass v1 (2026-05-31)
+
+First real 5-minute almost-idle playtest from fresh save. No debug gems.
+
+### Playtest results
+
+| Metric | Value |
+|--------|-------|
+| Session duration | ~4m 20s |
+| Highest level | 62 |
+| Total enemies killed | 562 |
+| Bosses killed / fails | 6 / 0 |
+| Avg enemy TTK | 0.449s |
+| Avg boss TTK | 1.780s |
+| Kill income share | 41% |
+| Task income share | 58% |
+| Shop income share | 0% |
+
+### Diagnosis
+
+- Tasks dominated income at 58% — reward scales were far too high.
+- Bosses were not meaningful checkpoints — 6 kills, 0 fails, avg 1.78s TTK.
+- Enemy HP scaling was too soft — level 60 enemies died in under 0.5s.
+- Hero and partner costs ramped too slowly, enabling runaway DPS.
+- Abilities were never needed because idle DPS was sufficient.
+
+### Changes made
+
+| System | Constant | Old | New |
+|--------|----------|-----|-----|
+| Enemy HP | `ENEMY_HP_GROWTH` | 1.14 | 1.18 |
+| Boss HP | `BOSS_HP_MULTIPLIER` | 8 | 20 |
+| Boss reward | `BOSS_REWARD_MULTIPLIER` | 10 | 15 |
+| Hero cost (early) | `HERO_COST_GROWTH_EARLY` | 1.05 | 1.08 |
+| Hero cost (mid) | `HERO_COST_GROWTH_MID` | 1.10 | 1.13 |
+| Hero cost (late) | `HERO_COST_GROWTH_LATE` | 1.15 | 1.18 |
+| Partner cost (early) | `PARTNER_COST_GROWTH_EARLY` | 1.07 | 1.10 |
+| Partner cost (mid) | `PARTNER_COST_GROWTH_MID` | 1.10 | 1.13 |
+| Partner cost (late) | `PARTNER_COST_GROWTH_LATE` | 1.13 | 1.16 |
+| Task reward scales | (all 10 tasks) | 20–120 | 4–16 |
+
+### Intentionally not changed
+
+- Abilities — not used in test; need friction first before tuning them.
+- Shop — contributed 0% income; no evidence to act on.
+- Prestige — session too short; prestige not yet reached.
+- `PARTNER_DPS_VALUES` — slowing purchase cost is the correct first lever.
+- `ENEMY_HP_BASE` — growth change affects later levels more; base left at 10.
+- Boss timer, boss fail/retry behavior, boss frequency — unchanged.
+
+### Target metrics for next test
+
+- 5-min almost-idle highest level: ~15–25 (was 62).
+- Task income share: ≤25% (was 58%).
+- Avg enemy TTK: 0.8–2.0s (was 0.449s).
+- Early boss TTK: ≥5s (was 1.78s).
+- Some friction visible before level 30–40.
+
+### Next step
+
+Repeat the same 5-minute almost-idle session from a fresh save. Export CSV. Run analyzer. Compare against the metrics above.
+
+---
+
 All economy coefficients live in `res://scripts/game/BalanceConfig.gd`.
 Change a value there; calculators and runtime services pick it up automatically.
 Do not edit formula vars directly in ClickerState.gd.

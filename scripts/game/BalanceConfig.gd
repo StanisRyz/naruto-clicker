@@ -36,9 +36,9 @@ const HERO_DAMAGE_PER_LEVEL: float = 1.0
 # --- Hero cost — segmented adaptive exponential ---
 # cost(L→L+1) = HERO_BASE_COST * growth^(L-1), segment boundary applied continuously
 const HERO_BASE_COST: float = 5.0
-const HERO_COST_GROWTH_EARLY: float = 1.05   # levels 1–100
-const HERO_COST_GROWTH_MID: float = 1.10     # levels 101–500
-const HERO_COST_GROWTH_LATE: float = 1.15    # levels 501+
+const HERO_COST_GROWTH_EARLY: float = 1.08   # levels 1–100
+const HERO_COST_GROWTH_MID: float = 1.13     # levels 101–500
+const HERO_COST_GROWTH_LATE: float = 1.18    # levels 501+
 const HERO_COST_MID_START_LEVEL: int = 101
 const HERO_COST_LATE_START_LEVEL: int = 501
 
@@ -54,9 +54,9 @@ const PARTNER_BASE_COSTS: Array = [10, 50, 150, 400, 900, 1800, 3500, 7000, 1400
 
 # Segmented adaptive exponential cost by owned count:
 # cost(count) = base_cost * growth^count, boundary applied continuously
-const PARTNER_COST_GROWTH_EARLY: float = 1.07   # counts 0–99
-const PARTNER_COST_GROWTH_MID: float = 1.10     # counts 100–249
-const PARTNER_COST_GROWTH_LATE: float = 1.13    # counts 250+
+const PARTNER_COST_GROWTH_EARLY: float = 1.10   # counts 0–99
+const PARTNER_COST_GROWTH_MID: float = 1.13     # counts 100–249
+const PARTNER_COST_GROWTH_LATE: float = 1.16    # counts 250+
 const PARTNER_COST_MID_START_COUNT: int = 100
 const PARTNER_COST_LATE_START_COUNT: int = 250
 
@@ -128,7 +128,7 @@ const BUILDING_BONUS_PERCENT_PER_LEVEL: int = 1
 # reward(level) = ENEMY_REWARD_BASE * ENEMY_REWARD_GROWTH^(level-1)
 # HP grows faster than rewards to create increasing friction over time.
 const ENEMY_HP_BASE: float = 10.0
-const ENEMY_HP_GROWTH: float = 1.14
+const ENEMY_HP_GROWTH: float = 1.18
 
 const ENEMY_REWARD_BASE: float = 5.0
 const ENEMY_REWARD_GROWTH: float = 1.11
@@ -138,8 +138,8 @@ const ELITE_HP_MULTIPLIER: int = 3
 const ELITE_REWARD_MULTIPLIER: int = 5
 
 # Softened from research (×10/×15) for first in-game pass; raise after manual testing.
-const BOSS_HP_MULTIPLIER: int = 8
-const BOSS_REWARD_MULTIPLIER: int = 10
+const BOSS_HP_MULTIPLIER: int = 20
+const BOSS_REWARD_MULTIPLIER: int = 15
 const BOSS_TIME_LIMIT: float = 30.0
 
 
