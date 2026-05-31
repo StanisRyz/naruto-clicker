@@ -127,11 +127,11 @@ const BUILDING_BONUS_PERCENT_PER_LEVEL: int = 1
 # hp(level)     = ENEMY_HP_BASE     * ENEMY_HP_GROWTH^(level-1)
 # reward(level) = ENEMY_REWARD_BASE * ENEMY_REWARD_GROWTH^(level-1)
 # HP grows faster than rewards to create increasing friction over time.
-const ENEMY_HP_BASE: float = 10.0
-const ENEMY_HP_GROWTH: float = 1.18
+const ENEMY_HP_BASE: float = 18.0
+const ENEMY_HP_GROWTH: float = 1.165
 
-const ENEMY_REWARD_BASE: float = 5.0
-const ENEMY_REWARD_GROWTH: float = 1.11
+const ENEMY_REWARD_BASE: float = 4.0
+const ENEMY_REWARD_GROWTH: float = 1.115
 
 const ELITE_SPAWN_CHANCE: float = 0.07
 const ELITE_HP_MULTIPLIER: int = 3

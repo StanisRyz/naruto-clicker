@@ -234,7 +234,7 @@ def generate_hints(m: dict) -> list[str]:
         if fail_level <= 10:
             hints.append(
                 f"First boss fail at level {fail_level} (very early). "
-                "Consider lowering BOSS_HP_MULTIPLIER from 8 to 6, "
+                "Consider lowering BOSS_HP_MULTIPLIER, "
                 "or reducing AUTOCLICK_PURCHASE_COST."
             )
 
@@ -242,7 +242,7 @@ def generate_hints(m: dict) -> list[str]:
     if m["total_boss_fails"] == 0 and m["total_bosses"] >= 3:
         hints.append(
             f"No boss fails across {m['total_bosses']} bosses. "
-            "If the game feels too easy, raise BOSS_HP_MULTIPLIER (currently 8)."
+            "If the game feels too easy, consider raising BOSS_HP_MULTIPLIER."
         )
 
     # Task income share

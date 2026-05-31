@@ -2,6 +2,69 @@
 
 ---
 
+## Balance Adjustment Pass v2 (2026-05-31)
+
+Second real playtest after Pass v1. Same setup: fresh save, almost idle, ~8 minutes.
+
+### Playtest results
+
+| Metric | Pass v1 baseline | This session |
+|--------|-----------------|--------------|
+| Session duration | ~4m 20s | ~8m 8s |
+| Highest level | 62 | 60 |
+| Enemies killed | 562 | 556 |
+| Bosses killed / fails | 6 / 0 | 16 / 0 |
+| Avg enemy TTK | 0.449s | 0.622s |
+| Avg boss TTK | 1.780s | 9.387s |
+| Task income share | 58% | 12% |
+| Kill income share | 41% | 87% |
+| Abilities used | 0 | 0 |
+
+### Diagnosis
+
+- Task nerf from Pass v1 worked — income share dropped from 58% to 12%.
+- Boss friction is healthy — TTK jumped from 1.78s to 9.4s.
+- Overall pace still too fast: level 60 in ~8 minutes from fresh save.
+- Curve shape is the problem: early levels vanish too quickly, flat nerf would hurt late game.
+- Fix: raise HP base to slow early game, lower HP growth to ease level 50+.
+
+### Changes made
+
+| System | Constant | Old | New |
+|--------|----------|-----|-----|
+| Enemy HP | `ENEMY_HP_BASE` | 10.0 | 18.0 |
+| Enemy HP | `ENEMY_HP_GROWTH` | 1.18 | 1.165 |
+| Enemy reward | `ENEMY_REWARD_BASE` | 5.0 | 4.0 |
+| Enemy reward | `ENEMY_REWARD_GROWTH` | 1.11 | 1.115 |
+
+Expected effect:
+- Level 1–10: noticeably slower (higher base HP).
+- Level 20–40: controlled.
+- Level 50+: slightly smoother than Pass v1 (lower growth rate).
+- Early kill gold: slightly lower (lower reward base).
+- Later kill gold: recovers slightly (slightly higher reward growth).
+
+### Intentionally not changed
+
+- `BOSS_HP_MULTIPLIER` / `BOSS_REWARD_MULTIPLIER` — boss TTK is healthy at ~9s.
+- Task reward scales — 12% income share is within the 10–25% target.
+- Hero / partner cost growth — isolate one lever at a time.
+- Abilities, shop, prestige — still no evidence to act on.
+
+### Target metrics for next test
+
+- 5-min almost-idle highest level: ~25–40 (was 60).
+- Early enemy TTK (level 1–5): more noticeable, not near-instant.
+- Task income share: remain 10–25%.
+- Boss TTK: remain meaningful (~5–15s range).
+- Level 50+ pacing: slightly smoother than Pass v1.
+
+### Next step
+
+Repeat the same 5-minute almost-idle session from a fresh save. Export CSV. Run analyzer. Compare.
+
+---
+
 ## Balance Adjustment Pass v1 (2026-05-31)
 
 First real 5-minute almost-idle playtest from fresh save. No debug gems.

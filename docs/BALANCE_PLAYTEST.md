@@ -32,6 +32,20 @@ No data leaves the device. Release builds disable all logging automatically.
 
 ## Playtest Log
 
+### Session 02 — 2026-05-31 (after Balance Adjustment Pass v1)
+
+- Duration: ~8m 8s
+- Reset: yes. Debug gems: no. Play style: almost idle.
+- Highest level: 60. Enemies killed: 556. Bosses: 16 killed / 0 fails.
+- Avg enemy TTK: 0.622s. Median: 0.500s.
+- Avg boss TTK: 9.387s. Median: 9.047s.
+- Income: kills 87%, tasks 12%, shop 0%.
+- Purchases: 53. Tasks claimed: 20. Abilities used: 0.
+
+**Verdict:** Task and boss fixes from Pass v1 held. Overall pace still too fast — early levels vanish instantly. Patch applied: Balance Adjustment Pass v2 (HP curve reshape).
+
+---
+
 ### Session 01 — 2026-05-31 (pre-patch baseline)
 
 - Duration: ~4m 20s
