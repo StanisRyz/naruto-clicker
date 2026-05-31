@@ -8,7 +8,7 @@ custom_minimum_size = Vector2(0, 72)
 mouse_filter = 2
 script = ExtResource("1_primary_stats")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
+[node name="HudLayer" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -16,136 +16,92 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_constants/separation = 4
 
-[node name="GoldCard" type="HBoxContainer" parent="HBoxContainer"]
-custom_minimum_size = Vector2(0, 64)
-layout_mode = 2
-size_flags_horizontal = 3
+[node name="GoldItem" type="Control" parent="HudLayer"]
+layout_mode = 0
 mouse_filter = 2
-theme_override_constants/separation = 8
 
-[node name="GoldIcon" type="ColorRect" parent="HBoxContainer/GoldCard"]
-custom_minimum_size = Vector2(64, 64)
-layout_mode = 2
+[node name="GoldIcon" type="ColorRect" parent="HudLayer/GoldItem"]
+layout_mode = 0
 mouse_filter = 2
 color = Color(1, 1, 1, 1)
 script = ExtResource("2_image_slot")
 asset_key = "ui.gold"
 show_fallback_behind_texture = false
 
-[node name="GoldValueLabel" type="Label" parent="HBoxContainer/GoldCard"]
-custom_minimum_size = Vector2(50, 64)
-layout_mode = 2
-size_flags_horizontal = 3
+[node name="GoldValueLabel" type="Label" parent="HudLayer/GoldItem"]
+layout_mode = 0
 mouse_filter = 2
 text = "0"
 vertical_alignment = 1
 text_overrun_behavior = 3
 
-[node name="GemsCard" type="HBoxContainer" parent="HBoxContainer"]
-custom_minimum_size = Vector2(0, 64)
-layout_mode = 2
-size_flags_horizontal = 3
+[node name="GemsItem" type="Control" parent="HudLayer"]
+layout_mode = 0
 mouse_filter = 2
-theme_override_constants/separation = 8
 
-[node name="GemsIcon" type="ColorRect" parent="HBoxContainer/GemsCard"]
-custom_minimum_size = Vector2(64, 64)
-layout_mode = 2
+[node name="GemsIcon" type="ColorRect" parent="HudLayer/GemsItem"]
+layout_mode = 0
 mouse_filter = 2
 color = Color(1, 1, 1, 1)
 script = ExtResource("2_image_slot")
 asset_key = "ui.gems"
 show_fallback_behind_texture = false
 
-[node name="GemsValueLabel" type="Label" parent="HBoxContainer/GemsCard"]
-custom_minimum_size = Vector2(50, 64)
-layout_mode = 2
-size_flags_horizontal = 3
+[node name="GemsValueLabel" type="Label" parent="HudLayer/GemsItem"]
+layout_mode = 0
 mouse_filter = 2
 text = "0"
 vertical_alignment = 1
 text_overrun_behavior = 3
 
-[node name="DamageCard" type="HBoxContainer" parent="HBoxContainer"]
-custom_minimum_size = Vector2(0, 64)
-layout_mode = 2
-size_flags_horizontal = 3
+[node name="DamageItem" type="Control" parent="HudLayer"]
+layout_mode = 0
 mouse_filter = 2
-theme_override_constants/separation = 8
 
-[node name="DamageIcon" type="ColorRect" parent="HBoxContainer/DamageCard"]
-custom_minimum_size = Vector2(64, 64)
-layout_mode = 2
+[node name="DamageIcon" type="ColorRect" parent="HudLayer/DamageItem"]
+layout_mode = 0
 mouse_filter = 2
 color = Color(1, 1, 1, 1)
 script = ExtResource("2_image_slot")
 asset_key = "ui.click_damage"
 show_fallback_behind_texture = false
 
-[node name="DamageValueLabel" type="Label" parent="HBoxContainer/DamageCard"]
-custom_minimum_size = Vector2(50, 64)
-layout_mode = 2
-size_flags_horizontal = 3
+[node name="DamageValueLabel" type="Label" parent="HudLayer/DamageItem"]
+layout_mode = 0
 mouse_filter = 2
 text = "1"
 vertical_alignment = 1
 text_overrun_behavior = 3
 
-[node name="PartnerDpsCard" type="HBoxContainer" parent="HBoxContainer"]
-custom_minimum_size = Vector2(0, 64)
-layout_mode = 2
-size_flags_horizontal = 3
+[node name="PartnerDpsItem" type="Control" parent="HudLayer"]
+layout_mode = 0
 mouse_filter = 2
-theme_override_constants/separation = 8
 
-[node name="PartnerDpsIcon" type="ColorRect" parent="HBoxContainer/PartnerDpsCard"]
-custom_minimum_size = Vector2(64, 64)
-layout_mode = 2
+[node name="PartnerDpsIcon" type="ColorRect" parent="HudLayer/PartnerDpsItem"]
+layout_mode = 0
 mouse_filter = 2
 color = Color(1, 1, 1, 1)
 script = ExtResource("2_image_slot")
 asset_key = "ui.partner_dps"
 show_fallback_behind_texture = false
 
-[node name="PartnerDpsValueLabel" type="Label" parent="HBoxContainer/PartnerDpsCard"]
-custom_minimum_size = Vector2(50, 64)
-layout_mode = 2
-size_flags_horizontal = 3
+[node name="PartnerDpsValueLabel" type="Label" parent="HudLayer/PartnerDpsItem"]
+layout_mode = 0
 mouse_filter = 2
 text = "0"
 vertical_alignment = 1
 text_overrun_behavior = 3
 
-[node name="SettingsCard" type="HBoxContainer" parent="HBoxContainer"]
-custom_minimum_size = Vector2(0, 64)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 2
-theme_override_constants/separation = 8
-
-[node name="SettingsButton" type="Button" parent="HBoxContainer/SettingsCard"]
-custom_minimum_size = Vector2(64, 64)
-layout_mode = 2
+[node name="SettingsButton" type="Button" parent="HudLayer"]
+layout_mode = 0
 mouse_filter = 0
 flat = true
 
-[node name="SettingsIcon" type="ColorRect" parent="HBoxContainer/SettingsCard/SettingsButton"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="SettingsIcon" type="ColorRect" parent="HudLayer/SettingsButton"]
+layout_mode = 0
 mouse_filter = 2
 color = Color(1, 1, 1, 1)
 script = ExtResource("2_image_slot")
 asset_key = "ui.settings"
 show_fallback_behind_texture = false
-
-[node name="SettingsSpacer" type="Control" parent="HBoxContainer/SettingsCard"]
-custom_minimum_size = Vector2(50, 64)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 2

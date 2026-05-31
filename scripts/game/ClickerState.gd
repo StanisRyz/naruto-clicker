@@ -8,7 +8,6 @@ const EnemyCalc = preload("res://scripts/game/calculators/EnemyScalingCalculator
 const Presentation = preload("res://scripts/game/presentation/ClickerStatePresentation.gd")
 const TaskRT = preload("res://scripts/game/runtime/TaskRuntime.gd")
 const ShopRT = preload("res://scripts/game/runtime/ShopRuntime.gd")
-const EnemyPoolConfig = preload("res://scripts/game/config/EnemyPoolConfig.gd")
 
 
 var gold: int = 0
