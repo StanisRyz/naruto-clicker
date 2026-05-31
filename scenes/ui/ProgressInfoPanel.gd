@@ -1,7 +1,6 @@
 class_name ProgressInfoPanel
 extends Control
 
-@onready var level_label: Label = $VBoxContainer/LevelLabel
 @onready var zone_label: Label = $VBoxContainer/ZoneLabel
 @onready var enemies_label: Label = $VBoxContainer/EnemiesLabel
 @onready var enemy_name_label: Label = $VBoxContainer/EnemyNameLabel
@@ -10,7 +9,6 @@ extends Control
 
 
 func update_view(state: ClickerState) -> void:
-	level_label.text = "Level %d" % state.current_level
 	zone_label.text = "%s" % state.zone_name
 	if state.is_level_cleared(state.current_level):
 		enemies_label.text = "Cleared"

@@ -66,6 +66,11 @@ theme_override_constants/separation = 18
 [node name="StageNavigator" parent="MainContent/VBoxContainer" instance=ExtResource("13_nav")]
 layout_mode = 2
 
+[node name="InfoSpacer" type="Control" parent="MainContent/VBoxContainer"]
+custom_minimum_size = Vector2(0, 75)
+layout_mode = 2
+mouse_filter = 2
+
 [node name="ProgressInfoPanel" parent="MainContent/VBoxContainer" instance=ExtResource("9_progress")]
 layout_mode = 2
 

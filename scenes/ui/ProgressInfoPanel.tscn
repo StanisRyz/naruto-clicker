@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scenes/ui/ProgressInfoPanel.gd" id="1_progress_info"]
 
 [node name="ProgressInfoPanel" type="Control"]
-custom_minimum_size = Vector2(180, 132)
+custom_minimum_size = Vector2(180, 108)
 mouse_filter = 2
 script = ExtResource("1_progress_info")
 
@@ -16,12 +16,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme_override_constants/separation = 4
-
-[node name="LevelLabel" type="Label" parent="VBoxContainer"]
-layout_mode = 2
-mouse_filter = 2
-text = "Level 1"
-horizontal_alignment = 1
 
 [node name="ZoneLabel" type="Label" parent="VBoxContainer"]
 layout_mode = 2
