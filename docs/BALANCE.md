@@ -2,6 +2,62 @@
 
 ---
 
+## Zone Content Patch v1 (2026-05-31)
+
+Extended ZoneConfig from 4 zones (levels 1–40) to 20 zones (levels 1–200).
+
+### Zone coverage
+
+- Zones 1–4: levels 1–40 (unchanged)
+- Zones 5–20: levels 41–200 (new)
+- Each zone covers 10 levels; boss on every 10th level (unchanged).
+- Level 201+ safely clamps to the last zone (zone 20) via existing fallback behavior.
+
+### Zone hp/reward multipliers
+
+| Zone | Levels | hp_multiplier | reward_multiplier |
+|------|--------|---------------|-------------------|
+| 1  | 1–10    | 1.0  | 1.0  |
+| 2  | 11–20   | 1.4  | 1.3  |
+| 3  | 21–30   | 1.9  | 1.7  |
+| 4  | 31–40   | 2.5  | 2.2  |
+| 5  | 41–50   | 3.2  | 2.8  |
+| 6  | 51–60   | 4.0  | 3.5  |
+| 7  | 61–70   | 5.0  | 4.3  |
+| 8  | 71–80   | 6.2  | 5.2  |
+| 9  | 81–90   | 7.6  | 6.2  |
+| 10 | 91–100  | 9.2  | 7.4  |
+| 11 | 101–110 | 11.0 | 8.7  |
+| 12 | 111–120 | 13.0 | 10.1 |
+| 13 | 121–130 | 15.2 | 11.7 |
+| 14 | 131–140 | 17.6 | 13.4 |
+| 15 | 141–150 | 20.2 | 15.2 |
+| 16 | 151–160 | 23.0 | 17.1 |
+| 17 | 161–170 | 26.0 | 19.1 |
+| 18 | 171–180 | 29.2 | 21.2 |
+| 19 | 181–190 | 32.6 | 23.4 |
+| 20 | 191–200 | 36.2 | 25.7 |
+
+These are first-pass content scaling values. Global enemy HP/reward formulas were not changed.
+
+### Asset reuse
+
+Normal and elite enemy textures and backgrounds are shared across zones. See `docs/ASSET_MAP.md`.
+Boss textures are unique per gameplay zone (20 unique boss folders required).
+
+### Intentionally not changed
+
+- Global enemy HP/reward formulas (`ENEMY_HP_BASE`, `ENEMY_HP_GROWTH`, etc.)
+- Save format and save_version
+- Public ClickerState API (two helpers added: `get_current_background_zone_index()`, plus ZoneConfig helpers)
+- UI layout
+- Boss every 10th level logic
+- Android/Web export settings
+
+---
+
+---
+
 ## Partner & Settlement Economy Pass v1 (2026-05-31)
 
 Latest session: ~7m 10s, level 40, 94% kill income, 5% task income, avg TTK 0.62s, boss TTK 6.6s, 0 boss fails, 0 abilities used.

@@ -50,7 +50,7 @@ func update_view(state: ClickerState) -> void:
 
 
 func _update_background_visual(state: ClickerState) -> void:
-	var zone_index: int = state.get_current_zone_index()
+	var zone_index: int = state.get_current_background_zone_index()
 	if zone_index == _cached_background_zone_index:
 		return
 	_cached_background_zone_index = zone_index

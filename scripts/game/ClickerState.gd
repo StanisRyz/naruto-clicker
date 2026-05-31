@@ -1655,13 +1655,14 @@ func reset_target() -> void:
 
 func choose_enemy_for_current_level() -> void:
 	var zone: Dictionary = ZoneConfig.ZONE_DATA[current_zone_index]
-	current_enemy_zone_index = current_zone_index
 	if is_boss_level:
 		is_elite_enemy = false
 		enemy_name = zone.boss
 		current_enemy_slot = "boss_01"
+		current_enemy_zone_index = current_zone_index
 		return
 
+	current_enemy_zone_index = ZoneConfig.get_enemy_asset_zone_index_for_level(current_level)
 	if rng.randf() < get_current_elite_spawn_chance():
 		is_elite_enemy = true
 		enemy_name = zone.elite_enemy
@@ -1698,6 +1699,10 @@ func get_base_enemy_reward_for_level(level: int) -> int:
 
 func get_current_zone_index() -> int:
 	return _get_zone_index_for_level(current_level)
+
+
+func get_current_background_zone_index() -> int:
+	return ZoneConfig.get_background_asset_zone_index_for_level(current_level)
 
 
 func _get_zone_index_for_level(level: int) -> int:
