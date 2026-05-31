@@ -36,13 +36,13 @@ grow_vertical = 2
 
 [node name="PrimaryStatsPanel" parent="." instance=ExtResource("2_primary")]
 layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -350.0
+anchors_preset = 0
+anchor_left = 0.0
+anchor_right = 1.0
+offset_left = 15.0
 offset_top = 16.0
-offset_right = 350.0
-offset_bottom = 96.0
+offset_right = -15.0
+offset_bottom = 88.0
 grow_horizontal = 2
 
 [node name="MainContent" type="MarginContainer" parent="."]

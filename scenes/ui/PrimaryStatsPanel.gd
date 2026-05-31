@@ -28,10 +28,14 @@ func _on_settings_button_pressed() -> void:
 
 
 static func _compact(value: int) -> String:
-	if value >= 1_000_000_000:
-		return "%.1fB" % (value / 1_000_000_000.0)
-	if value >= 1_000_000:
-		return "%.1fM" % (value / 1_000_000.0)
-	if value >= 1_000:
-		return "%.1fK" % (value / 1_000.0)
-	return "%d" % value
+	var abs_value: float = abs(float(value))
+	var sign_str: String = "-" if value < 0 else ""
+	if abs_value >= 1_000_000_000_000.0:
+		return "%s%.1fT" % [sign_str, abs_value / 1_000_000_000_000.0]
+	if abs_value >= 1_000_000_000.0:
+		return "%s%.1fB" % [sign_str, abs_value / 1_000_000_000.0]
+	if abs_value >= 1_000_000.0:
+		return "%s%.1fM" % [sign_str, abs_value / 1_000_000.0]
+	if abs_value >= 1_000.0:
+		return "%s%.1fK" % [sign_str, abs_value / 1_000.0]
+	return str(value)
