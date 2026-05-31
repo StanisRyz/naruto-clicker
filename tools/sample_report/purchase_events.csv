@@ -1,0 +1,6 @@
+timestamp_sec,event_type,current_level,max_unlocked_level,current_zone_index,enemy_type,enemy_name,gold,gems,character_level,click_damage,partner_dps,auto_transition_enabled,defeated_on_level,enemy_start_hp,enemy_reward_gold,enemy_ttk_sec,was_boss,was_elite,level_cleared,level_changed,new_level,enemies_defeated_total,boss_hp_remaining,boss_max_hp,boss_retry_tokens,retry_will_be_used,returned_to_level,purchase_category,item_id,cost,success,not_enough_gold,task_id,task_reward_gold,ability_id,ability_rank,previous_level,level_time_sec,gold_earned_on_level,kills_on_level
+5.50,purchase,2,2,0,normal,Leaf Genin,50,0,1,2,0,True,,,,,,,,,,,,,,,,hero_level,hero_level_x1,5,True,False,,,,,,,,
+9.00,purchase,2,2,0,normal,Leaf Genin,44,0,2,3,0,True,,,,,,,,,,,,,,,,partner,partner_0_x1,20,True,False,,,,,,,,
+20.00,purchase,4,4,0,normal,Forest Shinobi,70,0,3,4,10,True,,,,,,,,,,,,,,,,hero_level,hero_level_x1,20,True,False,,,,,,,,
+90.00,purchase,11,11,0,normal,River Ninja,280,0,5,6,20,True,,,,,,,,,,,,,,,,hero_level,hero_level_x1,100,True,False,,,,,,,,
+160.00,purchase,22,22,0,normal,River Ninja,750,0,6,8,40,True,,,,,,,,,,,,,,,,building,building_0_x1,150,True,False,,,,,,,,

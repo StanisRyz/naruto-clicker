@@ -1,0 +1,4 @@
+timestamp_sec,event_type,current_level,max_unlocked_level,current_zone_index,enemy_type,enemy_name,gold,gems,character_level,click_damage,partner_dps,auto_transition_enabled,defeated_on_level,enemy_start_hp,enemy_reward_gold,enemy_ttk_sec,was_boss,was_elite,level_cleared,level_changed,new_level,enemies_defeated_total,boss_hp_remaining,boss_max_hp,boss_retry_tokens,retry_will_be_used,returned_to_level,purchase_category,item_id,cost,success,not_enough_gold,task_id,task_reward_gold,ability_id,ability_rank,previous_level,level_time_sec,gold_earned_on_level,kills_on_level
+60.00,enemy_defeated,10,10,0,boss,Forest Boss,300,0,4,5,20,True,10,296,140,18.500,True,False,True,True,11,25,,,,,,,,,,,,,,,,,,
+130.00,enemy_defeated,20,20,0,boss,River Boss,620,0,5,6,30,True,20,376,200,28.000,True,False,True,True,21,40,,,,,,,,,,,,,,,,,,
+140.00,boss_failed,20,20,0,boss,River Boss,620,0,5,6,30,False,,,,,,,,,,,148,376,0,False,19,,,,,,,,,,,,,

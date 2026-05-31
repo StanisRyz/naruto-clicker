@@ -226,3 +226,62 @@ Run from the directory containing `balance_playtest.csv`.
 | Prestige too late / too early | Adjust `PRESTIGE_REQUIRED_LEVEL` |
 
 All constants live in `res://scripts/game/BalanceConfig.gd`.
+
+---
+
+## Offline Analyzer (recommended)
+
+After pressing F6 to export the CSV, use the Balance CSV Analyzer for automated metrics, graphs, and tuning hints.
+
+### Find user:// on your system
+
+| Platform | Path |
+|----------|------|
+| Windows | `%APPDATA%\Godot\app_userdata\naruto-clicker\` |
+| macOS | `~/Library/Application Support/Godot/app_userdata/naruto-clicker/` |
+| Linux | `~/.local/share/godot/app_userdata/naruto-clicker/` |
+
+### Run the analyzer
+
+Copy `balance_playtest.csv` from user:// and run:
+
+```
+python tools/analyze_balance_playtest.py balance_playtest.csv
+```
+
+Custom output directory:
+```
+python tools/analyze_balance_playtest.py balance_playtest.csv --out session_01/
+```
+
+Requires Python 3.10+. Install `matplotlib` for graphs:
+```
+pip install matplotlib
+```
+
+### Expected output files in `balance_report/`
+
+| File | Contents |
+|------|----------|
+| `summary.txt` | Session metrics, friction milestones, tuning hints |
+| `enemy_events.csv` | Enemy defeat rows |
+| `boss_events.csv` | Boss kills and fails |
+| `purchase_events.csv` | Successful purchases |
+| `task_events.csv` | Task claim rewards |
+| `ability_events.csv` | Ability activations |
+| `level_over_time.png` | Level curve (requires matplotlib) |
+| `enemy_ttk_over_time.png` | TTK scatter with reference lines |
+| `gold_over_time.png` | Gold balance curve |
+| `gold_income_events.png` | Cumulative income by source |
+| `purchase_timeline.png` | Purchases by category |
+| `boss_friction.png` | Boss kills + fails over time |
+
+### How to read summary.txt
+
+Open `balance_report/summary.txt`. Key sections:
+
+- **FRICTION MILESTONES** — when TTK first hit 3 s and 8 s, and when the first boss fail occurred. If TTK never hit 3 s: game is too easy. If it hit 3 s in the first 2 minutes: too hard.
+- **GOLD ECONOMY** — if task rewards are above 30% of total income, task scaling may be too generous.
+- **TUNING HINTS** — automated suggestions. These are starting points; always confirm with playfeel.
+
+Full analyzer documentation: `tools/README.md`

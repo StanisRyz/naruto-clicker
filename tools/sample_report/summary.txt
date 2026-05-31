@@ -1,0 +1,48 @@
+Balance Playtest Report
+============================================================
+  Source:                 d:\Godot_apps\naruto-clicker\tools\sample_balance_playtest.csv
+  Generated:              2026-05-31 09:29:42
+  Total CSV rows:         24
+
+SESSION
+----------------------------------------
+  Duration:               2m 55s  (175.0 s)
+  Highest level:          22
+  Max unlocked:           22
+
+ENEMIES
+----------------------------------------
+  Total killed:           11
+  Bosses killed:          2
+  Boss fails:             1
+  Avg enemy TTK:          1.559 s
+  Median enemy TTK:       0.800 s
+  Avg boss TTK:           23.250 s
+  Median boss TTK:        23.250 s
+
+FRICTION MILESTONES
+----------------------------------------
+  First boss fail:        2m 20s
+  TTK first hit 3 s:      1m 50s
+  TTK first hit 8 s:      not reached
+  Boss TTK hit 20 s:      2m 10s
+
+GOLD ECONOMY
+----------------------------------------
+  Kill rewards:                    409  (46%)
+  Task rewards:                    470  (53%)
+  Shop rewards:                      0  (0%)  (gold packs only)
+  Gold spent:                      295
+
+PLAYER ACTIONS
+----------------------------------------
+  Purchases (ok):         5
+  Tasks claimed:          2
+  Abilities used:         1
+  Purchases <10m:         5
+
+TUNING HINTS
+----------------------------------------
+  • Task rewards are 53% of income (>50%). Consider reducing reward_scale
+    values in TaskConfig.
+

@@ -1,0 +1,25 @@
+timestamp_sec,event_type,current_level,max_unlocked_level,current_zone_index,enemy_type,enemy_name,gold,gems,character_level,click_damage,partner_dps,auto_transition_enabled,defeated_on_level,enemy_start_hp,enemy_reward_gold,enemy_ttk_sec,was_boss,was_elite,level_cleared,level_changed,new_level,enemies_defeated_total,boss_hp_remaining,boss_max_hp,boss_retry_tokens,retry_will_be_used,returned_to_level,purchase_category,item_id,cost,success,not_enough_gold,task_id,task_reward_gold,ability_id,ability_rank,previous_level,level_time_sec,gold_earned_on_level,kills_on_level
+0.00,session_start,1,1,0,normal,Leaf Genin,5,0,1,2,0,True,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+0.45,enemy_defeated,1,1,0,normal,Leaf Genin,10,0,1,2,0,True,1,10,5,0.450,False,False,False,False,1,1,,,,,,,,,,,,,,,,,,
+0.85,enemy_defeated,1,1,0,normal,Leaf Genin,15,0,1,2,0,True,1,10,5,0.410,False,False,False,False,1,2,,,,,,,,,,,,,,,,,,
+1.60,enemy_defeated,1,1,0,normal,Leaf Genin,25,0,1,2,0,True,1,10,5,0.380,False,False,False,False,1,4,,,,,,,,,,,,,,,,,,
+3.95,enemy_defeated,2,2,0,normal,Leaf Genin,55,0,1,2,0,True,1,10,5,0.390,False,False,True,True,2,10,,,,,,,,,,,,,,,,,,
+3.95,level_changed,2,2,0,normal,Leaf Genin,55,0,1,2,0,True,,,,,,,,,,,,,,,,,,,,,,,,,1,3.95,50,10
+5.50,purchase,2,2,0,normal,Leaf Genin,50,0,1,2,0,True,,,,,,,,,,,,,,,,hero_level,hero_level_x1,5,True,False,,,,,,,,
+6.10,enemy_defeated,2,2,0,normal,Leaf Genin,57,0,2,3,0,True,2,11,7,0.800,False,False,False,False,2,11,,,,,,,,,,,,,,,,,,
+9.00,purchase,2,2,0,normal,Leaf Genin,44,0,2,3,0,True,,,,,,,,,,,,,,,,partner,partner_0_x1,20,True,False,,,,,,,,
+10.50,enemy_defeated,3,3,0,normal,Forest Shinobi,67,0,2,3,10,True,2,11,7,1.500,False,False,True,True,3,13,,,,,,,,,,,,,,,,,,
+10.50,level_changed,3,3,0,normal,Forest Shinobi,67,0,2,3,10,True,,,,,,,,,,,,,,,,,,,,,,,,,2,6.55,17,3
+20.00,purchase,4,4,0,normal,Forest Shinobi,70,0,3,4,10,True,,,,,,,,,,,,,,,,hero_level,hero_level_x1,20,True,False,,,,,,,,
+35.00,ability_used,5,5,0,normal,Forest Shinobi,80,0,3,4,10,True,,,,,,,,,,,,,,,,,,,,,,,autoclick,0,,,,
+45.00,task_claimed,5,5,0,normal,Forest Shinobi,230,0,3,4,10,True,,,,,,,,,,,,,,,,,,,,,task_defeat_enemies,120,,,,,,
+60.00,enemy_defeated,10,10,0,boss,Forest Boss,300,0,4,5,20,True,10,296,140,18.500,True,False,True,True,11,25,,,,,,,,,,,,,,,,,,
+60.00,level_changed,11,11,0,normal,River Ninja,300,0,4,5,20,True,,,,,,,,,,,,,,,,,,,,,,,,,10,32.00,190,1
+75.00,enemy_defeated,11,11,0,normal,River Ninja,380,0,4,5,20,True,11,15,10,2.800,False,False,False,False,11,26,,,,,,,,,,,,,,,,,,
+90.00,purchase,11,11,0,normal,River Ninja,280,0,5,6,20,True,,,,,,,,,,,,,,,,hero_level,hero_level_x1,100,True,False,,,,,,,,
+110.00,enemy_defeated,14,14,0,normal,River Ninja,500,0,5,6,30,True,14,18,11,3.200,False,False,False,False,14,30,,,,,,,,,,,,,,,,,,
+130.00,enemy_defeated,20,20,0,boss,River Boss,620,0,5,6,30,True,20,376,200,28.000,True,False,True,True,21,40,,,,,,,,,,,,,,,,,,
+140.00,boss_failed,20,20,0,boss,River Boss,620,0,5,6,30,False,,,,,,,,,,,148,376,0,False,19,,,,,,,,,,,,,
+145.00,enemy_defeated,21,21,0,normal,River Ninja,900,0,6,8,40,True,21,22,14,4.100,False,False,False,False,21,41,,,,,,,,,,,,,,,,,,
+160.00,purchase,22,22,0,normal,River Ninja,750,0,6,8,40,True,,,,,,,,,,,,,,,,building,building_0_x1,150,True,False,,,,,,,,
+175.00,task_claimed,22,22,0,normal,River Ninja,1500,0,6,8,40,True,,,,,,,,,,,,,,,,,,,,,task_reach_level,350,,,,,,
