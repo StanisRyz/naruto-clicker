@@ -39,6 +39,7 @@ var combo_empowered_duration: float = BalanceConfig.COMBO_EMPOWERED_DURATION_SEC
 var combo_empowered_multiplier: float = BalanceConfig.COMBO_EMPOWERED_MULTIPLIER
 var _autosave_timer: float = 0.0
 const _AUTOSAVE_INTERVAL: float = 10.0
+var balance_logger: BalancePlaytestLogger = null
 
 @onready var primary_stats_panel: PrimaryStatsPanel = $PrimaryStatsPanel
 @onready var stage_navigator: Control = $MainContent/VBoxContainer/StageNavigator
@@ -106,6 +107,10 @@ func _ready() -> void:
 	_load_game_on_start()
 	_update_ui()
 	_sync_boss_timer()
+	if BuildConfig.IS_DEBUG_BUILD:
+		balance_logger = BalancePlaytestLogger.new()
+		balance_logger.start_session(state)
+		balance_logger.mark_enemy_spawned(state)
 
 
 func _process(delta: float) -> void:
@@ -243,32 +248,44 @@ func _on_attack_requested() -> void:
 
 
 func _on_character_level_upgrade_requested(mode: String) -> void:
+	var gold_before: int = state.gold
 	var result: Dictionary = state.buy_character_level_upgrades(mode)
 	_handle_status_text(result.get("status_text", ""))
+	if balance_logger:
+		balance_logger.log_purchase(state, "hero_level", "hero_level_x%s" % mode, gold_before - state.gold, result)
 	_update_ui()
 	if result.get("upgraded", false):
 		_save_game_now()
 
 
 func _on_hero_skill_purchase_requested(skill_id: String) -> void:
+	var gold_before: int = state.gold
 	var result: Dictionary = state.buy_hero_skill(skill_id)
 	_handle_status_text(result.get("status_text", ""))
+	if balance_logger:
+		balance_logger.log_purchase(state, "hero_skill", skill_id, gold_before - state.gold, result)
 	_update_ui()
 	if result.get("upgraded", false):
 		_save_game_now()
 
 
 func _on_ability_skill_purchase_requested(skill_id: String) -> void:
+	var gold_before: int = state.gold
 	var result: Dictionary = state.buy_ability_skill(skill_id)
 	_handle_status_text(result.get("status_text", ""))
+	if balance_logger:
+		balance_logger.log_purchase(state, "ability_rank", skill_id, gold_before - state.gold, result)
 	_update_ui()
 	if result.get("upgraded", false):
 		_save_game_now()
 
 
 func _on_ability_unlock_requested(ability_id: String) -> void:
+	var gold_before: int = state.gold
 	var result: Dictionary = state.buy_ability_unlock(ability_id)
 	_handle_status_text(result.get("status_text", ""))
+	if balance_logger:
+		balance_logger.log_purchase(state, "ability_unlock", ability_id, gold_before - state.gold, result)
 	_update_ui()
 	if result.get("upgraded", false):
 		_save_game_now()
@@ -310,6 +327,9 @@ func _on_settings_reset_confirmed() -> void:
 	_update_ui()
 	stage_navigator.center_on_level(1)
 	_sync_boss_timer()
+	if balance_logger:
+		balance_logger.start_session(state)
+		balance_logger.mark_enemy_spawned(state)
 	_save_game_now()
 
 
@@ -318,8 +338,14 @@ func _on_tasks_button_pressed() -> void:
 
 
 func _on_task_claim_requested(task_id: String) -> void:
+	var reward_gold: int = 0
+	if balance_logger and state.is_task_completed(task_id):
+		reward_gold = state.get_task_reward_gold(task_id)
 	var result: Dictionary = state.claim_task_reward(task_id)
 	_handle_status_text(result.get("status_text", ""))
+	if balance_logger and result.get("upgraded", false):
+		var log_result: Dictionary = {"reward_gold": reward_gold}
+		balance_logger.log_task_claimed(state, task_id, log_result)
 	_update_ui()
 	if tasks_window.visible:
 		tasks_window.request_full_rebuild(state)
@@ -328,24 +354,33 @@ func _on_task_claim_requested(task_id: String) -> void:
 
 
 func _on_partner_purchase_requested(partner_index: int, mode: String) -> void:
+	var gold_before: int = state.gold
 	var result: Dictionary = state.buy_partners(partner_index, mode)
 	_handle_status_text(result.get("status_text", ""))
+	if balance_logger:
+		balance_logger.log_purchase(state, "partner", "partner_%d_x%s" % [partner_index, mode], gold_before - state.gold, result)
 	_update_ui()
 	if result.get("upgraded", false):
 		_save_game_now()
 
 
 func _on_partner_skill_purchase_requested(skill_id: String) -> void:
+	var gold_before: int = state.gold
 	var result: Dictionary = state.buy_partner_skill(skill_id)
 	_handle_status_text(result.get("status_text", ""))
+	if balance_logger:
+		balance_logger.log_purchase(state, "partner_skill", skill_id, gold_before - state.gold, result)
 	_update_ui()
 	if result.get("upgraded", false):
 		_save_game_now()
 
 
 func _on_building_purchase_requested(building_index: int, mode: String) -> void:
+	var gold_before: int = state.gold
 	var result: Dictionary = state.buy_buildings(building_index, mode)
 	_handle_status_text(result.get("status_text", ""))
+	if balance_logger:
+		balance_logger.log_purchase(state, "building", "building_%d_x%s" % [building_index, mode], gold_before - state.gold, result)
 	_update_ui()
 	if result.get("upgraded", false):
 		_save_game_now()
@@ -376,18 +411,24 @@ func _on_prestige_requested() -> void:
 
 
 func _on_prestige_talent_purchase_requested(talent_index: int) -> void:
+	var pp_before: int = state.prestige_points_available
 	var result: Dictionary = state.buy_prestige_talent(talent_index)
 	_handle_status_text(result.get("status_text", ""))
+	if balance_logger:
+		balance_logger.log_purchase(state, "prestige_talent", "talent_%d" % talent_index, pp_before - state.prestige_points_available, result)
 	_update_ui()
 	if result.get("upgraded", false):
 		_save_game_now()
 
 
 func _on_shop_product_purchase_requested(product_id: String) -> void:
+	var gems_before: int = state.gems
 	var result: Dictionary = state.buy_shop_product(product_id)
 	_handle_status_text(result.get("status_text", ""))
 	if result.has("combo_fill"):
 		_fill_combo_meter_from_shop(float(result.get("combo_fill", combo_meter_max)))
+	if balance_logger:
+		balance_logger.log_purchase(state, "shop", product_id, gems_before - state.gems, result)
 	_update_ui()
 	if result.get("upgraded", false):
 		_save_game_now()
@@ -424,6 +465,9 @@ func _on_prestige_confirmed() -> void:
 	stage_navigator.center_on_level(1)
 	_update_ui()
 	_sync_boss_timer()
+	if balance_logger:
+		balance_logger.mark_level_started(state)
+		balance_logger.mark_enemy_spawned(state)
 	_save_game_now()
 
 
@@ -513,6 +557,8 @@ func _sync_boss_timer() -> void:
 
 func _fail_boss_level() -> void:
 	boss_timer_active = false
+	if balance_logger:
+		balance_logger.log_boss_failed(state)
 	var result: Dictionary = state.fail_boss_level()
 	boss_time_left = 0.0
 	_handle_status_text(result.get("status_text", ""))
@@ -568,6 +614,8 @@ func _on_autoclick_requested() -> void:
 	autoclick_time_left = _get_scaled_duration(autoclick_duration + rank_bonus_seconds, false)
 	autoclick_accumulator = 0.0
 	state.total_autoclick_activations += 1
+	if balance_logger:
+		balance_logger.log_ability_used(state, "autoclick")
 	_update_ui()
 
 
@@ -577,6 +625,8 @@ func _on_gold_bonus_requested() -> void:
 
 	state.gold_bonus_active = true
 	gold_bonus_time_left = _get_scaled_duration(gold_bonus_duration, false)
+	if balance_logger:
+		balance_logger.log_ability_used(state, "gold_bonus")
 	_update_ui()
 
 
@@ -587,6 +637,8 @@ func _on_focus_burst_requested() -> void:
 	state.focus_burst_active = true
 	focus_burst_time_left = _get_scaled_duration(focus_burst_duration, true)
 	state.refresh_derived_stats()
+	if balance_logger:
+		balance_logger.log_ability_used(state, "focus_burst")
 	_update_ui()
 
 
@@ -596,6 +648,8 @@ func _on_rally_requested() -> void:
 
 	state.rally_active = true
 	rally_time_left = _get_scaled_duration(rally_duration, true)
+	if balance_logger:
+		balance_logger.log_ability_used(state, "rally")
 	_update_ui()
 
 
@@ -742,6 +796,9 @@ func _on_stage_selected(level: int) -> void:
 	autoclick_accumulator = 0.0
 	enemy_transition_token += 1
 	game_field.set_enemy_transition_locked(false)
+	if balance_logger:
+		balance_logger.mark_level_started(state)
+		balance_logger.mark_enemy_spawned(state)
 	_sync_boss_timer()
 	_update_ui()
 	_save_game_now()
@@ -765,6 +822,9 @@ func _toggle_auto_transition_and_show_popup(anchor: Vector2, button_global_rect:
 			game_field.set_enemy_transition_locked(false)
 			partner_damage_accumulator = 0.0
 			autoclick_accumulator = 0.0
+			if balance_logger:
+				balance_logger.mark_level_started(state)
+				balance_logger.mark_enemy_spawned(state)
 			_sync_boss_timer()
 			stage_navigator.center_on_level(state.current_level)
 	stage_navigator.set_auto_transition_enabled(state.auto_stage_advance_enabled)
@@ -782,8 +842,16 @@ func _finish_enemy_transition_after_delay(transition_token: int) -> void:
 	if transition_token != enemy_transition_token:
 		return
 
+	var prev_level: int = state.current_level
 	var result: Dictionary = state.resolve_defeated_target()
 	_handle_status_text(result.get("status_text", ""))
+	if balance_logger and result.get("defeated", false):
+		var log_result: Dictionary = result.duplicate()
+		log_result["defeated_on_level"] = prev_level
+		balance_logger.log_enemy_defeated(state, log_result)
+		if result.get("advanced_to_next_level", false):
+			balance_logger.log_level_changed(state, prev_level, state.current_level)
+		balance_logger.mark_enemy_spawned(state)
 	enemy_transition_locked = false
 	game_field.set_enemy_transition_locked(false)
 	if result.get("advanced_to_next_level", false):
@@ -847,6 +915,23 @@ func _input(event: InputEvent) -> void:
 		KEY_F5:
 			_save_game_now()
 			print("Debug: game saved")
+		KEY_F6:
+			if balance_logger:
+				if balance_logger.export_csv():
+					print("Balance playtest CSV exported to user://balance_playtest.csv (%d rows)" % balance_logger.rows.size())
+				else:
+					print("Balance playtest: export failed or no data")
+		KEY_F7:
+			if balance_logger:
+				var summary: Dictionary = balance_logger.get_summary()
+				print("=== BALANCE PLAYTEST SUMMARY ===")
+				print("  Session:  %.1fs (%.1f min)" % [summary.session_duration_sec, summary.session_duration_sec / 60.0])
+				print("  Level:    %d reached" % summary.highest_level_reached)
+				print("  Enemies:  %d defeated (%d bosses, %d boss fails)" % [summary.enemies_defeated, summary.bosses_defeated, summary.boss_fails])
+				print("  Gold:     kills=%d  tasks=%d  shop=%d  spent=%d" % [summary.total_gold_earned_from_kills, summary.total_task_rewards, summary.total_shop_rewards, summary.total_gold_spent])
+				print("  TTK:      avg=%.2fs  boss_avg=%.2fs" % [summary.average_enemy_ttk_sec, summary.average_boss_ttk_sec])
+				print("  Actions:  purchases=%d  tasks=%d  abilities=%d" % [summary.purchases_count, summary.tasks_claimed_count, summary.abilities_used_count])
+				print("================================")
 		KEY_F8:
 			_run_balance_simulation()
 		KEY_F9:
@@ -859,3 +944,9 @@ func _input(event: InputEvent) -> void:
 		KEY_F10:
 			SaveManager.delete_save()
 			print("Debug: save deleted")
+		KEY_F11:
+			if balance_logger:
+				balance_logger.clear()
+				balance_logger.start_session(state)
+				balance_logger.mark_enemy_spawned(state)
+				print("Balance playtest logger cleared and session restarted")

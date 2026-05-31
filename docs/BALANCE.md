@@ -6,6 +6,57 @@ Do not edit formula vars directly in ClickerState.gd.
 
 ---
 
+## Balance Playtest Toolkit v1 (implemented 2026-05-31)
+
+Local debug telemetry. Records actual gameplay events during a real play session.
+This is NOT the progression simulator (F8). This is real-play data.
+
+**No data leaves the device. Release builds (`IS_DEBUG_BUILD = false`) disable everything.**
+
+### CSV output
+
+`user://balance_playtest.csv` — written on demand with F6.
+
+On Windows: `%APPDATA%\Godot\app_userdata\naruto-clicker\balance_playtest.csv`
+
+### Debug keys
+
+| Key | Action |
+|-----|--------|
+| F6 | Export balance CSV |
+| F7 | Print session summary to Godot output |
+| F11 | Clear logger and restart session |
+
+(F5 = save, F8 = simulator, F9 = load, F10 = delete save — unchanged)
+
+### Event types logged
+
+`session_start`, `enemy_defeated`, `boss_failed`, `purchase`, `task_claimed`, `ability_used`, `level_changed`
+
+### Key metrics in CSV
+
+- `enemy_ttk_sec` — time-to-kill, the primary pacing signal
+- `was_boss` — filter boss vs normal TTK
+- `defeated_on_level` — the level the enemy was on (reliable even when auto-transition fires)
+- `boss_hp_remaining` — how close the player was when the boss timer ran out
+- `purchase_category` — hero_level / partner / building / shop / prestige_talent / etc.
+- `gold_earned_on_level`, `level_time_sec` — stage pacing signals
+
+### How to use for tuning
+
+1. Play a 30-minute session from a fresh save.
+2. Press F6 to export.
+3. Open CSV in Excel / Python / Google Sheets.
+4. Plot `enemy_ttk_sec` over `timestamp_sec` — should trend gently upward.
+5. Look at boss rows: TTK should be 3–8× normal at the same level.
+6. Check purchase gaps: long gaps with no purchases signal friction walls.
+7. Compare task/shop gold share against kill income.
+8. Adjust one constant at a time in BalanceConfig; re-run a fresh session.
+
+Full playtest guide: `res://docs/BALANCE_PLAYTEST.md`
+
+---
+
 ## Active Systems & Friction Pass v1 (implemented 2026-05-31)
 
 Goals:
