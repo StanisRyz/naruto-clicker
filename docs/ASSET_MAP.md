@@ -151,7 +151,7 @@ The top HUD (`PrimaryStatsPanel`) uses a single horizontal row containing 6 elem
 
 Gold | Gems | Hero Level | Click Damage | Partner DPS | Settings
 
-Each stat icon is displayed at **64×64 px**. Recommended source image size: 128×128 or 256×256 for sharper scaling. The panel spans the full screen width minus 15 px on each side (690 px on a 720 px screen). All 6 elements are evenly distributed via `SIZE_EXPAND_FILL` so spacing is equal on all sides.
+Each stat icon is displayed at **56×56 px**. Recommended source image size: 128×128 or 256×256 for sharper scaling. The panel spans the full screen width minus 15 px on each side (690 px on a 720 px screen). All 6 elements are evenly distributed via `SIZE_EXPAND_FILL` so spacing is equal on all sides. ImageSlot `show_fallback_behind_texture = false` is set on all HUD icons so that loaded PNG icons appear without a white square background; the fallback color is still shown when an image file is missing.
 
 Value labels use compact number formatting to prevent overflow:
 

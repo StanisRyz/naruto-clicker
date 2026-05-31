@@ -8,7 +8,7 @@ signal settings_requested
 @onready var character_level_value_label: Label = $HBoxContainer/CharacterLevelCard/CharacterLevelValueLabel
 @onready var damage_value_label: Label = $HBoxContainer/DamageCard/DamageValueLabel
 @onready var partner_dps_value_label: Label = $HBoxContainer/PartnerDpsCard/PartnerDpsValueLabel
-@onready var settings_button: Button = $HBoxContainer/SettingsButton
+@onready var settings_button: Button = $HBoxContainer/SettingsCard/SettingsButton
 
 
 func _ready() -> void:
