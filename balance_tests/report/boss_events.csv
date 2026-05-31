@@ -1,0 +1,7 @@
+timestamp_sec,event_type,current_level,max_unlocked_level,current_zone_index,enemy_type,enemy_name,gold,gems,character_level,click_damage,partner_dps,auto_transition_enabled,defeated_on_level,enemy_start_hp,enemy_reward_gold,enemy_ttk_sec,was_boss,was_elite,level_cleared,level_changed,new_level,enemies_defeated_total,boss_hp_remaining,boss_max_hp,boss_retry_tokens,retry_will_be_used,returned_to_level,purchase_category,item_id,cost,success,not_enough_gold,task_id,task_reward_gold,ability_id,ability_rank,previous_level,level_time_sec,gold_earned_on_level,kills_on_level
+48.75,enemy_defeated,11,11,1,normal,Wild Scout,245,0,15,76,1580,true,10,264,130,0.215,true,false,true,true,11,91,,,,,,,,,,,,,,,,,,
+72.14,enemy_defeated,21,21,2,normal,Valley Raider,9208,0,15,76,2700,true,20,1360,490,0.687,true,false,true,true,21,182,,,,,,,,,,,,,,,,,,
+100.76,enemy_defeated,31,31,3,normal,Shadow Fighter,11276,0,15,76,5560,true,30,6800,1770,1.501,true,false,true,true,31,273,,,,,,,,,,,,,,,,,,
+155.16,enemy_defeated,41,41,3,normal,Dark Scout,78694,0,15,76,13100,true,40,33144,6450,2.795,true,false,true,true,41,364,,,,,,,,,,,,,,,,,,
+204.95,enemy_defeated,51,51,3,normal,Dark Scout,19086,0,15,121,64875,true,50,122864,18310,2.189,true,false,true,true,51,455,,,,,,,,,,,,,,,,,,
+254.96,enemy_defeated,61,61,3,normal,Shadow Fighter,118769,0,127,7782,336736,true,60,455440,90912,3.295,true,false,true,true,61,546,,,,,,,,,,,,,,,,,,

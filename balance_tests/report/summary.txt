@@ -1,0 +1,50 @@
+Balance Playtest Report
+============================================================
+  Source:                 balance_tests/balance_playtest.csv
+  Generated:              2026-05-31 09:48:09
+  Total CSV rows:         671
+
+SESSION
+----------------------------------------
+  Duration:               4m 20s  (260.9 s)
+  Highest level:          62
+  Max unlocked:           62
+
+ENEMIES
+----------------------------------------
+  Total killed:           562
+  Bosses killed:          6
+  Boss fails:             0
+  Avg enemy TTK:          0.449 s
+  Median enemy TTK:       0.423 s
+  Avg boss TTK:           1.780 s
+  Median boss TTK:        1.845 s
+
+FRICTION MILESTONES
+----------------------------------------
+  First boss fail:        none
+  TTK first hit 3 s:      6s
+  TTK first hit 8 s:      not reached
+  Boss TTK hit 20 s:      not reached
+
+GOLD ECONOMY
+----------------------------------------
+  Kill rewards:                960,459  (41%)
+  Task rewards:              1,339,650  (58%)
+  Shop rewards:                      0  (0%)  (gold packs only)
+  Gold spent:                1,263,510
+
+PLAYER ACTIONS
+----------------------------------------
+  Purchases (ok):         34
+  Tasks claimed:          13
+  Abilities used:         0
+  Purchases <10m:         34
+
+TUNING HINTS
+----------------------------------------
+  • No boss fails across 6 bosses. If the game feels too easy, raise
+    BOSS_HP_MULTIPLIER (currently 8).
+  • Task rewards are 58% of income (>50%). Consider reducing reward_scale
+    values in TaskConfig.
+
