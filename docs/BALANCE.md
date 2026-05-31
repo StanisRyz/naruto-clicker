@@ -2,48 +2,50 @@
 
 ---
 
-## Zone Content Patch v1 (2026-05-31)
+## Zone Content Patch v2 (2026-05-31)
 
-Extended ZoneConfig from 4 zones (levels 1–40) to 20 zones (levels 1–200).
+Corrected ZoneConfig from 20 zones to 21 zones (levels 1–210). Inserted new Zone 6 "Scorched Outpost" after Zone 5, shifting old zones 6–20 to new zones 7–21. Corrected asset reuse mapping across all zones.
 
 ### Zone coverage
 
-- Zones 1–4: levels 1–40 (unchanged)
-- Zones 5–20: levels 41–200 (new)
+- Zones 1–5: levels 1–50 (unchanged)
+- Zone 6: levels 51–60 (new — Scorched Outpost, reuses zone 5 assets)
+- Zones 7–21: levels 61–210 (shifted from old zones 6–20)
 - Each zone covers 10 levels; boss on every 10th level (unchanged).
-- Level 201+ safely clamps to the last zone (zone 20) via existing fallback behavior.
+- Level 211+ safely clamps to the last zone (zone 21) via existing fallback behavior.
 
 ### Zone hp/reward multipliers
 
-| Zone | Levels | hp_multiplier | reward_multiplier |
-|------|--------|---------------|-------------------|
-| 1  | 1–10    | 1.0  | 1.0  |
-| 2  | 11–20   | 1.4  | 1.3  |
-| 3  | 21–30   | 1.9  | 1.7  |
-| 4  | 31–40   | 2.5  | 2.2  |
-| 5  | 41–50   | 3.2  | 2.8  |
-| 6  | 51–60   | 4.0  | 3.5  |
-| 7  | 61–70   | 5.0  | 4.3  |
-| 8  | 71–80   | 6.2  | 5.2  |
-| 9  | 81–90   | 7.6  | 6.2  |
-| 10 | 91–100  | 9.2  | 7.4  |
-| 11 | 101–110 | 11.0 | 8.7  |
-| 12 | 111–120 | 13.0 | 10.1 |
-| 13 | 121–130 | 15.2 | 11.7 |
-| 14 | 131–140 | 17.6 | 13.4 |
-| 15 | 141–150 | 20.2 | 15.2 |
-| 16 | 151–160 | 23.0 | 17.1 |
-| 17 | 161–170 | 26.0 | 19.1 |
-| 18 | 171–180 | 29.2 | 21.2 |
-| 19 | 181–190 | 32.6 | 23.4 |
-| 20 | 191–200 | 36.2 | 25.7 |
+| Zone | Levels  | hp_multiplier | reward_multiplier |
+|------|---------|---------------|-------------------|
+| 1    | 1–10    | 1.0           | 1.0               |
+| 2    | 11–20   | 1.4           | 1.3               |
+| 3    | 21–30   | 1.9           | 1.7               |
+| 4    | 31–40   | 2.5           | 2.2               |
+| 5    | 41–50   | 3.2           | 2.8               |
+| 6    | 51–60   | 3.6           | 3.1               |
+| 7    | 61–70   | 4.2           | 3.6               |
+| 8    | 71–80   | 5.1           | 4.3               |
+| 9    | 81–90   | 6.3           | 5.2               |
+| 10   | 91–100  | 7.7           | 6.2               |
+| 11   | 101–110 | 9.3           | 7.4               |
+| 12   | 111–120 | 11.1          | 8.7               |
+| 13   | 121–130 | 13.1          | 10.1              |
+| 14   | 131–140 | 15.3          | 11.7              |
+| 15   | 141–150 | 17.7          | 13.4              |
+| 16   | 151–160 | 20.3          | 15.2              |
+| 17   | 161–170 | 23.1          | 17.1              |
+| 18   | 171–180 | 26.1          | 19.1              |
+| 19   | 181–190 | 29.3          | 21.2              |
+| 20   | 191–200 | 32.7          | 23.4              |
+| 21   | 201–210 | 36.3          | 25.7              |
 
 These are first-pass content scaling values. Global enemy HP/reward formulas were not changed.
 
 ### Asset reuse
 
 Normal and elite enemy textures and backgrounds are shared across zones. See `docs/ASSET_MAP.md`.
-Boss textures are unique per gameplay zone (20 unique boss folders required).
+Boss textures are unique per gameplay zone (21 unique boss folders required).
 
 ### Intentionally not changed
 
@@ -53,6 +55,12 @@ Boss textures are unique per gameplay zone (20 unique boss folders required).
 - UI layout
 - Boss every 10th level logic
 - Android/Web export settings
+
+---
+
+## Zone Content Patch v1 (2026-05-31)
+
+Extended ZoneConfig from 4 zones (levels 1–40) to 20 zones (levels 1–200). Superseded by Patch v2 above.
 
 ---
 

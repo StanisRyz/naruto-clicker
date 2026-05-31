@@ -16,15 +16,15 @@ Only source zones listed in the reuse map require `enemy_01`, `enemy_02`, `enemy
 
 | Source zone | Used by gameplay zones |
 |-------------|----------------------|
-| zone_01     | 1, 2, 6, 12, 13      |
+| zone_01     | 1, 2, 7, 13, 14      |
 | zone_03     | 3, 4                 |
-| zone_05     | 5                    |
-| zone_07     | 7, 8, 14             |
-| zone_09     | 9, 20                |
-| zone_10     | 10, 11               |
-| zone_15     | 15                   |
-| zone_16     | 16, 17, 18           |
-| zone_19     | 19                   |
+| zone_05     | 5, 6                 |
+| zone_08     | 8, 9, 15             |
+| zone_10     | 10, 21               |
+| zone_11     | 11, 12               |
+| zone_16     | 16                   |
+| zone_17     | 17, 18, 19           |
+| zone_20     | 20                   |
 
 Each slot folder (`enemy_01`, `enemy_02`, `enemy_03`, `elite_01`) needs four files:
 - `healthy.png`
@@ -32,11 +32,20 @@ Each slot folder (`enemy_01`, `enemy_02`, `enemy_03`, `elite_01`) needs four fil
 - `wounded.png`
 - `defeated.png`
 
+### Optional override folders
+
+These folders exist but are no longer required source folders. They may serve as future per-zone overrides without code changes. Do not delete them.
+
+- `assets/images/enemies/zone_07/` (enemy_01–03, elite_01)
+- `assets/images/enemies/zone_09/` (enemy_01–03, elite_01)
+- `assets/images/enemies/zone_15/` (enemy_01–03, elite_01)
+- `assets/images/enemies/zone_19/` (enemy_01–03, elite_01)
+
 ### Boss folders
 
 Every gameplay zone requires a unique `boss_01` folder, regardless of normal/elite reuse.
 
-Zones 1–20: `assets/images/enemies/zone_01/boss_01/` through `zone_20/boss_01/`
+Zones 1–21: `assets/images/enemies/zone_01/boss_01/` through `zone_21/boss_01/`
 
 Each boss folder needs the same four state files listed above.
 
@@ -50,17 +59,24 @@ Only source zones listed in the reuse map need a `background.png`.
 
 | Source zone | Used by gameplay zones |
 |-------------|----------------------|
-| zone_01     | 1, 6, 12, 13         |
+| zone_01     | 1, 7, 13, 14         |
 | zone_02     | 2                    |
 | zone_03     | 3                    |
 | zone_04     | 4                    |
-| zone_05     | 5                    |
-| zone_07     | 7, 8, 14             |
-| zone_09     | 9, 20                |
-| zone_10     | 10, 11               |
-| zone_15     | 15                   |
-| zone_16     | 16, 17, 18           |
-| zone_19     | 19                   |
+| zone_05     | 5, 6                 |
+| zone_08     | 8, 9, 15             |
+| zone_10     | 10, 21               |
+| zone_11     | 11, 12               |
+| zone_16     | 16                   |
+| zone_17     | 17, 18, 19           |
+| zone_20     | 20                   |
+
+### Optional override background folders
+
+- `assets/images/backgrounds/zone_07/`
+- `assets/images/backgrounds/zone_09/`
+- `assets/images/backgrounds/zone_15/`
+- `assets/images/backgrounds/zone_19/`
 
 ---
 
