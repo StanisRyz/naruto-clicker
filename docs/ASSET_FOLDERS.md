@@ -10,37 +10,33 @@ Git does not track empty directories. Every folder in this project contains a `.
 
 Path: `assets/images/enemies/zone_##/slot/state.png`
 
-### Normal and elite enemy source folders
+### Non-boss enemy pools
 
-Only source zones listed in the reuse map require `enemy_01`, `enemy_02`, `enemy_03`, and `elite_01` sub-folders. Other zones reuse these assets.
+Non-boss enemies use shared pools. Only three zone folders contain normal/elite enemy slots.
 
-| Source zone | Used by gameplay zones |
-|-------------|----------------------|
-| zone_01     | 1, 2, 7, 13, 14      |
-| zone_03     | 3, 4                 |
-| zone_05     | 5, 6                 |
-| zone_08     | 8, 9, 15             |
-| zone_10     | 10, 21               |
-| zone_11     | 11, 12               |
-| zone_16     | 16                   |
-| zone_17     | 17, 18, 19           |
-| zone_20     | 20                   |
+| Pool folder | Used by gameplay zones | Normal slots       | Elite slots       |
+|-------------|------------------------|--------------------|-------------------|
+| zone_01     | 1–10                   | enemy_01–enemy_15  | elite_01–elite_04 |
+| zone_11     | 11–20                  | enemy_01–enemy_15  | elite_01–elite_05 |
+| zone_21     | 21                     | enemy_01–enemy_03  | elite_01          |
 
-Each slot folder (`enemy_01`, `enemy_02`, `enemy_03`, `elite_01`) needs four files:
+Each slot folder needs four files:
 - `healthy.png`
 - `hit.png`
 - `wounded.png`
 - `defeated.png`
 
+Old non-boss source folders (zone_03, zone_05, zone_08, zone_10, zone_16, zone_17, zone_20 enemy/elite slots) are obsolete. Empty obsolete folders have been removed. Any that contained real assets were preserved.
+
 ### Boss folders
 
-Every gameplay zone requires a unique `boss_01` folder, regardless of normal/elite reuse.
+Every gameplay zone requires a unique `boss_01` folder, regardless of normal/elite pool assignment.
 
 Zones 1–21: `assets/images/enemies/zone_01/boss_01/` through `zone_21/boss_01/`
 
 Each boss folder needs the same four state files listed above.
 
-Note: zone_07, zone_09, zone_15, and zone_19 enemy directories exist with only `boss_01/` inside — this is correct, as those zones are not normal/elite source zones but do require unique bosses.
+Note: zone_02, zone_03, zone_04, zone_06, zone_07, zone_09, zone_12, zone_13, zone_14, zone_15, zone_18, zone_19 directories contain only `boss_01/` — this is correct, as those zones are not enemy pool source zones but do require unique bosses.
 
 ---
 

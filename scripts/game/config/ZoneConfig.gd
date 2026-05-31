@@ -4,6 +4,8 @@ extends RefCounted
 const LEVELS_PER_ZONE: int = 5
 const BOSS_LEVEL_INTERVAL: int = 5
 
+# enemies and elite_enemy are legacy display/content notes.
+# Non-boss enemy runtime selection now uses EnemyPoolConfig; these fields are no longer used for enemy spawning.
 const ZONE_DATA: Array = [
 	{
 		"name": "Training Grounds",

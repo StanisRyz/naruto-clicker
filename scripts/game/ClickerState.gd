@@ -8,6 +8,7 @@ const EnemyCalc = preload("res://scripts/game/calculators/EnemyScalingCalculator
 const Presentation = preload("res://scripts/game/presentation/ClickerStatePresentation.gd")
 const TaskRT = preload("res://scripts/game/runtime/TaskRuntime.gd")
 const ShopRT = preload("res://scripts/game/runtime/ShopRuntime.gd")
+const EnemyPoolConfig = preload("res://scripts/game/config/EnemyPoolConfig.gd")
 
 
 var gold: int = 0
@@ -1666,23 +1667,19 @@ func choose_enemy_for_current_level() -> void:
 		current_enemy_zone_index = current_zone_index
 		return
 
-	current_enemy_zone_index = ZoneConfig.get_enemy_asset_zone_index_for_level(current_level)
+	current_enemy_zone_index = EnemyPoolConfig.get_pool_zone_index_for_level(current_level)
+
 	if rng.randf() < get_current_elite_spawn_chance():
 		is_elite_enemy = true
-		enemy_name = zone.elite_enemy
-		current_enemy_slot = "elite_01"
+		var elite_candidate: Dictionary = EnemyPoolConfig.get_random_elite_candidate(current_level, rng)
+		enemy_name = String(elite_candidate.get("name", "Elite Enemy"))
+		current_enemy_slot = String(elite_candidate.get("slot", "elite_01"))
 		return
 
 	is_elite_enemy = false
-	var enemies: Array = zone.enemies
-	if enemies.is_empty():
-		enemy_name = "Enemy"
-		current_enemy_slot = "enemy_01"
-		return
-
-	var enemy_index: int = rng.randi_range(0, enemies.size() - 1)
-	enemy_name = enemies[enemy_index]
-	current_enemy_slot = "enemy_%02d" % (enemy_index + 1)
+	var normal_candidate: Dictionary = EnemyPoolConfig.get_random_normal_candidate(current_level, rng)
+	enemy_name = String(normal_candidate.get("name", "Enemy"))
+	current_enemy_slot = String(normal_candidate.get("slot", "enemy_01"))
 
 
 func recalculate_level_values() -> void:

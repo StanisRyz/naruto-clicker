@@ -64,11 +64,10 @@ naruto-clicker/
 │       ├── shop/         # Shop product icons
 │       ├── tasks/        # Task type icons
 │       ├── enemies/
-│       │   ├── zone_01/  # Zone 1 (levels 1–10)
-│       │   │   ├── enemy_01/ … enemy_03/   # Normal enemies (healthy/hit/wounded/defeated)
-│       │   │   ├── elite_01/               # Elite enemy
-│       │   │   └── boss_01/                # Boss
-│       │   ├── zone_02/ … zone_04/         # Same structure for each zone
+│       │   ├── zone_01/  # Non-boss pool for gameplay zones 1–10 (enemy_01–15, elite_01–04, boss_01)
+│       │   ├── zone_11/  # Non-boss pool for gameplay zones 11–20 (enemy_01–15, elite_01–05, boss_01)
+│       │   ├── zone_21/  # Non-boss pool for zone 21 (enemy_01–03, elite_01, boss_01)
+│       │   └── zone_02/ … zone_20/  # boss_01/ only (non-boss enemy/elite slots are obsolete)
 │       └── backgrounds/
 │           ├── zone_01/  # background.png for Training Grounds
 │           ├── zone_02/  # Forest Path
