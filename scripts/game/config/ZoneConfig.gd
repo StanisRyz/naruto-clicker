@@ -301,3 +301,15 @@ static func get_enemy_asset_zone_index_for_level(level: int) -> int:
 
 static func get_background_asset_zone_index_for_level(level: int) -> int:
 	return get_background_asset_zone_number_for_level(level) - 1
+
+
+static func get_name_key(zone_index: int) -> String:
+	return "zone.%02d.name" % (zone_index + 1)
+
+
+static func get_boss_key(zone_index: int) -> String:
+	return "zone.%02d.boss" % (zone_index + 1)
+
+
+static func get_name_key_for_level(level: int) -> String:
+	return get_name_key(get_zone_index_for_level(level))

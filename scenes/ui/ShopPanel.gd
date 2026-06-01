@@ -80,7 +80,6 @@ func _create_product_row(product_id: String) -> Dictionary:
 	var button := Button.new()
 	button.name = "BuyButton"
 	button.custom_minimum_size = Vector2(140, 64)
-	button.text = "Buy"
 	button.pressed.connect(func() -> void: product_purchase_requested.emit(product_id))
 	content.add_child(button)
 
@@ -97,10 +96,15 @@ func _update_product_row(product_data: Dictionary, row: Dictionary) -> void:
 	var button: Button = row["button"]
 	var cost_gems: int = int(product_data.get("cost_gems", 0))
 
-	name_cost_label.text = "%s | %s Gems" % [String(product_data.get("name", "")), NumberFormatter.compact(cost_gems)]
-	description_label.text = String(product_data.get("description", ""))
+	var name_key: String = String(product_data.get("name_key", ""))
+	var display_name: String = LocalizationManager.tr_key(name_key) if name_key != "" else String(product_data.get("name", ""))
+	var desc_key: String = String(product_data.get("description_key", ""))
+	var display_desc: String = LocalizationManager.tr_key(desc_key) if desc_key != "" else String(product_data.get("description", ""))
+
+	name_cost_label.text = "%s | %s Gems" % [display_name, NumberFormatter.compact(cost_gems)]
+	description_label.text = display_desc
 	button.disabled = not bool(product_data.get("can_buy", false))
-	button.text = "Buy"
+	button.text = LocalizationManager.tr_key("shop.buy_button")
 
 
 func _create_row_stylebox() -> StyleBoxFlat:

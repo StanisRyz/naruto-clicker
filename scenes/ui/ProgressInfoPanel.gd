@@ -10,16 +10,19 @@ extends Control
 
 
 func update_view(state: ClickerState) -> void:
-	zone_label.text = "%s" % state.zone_name
+	zone_label.text = LocalizationManager.tr_key(ZoneConfig.get_name_key_for_level(state.current_level))
 	if state.is_level_cleared(state.current_level):
-		enemies_label.text = "Cleared"
+		enemies_label.text = LocalizationManager.tr_key("ui.common.cleared")
 	else:
-		enemies_label.text = "Enemies %d / %d" % [
-			state.enemies_defeated_on_level,
-			state.enemies_required_per_level,
-		]
+		enemies_label.text = LocalizationManager.format_key("ui.progress.enemies_count", {
+			"current": state.enemies_defeated_on_level,
+			"required": state.enemies_required_per_level,
+		})
 	enemy_name_label.text = "%s" % state.enemy_name
-	enemy_hp_label.text = "HP %s / %s" % [NumberFormatter.compact(state.target_hp), NumberFormatter.compact(state.target_max_hp)]
+	enemy_hp_label.text = LocalizationManager.format_key("ui.progress.hp_pair", {
+		"current": NumberFormatter.compact(state.target_hp),
+		"max": NumberFormatter.compact(state.target_max_hp),
+	})
 	enemy_hp_progress_bar.max_value = maxf(float(state.target_max_hp), 1.0)
 	enemy_hp_progress_bar.value = clampf(float(state.target_hp), 0.0, enemy_hp_progress_bar.max_value)
 
@@ -27,4 +30,6 @@ func update_view(state: ClickerState) -> void:
 func update_boss_timer(time_left: float, is_active: bool) -> void:
 	boss_timer_label.visible = is_active
 	if is_active:
-		boss_timer_label.text = "Boss Time: %.1fs" % maxf(time_left, 0.0)
+		boss_timer_label.text = LocalizationManager.format_key("ui.progress.boss_time", {
+			"time": "%.1f" % maxf(time_left, 0.0),
+		})

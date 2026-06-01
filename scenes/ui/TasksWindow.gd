@@ -58,10 +58,10 @@ func refresh_progress_only(state: ClickerState) -> void:
 		var claim_button: Button = row_data["claim_button"]
 		var completed: bool = bool(task_data.get("completed", false))
 
-		title_label.text = String(task_data.get("title", ""))
+		title_label.text = _get_task_title(task_data)
 		progress_label.text = _format_progress_text(task_data)
 
-		if claim_button.text == "Claimed":
+		if claim_button.text == LocalizationManager.tr_key("task.claimed"):
 			continue
 
 		if completed == bool(row_data.get("completed", false)):
@@ -70,10 +70,10 @@ func refresh_progress_only(state: ClickerState) -> void:
 		row_data["completed"] = completed
 		if completed:
 			claim_button.disabled = false
-			claim_button.text = "Claim"
+			claim_button.text = LocalizationManager.tr_key("task.claim")
 		else:
 			claim_button.disabled = true
-			claim_button.text = "In Progress"
+			claim_button.text = LocalizationManager.tr_key("task.in_progress")
 
 
 func update_view(state: ClickerState) -> void:
@@ -101,6 +101,15 @@ func _clear_task_rows() -> void:
 	for child in tasks_container.get_children():
 		tasks_container.remove_child(child)
 		child.queue_free()
+
+
+func _get_task_title(task_data: Dictionary) -> String:
+	var task_id: String = String(task_data.get("id", ""))
+	var task_config: Dictionary = TaskConfig.get_by_id(task_id)
+	var title_key: String = String(task_config.get("title_key", ""))
+	if title_key != "":
+		return LocalizationManager.tr_key(title_key)
+	return String(task_data.get("title", ""))
 
 
 func _create_task_row(task_data: Dictionary) -> PanelContainer:
@@ -143,7 +152,7 @@ func _create_task_row(task_data: Dictionary) -> PanelContainer:
 	var title_label := Label.new()
 	title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	title_label.text = String(task_data.get("title", ""))
+	title_label.text = _get_task_title(task_data)
 	title_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	info_container.add_child(title_label)
 
@@ -158,13 +167,13 @@ func _create_task_row(task_data: Dictionary) -> PanelContainer:
 	claim_button.custom_minimum_size = Vector2(160, 56)
 	if bool(task_data.get("completed", false)):
 		claim_button.disabled = false
-		claim_button.text = "Claim"
+		claim_button.text = LocalizationManager.tr_key("task.claim")
 	else:
 		claim_button.disabled = true
-		claim_button.text = "In Progress"
+		claim_button.text = LocalizationManager.tr_key("task.in_progress")
 	claim_button.pressed.connect(func() -> void:
 		claim_button.disabled = true
-		claim_button.text = "Claimed"
+		claim_button.text = LocalizationManager.tr_key("task.claimed")
 		task_claim_requested.emit(task_id)
 	)
 	content.add_child(claim_button)
@@ -181,11 +190,11 @@ func _create_task_row(task_data: Dictionary) -> PanelContainer:
 
 
 func _format_progress_text(task_data: Dictionary) -> String:
-	return "%d / %d | Reward: %s gold" % [
-		int(task_data.get("progress", 0)),
-		int(task_data.get("target", 0)),
-		NumberFormatter.compact(int(task_data.get("reward_gold", 0))),
-	]
+	return LocalizationManager.format_key("task.progress", {
+		"current": int(task_data.get("progress", 0)),
+		"target": int(task_data.get("target", 0)),
+		"reward": NumberFormatter.compact(int(task_data.get("reward_gold", 0))),
+	})
 
 
 func _on_outside_click_area_gui_input(event: InputEvent) -> void:

@@ -74,7 +74,6 @@ func _create_prestige_action_row() -> Dictionary:
 	var button := Button.new()
 	button.name = "PrestigeButton"
 	button.custom_minimum_size = Vector2(180, 64)
-	button.text = "Prestige"
 	button.pressed.connect(_on_prestige_button_pressed)
 	content.add_child(button)
 
@@ -90,10 +89,12 @@ func _update_prestige_action_row(total_reward: int) -> void:
 	var effect_label: Label = prestige_action_row["effect_label"]
 	var button: Button = prestige_action_row["button"]
 
-	name_gain_label.text = "Prestige | Gain %s" % NumberFormatter.compact(total_reward)
-	effect_label.text = "Reset progress for permanent points"
+	name_gain_label.text = LocalizationManager.format_key("prestige.gain", {
+		"points": NumberFormatter.compact(total_reward),
+	})
+	effect_label.text = LocalizationManager.tr_key("prestige.description")
 	button.disabled = total_reward <= 0
-	button.text = "Prestige"
+	button.text = LocalizationManager.tr_key("prestige.action")
 
 
 func _ensure_talent_rows(_state: ClickerState) -> void:
@@ -171,11 +172,17 @@ func _update_talent_row(state: ClickerState, talent_index: int, row: Dictionary)
 	var button: Button = row["button"]
 	var level: int = state.prestige_talent_levels[talent_index]
 	var cost: int = state.get_prestige_talent_cost(talent_index)
+	var talent_name: String = LocalizationManager.tr_key(PrestigeConfig.get_name_key(talent_index))
 
-	name_level_label.text = "%s | Lv %d" % [PrestigeConfig.TALENT_NAMES[talent_index], level]
+	name_level_label.text = LocalizationManager.format_key("prestige.talent_name_level", {
+		"name": talent_name,
+		"level": level,
+	})
 	effect_label.text = state.get_prestige_talent_description(talent_index)
 	button.disabled = state.prestige_points_available < cost
-	button.text = "Upgrade - Cost: %s" % NumberFormatter.compact(cost)
+	button.text = LocalizationManager.format_key("prestige.talent_upgrade", {
+		"cost": NumberFormatter.compact(cost),
+	})
 
 
 func _create_row_stylebox() -> StyleBoxFlat:

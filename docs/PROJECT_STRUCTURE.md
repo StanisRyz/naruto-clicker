@@ -40,7 +40,9 @@ naruto-clicker/
 │       ├── GameAssetCatalog.gd       # Central registry: all UI image keys → file paths
 │       ├── ImageSlot.gd              # Drop-in ColorRect with texture + fallback color
 │       ├── EnemyAssetCatalog.gd      # Per-enemy/per-state image path helpers
-│       └── BackgroundAssetCatalog.gd # Per-zone background image path helpers
+│       ├── BackgroundAssetCatalog.gd # Per-zone background image path helpers
+│       ├── LocalizationManager.gd    # Autoload: loads game_text.csv, provides tr_key/format_key, language_changed signal
+│       └── NumberFormatter.gd        # Number formatting utilities
 │
 ├── scenes/
 │   ├── main/
@@ -78,6 +80,9 @@ naruto-clicker/
 │   ├── PROJECT_STRUCTURE.md  # This file
 │   └── BALANCE.md            # Balance tuning guide and simulator instructions
 │
+├── localization/
+│   └── game_text.csv       # Single editable source of all player-facing strings (key / en / ru / context / notes)
+│
 ├── export_presets.cfg   # Web (Yandex) and Android export configurations
 ├── project.godot        # Engine settings, autoloads, display, renderer
 ├── README.md            # Gameplay documentation and system reference
@@ -111,6 +116,20 @@ naruto-clicker/
 | `PrestigeConfirmDialog.tscn/.gd` | Fully opaque prestige confirmation overlay |
 | `ShopPanel.tscn/.gd` | Shop product cards + dev gems button |
 | `ShopSheet.tscn/.gd` | Bottom-half sheet hosting ShopPanel |
+
+## Localization
+
+All player-facing strings are stored in `res://localization/game_text.csv` (key / en / ru / context / notes).
+
+The `LocalizationManager` autoload (added to `project.godot`) loads this file at startup and exposes:
+- `tr_key(key)` — returns translation for current language, falls back to English if Russian is empty
+- `format_key(key, values)` — same but replaces `{placeholder}` tokens
+- `set_language(code)` / `get_language()` — runtime language switch; emits `language_changed`
+
+Selected language is saved in `state.language` alongside `sound_enabled` / `music_enabled`.
+Language switch in **Settings → Language** button; UI refreshes immediately.
+
+See `docs/LOCALIZATION.md` for the full guide, fallback rules, and known gaps.
 
 ## Key architectural rules
 

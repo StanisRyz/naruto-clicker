@@ -92,29 +92,38 @@ func _update_building_row(state: ClickerState, building_index: int, row: Diction
 	var name_count_label: Label = row["name_count_label"]
 	var effect_label: Label = row["effect_label"]
 	var button: Button = row["button"]
-	var building_name: String = SettlementConfig.BUILDING_NAMES[building_index]
+	var building_name: String = LocalizationManager.tr_key(SettlementConfig.get_name_key(building_index))
 	var owned_count: int = state.building_counts[building_index]
-	name_count_label.text = "%s | %d" % [building_name, owned_count]
+	name_count_label.text = LocalizationManager.format_key("settlement.name_count", {
+		"name": building_name,
+		"count": owned_count,
+	})
 	effect_label.text = _get_building_effect_with_milestone_text(state, building_index, owned_count)
 
 	if not state.can_buy_building(building_index):
 		button.disabled = true
-		button.text = "Requires %s" % SettlementConfig.BUILDING_NAMES[building_index - 1]
+		var prev_name: String = LocalizationManager.tr_key(SettlementConfig.get_name_key(building_index - 1))
+		button.text = LocalizationManager.format_key("settlement.requires", {"building": prev_name})
 		return
 
 	var bulk_count: int = state.get_building_bulk_display_count(building_index, selected_buy_mode)
 	var bulk_cost: int = state.get_building_bulk_display_cost(building_index, selected_buy_mode)
 	button.disabled = false
-	button.text = "Build x%d - Cost: %s" % [bulk_count, NumberFormatter.compact(bulk_cost)]
+	button.text = LocalizationManager.format_key("settlement.build_button", {
+		"count": bulk_count,
+		"cost": NumberFormatter.compact(bulk_cost),
+	})
 
 
 func _get_building_effect_with_milestone_text(state: ClickerState, building_index: int, owned_count: int) -> String:
 	var effect_text: String = state.get_building_short_effect_description(building_index)
 	var next_milestone: int = state.get_next_milestone(owned_count)
 	if next_milestone > 0:
-		return "%s | Next x2 at %d" % [effect_text, next_milestone]
-
-	return "%s | Max milestones" % effect_text
+		return LocalizationManager.format_key("settlement.next_milestone", {
+			"effect": effect_text,
+			"milestone": next_milestone,
+		})
+	return LocalizationManager.format_key("settlement.max_milestones", {"effect": effect_text})
 
 
 func set_buy_mode(mode: String) -> void:

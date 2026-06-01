@@ -40,6 +40,7 @@ var combo_empowered_multiplier: float = BalanceConfig.COMBO_EMPOWERED_MULTIPLIER
 var _autosave_timer: float = 0.0
 const _AUTOSAVE_INTERVAL: float = 10.0
 var balance_logger: BalancePlaytestLogger = null
+var _is_initialized: bool = false
 
 @onready var primary_stats_panel: PrimaryStatsPanel = $PrimaryStatsPanel
 @onready var stage_navigator: Control = $MainContent/VBoxContainer/StageNavigator
@@ -104,7 +105,10 @@ func _ready() -> void:
 	settlement_sheet.closed.connect(_on_sheet_closed)
 	prestige_sheet.closed.connect(_on_sheet_closed)
 	shop_sheet.closed.connect(_on_sheet_closed)
+	LocalizationManager.language_changed.connect(_on_language_changed)
 	_load_game_on_start()
+	LocalizationManager.set_language(state.language)
+	_is_initialized = true
 	_update_ui()
 	_sync_boss_timer()
 	if BuildConfig.IS_DEBUG_BUILD:
@@ -310,9 +314,9 @@ func _on_settings_music_toggled(enabled: bool) -> void:
 
 func _on_settings_save_requested() -> void:
 	if _save_game_now():
-		settings_window.show_status("Saved")
+		settings_window.show_status(LocalizationManager.tr_key("settings.saved"))
 	else:
-		settings_window.show_status("Save failed")
+		settings_window.show_status(LocalizationManager.tr_key("settings.save_failed"))
 
 
 func _on_settings_reset_confirmed() -> void:
@@ -324,7 +328,7 @@ func _on_settings_reset_confirmed() -> void:
 	if tasks_window.visible:
 		tasks_window.hide_window()
 	settings_window.refresh_view(state)
-	settings_window.show_status("Progress reset")
+	settings_window.show_status(LocalizationManager.tr_key("settings.progress_reset"))
 	_update_ui()
 	stage_navigator.center_on_level(1)
 	_sync_boss_timer()
@@ -499,11 +503,26 @@ func _reset_runtime_state_for_new_game() -> void:
 
 
 func _update_bottom_bar_view() -> void:
-	upgrades_button.text = "[Upgrades]" if active_bottom_tab == "upgrades" else "Upgrades"
-	partners_button.text = "[Partners]" if active_bottom_tab == "partners" else "Partners"
-	settlement_button.text = "[Settlement]" if active_bottom_tab == "settlement" else "Settlement"
-	prestige_button.text = "[Prestige]" if active_bottom_tab == "prestige" else "Prestige"
-	shop_button.text = "[Shop]" if active_bottom_tab == "shop" else "Shop"
+	var u: String = LocalizationManager.tr_key("ui.tab.upgrades")
+	var pa: String = LocalizationManager.tr_key("ui.tab.partners")
+	var se: String = LocalizationManager.tr_key("ui.tab.settlement")
+	var pr: String = LocalizationManager.tr_key("ui.tab.prestige")
+	var sh: String = LocalizationManager.tr_key("ui.tab.shop")
+	upgrades_button.text = "[%s]" % u if active_bottom_tab == "upgrades" else u
+	partners_button.text = "[%s]" % pa if active_bottom_tab == "partners" else pa
+	settlement_button.text = "[%s]" % se if active_bottom_tab == "settlement" else se
+	prestige_button.text = "[%s]" % pr if active_bottom_tab == "prestige" else pr
+	shop_button.text = "[%s]" % sh if active_bottom_tab == "shop" else sh
+
+
+func _on_language_changed() -> void:
+	if not _is_initialized:
+		return
+	state.language = LocalizationManager.get_language()
+	_update_ui()
+	if tasks_window.visible:
+		tasks_window.request_full_rebuild(state)
+	_save_game_now()
 
 
 func _toggle_bottom_sheet(tab_name: String) -> void:

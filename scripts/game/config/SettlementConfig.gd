@@ -25,3 +25,7 @@ static func get_base_cost(index: int) -> int:
 	if index < 0 or index >= BalanceConfig.BUILDING_BASE_COSTS.size():
 		return 0
 	return BalanceConfig.BUILDING_BASE_COSTS[index]
+
+
+static func get_name_key(index: int) -> String:
+	return "building.%02d.name" % (index + 1)

@@ -81,6 +81,7 @@ var zone_hp_multiplier: float = 1.0
 var zone_reward_multiplier: float = 1.0
 var sound_enabled: bool = true
 var music_enabled: bool = true
+var language: String = "en"
 
 var prestige_points_available: int = 0
 var prestige_points_total_earned: int = 0

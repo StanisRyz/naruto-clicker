@@ -21,17 +21,19 @@ func show_dialog(state: ClickerState) -> void:
 	var reward: int = state.get_prestige_reward()
 	var available_after: int = state.prestige_points_available + reward
 	var total_earned_after: int = state.prestige_points_total_earned + reward
-	info_label.text = (
-		"Stage level: %d\n" % state.current_level
-		+ "Character level: %d\n" % state.character_level
-		+ "Stage points: +%s\n" % NumberFormatter.compact(stage_points)
-		+ "Character points: +%s\n" % NumberFormatter.compact(character_points)
-		+ "Points to gain: +%s\n" % NumberFormatter.compact(reward)
-		+ "Available after: %s\n" % NumberFormatter.compact(available_after)
-		+ "Total earned after: %s\n\n" % NumberFormatter.compact(total_earned_after)
-		+ "All normal progress will reset.\n"
-		+ "Purchased prestige talents remain."
-	)
+	var L := LocalizationManager
+	var lines: PackedStringArray = []
+	lines.append("%s: %d" % [L.tr_key("prestige.confirm.stage_level"), state.current_level])
+	lines.append("%s: %d" % [L.tr_key("prestige.confirm.character_level"), state.character_level])
+	lines.append("%s: +%s" % [L.tr_key("prestige.confirm.stage_points"), NumberFormatter.compact(stage_points)])
+	lines.append("%s: +%s" % [L.tr_key("prestige.confirm.character_points"), NumberFormatter.compact(character_points)])
+	lines.append("%s: +%s" % [L.tr_key("prestige.confirm.points_to_gain"), NumberFormatter.compact(reward)])
+	lines.append("%s: %s" % [L.tr_key("prestige.confirm.available_after"), NumberFormatter.compact(available_after)])
+	lines.append("%s: %s" % [L.tr_key("prestige.confirm.total_earned_after"), NumberFormatter.compact(total_earned_after)])
+	lines.append("")
+	lines.append(L.tr_key("prestige.confirm.warning"))
+	lines.append(L.tr_key("prestige.confirm.talents_note"))
+	info_label.text = "\n".join(lines)
 	show()
 
 

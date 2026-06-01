@@ -19,3 +19,7 @@ static func get_talent_bonus_type(index: int) -> String:
 	if index < 0 or index >= TALENT_BONUS_TYPES.size():
 		return ""
 	return TALENT_BONUS_TYPES[index]
+
+
+static func get_name_key(index: int) -> String:
+	return "prestige.talent.%02d.name" % (index + 1)

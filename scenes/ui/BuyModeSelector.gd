@@ -20,6 +20,7 @@ func _ready() -> void:
 	buttons[1].pressed.connect(func() -> void: set_selected_mode("x10"))
 	buttons[2].pressed.connect(func() -> void: set_selected_mode("x100"))
 	buttons[3].pressed.connect(func() -> void: set_selected_mode("max"))
+	LocalizationManager.language_changed.connect(_update_buttons)
 	_update_buttons()
 
 
@@ -48,5 +49,5 @@ func _update_buttons() -> void:
 
 
 func _get_buy_mode_label(mode: String, selected: bool) -> String:
-	var label: String = "Max" if mode == "max" else mode
+	var label: String = LocalizationManager.tr_key("ui.buy_mode.max") if mode == "max" else mode
 	return "[%s]" % label if selected else label

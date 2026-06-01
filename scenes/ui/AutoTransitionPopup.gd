@@ -32,7 +32,10 @@ func show_popup(state: ClickerState, anchor: Vector2, button_global_rect: Rect2 
 
 
 func refresh_view(state: ClickerState) -> void:
-	_status_label.text = "Status: ON" if state.auto_stage_advance_enabled else "Status: OFF"
+	if state.auto_stage_advance_enabled:
+		_status_label.text = LocalizationManager.tr_key("auto_transition.status_on")
+	else:
+		_status_label.text = LocalizationManager.tr_key("auto_transition.status_off")
 
 
 func hide_popup() -> void:

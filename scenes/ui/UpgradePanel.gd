@@ -7,10 +7,10 @@ signal ability_skill_popup_requested(skill_id: String, anchor_global_position: V
 signal ability_unlock_requested(ability_id: String)
 
 const ABILITIES: Array[Dictionary] = [
-	{"id": "autoclick", "name": "Autoclick"},
-	{"id": "gold_bonus", "name": "Gold Bonus"},
-	{"id": "focus_burst", "name": "Focus Burst"},
-	{"id": "rally", "name": "Rally"},
+	{"id": "autoclick", "name": "Autoclick", "name_key": "ability.autoclick.name"},
+	{"id": "gold_bonus", "name": "Gold Bonus", "name_key": "ability.gold_bonus.name"},
+	{"id": "focus_burst", "name": "Focus Burst", "name_key": "ability.focus_burst.name"},
+	{"id": "rally", "name": "Rally", "name_key": "ability.rally.name"},
 ]
 
 const BUY_MODES: Array[String] = ["x1", "x10", "x100", "max"]
@@ -86,13 +86,24 @@ func _update_hero_level_row(state: ClickerState) -> void:
 	var bulk_cost: int = state.get_character_level_bulk_display_cost(selected_buy_mode)
 	var next_milestone: int = state.get_next_milestone(state.character_level)
 
-	name_status_label.text = "Hero Level | Level %d | Damage %s" % [state.character_level, NumberFormatter.compact(state.click_damage)]
+	name_status_label.text = LocalizationManager.format_key("upgrade.hero.name_level", {
+		"level": state.character_level,
+		"damage": NumberFormatter.compact(state.click_damage),
+	})
 	if next_milestone > 0:
-		effect_label.text = "Damage %s | Next x2 at Lv %d" % [NumberFormatter.compact(state.click_damage), next_milestone]
+		effect_label.text = LocalizationManager.format_key("upgrade.hero.damage_info", {
+			"damage": NumberFormatter.compact(state.click_damage),
+			"milestone": next_milestone,
+		})
 	else:
-		effect_label.text = "Damage %s | Max milestones" % NumberFormatter.compact(state.click_damage)
+		effect_label.text = LocalizationManager.format_key("upgrade.hero.damage_max", {
+			"damage": NumberFormatter.compact(state.click_damage),
+		})
 	button.disabled = false
-	button.text = "Upgrade x%d - Cost: %s" % [bulk_count, NumberFormatter.compact(bulk_cost)]
+	button.text = LocalizationManager.format_key("upgrade.hero.button", {
+		"count": bulk_count,
+		"cost": NumberFormatter.compact(bulk_cost),
+	})
 	var skills: Array[Dictionary] = state.get_hero_skills()
 	_update_skill_icon_row(skills, skill_buttons, skill_image_holders, state, true)
 
@@ -126,7 +137,8 @@ func _create_ability_row(ability_index: int) -> Dictionary:
 func _update_ability_row(state: ClickerState, ability_index: int, row: Dictionary) -> void:
 	var ability: Dictionary = ABILITIES[ability_index]
 	var ability_id: String = String(ability["id"])
-	var ability_name: String = String(ability["name"])
+	var name_key: String = String(ability.get("name_key", ""))
+	var ability_name: String = LocalizationManager.tr_key(name_key) if name_key != "" else String(ability["name"])
 	var name_status_label: Label = row["name_status_label"]
 	var effect_label: Label = row["effect_label"]
 	var button: Button = row["button"]
@@ -134,7 +146,11 @@ func _update_ability_row(state: ClickerState, ability_index: int, row: Dictionar
 	var skill_image_holders: Array = row["skill_image_holders"]
 
 	var rank: int = state.get_ability_rank(ability_id)
-	name_status_label.text = "%s | Rank %d/%d" % [ability_name, rank, state.ability_max_rank]
+	name_status_label.text = LocalizationManager.format_key("upgrade.ability.rank_info", {
+		"name": ability_name,
+		"rank": rank,
+		"max_rank": state.ability_max_rank,
+	})
 	effect_label.text = state.get_ability_description(ability_id)
 	_update_ability_unlock_button(state, ability_id, button)
 	var skills: Array[Dictionary] = state.get_ability_skills(ability_id)
@@ -235,12 +251,16 @@ func _update_ability_unlock_button(state: ClickerState, ability_id: String, butt
 	var cost: int = state.get_ability_unlock_cost(ability_id)
 	if state.is_ability_purchased(ability_id):
 		button.disabled = true
-		button.text = "Purchased"
+		button.text = LocalizationManager.tr_key("upgrade.ability.purchased")
 	elif not state.is_ability_unlocked(ability_id):
 		button.disabled = true
-		button.text = "Requires Lv %d" % state.get_ability_unlock_level(ability_id)
+		button.text = LocalizationManager.format_key("upgrade.ability.requires_level", {
+			"level": state.get_ability_unlock_level(ability_id),
+		})
 	else:
-		button.text = "Buy: %s" % NumberFormatter.compact(cost)
+		button.text = LocalizationManager.format_key("upgrade.ability.buy", {
+			"cost": NumberFormatter.compact(cost),
+		})
 		button.disabled = not state.can_buy_ability_unlock(ability_id)
 
 

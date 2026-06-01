@@ -145,18 +145,25 @@ func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionar
 	var skill_buttons: Array = row["skill_buttons"]
 	var skill_image_holders: Array = row["skill_image_holders"]
 	var button: Button = row["button"]
-	var partner_name: String = PartnerConfig.PARTNER_NAMES[partner_index]
+	var partner_name: String = LocalizationManager.tr_key(PartnerConfig.get_name_key(partner_index))
 	var partner_count: int = state.partner_counts[partner_index]
 	var tier_total_dps: int = state.get_partner_tier_total_dps(partner_index)
 	var next_milestone: int = state.get_next_milestone(partner_count)
-	name_count_label.text = "%s | %d | DPS %s" % [partner_name, partner_count, NumberFormatter.compact(tier_total_dps)]
+	name_count_label.text = LocalizationManager.format_key("partner.name_header", {
+		"name": partner_name,
+		"count": partner_count,
+		"dps": NumberFormatter.compact(tier_total_dps),
+	})
+	var base_dps_str: String = NumberFormatter.compact(BalanceConfig.PARTNER_DPS_VALUES[partner_index])
 	if next_milestone > 0:
-		effect_label.text = "+%s DPS | Next x2 at %d" % [
-			NumberFormatter.compact(BalanceConfig.PARTNER_DPS_VALUES[partner_index]),
-			next_milestone,
-		]
+		effect_label.text = LocalizationManager.format_key("partner.dps_next_milestone", {
+			"dps": base_dps_str,
+			"milestone": next_milestone,
+		})
 	else:
-		effect_label.text = "+%s DPS | Max milestones" % NumberFormatter.compact(BalanceConfig.PARTNER_DPS_VALUES[partner_index])
+		effect_label.text = LocalizationManager.format_key("partner.dps_max", {
+			"dps": base_dps_str,
+		})
 
 	var skills: Array[Dictionary] = state.get_partner_skills_for_partner(partner_index)
 	for i in range(skill_buttons.size()):
@@ -173,13 +180,16 @@ func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionar
 
 	if not state.can_buy_partner(partner_index):
 		button.disabled = true
-		button.text = "Requires Previous Partner"
+		button.text = LocalizationManager.tr_key("partner.requires_previous")
 		return
 
 	var bulk_count: int = state.get_partner_bulk_display_count(partner_index, selected_buy_mode)
 	var bulk_cost: int = state.get_partner_bulk_display_cost(partner_index, selected_buy_mode)
 	button.disabled = false
-	button.text = "Hire x%d - Cost: %s" % [bulk_count, NumberFormatter.compact(bulk_cost)]
+	button.text = LocalizationManager.format_key("partner.hire_button", {
+		"count": bulk_count,
+		"cost": NumberFormatter.compact(bulk_cost),
+	})
 
 
 func set_buy_mode(mode: String) -> void:

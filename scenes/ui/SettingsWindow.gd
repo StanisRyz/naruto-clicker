@@ -24,6 +24,7 @@ signal reset_confirmed
 
 var sound_enabled: bool = true
 var music_enabled: bool = true
+var _language_button: Button = null
 
 
 func _ready() -> void:
@@ -39,7 +40,36 @@ func _ready() -> void:
 	reset_cancel_button.pressed.connect(_hide_reset_confirm)
 	reset_confirm_button.pressed.connect(_on_reset_confirm_button_pressed)
 	version_label.text = "Version %s%s" % [BuildConfig.APP_VERSION, "-dev" if BuildConfig.IS_DEBUG_BUILD else ""]
+	_create_language_row()
 	hide()
+
+
+func _create_language_row() -> void:
+	var vbox: VBoxContainer = panel_container.get_node("MarginContainer/VBoxContainer")
+
+	var lang_row := HBoxContainer.new()
+	lang_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	var lang_label := Label.new()
+	lang_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lang_label.text = LocalizationManager.tr_key("settings.language") + ":"
+	lang_row.add_child(lang_label)
+
+	_language_button = Button.new()
+	_language_button.pressed.connect(_on_language_button_pressed)
+	lang_row.add_child(_language_button)
+
+	vbox.add_child(lang_row)
+	vbox.move_child(lang_row, save_button.get_index())
+
+	_update_language_button()
+
+
+func _update_language_button() -> void:
+	if _language_button == null:
+		return
+	var lang_code: String = LocalizationManager.get_language()
+	_language_button.text = LocalizationManager.tr_key("settings.language." + lang_code)
 
 
 func show_window(state: ClickerState) -> void:
@@ -57,8 +87,9 @@ func hide_window() -> void:
 func refresh_view(state: ClickerState) -> void:
 	sound_enabled = state.sound_enabled
 	music_enabled = state.music_enabled
-	sound_button.text = "ON" if sound_enabled else "OFF"
-	music_button.text = "ON" if music_enabled else "OFF"
+	sound_button.text = LocalizationManager.tr_key("ui.common.on") if sound_enabled else LocalizationManager.tr_key("ui.common.off")
+	music_button.text = LocalizationManager.tr_key("ui.common.on") if music_enabled else LocalizationManager.tr_key("ui.common.off")
+	_update_language_button()
 
 
 func show_status(text: String) -> void:
@@ -67,14 +98,14 @@ func show_status(text: String) -> void:
 
 func _on_sound_button_pressed() -> void:
 	sound_enabled = not sound_enabled
-	sound_button.text = "ON" if sound_enabled else "OFF"
+	sound_button.text = LocalizationManager.tr_key("ui.common.on") if sound_enabled else LocalizationManager.tr_key("ui.common.off")
 	status_label.text = ""
 	sound_toggled.emit(sound_enabled)
 
 
 func _on_music_button_pressed() -> void:
 	music_enabled = not music_enabled
-	music_button.text = "ON" if music_enabled else "OFF"
+	music_button.text = LocalizationManager.tr_key("ui.common.on") if music_enabled else LocalizationManager.tr_key("ui.common.off")
 	status_label.text = ""
 	music_toggled.emit(music_enabled)
 
@@ -95,6 +126,14 @@ func _on_reset_confirm_button_pressed() -> void:
 	reset_confirm_dialog.hide()
 	reset_confirmed.emit()
 	reset_requested.emit()
+
+
+func _on_language_button_pressed() -> void:
+	var current: String = LocalizationManager.get_language()
+	var langs: Array[String] = LocalizationManager.get_available_languages()
+	var idx: int = langs.find(current)
+	var next_idx: int = (idx + 1) % langs.size()
+	LocalizationManager.set_language(langs[next_idx])
 
 
 func _on_overlay_gui_input(event: InputEvent) -> void:

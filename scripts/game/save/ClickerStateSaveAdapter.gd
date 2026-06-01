@@ -52,6 +52,7 @@ static func build_save_data(state: ClickerState) -> Dictionary:
 		"total_combo_empowered_activations": state.total_combo_empowered_activations,
 		"sound_enabled": state.sound_enabled,
 		"music_enabled": state.music_enabled,
+		"language": state.language,
 	}
 
 
@@ -67,6 +68,8 @@ static func apply_save_data(state: ClickerState, data: Dictionary) -> bool:
 	state.auto_stage_advance_enabled = bool(data.get("auto_stage_advance_enabled", true))
 	state.sound_enabled = bool(data.get("sound_enabled", true))
 	state.music_enabled = bool(data.get("music_enabled", true))
+	var saved_lang: String = str(data.get("language", "en"))
+	state.language = saved_lang if saved_lang in ["en", "ru"] else "en"
 
 	state.cleared_level_ids.clear()
 	var raw_cleared = data.get("cleared_level_ids", {})
