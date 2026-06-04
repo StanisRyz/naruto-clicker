@@ -3,7 +3,7 @@ extends RefCounted
 
 const EARLY_POOL_ZONE: int = 1
 const MID_POOL_ZONE: int = 11
-const FINAL_POOL_ZONE: int = 21
+const LATE_POOL_ZONE: int = 17
 
 const POOL_DATA: Dictionary = {
 	1: {
@@ -57,14 +57,22 @@ const POOL_DATA: Dictionary = {
 			{"name": "Elite Temple Shade 05", "slot": "elite_05"},
 		],
 	},
-	21: {
+	17: {
 		"normal": [
 			{"name": "Storm Summit Guard 01", "slot": "enemy_01"},
 			{"name": "Storm Summit Striker 02", "slot": "enemy_02"},
 			{"name": "Storm Summit Watcher 03", "slot": "enemy_03"},
+			{"name": "Storm Summit Raider 04", "slot": "enemy_04"},
+			{"name": "Storm Summit Duelist 05", "slot": "enemy_05"},
+			{"name": "Storm Summit Scout 06", "slot": "enemy_06"},
+			{"name": "Storm Summit Hunter 07", "slot": "enemy_07"},
+			{"name": "Storm Summit Sentinel 08", "slot": "enemy_08"},
+			{"name": "Storm Summit Enforcer 09", "slot": "enemy_09"},
 		],
 		"elite": [
 			{"name": "Elite Storm Summit Guard 01", "slot": "elite_01"},
+			{"name": "Elite Storm Summit Striker 02", "slot": "elite_02"},
+			{"name": "Elite Storm Summit Watcher 03", "slot": "elite_03"},
 		],
 	},
 }
@@ -73,9 +81,9 @@ const POOL_DATA: Dictionary = {
 static func get_pool_zone_number_for_gameplay_zone(gameplay_zone_number: int) -> int:
 	if gameplay_zone_number <= 10:
 		return EARLY_POOL_ZONE
-	if gameplay_zone_number <= 20:
+	if gameplay_zone_number <= 16:
 		return MID_POOL_ZONE
-	return FINAL_POOL_ZONE
+	return LATE_POOL_ZONE
 
 
 static func get_pool_zone_number_for_level(level: int) -> int:

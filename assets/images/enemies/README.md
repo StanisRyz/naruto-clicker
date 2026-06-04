@@ -22,26 +22,27 @@ enemies/
   zone_04/ ...
 ```
 
-## Zone mapping
+## Non-boss enemy pool mapping
 
-| Folder  | Levels  | Zone name       |
-|---------|---------|-----------------|
-| zone_01 | 1–10    | Training Grounds |
-| zone_02 | 11–20   | Forest Path     |
-| zone_03 | 21–30   | Stone Valley    |
-| zone_04 | 31–40   | Shadow Camp     |
+Non-boss normal/elite enemies use three shared pool folders. Bosses are unique per gameplay zone.
 
-Additional zones continue as zone_05, zone_06, etc.
+| Pool folder | Gameplay zones | Normal slots      | Elite slots       |
+|-------------|----------------|-------------------|-------------------|
+| zone_01     | 1–10           | enemy_01–enemy_15 | elite_01–elite_04 |
+| zone_11     | 11–16          | enemy_01–enemy_15 | elite_01–elite_05 |
+| zone_17     | 17–21          | enemy_01–enemy_09 | elite_01–elite_03 |
+
+Zone 21 contains only `boss_01/` — it is not a normal/elite pool.
+
+Empty folders use `.gitkeep` until real PNG assets are added.
 
 ## Enemy folder mapping
 
-| Folder   | Enemy type                              |
-|----------|-----------------------------------------|
-| enemy_01 | First normal enemy in ZONE_DATA.enemies |
-| enemy_02 | Second normal enemy                     |
-| enemy_03 | Third normal enemy                      |
-| elite_01 | Elite enemy for that zone               |
-| boss_01  | Boss enemy for that zone                |
+| Folder   | Type                                  |
+|----------|---------------------------------------|
+| enemy_## | Normal enemy slot (pool-relative)     |
+| elite_## | Elite enemy slot (pool-relative)      |
+| boss_01  | Boss — unique per gameplay zone       |
 
 ## Required state files per enemy folder
 

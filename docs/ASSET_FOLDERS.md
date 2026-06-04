@@ -14,11 +14,11 @@ Path: `assets/images/enemies/zone_##/slot/state.png`
 
 Non-boss enemies use shared pools. Only three zone folders contain normal/elite enemy slots.
 
-| Pool folder | Used by gameplay zones | Normal slots       | Elite slots       |
-|-------------|------------------------|--------------------|-------------------|
-| zone_01     | 1–10                   | enemy_01–enemy_15  | elite_01–elite_04 |
-| zone_11     | 11–20                  | enemy_01–enemy_15  | elite_01–elite_05 |
-| zone_21     | 21                     | enemy_01–enemy_03  | elite_01          |
+| Pool folder | Used by gameplay zones | Normal slots       | Elite slots        |
+|-------------|------------------------|--------------------|---------------------|
+| zone_01     | 1–10                   | enemy_01–enemy_15  | elite_01–elite_04  |
+| zone_11     | 11–16                  | enemy_01–enemy_15  | elite_01–elite_05  |
+| zone_17     | 17–21                  | enemy_01–enemy_09  | elite_01–elite_03  |
 
 Each slot folder needs four files:
 - `healthy.png`
@@ -26,7 +26,11 @@ Each slot folder needs four files:
 - `wounded.png`
 - `defeated.png`
 
-Old non-boss source folders (zone_03, zone_05, zone_08, zone_10, zone_16, zone_17, zone_20 enemy/elite slots) are obsolete. Empty obsolete folders have been removed. Any that contained real assets were preserved.
+Empty future enemy folders use `.gitkeep` until real PNG assets are added.
+
+Zone 21 is no longer a normal/elite pool. `zone_21/` contains only `boss_01/`.
+
+Old non-boss source folders (zone_03, zone_05, zone_08, zone_10, zone_16, zone_20 enemy/elite slots) are obsolete. Empty obsolete folders have been removed. Any that contained real assets were preserved.
 
 ### Boss folders
 

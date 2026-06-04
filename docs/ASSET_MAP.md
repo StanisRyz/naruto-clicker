@@ -14,23 +14,24 @@ These keys work only when `BuildConfig.IS_DEBUG_BUILD = true`. Nothing is saved 
 - Does not grant gold or progress tasks.
 - Does not affect release builds (`IS_DEBUG_BUILD = false`).
 - Intended for validating zones 1–21 enemy textures, elite textures, boss textures, and backgrounds.
-- Useful for checking zone_01 pool enemies across zones 1–10, zone_11 pool enemies across zones 11–20, zone_21 final pool, and unique bosses in every zone.
+- Useful for checking zone_01 pool enemies across zones 1–10, zone_11 pool enemies across zones 11–16, zone_17 pool enemies across zones 17–21, and unique bosses in every zone.
 
 ## Enemy pools
 
 Non-boss normal and elite enemies use shared pools. Bosses remain unique per gameplay zone.
+Zone 21 is no longer a normal/elite pool — it contains only a unique boss.
 
 | Gameplay Zones | Enemy Pool Folder  | Normal Count | Elite Count |
 |----------------|--------------------|--------------|-------------|
 | 1–10           | enemies/zone_01    | 15           | 4           |
-| 11–20          | enemies/zone_11    | 15           | 5           |
-| 21             | enemies/zone_21    | 3            | 1           |
+| 11–16          | enemies/zone_11    | 15           | 5           |
+| 17–21          | enemies/zone_17    | 9            | 3           |
 
 **Slot names by pool:**
 
 - `enemies/zone_01`: `enemy_01`–`enemy_15`, `elite_01`–`elite_04`
 - `enemies/zone_11`: `enemy_01`–`enemy_15`, `elite_01`–`elite_05`
-- `enemies/zone_21`: `enemy_01`–`enemy_03`, `elite_01`
+- `enemies/zone_17`: `enemy_01`–`enemy_09`, `elite_01`–`elite_03`
 
 Enemy state filenames: `healthy.png`, `hit.png`, `wounded.png`, `defeated.png`
 
@@ -100,11 +101,12 @@ Only these zone folders contain normal/elite enemy slots:
 
 - `assets/images/enemies/zone_01/` — `enemy_01`–`enemy_15`, `elite_01`–`elite_04`
 - `assets/images/enemies/zone_11/` — `enemy_01`–`enemy_15`, `elite_01`–`elite_05`
-- `assets/images/enemies/zone_21/` — `enemy_01`–`enemy_03`, `elite_01`
+- `assets/images/enemies/zone_17/` — `enemy_01`–`enemy_09`, `elite_01`–`elite_03`
 
 Each slot folder needs four states: `healthy.png`, `hit.png`, `wounded.png`, `defeated.png`.
+Empty future enemy folders use `.gitkeep` until real PNG assets are added.
 
-Old non-boss source folders (zone_03, zone_05, zone_08, zone_10, zone_16, zone_17, zone_20 enemy/elite slots) are obsolete. Empty obsolete folders have been removed. Any that contained real assets were preserved.
+Zone 21 is no longer a normal/elite pool. `assets/images/enemies/zone_21/` contains only `boss_01/`.
 
 ### Boss folders
 
