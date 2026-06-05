@@ -18,13 +18,21 @@ func update_view(state: ClickerState) -> void:
 			"current": state.enemies_defeated_on_level,
 			"required": state.enemies_required_per_level,
 		})
-	enemy_name_label.text = "%s" % state.enemy_name
+	enemy_name_label.text = _get_localized_enemy_name(state)
 	enemy_hp_label.text = LocalizationManager.format_key("ui.progress.hp_pair", {
 		"current": NumberFormatter.compact(state.target_hp),
 		"max": NumberFormatter.compact(state.target_max_hp),
 	})
 	enemy_hp_progress_bar.max_value = maxf(float(state.target_max_hp), 1.0)
 	enemy_hp_progress_bar.value = clampf(float(state.target_hp), 0.0, enemy_hp_progress_bar.max_value)
+
+
+func _get_localized_enemy_name(state: ClickerState) -> String:
+	if state.enemy_name_key != "":
+		var localized_name: String = LocalizationManager.tr_key(state.enemy_name_key)
+		if localized_name != state.enemy_name_key:
+			return localized_name
+	return state.enemy_name
 
 
 func update_boss_timer(time_left: float, is_active: bool) -> void:

@@ -123,8 +123,37 @@ Keep the file UTF-8 encoded. Quote any field that contains a comma: `"text, with
 
 ---
 
-## Known gaps (foundation pass)
+## Enemy name keys
 
-- **Enemy names** (`state.enemy_name`, boss names): set at runtime from `EnemyPoolConfig` and `ZoneConfig`. Displayed as English for now. Future work: expose `enemy_name_key` on `ClickerState`.
+Enemy names are resolved through localization keys at display time.
+
+| Enemy type | Key format | Example |
+|------------|-----------|---------|
+| Normal enemy | `enemy.pool_XX.enemy_YY.name` | `enemy.pool_01.enemy_03.name` |
+| Elite enemy  | `enemy.pool_XX.elite_YY.name` | `enemy.pool_11.elite_02.name` |
+| Boss         | `zone.XX.boss`                | `zone.07.boss` |
+
+Pool numbers match the shared pool folder: `pool_01`, `pool_11`, `pool_17`.
+
+`ClickerState.enemy_name_key` is set by `choose_enemy_for_current_level()` whenever a new enemy is selected. It is **runtime-derived and not saved** — it is always recalculated from the selected candidate on `setup_current_level()` / `reset_target()`.
+
+`ProgressInfoPanel` resolves the display name with this priority:
+1. `LocalizationManager.tr_key(enemy_name_key)` — if the key resolves to something other than the key itself.
+2. `state.enemy_name` — raw English fallback from config.
+
+When adding a new enemy slot to `EnemyPoolConfig`, add a matching `name_key` field and a corresponding row in `game_text.csv`.
+
+### Validating enemy localization keys
+
+```
+godot --headless --script res://scripts/tools/ValidateLocalization.gd
+```
+
+Checks all `enemy.pool_XX.*` and `zone.XX.boss` keys exist in the CSV. Missing `en` values are errors (exit 1); missing `ru` values are warnings (exit 0).
+
+---
+
+## Known gaps
+
 - **Scene-file static labels** (e.g. row labels in `SettingsWindow.tscn`): not yet localized. Requires editing `.tscn` scene files or adding Label references and setting text in `_ready()`.
 - **Skill descriptions** (`get_ability_description`, `get_prestige_talent_description`, `get_building_short_effect_description`): currently generated in `ClickerStatePresentation.gd` using English format strings. Future work: add localized format strings to those generators.
