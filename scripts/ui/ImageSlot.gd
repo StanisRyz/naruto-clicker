@@ -45,7 +45,10 @@ func refresh_image() -> void:
 
 func set_fallback_color(new_color: Color) -> void:
 	fallback_color = new_color
-	color = new_color
+	if _texture_view != null and _texture_view.texture != null and _texture_view.visible:
+		color = fallback_color if show_fallback_behind_texture else Color.TRANSPARENT
+	else:
+		color = fallback_color
 
 
 func set_direct_texture(texture: Texture2D, new_fallback_color: Color, show_fallback: bool = true) -> void:

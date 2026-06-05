@@ -61,6 +61,7 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 	var image_holder = ImageSlotClass.new()
 	image_holder.name = "ImageHolder"
 	image_holder.fallback_color = Color.WHITE
+	image_holder.show_fallback_behind_texture = false
 	image_holder.custom_minimum_size = PARTNER_IMAGE_SIZE
 	image_holder.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	content.add_child(image_holder)

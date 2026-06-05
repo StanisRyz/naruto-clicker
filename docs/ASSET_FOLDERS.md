@@ -76,7 +76,13 @@ Example:
 - `assets/images/partners/partner_01/partner.png`
 - `assets/images/partners/partner_28/partner.png`
 
-All 28 partner folders must exist. Empty folders carry `.gitkeep` until real PNG art is added. Missing `partner.png` files fall back to the ImageSlot placeholder safely.
+All 28 partner folders must exist. Empty folders carry `.gitkeep` until real PNG art is added.
+
+Fallback behavior:
+- If `partner.png` exists: the UI shows the image; the white background square is hidden.
+- If `partner.png` is missing: the UI shows a white placeholder square. No crash.
+
+This is expected while assets are being added gradually.
 
 ---
 

@@ -65,6 +65,9 @@ func _init() -> void:
 	if not DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(skills_folder)):
 		errors.append("Shared Skills folder missing: " + skills_folder)
 
+	var partner_images_found: int = 0
+	var partner_images_missing: int = 0
+
 	for i in range(EXPECTED_PARTNER_COUNT):
 		var folder: String = "res://assets/images/partners/partner_%02d" % (i + 1)
 		if not DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(folder)):
@@ -75,7 +78,10 @@ func _init() -> void:
 		var expected_icon: String = "res://assets/images/partners/partner_%02d/partner.png" % (i + 1)
 		if icon_path != expected_icon:
 			errors.append("Partner %d icon path wrong: expected '%s', got '%s'" % [i + 1, expected_icon, icon_path])
-		elif not ResourceLoader.exists(icon_path):
+		elif ResourceLoader.exists(icon_path):
+			partner_images_found += 1
+		else:
+			partner_images_missing += 1
 			warnings.append("Partner %d icon file missing (art pending): %s" % [i + 1, icon_path])
 
 		var old_flat: String = "res://assets/images/partners/partner_%02d.png" % (i + 1)
@@ -114,6 +120,8 @@ func _init() -> void:
 
 	print("--- Summary ---")
 	print("Partner count:    %d" % PartnerConfig.get_partner_count())
+	print("Partner images found:   %d / %d" % [partner_images_found, EXPECTED_PARTNER_COUNT])
+	print("Partner images missing: %d / %d" % [partner_images_missing, EXPECTED_PARTNER_COUNT])
 	print("Errors:           %d" % errors.size())
 	print("Warnings:         %d" % warnings.size())
 	print("")
