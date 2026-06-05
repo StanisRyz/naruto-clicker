@@ -161,39 +161,56 @@ Checks all `enemy.pool_XX.*` and `zone.XX.boss` keys exist in the CSV. Missing `
 
 ---
 
-## Export requirements
+## Export requirements and built-in fallback
 
-`game_text.csv` is loaded manually by `LocalizationManager` using `FileAccess` at runtime. It is **not** a Godot-native translation resource, so Godot does not include it automatically in exports.
+`game_text.csv` is the editable source of truth, but raw CSV files are not guaranteed to be readable via `FileAccess` in all Android export configurations.
 
-**Both Web and Android export presets must include:**
+To ensure translations are always available, `LocalizationManager` uses a two-source load strategy:
+
+### Runtime load order
+
+1. **Built-in `LocalizationData.gd`** — loaded first via `preload`. Because it is a GDScript file, it is always included in Android and Web exports automatically.
+2. **CSV override from `localization/game_text.csv`** — loaded second if available. If it loads successfully, its values replace the built-in values (allowing hotfix without a full re-export).
+
+If the CSV is unavailable, the built-in data is used silently. The game displays correctly on all platforms.
+
+### Keeping LocalizationData.gd in sync
+
+`LocalizationData.gd` is auto-generated from `game_text.csv`. After editing the CSV, regenerate it:
 
 ```
-localization/*.csv
+godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
 ```
 
-This is set via `include_filter` in `export_presets.cfg`:
+Commit the updated `LocalizationData.gd` to the repository.
+
+**Do not edit `LocalizationData.gd` by hand.** It will be overwritten by the generator.
+
+### Export presets
+
+Both Web and Android export presets also include the CSV via `include_filter`:
 
 ```
 include_filter="localization/*.csv"
 ```
 
-If an exported build shows localization keys (e.g. `ui.tab.upgrades`) instead of translated text, check that `export_presets.cfg` has this include filter for the affected platform.
+This gives the CSV a chance to load at runtime, but is not the primary reliability mechanism — `LocalizationData.gd` is.
 
-### Startup warning
+### Startup diagnostics
 
-If `game_text.csv` is missing at runtime, `LocalizationManager` emits:
-
-```
-LocalizationManager: cannot open res://localization/game_text.csv. Check export include_filter for localization/*.csv
-```
-
-And `ClickerScreen` emits:
+In debug builds, `LocalizationManager` prints:
 
 ```
-No localization translations loaded. UI will display keys.
+LocalizationManager: built-in keys en=234 ru=120, csv_loaded=true/false
 ```
 
-These appear in Android logcat and the browser console.
+If translations fail to load entirely, `ClickerScreen` pushes:
+
+```
+No localization translations loaded. UI will display keys. builtin=true csv=false en=0 ru=0
+```
+
+This appears in Android logcat and the browser console.
 
 ### Validation command
 
@@ -202,9 +219,9 @@ godot --headless --script res://scripts/tools/ValidateLocalizationExport.gd
 ```
 
 Checks:
-- `game_text.csv` exists and can be opened
-- Required header columns (`key`, `en`, `ru`) are present
-- Required keys exist in the CSV
+- `LocalizationData.gd` built-in data has required keys with non-empty English values
+- CSV exists, can be opened, and has required columns and keys
+- CSV key count matches built-in key count (flags out-of-sync)
 - Both Web and Android export presets include `localization/*.csv` in `include_filter`
 
 ---

@@ -6,25 +6,48 @@ const CSV_PATH: String = "res://localization/game_text.csv"
 const SUPPORTED_LANGUAGES: Array[String] = ["en", "ru"]
 const DEFAULT_LANGUAGE: String = "en"
 
+const BuiltinLocalizationData = preload("res://scripts/ui/LocalizationData.gd")
+
 var _translations: Dictionary = {}
 var _current_language: String = "en"
+var _csv_loaded: bool = false
 
 
 func _ready() -> void:
-	_load_csv()
+	_load_translations()
 
 
-func _load_csv() -> void:
-	_translations["en"] = {}
-	_translations["ru"] = {}
+func _load_translations() -> void:
+	_translations = BuiltinLocalizationData.get_translations()
+	if not _translations.has("en"):
+		_translations["en"] = {}
+	if not _translations.has("ru"):
+		_translations["ru"] = {}
 
+	_csv_loaded = _try_load_csv()
+
+	if OS.is_debug_build():
+		var en_count: int = _translations["en"].size()
+		var ru_count: int = 0
+		for v: String in _translations["ru"].values():
+			if v != "":
+				ru_count += 1
+		print("LocalizationManager: built-in keys en=%d ru=%d, csv_loaded=%s" % [en_count, ru_count, _csv_loaded])
+
+
+func _try_load_csv() -> bool:
 	var file := FileAccess.open(CSV_PATH, FileAccess.READ)
 	if file == null:
-		push_warning("LocalizationManager: cannot open %s. Check export include_filter for localization/*.csv" % CSV_PATH)
-		return
+		if _translations["en"].size() > 0:
+			push_warning("LocalizationManager: CSV unavailable, using built-in localization fallback.")
+		else:
+			push_warning("LocalizationManager: No localization data loaded. UI will display keys. Check export include_filter for localization/*.csv")
+		return false
 
 	if file.eof_reached():
-		return
+		file.close()
+		return false
+
 	file.get_line()
 
 	while not file.eof_reached():
@@ -43,14 +66,7 @@ func _load_csv() -> void:
 		_translations["ru"][key] = ru_text
 
 	file.close()
-
-	if OS.is_debug_build():
-		var en_count: int = _translations["en"].size()
-		var ru_count: int = 0
-		for v: String in _translations["ru"].values():
-			if v != "":
-				ru_count += 1
-		print("LocalizationManager: loaded %d English keys, %d Russian keys" % [en_count, ru_count])
+	return true
 
 
 func _parse_csv_line(line: String) -> Array:
@@ -129,3 +145,18 @@ func get_loaded_translation_count(language_code: String = DEFAULT_LANGUAGE) -> i
 
 func has_loaded_translations() -> bool:
 	return get_loaded_translation_count(DEFAULT_LANGUAGE) > 0
+
+
+func get_localization_source_status() -> String:
+	var en_count: int = get_loaded_translation_count("en")
+	var ru_count: int = 0
+	if _translations.has("ru"):
+		for v: String in _translations["ru"].values():
+			if v != "":
+				ru_count += 1
+	return "builtin=%s csv=%s en=%d ru=%d" % [
+		str(BuiltinLocalizationData.TRANSLATIONS["en"].size() > 0),
+		str(_csv_loaded),
+		en_count,
+		ru_count,
+	]

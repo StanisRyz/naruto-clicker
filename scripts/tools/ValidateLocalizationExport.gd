@@ -12,12 +12,31 @@ const REQUIRED_KEYS: Array = [
 	"partner.01.name",
 ]
 
+const BuiltinLocalizationData = preload("res://scripts/ui/LocalizationData.gd")
+
 
 func _init() -> void:
 	var errors: Array[String] = []
 	var warnings: Array[String] = []
 
+	# --- Built-in LocalizationData.gd ---
+	var builtin: Dictionary = BuiltinLocalizationData.get_translations()
+	var builtin_en: Dictionary = builtin.get("en", {})
+	var builtin_ru: Dictionary = builtin.get("ru", {})
+
+	if not builtin.has("en") or builtin_en.size() == 0:
+		errors.append("LocalizationData built-in 'en' dictionary is empty or missing")
+	if not builtin.has("ru"):
+		errors.append("LocalizationData built-in 'ru' dictionary missing")
+
+	for req in REQUIRED_KEYS:
+		if not builtin_en.has(req):
+			errors.append("Built-in data missing required key: " + req)
+		elif String(builtin_en[req]) == "":
+			errors.append("Built-in data has empty English value for required key: " + req)
+
 	# --- CSV exists and can be opened ---
+	var csv_keys: Dictionary = {}
 	if not FileAccess.file_exists(CSV_PATH):
 		errors.append("CSV missing: " + CSV_PATH)
 	else:
@@ -43,7 +62,6 @@ func _init() -> void:
 				warnings.append("CSV missing column: ru (Russian translations unavailable)")
 
 			if has_key_col and has_en_col:
-				var found_keys: Dictionary = {}
 				while not file.eof_reached():
 					var line: String = file.get_line()
 					if line.strip_edges() == "":
@@ -53,15 +71,29 @@ func _init() -> void:
 						continue
 					var k: String = cols[0].strip_edges()
 					if k != "":
-						found_keys[k] = true
+						csv_keys[k] = true
 				for req in REQUIRED_KEYS:
-					if not found_keys.has(req):
+					if not csv_keys.has(req):
 						errors.append("CSV missing required key: " + req)
 
 			file.close()
 
-	# --- export_presets.cfg contains localization/*.csv in include_filter ---
-	var presets_path: String = ProjectSettings.globalize_path(EXPORT_PRESETS_PATH)
+	# --- Cross-check CSV vs built-in ---
+	if csv_keys.size() > 0 and builtin_en.size() > 0:
+		if csv_keys.size() != builtin_en.size():
+			warnings.append(
+				"Key count mismatch: CSV has %d keys, built-in has %d keys. Run GenerateLocalizationData.gd." % [
+					csv_keys.size(), builtin_en.size()
+				]
+			)
+		for csv_key in csv_keys.keys():
+			if not builtin_en.has(csv_key):
+				errors.append("CSV key missing from built-in LocalizationData: " + csv_key)
+		for builtin_key in builtin_en.keys():
+			if not csv_keys.has(builtin_key):
+				warnings.append("Built-in key not in CSV (stale?): " + builtin_key)
+
+	# --- export_presets.cfg ---
 	if not FileAccess.file_exists(EXPORT_PRESETS_PATH):
 		errors.append("export_presets.cfg not found: " + EXPORT_PRESETS_PATH)
 	else:
@@ -96,8 +128,11 @@ func _init() -> void:
 		print("")
 
 	print("--- Summary ---")
-	print("Errors:   %d" % errors.size())
-	print("Warnings: %d" % warnings.size())
+	print("Built-in English keys:  %d" % builtin_en.size())
+	print("Built-in Russian values: %d" % _count_nonempty(builtin_ru))
+	print("CSV keys:               %d" % csv_keys.size())
+	print("Errors:                 %d" % errors.size())
+	print("Warnings:               %d" % warnings.size())
 	print("")
 
 	if errors.is_empty():
@@ -106,6 +141,14 @@ func _init() -> void:
 	else:
 		print("RESULT: FAIL")
 		quit(1)
+
+
+func _count_nonempty(d: Dictionary) -> int:
+	var n: int = 0
+	for v in d.values():
+		if str(v) != "":
+			n += 1
+	return n
 
 
 func _check_preset_include(content: String, preset_name: String, errors: Array[String]) -> void:

@@ -109,7 +109,7 @@ func _ready() -> void:
 	_load_game_on_start()
 	LocalizationManager.set_language(state.language)
 	if not LocalizationManager.has_loaded_translations():
-		push_warning("No localization translations loaded. UI will display keys.")
+		push_warning("No localization translations loaded. UI will display keys. " + LocalizationManager.get_localization_source_status())
 	_is_initialized = true
 	_update_ui()
 	_sync_boss_timer()
