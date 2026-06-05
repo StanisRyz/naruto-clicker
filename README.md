@@ -106,13 +106,14 @@ The main scene contains the first local clicker loop:
 - Partners provide passive DPS and are managed from a separate bottom-half sheet.
 - Partner DPS tiers are data-driven: Partner 1 (10), Partner 2 (20), Partner 3 (35), Field Scout (65), Spear Guard (120), Iron Defender (220), Battle Monk (410), Elite Samurai (750), Shadow Captain (1400), War Sage (2600), Beast Tamer (4800), Blade Master (9000), and Legendary Commander (16500).
 - The Partners tab uses partner card rows only and should not show a Total DPS summary line.
-- The Partners tab progressively reveals cards: visible available partner cards plus one next locked requirement card; deeper locked tiers stay hidden.
+- The Partners tab progressively reveals cards: the first 2 partners are always visible; each additional partner row reveals when the player has enough gold to buy the current last visible partner; revealed rows stay visible permanently.
+- Hiring a partner does not require owning the previous partner — any visible partner can be hired at any time.
+- Partner hire buttons dim (disabled) when the selected buy mode is unaffordable; button text still shows the count and cost.
 - Partner row second lines show per-purchase DPS and the next x2 milestone, such as `+10 DPS | Next x2 at 10`; they do not include `for each PartnerName` or accumulated partner DPS.
 - Partner initial costs are `[10, 50, 150, 400, 900, 1800, 3500, 7000, 14000, 28000, 56000, 110000, 220000]`.
 - Partner costs use each tier's base and step values plus a controlled non-linear power curve.
 - Partner milestone target counts 10, 25, 50, 100, 250, and 500 cost x3 independently per tier.
 - Hero and partner bulk-buy costs include milestone price spikes when the package crosses milestone targets.
-- Each partner tier requires at least one of the previous tier.
 - Partner tier DPS is `owned count * tier DPS * tier milestone multiplier`.
 - Partner damage ticks every 0.1 seconds for final partner DPS / 10 damage.
 - Base partner DPS includes partner tiers and partner milestones only.
@@ -496,6 +497,31 @@ Missing files never crash the game.
 
 No code changes are needed.
 
+## UI Font Sizes
+
+UI font sizes are centralized in `res://scripts/ui/UiFontConfig.gd`. Edit only this file to tune typography across the game.
+
+| Constant | Default | Used by |
+|---|---|---|
+| `HUD_VALUE_FONT_SIZE` | 30 | Gold, Click Damage, Partner DPS values in top HUD |
+| `BOTTOM_TAB_FONT_SIZE` | 15 | Upgrades, Partners, Settlement, Prestige, Shop bottom tab buttons |
+| `PARTNER_TITLE_FONT_SIZE` | 18 | Partner name/count label in partner cards |
+| `PARTNER_INFO_FONT_SIZE` | 15 | Partner damage summary label |
+| `PARTNER_MILESTONE_FONT_SIZE` | 14 | Partner milestone label |
+| `PARTNER_BUTTON_FONT_SIZE` | 16 | Partner hire button |
+| `UPGRADE_TITLE_FONT_SIZE` | 18 | Hero/ability name label in upgrade cards |
+| `UPGRADE_INFO_FONT_SIZE` | 15 | Hero/ability effect label |
+| `UPGRADE_MILESTONE_FONT_SIZE` | 14 | Hero/ability milestone/status label |
+| `UPGRADE_BUTTON_FONT_SIZE` | 16 | Hero/ability action button |
+| `STAGE_NUMBER_FONT_SIZE` | 18 | Stage number labels in StageNavigator |
+| `STAGE_SIDE_BUTTON_FONT_SIZE` | 16 | Latest (`>>`) and auto (`A`) side button labels |
+
+The global theme (`themes/main_theme.tres`) keeps Button and Label font size at 22. This is the safe default for most UI. Do not increase the global theme font size just to make HUD values larger — use `HUD_VALUE_FONT_SIZE` instead.
+
+Two helper methods apply overrides at runtime:
+- `UiFontConfig.apply_label_font_size(label, size)` — calls `add_theme_font_size_override` on a Label.
+- `UiFontConfig.apply_button_font_size(button, size)` — calls `add_theme_font_size_override` on a Button.
+
 ## Web Export Notes
 
 The project is intended for Yandex Games Web export. Keep the 720x1280 portrait setup, GL Compatibility renderer, and Web-friendly Control-based UI layout.
@@ -524,7 +550,7 @@ An Android export preset is configured in `export_presets.cfg` targeting `arm64-
 - **K** — clears the current level and advances to the next.
 - While F12 mode is ON:
   - All gold-based purchases cost **1 gold**.
-  - All partner and building rows are visible; ownership restrictions are bypassed.
+  - All partner rows are visible (all 13 tiers shown regardless of gold); building rows are visible; ownership restrictions are bypassed.
   - Ability unlock, hero skill, ability skill, and partner skill requirements are bypassed.
   - Boss timer is paused.
 - Debug purchases modify runtime state. Use F10 (delete save) carefully.

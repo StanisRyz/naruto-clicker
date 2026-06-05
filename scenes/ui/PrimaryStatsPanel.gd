@@ -29,6 +29,9 @@ func _ready() -> void:
 	gems_item.visible = false
 	settings_button.pressed.connect(_on_settings_button_pressed)
 	_layout_hud_items()
+	UiFontConfig.apply_label_font_size(gold_value_label, UiFontConfig.HUD_VALUE_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(damage_value_label, UiFontConfig.HUD_VALUE_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(partner_dps_value_label, UiFontConfig.HUD_VALUE_FONT_SIZE)
 
 
 func _notification(what: int) -> void:

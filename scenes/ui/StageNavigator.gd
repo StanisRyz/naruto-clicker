@@ -72,7 +72,7 @@ func _build_ui() -> void:
 		label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		label.add_theme_font_size_override("font_size", 18)
+		label.add_theme_font_size_override("font_size", UiFontConfig.STAGE_NUMBER_FONT_SIZE)
 		label.mouse_filter = MOUSE_FILTER_IGNORE
 		btn.add_child(label)
 
@@ -112,7 +112,7 @@ func _make_side_button(bg_color: Color, label_text: String) -> Button:
 	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 16)
+	label.add_theme_font_size_override("font_size", UiFontConfig.STAGE_SIDE_BUTTON_FONT_SIZE)
 	label.mouse_filter = MOUSE_FILTER_IGNORE
 	label.text = label_text
 	btn.add_child(label)

@@ -25,6 +25,7 @@ var partner_rows: Array[Dictionary] = []
 
 func update_view(state: ClickerState) -> void:
 	current_state = state
+	state.refresh_partner_visibility_unlocks()
 	_ensure_partner_rows(state)
 
 	for partner_index in range(partner_rows.size()):
@@ -136,6 +137,11 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 	button.pressed.connect(func() -> void: partner_purchase_requested.emit(partner_index, selected_buy_mode))
 	content.add_child(button)
 
+	UiFontConfig.apply_label_font_size(name_count_label, UiFontConfig.PARTNER_TITLE_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(damage_summary_label, UiFontConfig.PARTNER_INFO_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(milestone_label, UiFontConfig.PARTNER_MILESTONE_FONT_SIZE)
+	UiFontConfig.apply_button_font_size(button, UiFontConfig.PARTNER_BUTTON_FONT_SIZE)
+
 	return {
 		"row": row,
 		"name_count_label": name_count_label,
@@ -187,14 +193,10 @@ func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionar
 			var skill_state: String = state.get_partner_skill_state(skill_id)
 			skill_image_holder.set_fallback_color(SKILL_ICON_COLORS.get(skill_state, SKILL_ICON_COLORS["locked"]))
 
-	if not state.can_buy_partner(partner_index):
-		button.disabled = true
-		button.text = LocalizationManager.tr_key("partner.requires_previous")
-		return
-
 	var bulk_count: int = state.get_partner_bulk_display_count(partner_index, selected_buy_mode)
 	var bulk_cost: int = state.get_partner_bulk_display_cost(partner_index, selected_buy_mode)
-	button.disabled = false
+	var can_afford: bool = state.can_afford_partner_bulk(partner_index, selected_buy_mode)
+	button.disabled = not can_afford
 	button.text = LocalizationManager.format_key("partner.hire_button", {
 		"count": bulk_count,
 		"cost": NumberFormatter.compact(bulk_cost),
@@ -208,16 +210,7 @@ func set_buy_mode(mode: String) -> void:
 
 
 func _should_show_partner_row(state: ClickerState, partner_index: int) -> bool:
-	if state.is_debug_purchase_override_enabled():
-		return true
-
-	if partner_index == 0:
-		return true
-
-	if state.can_buy_partner(partner_index):
-		return true
-
-	return partner_index > 0 and state.can_buy_partner(partner_index - 1)
+	return state.is_partner_visible(partner_index)
 
 
 func _create_row_stylebox() -> StyleBoxFlat:

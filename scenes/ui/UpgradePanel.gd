@@ -260,6 +260,11 @@ func _add_card_content(row: PanelContainer, button_name: String) -> Dictionary:
 	button.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	content.add_child(button)
 
+	UiFontConfig.apply_label_font_size(name_status_label, UiFontConfig.UPGRADE_TITLE_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(effect_label, UiFontConfig.UPGRADE_INFO_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(milestone_label, UiFontConfig.UPGRADE_MILESTONE_FONT_SIZE)
+	UiFontConfig.apply_button_font_size(button, UiFontConfig.UPGRADE_BUTTON_FONT_SIZE)
+
 	return {
 		"name_status_label": name_status_label,
 		"effect_label": effect_label,

@@ -61,6 +61,8 @@ var rally_purchase_cost: int = BalanceConfig.RALLY_PURCHASE_COST
 var gold_bonus_multiplier: int = 2  # kept literal; see BalanceConfig for rank-based formula
 var partner_counts: Array[int] = []
 var partner_purchase_costs: Array[int] = []
+const INITIAL_VISIBLE_PARTNER_COUNT: int = 2
+var visible_partner_count: int = INITIAL_VISIBLE_PARTNER_COUNT
 var purchased_partner_skill_ids: Array[String] = []
 var purchased_hero_skill_ids: Array[String] = []
 var purchased_ability_skill_ids: Array[String] = []
@@ -661,9 +663,6 @@ func buy_partners(partner_index: int, mode: String) -> Dictionary:
 	if partner_index < 0 or partner_index >= partner_counts.size():
 		return _make_purchase_result("Invalid partner")
 
-	if not can_buy_partner(partner_index):
-		return _make_purchase_result("Requires %s" % PartnerConfig.PARTNER_NAMES[partner_index - 1])
-
 	var bought: int = get_partner_bulk_count(partner_index, mode)
 	var total_cost: int = get_partner_bulk_cost(partner_index, mode)
 
@@ -674,14 +673,12 @@ func buy_partners(partner_index: int, mode: String) -> Dictionary:
 	partner_counts[partner_index] += bought
 	recalculate_partner_cost(partner_index)
 	_update_character_state()
+	refresh_partner_visibility_unlocks()
 	return _make_purchase_result("%s hired x%d!" % [PartnerConfig.PARTNER_NAMES[partner_index], bought], false, true)
 
 
 func get_partner_bulk_count(partner_index: int, mode: String) -> int:
 	if partner_index < 0 or partner_index >= partner_counts.size():
-		return 0
-
-	if not can_buy_partner(partner_index):
 		return 0
 
 	if is_debug_purchase_override_enabled():
@@ -724,9 +721,6 @@ func get_partner_bulk_display_count(partner_index: int, mode: String) -> int:
 	if partner_index < 0 or partner_index >= partner_counts.size():
 		return 0
 
-	if not can_buy_partner(partner_index):
-		return 0
-
 	if mode == "max":
 		return get_partner_bulk_count(partner_index, mode)
 
@@ -735,9 +729,6 @@ func get_partner_bulk_display_count(partner_index: int, mode: String) -> int:
 
 func get_partner_bulk_display_cost(partner_index: int, mode: String) -> int:
 	if partner_index < 0 or partner_index >= partner_counts.size():
-		return 0
-
-	if not can_buy_partner(partner_index):
 		return 0
 
 	if is_debug_purchase_override_enabled():
@@ -1447,17 +1438,55 @@ func recalculate_partner_cost(partner_index: int) -> void:
 	)
 
 
+func is_partner_index_valid(partner_index: int) -> bool:
+	return partner_index >= 0 and partner_index < partner_counts.size()
+
+
 func can_buy_partner(partner_index: int) -> bool:
+	return is_partner_index_valid(partner_index)
+
+
+func is_partner_visible(partner_index: int) -> bool:
 	if is_debug_purchase_override_enabled():
-		return partner_index >= 0 and partner_index < partner_counts.size()
+		return is_partner_index_valid(partner_index)
+	return is_partner_index_valid(partner_index) and partner_index < visible_partner_count
 
-	if partner_index == 0:
-		return true
 
-	if partner_index > 0 and partner_index < partner_counts.size():
-		return partner_counts[partner_index - 1] > 0
+func get_partner_visibility_unlock_cost(partner_index: int) -> int:
+	if not is_partner_index_valid(partner_index):
+		return 0
+	return partner_purchase_costs[partner_index]
 
-	return false
+
+func refresh_partner_visibility_unlocks() -> void:
+	if is_debug_purchase_override_enabled():
+		visible_partner_count = partner_counts.size()
+		return
+
+	visible_partner_count = clampi(
+		maxi(visible_partner_count, INITIAL_VISIBLE_PARTNER_COUNT),
+		0,
+		partner_counts.size()
+	)
+
+	while visible_partner_count < partner_counts.size():
+		var last_visible_index: int = visible_partner_count - 1
+		var unlock_cost: int = get_partner_visibility_unlock_cost(last_visible_index)
+		if unlock_cost <= 0:
+			break
+		if gold < unlock_cost:
+			break
+		visible_partner_count += 1
+
+
+func can_afford_partner_bulk(partner_index: int, mode: String) -> bool:
+	if not is_partner_index_valid(partner_index):
+		return false
+	var display_count: int = get_partner_bulk_display_count(partner_index, mode)
+	if display_count <= 0:
+		return false
+	var cost: int = get_partner_bulk_display_cost(partner_index, mode)
+	return cost > 0 and gold >= cost
 
 
 func _get_fixed_buy_count(mode: String) -> int:
@@ -1569,6 +1598,7 @@ func _get_building_cost_for_count(building_index: int, count: int) -> int:
 func _reset_partner_state() -> void:
 	partner_counts.clear()
 	partner_purchase_costs.clear()
+	visible_partner_count = INITIAL_VISIBLE_PARTNER_COUNT
 	for i in range(BalanceConfig.PARTNER_BASE_COSTS.size()):
 		partner_counts.append(0)
 		partner_purchase_costs.append(BalanceConfig.PARTNER_BASE_COSTS[i])

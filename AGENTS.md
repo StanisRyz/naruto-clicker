@@ -121,14 +121,15 @@ Naruto Clicker is a vertical idle/clicker game targeting Web / Yandex Games, wit
 - Partner costs use each tier's base and step values plus a controlled non-linear power curve.
 - Partner milestone target counts `[10, 25, 50, 100, 250, 500]` cost x3 independently per tier.
 - Hero and partner bulk-buy costs must include milestone price spikes when the package crosses milestone targets.
-- Each partner tier requires at least one of the previous tier.
+- Partners do not require previous-tier ownership — any visible partner can be hired.
+- PartnerPanel progressive reveal: first 2 partners always visible; partner N+1 reveals when the player has enough gold to afford partner N's next-copy cost; revealed rows stay visible permanently.
+- Partner hire buttons dim (disabled) when selected buy mode is unaffordable; button text still shows count and cost.
 - Base partner DPS includes partner tiers and partner milestones only.
 - Final partner DPS adds Command Aura, Training Camp, and Rally. UI should display final partner DPS without contextual Boss Hunter; partner damage ticks include Boss Hunter during boss fights.
 - Partner damage ticks every 0.1 seconds for final partner DPS / 10 damage.
 - Partner purchases use horizontal bulk mode buttons `x1`, `x10`, `x100`, and `Max`; displayed costs must show total package cost.
 - Partner `x10` and `x100` purchases are strict all-or-nothing packages; `Max` buys as many as current gold allows.
 - PartnerPanel should not show a Total DPS summary line above partner rows.
-- PartnerPanel uses progressive reveal: show Partner 1, all currently available partner cards, and exactly one next locked requirement card; deeper locked cards stay hidden and should not take scroll space.
 - Partner rows use three vertical info rows on the right: partner name/count/total tier DPS, per-purchase DPS plus next x2 milestone, then the partner skill icon.
 - Partner row first lines show `Partner Name | Count | DPS X`, where DPS is this tier's total DPS contribution only.
 - Partner row second lines show per-purchase DPS and next x2 milestone, formatted `+%d DPS | Next x2 at %d` or `+%d DPS | Max milestones`.
@@ -349,9 +350,9 @@ After each patch, validate manually in Godot:
 - After buying Partner 1, Partner 2 is available and locked Partner 3 appears.
 - Partner 2 starts at 50 gold.
 - Partner 3 starts at 150 gold.
-- Partner 2 cannot be bought before at least one Partner 1.
-- Partner 3 cannot be bought before at least one Partner 2.
-- All 13 partner tiers are progressively revealed through scrolling and each tier requires the previous tier.
+- Partner 1 and Partner 2 are visible from the start; no ownership requirement to hire any visible partner.
+- Partner 3 appears when the player has enough gold to buy Partner 2; same logic cascades for all tiers.
+- All 13 partner tiers are progressively revealed by gold afford-ability; revealed rows stay visible permanently.
 - Partner costs increase after purchase.
 - Partner counts update after purchase.
 - Total Partner DPS updates correctly.
@@ -718,7 +719,7 @@ After each patch, validate manually in Godot:
 - **K** — clears the current level and advances to the next.
 - While F12 mode is ON (`ClickerState.is_debug_purchase_override_enabled()` returns `true`):
   - All gold-based purchases cost exactly **1 gold**.
-  - All partner rows are visible; previous-partner ownership requirement is bypassed.
+  - All 13 partner rows are visible; gold-based reveal requirement is bypassed.
   - All building rows are visible; previous-building ownership requirement is bypassed.
   - Ability unlock level requirements are ignored.
   - Hero skill, ability skill, and partner skill level/count requirements are ignored.
@@ -732,6 +733,20 @@ After each patch, validate manually in Godot:
 - Do not add new debug tools without wrapping them in `if BuildConfig.IS_DEBUG_BUILD`.
 - Before public release, set `IS_DEBUG_BUILD = false` and verify no dev UI is visible.
 - Real ads, payments, and cloud saves are still not implemented.
+
+## UI Font Size Rules
+
+UI font sizes are centralized in `res://scripts/ui/UiFontConfig.gd`. This is the only file where common UI font size constants should be tuned.
+
+- To make HUD values larger: change `UiFontConfig.HUD_VALUE_FONT_SIZE`. Do not increase the global theme font size.
+- To adjust bottom tab text: change `UiFontConfig.BOTTOM_TAB_FONT_SIZE`.
+- To adjust partner card text: change `PARTNER_TITLE_FONT_SIZE`, `PARTNER_INFO_FONT_SIZE`, `PARTNER_MILESTONE_FONT_SIZE`, or `PARTNER_BUTTON_FONT_SIZE`.
+- To adjust upgrade card text: change `UPGRADE_TITLE_FONT_SIZE`, `UPGRADE_INFO_FONT_SIZE`, `UPGRADE_MILESTONE_FONT_SIZE`, or `UPGRADE_BUTTON_FONT_SIZE`.
+- To adjust StageNavigator labels: change `STAGE_NUMBER_FONT_SIZE` or `STAGE_SIDE_BUTTON_FONT_SIZE`.
+- The global theme (`themes/main_theme.tres`) keeps Button and Label font size at 22. Do not raise it to fix HUD readability.
+- Use `UiFontConfig.apply_label_font_size(label, size)` and `UiFontConfig.apply_button_font_size(button, size)` to apply overrides at runtime.
+- Do not add font size magic numbers to individual UI panels; put new font size constants in `UiFontConfig.gd`.
+- Colors, margins, icon sizes, and layout constants do not belong in `UiFontConfig.gd`.
 
 ## Documentation Update Rules
 

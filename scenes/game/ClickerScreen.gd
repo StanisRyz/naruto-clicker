@@ -106,6 +106,7 @@ func _ready() -> void:
 	prestige_sheet.closed.connect(_on_sheet_closed)
 	shop_sheet.closed.connect(_on_sheet_closed)
 	LocalizationManager.language_changed.connect(_on_language_changed)
+	_apply_ui_font_sizes()
 	_load_game_on_start()
 	LocalizationManager.set_language(state.language)
 	if not LocalizationManager.has_loaded_translations():
@@ -502,6 +503,18 @@ func _reset_runtime_state_for_new_game() -> void:
 	combo_empowered_active = false
 	combo_empowered_time_left = 0.0
 	_autosave_timer = 0.0
+
+
+func _apply_ui_font_sizes() -> void:
+	var bottom_buttons: Array[Button] = [
+		upgrades_button,
+		partners_button,
+		settlement_button,
+		prestige_button,
+		shop_button,
+	]
+	for button: Button in bottom_buttons:
+		UiFontConfig.apply_button_font_size(button, UiFontConfig.BOTTOM_TAB_FONT_SIZE)
 
 
 func _update_bottom_bar_view() -> void:

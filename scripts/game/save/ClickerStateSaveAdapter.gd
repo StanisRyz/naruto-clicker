@@ -34,6 +34,7 @@ static func build_save_data(state: ClickerState) -> Dictionary:
 		"purchased_ability_skill_ids": Array(state.purchased_ability_skill_ids),
 		"purchased_partner_skill_ids": Array(state.purchased_partner_skill_ids),
 		"partner_counts": Array(state.partner_counts),
+		"visible_partner_count": state.visible_partner_count,
 		"building_counts": Array(state.building_counts),
 		"prestige_points_available": state.prestige_points_available,
 		"prestige_points_total_earned": state.prestige_points_total_earned,
@@ -124,6 +125,21 @@ static func apply_save_data(state: ClickerState, data: Dictionary) -> bool:
 			state.partner_counts[i] = maxi(0, int(raw_partner_counts[i]))
 		for i in range(state.partner_counts.size()):
 			state.recalculate_partner_cost(i)
+
+	const INIT_VPC: int = 2  # mirrors ClickerState.INITIAL_VISIBLE_PARTNER_COUNT
+	var saved_vpc: int = int(data.get("visible_partner_count", 0))
+	if saved_vpc >= INIT_VPC:
+		state.visible_partner_count = clampi(saved_vpc, INIT_VPC, state.partner_counts.size())
+	else:
+		var highest_owned: int = -1
+		for i in range(state.partner_counts.size()):
+			if state.partner_counts[i] > 0:
+				highest_owned = i
+		var min_from_owned: int = INIT_VPC
+		if highest_owned >= 0:
+			min_from_owned = maxi(min_from_owned, highest_owned + 2)
+		state.visible_partner_count = clampi(min_from_owned, INIT_VPC, state.partner_counts.size())
+	state.refresh_partner_visibility_unlocks()
 
 	state._reset_building_state()
 	var raw_building_counts = data.get("building_counts", [])
