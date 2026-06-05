@@ -23,16 +23,6 @@ const SHOP_PRODUCTS: Array = [
 		"reward_scale": 350,
 	},
 	{
-		"id": "instant_combo",
-		"name": "Instant Combo",
-		"name_key": "shop.instant_combo.name",
-		"description": "Fill Combo Meter to 100%",
-		"description_key": "shop.instant_combo.description",
-		"cost_gems": 15,
-		"reward_type": "combo_fill",
-		"reward_amount": 100,
-	},
-	{
 		"id": "boss_retry_token",
 		"name": "Boss Retry",
 		"name_key": "shop.boss_retry_token.name",

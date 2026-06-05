@@ -10,7 +10,6 @@ const TASK_DEFINITIONS: Array = [
 	{"id": "hire_10_partners", "title": "Hire 10 partners", "title_key": "task.hire_10_partners.title", "goal_type": "partners_total_delta", "target_delta": 10, "reward_scale": 10},
 	{"id": "build_5_buildings", "title": "Build 5 settlement buildings", "title_key": "task.build_5_buildings.title", "goal_type": "buildings_total_delta", "target_delta": 5, "reward_scale": 12},
 	{"id": "activate_autoclick_1", "title": "Activate Autoclick 1 time", "title_key": "task.activate_autoclick_1.title", "goal_type": "autoclick_activations_delta", "target_delta": 1, "reward_scale": 8},
-	{"id": "combo_empowered_1", "title": "Fill Combo Meter to 100%", "title_key": "task.combo_empowered_1.title", "goal_type": "combo_empowered_delta", "target_delta": 1, "reward_scale": 12},
 	{"id": "gain_10_game_levels", "title": "Reach 10 more levels", "title_key": "task.gain_10_game_levels.title", "goal_type": "game_level_delta", "target_delta": 10, "reward_scale": 16},
 ]
 

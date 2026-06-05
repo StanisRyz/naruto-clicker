@@ -29,14 +29,6 @@ var active_bottom_tab: String = ""
 var enemy_transition_locked: bool = false
 var enemy_respawn_delay: float = 0.2
 var enemy_transition_token: int = 0
-var combo_meter_value: float = 0.0
-var combo_meter_max: float = 100.0
-var combo_gain_per_manual_click: float = BalanceConfig.COMBO_FILL_PER_CLICK
-var combo_decay_per_second: float = BalanceConfig.COMBO_DECAY_PER_SECOND
-var combo_empowered_active: bool = false
-var combo_empowered_time_left: float = 0.0
-var combo_empowered_duration: float = BalanceConfig.COMBO_EMPOWERED_DURATION_SEC
-var combo_empowered_multiplier: float = BalanceConfig.COMBO_EMPOWERED_MULTIPLIER
 var _autosave_timer: float = 0.0
 const _AUTOSAVE_INTERVAL: float = 10.0
 var balance_logger: BalancePlaytestLogger = null
@@ -46,7 +38,6 @@ var _is_initialized: bool = false
 @onready var stage_navigator: Control = $MainContent/VBoxContainer/StageNavigator
 @onready var auto_transition_popup: Control = $AutoTransitionPopup
 @onready var progress_info_panel: ProgressInfoPanel = $MainContent/VBoxContainer/ProgressInfoPanel
-@onready var combo_panel: ComboPanel = $ComboPanel
 @onready var tasks_button: Button = $TasksButton
 @onready var tasks_window: TasksWindow = $TasksWindow
 @onready var settings_window: SettingsWindow = $SettingsWindow
@@ -126,8 +117,6 @@ func _process(delta: float) -> void:
 		_autosave_timer = 0.0
 		_save_game_now()
 
-	_process_combo_meter(delta)
-
 	if boss_timer_active and not enemy_transition_locked:
 		if not state.is_debug_visual_test_mode_enabled():
 			boss_time_left = maxf(boss_time_left - delta, 0.0)
@@ -173,7 +162,6 @@ func _update_ui() -> void:
 func _update_main_hud() -> void:
 	primary_stats_panel.update_view(state)
 	progress_info_panel.update_view(state)
-	_update_combo_panel()
 
 
 func _update_stage_ui() -> void:
@@ -234,19 +222,7 @@ func _on_attack_requested() -> void:
 	if enemy_transition_locked:
 		return
 
-	if not combo_empowered_active:
-		combo_meter_value = clampf(
-			combo_meter_value + combo_gain_per_manual_click * state.get_partner_skill_bonus_multiplier("combo_gain"),
-			0.0,
-			combo_meter_max
-		)
-		if combo_meter_value >= combo_meter_max:
-			combo_meter_value = combo_meter_max
-			combo_empowered_active = true
-			combo_empowered_time_left = combo_empowered_duration
-			state.total_combo_empowered_activations += 1
-
-	var manual_damage: int = maxi(1, int(state.get_current_click_damage() * _get_manual_combo_multiplier()))
+	var manual_damage: int = maxi(1, state.get_current_click_damage())
 	if state.rng.randf() < state.get_partner_skill_additive_bonus("critical_manual"):
 		manual_damage *= 2
 	var was_boss_level: bool = state.is_boss_level
@@ -433,8 +409,6 @@ func _on_shop_product_purchase_requested(product_id: String) -> void:
 	var gems_before: int = state.gems
 	var result: Dictionary = state.buy_shop_product(product_id)
 	_handle_status_text(result.get("status_text", ""))
-	if result.has("combo_fill"):
-		_fill_combo_meter_from_shop(float(result.get("combo_fill", combo_meter_max)))
 	if balance_logger:
 		balance_logger.log_purchase(state, "shop", product_id, gems_before - state.gems, result)
 	_update_ui()
@@ -466,9 +440,6 @@ func _on_prestige_confirmed() -> void:
 	rally_cooldown_left = 0.0
 	autoclick_accumulator = 0.0
 	partner_damage_accumulator = 0.0
-	combo_meter_value = 0.0
-	combo_empowered_active = false
-	combo_empowered_time_left = 0.0
 	_handle_status_text(result.get("status_text", ""))
 	stage_navigator.center_on_level(1)
 	_update_ui()
@@ -499,9 +470,6 @@ func _reset_runtime_state_for_new_game() -> void:
 	rally_cooldown_left = 0.0
 	autoclick_accumulator = 0.0
 	partner_damage_accumulator = 0.0
-	combo_meter_value = 0.0
-	combo_empowered_active = false
-	combo_empowered_time_left = 0.0
 	_autosave_timer = 0.0
 
 
@@ -760,46 +728,6 @@ func _get_scaled_duration(base_duration: float, uses_war_banner: bool) -> float:
 
 func _get_scaled_cooldown(base_cooldown: float) -> float:
 	return base_cooldown * state.get_ability_cooldown_multiplier()
-
-
-func _process_combo_meter(delta: float) -> void:
-	if combo_empowered_active:
-		combo_empowered_time_left = maxf(combo_empowered_time_left - delta, 0.0)
-		combo_meter_value = combo_meter_max
-		if combo_empowered_time_left <= 0.0:
-			combo_empowered_active = false
-			combo_meter_value = 0.0
-		_update_combo_panel()
-		return
-
-	if combo_meter_value > 0.0:
-		combo_meter_value = maxf(combo_meter_value - combo_decay_per_second * delta, 0.0)
-		_update_combo_panel()
-
-
-func _get_manual_combo_multiplier() -> float:
-	if combo_empowered_active:
-		return combo_empowered_multiplier
-
-	return 1.0 + combo_meter_value * BalanceConfig.COMBO_DAMAGE_PER_PERCENT
-
-
-func _update_combo_panel() -> void:
-	combo_panel.update_view(
-		combo_meter_value,
-		_get_manual_combo_multiplier(),
-		combo_empowered_active,
-		combo_empowered_time_left
-	)
-
-
-func _fill_combo_meter_from_shop(amount: float) -> void:
-	combo_meter_value = clampf(amount, 0.0, combo_meter_max)
-	if combo_meter_value >= combo_meter_max:
-		combo_meter_value = combo_meter_max
-		combo_empowered_active = true
-		combo_empowered_time_left = combo_empowered_duration
-		state.total_combo_empowered_activations += 1
 
 
 func _handle_defeat_result(result: Dictionary, was_boss_level: bool) -> void:

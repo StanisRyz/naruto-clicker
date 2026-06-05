@@ -100,7 +100,6 @@ var total_enemies_defeated: int = 0
 var total_elite_enemies_defeated: int = 0
 var total_bosses_defeated: int = 0
 var total_autoclick_activations: int = 0
-var total_combo_empowered_activations: int = 0
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 var debug_visual_test_mode_enabled: bool = false
@@ -2069,7 +2068,6 @@ func reset_to_new_game() -> void:
 	total_elite_enemies_defeated = 0
 	total_bosses_defeated = 0
 	total_autoclick_activations = 0
-	total_combo_empowered_activations = 0
 	_reset_partner_state()
 	_reset_building_state()
 	initialize_tasks()

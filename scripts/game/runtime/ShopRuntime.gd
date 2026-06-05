@@ -54,10 +54,6 @@ static func buy_shop_product(state: ClickerState, product_id: String) -> Diction
 			state.gold += shop_gold
 			result["reward_gold"] = shop_gold
 			result["status_text"] = "%s purchased! +%d gold" % [product_name, shop_gold]
-		"combo_fill":
-			var combo_reward_amount: int = int(product.get("reward_amount", 100))
-			result["combo_fill"] = combo_reward_amount
-			result["status_text"] = "%s purchased! Combo filled" % product_name
 		"boss_retry_token":
 			var boss_retry_reward_amount: int = int(product.get("reward_amount", 1))
 			state.boss_retry_tokens += boss_retry_reward_amount

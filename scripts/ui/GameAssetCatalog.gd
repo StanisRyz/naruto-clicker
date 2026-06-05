@@ -64,7 +64,6 @@ const ASSET_PATHS: Dictionary = {
 	# Shop
 	"shop.gold_pack_small": "res://assets/images/shop/gold_pack_small.png",
 	"shop.gold_pack_large": "res://assets/images/shop/gold_pack_large.png",
-	"shop.instant_combo": "res://assets/images/shop/instant_combo.png",
 	"shop.boss_retry_token": "res://assets/images/shop/boss_retry.png",
 	"shop.task_boost": "res://assets/images/shop/task_boost.png",
 
@@ -77,7 +76,6 @@ const ASSET_PATHS: Dictionary = {
 	"task.hire_10_partners": "res://assets/images/tasks/partners.png",
 	"task.build_5_buildings": "res://assets/images/tasks/buildings.png",
 	"task.activate_autoclick_1": "res://assets/images/tasks/autoclick.png",
-	"task.combo_empowered_1": "res://assets/images/tasks/combo.png",
 	"task.gain_10_game_levels": "res://assets/images/tasks/game_levels.png",
 }
 

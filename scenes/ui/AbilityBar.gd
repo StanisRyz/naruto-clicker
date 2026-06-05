@@ -34,41 +34,26 @@ func update_view(
 	focus_burst_cooldown_left: float,
 	rally_cooldown_left: float
 ) -> void:
-	var autoclick_purchased: bool = state.is_ability_purchased("autoclick")
-	var gold_bonus_purchased: bool = state.is_ability_purchased("gold_bonus")
-	var focus_burst_purchased: bool = state.is_ability_purchased("focus_burst")
-	var rally_purchased: bool = state.is_ability_purchased("rally")
-
-	autoclick_button.disabled = (
-		not autoclick_purchased
-		or state.autoclick_active
-		or autoclick_cooldown_left > 0.0
+	_update_ability_button(
+		autoclick_button, autoclick_icon,
+		state.is_ability_purchased("autoclick"),
+		state.autoclick_active, autoclick_cooldown_left
 	)
-	gold_bonus_button.disabled = (
-		not gold_bonus_purchased
-		or state.gold_bonus_active
-		or gold_bonus_cooldown_left > 0.0
+	_update_ability_button(
+		gold_bonus_button, gold_bonus_icon,
+		state.is_ability_purchased("gold_bonus"),
+		state.gold_bonus_active, gold_bonus_cooldown_left
 	)
-	focus_burst_button.disabled = (
-		not focus_burst_purchased
-		or state.focus_burst_active
-		or focus_burst_cooldown_left > 0.0
+	_update_ability_button(
+		focus_burst_button, focus_burst_icon,
+		state.is_ability_purchased("focus_burst"),
+		state.focus_burst_active, focus_burst_cooldown_left
 	)
-	rally_button.disabled = (
-		not rally_purchased
-		or state.rally_active
-		or rally_cooldown_left > 0.0
+	_update_ability_button(
+		rally_button, rally_icon,
+		state.is_ability_purchased("rally"),
+		state.rally_active, rally_cooldown_left
 	)
-
-	autoclick_button.text = ""
-	gold_bonus_button.text = ""
-	focus_burst_button.text = ""
-	rally_button.text = ""
-
-	_update_icon_color(autoclick_icon, autoclick_purchased, state.autoclick_active, autoclick_cooldown_left)
-	_update_icon_color(gold_bonus_icon, gold_bonus_purchased, state.gold_bonus_active, gold_bonus_cooldown_left)
-	_update_icon_color(focus_burst_icon, focus_burst_purchased, state.focus_burst_active, focus_burst_cooldown_left)
-	_update_icon_color(rally_icon, rally_purchased, state.rally_active, rally_cooldown_left)
 
 
 func _on_autoclick_button_pressed() -> void:
@@ -85,6 +70,20 @@ func _on_focus_burst_button_pressed() -> void:
 
 func _on_rally_button_pressed() -> void:
 	rally_requested.emit()
+
+
+func _update_ability_button(
+	button: Button,
+	icon: ColorRect,
+	purchased: bool,
+	active: bool,
+	cooldown_left: float
+) -> void:
+	button.visible = purchased
+	button.disabled = not purchased or active or cooldown_left > 0.0
+	if not purchased:
+		return
+	_update_icon_color(icon, purchased, active, cooldown_left)
 
 
 func _update_icon_color(icon: ColorRect, purchased: bool, active: bool, cooldown_left: float) -> void:

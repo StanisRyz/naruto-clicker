@@ -88,8 +88,6 @@ static func _get_task_current_value(state: ClickerState, task_id: String) -> int
 			return building_total
 		"autoclick_activations_delta":
 			return state.total_autoclick_activations
-		"combo_empowered_delta":
-			return state.total_combo_empowered_activations
 		"game_level_delta":
 			return state.current_level
 	return 0

@@ -113,13 +113,6 @@ const FOCUS_BURST_COOLDOWN_SEC: float = 120.0
 const RALLY_BASE_DURATION_SEC: float = 20.0
 const RALLY_COOLDOWN_SEC: float = 150.0
 
-# Combo
-const COMBO_FILL_PER_CLICK: float = 1.0
-const COMBO_DECAY_PER_SECOND: float = 5.0
-const COMBO_DAMAGE_PER_PERCENT: float = 0.01
-const COMBO_EMPOWERED_MULTIPLIER: float = 3.0
-const COMBO_EMPOWERED_DURATION_SEC: float = 10.0
-
 # Ability skill cost = ability_purchase_cost * multiplier_at_skill_index
 const ABILITY_SKILL_COST_MULTIPLIERS: Array = [1, 3, 7, 13, 22]
 
@@ -163,7 +156,6 @@ const TASK_REWARD_SECONDS_BASE: float = 60.0
 const SHOP_SMALL_GOLD_ETV_SECONDS: float = 300.0    # 5 minutes ETV
 const SHOP_LARGE_GOLD_ETV_SECONDS: float = 1200.0   # 20 minutes ETV
 
-const SHOP_COMBO_FILL_GEMS: int = 15
 const SHOP_BOSS_RETRY_GEMS: int = 20
 const SHOP_TASK_BOOST_GEMS: int = 30
 const SHOP_TASK_BOOST_MULTIPLIER: float = 2.0
