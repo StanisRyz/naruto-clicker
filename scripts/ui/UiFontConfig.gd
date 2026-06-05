@@ -12,16 +12,16 @@ const HUD_VALUE_FONT_SIZE: int = 20
 const BOTTOM_TAB_FONT_SIZE: int = 15
 
 # Partner cards
-const PARTNER_TITLE_FONT_SIZE: int = 18
-const PARTNER_INFO_FONT_SIZE: int = 15
+const PARTNER_TITLE_FONT_SIZE: int = 17
+const PARTNER_INFO_FONT_SIZE: int = 14
 const PARTNER_MILESTONE_FONT_SIZE: int = 14
-const PARTNER_BUTTON_FONT_SIZE: int = 16
+const PARTNER_BUTTON_FONT_SIZE: int = 14
 
 # Upgrade cards
-const UPGRADE_TITLE_FONT_SIZE: int = 18
-const UPGRADE_INFO_FONT_SIZE: int = 15
+const UPGRADE_TITLE_FONT_SIZE: int = 17
+const UPGRADE_INFO_FONT_SIZE: int = 14
 const UPGRADE_MILESTONE_FONT_SIZE: int = 14
-const UPGRADE_BUTTON_FONT_SIZE: int = 16
+const UPGRADE_BUTTON_FONT_SIZE: int = 14
 
 # Stage navigator
 const STAGE_NUMBER_FONT_SIZE: int = 18
