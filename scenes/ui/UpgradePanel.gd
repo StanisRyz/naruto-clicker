@@ -14,7 +14,7 @@ const ABILITIES: Array[Dictionary] = [
 ]
 
 const BUY_MODES: Array[String] = ["x1", "x10", "x100", "max"]
-const UPGRADE_IMAGE_SIZE: Vector2 = Vector2(104, 104)
+const UPGRADE_IMAGE_SIZE: Vector2 = Vector2(136, 136)
 const SKILL_ICON_SIZE: Vector2 = Vector2(32, 32)
 const SKILL_COUNT: int = 5
 const SKILL_ICON_COLORS: Dictionary = {
@@ -79,26 +79,28 @@ func _create_hero_level_row() -> Dictionary:
 func _update_hero_level_row(state: ClickerState) -> void:
 	var name_status_label: Label = hero_level_row["name_status_label"]
 	var effect_label: Label = hero_level_row["effect_label"]
+	var milestone_label: Label = hero_level_row["milestone_label"]
 	var button: Button = hero_level_row["button"]
 	var skill_buttons: Array = hero_level_row["skill_buttons"]
 	var skill_image_holders: Array = hero_level_row["skill_image_holders"]
 	var bulk_count: int = state.get_character_level_bulk_display_count(selected_buy_mode)
 	var bulk_cost: int = state.get_character_level_bulk_display_cost(selected_buy_mode)
+	var damage_gain: int = state.get_character_level_bulk_damage_gain(selected_buy_mode)
 	var next_milestone: int = state.get_next_milestone(state.character_level)
 
-	name_status_label.text = LocalizationManager.format_key("upgrade.hero.name_level", {
+	name_status_label.text = LocalizationManager.format_key("upgrade.hero.name_level_short", {
 		"level": state.character_level,
+	})
+	effect_label.text = LocalizationManager.format_key("upgrade.hero.damage_summary", {
+		"gain": NumberFormatter.compact(damage_gain),
 		"damage": NumberFormatter.compact(state.click_damage),
 	})
 	if next_milestone > 0:
-		effect_label.text = LocalizationManager.format_key("upgrade.hero.damage_info", {
-			"damage": NumberFormatter.compact(state.click_damage),
+		milestone_label.text = LocalizationManager.format_key("upgrade.hero.milestone_next", {
 			"milestone": next_milestone,
 		})
 	else:
-		effect_label.text = LocalizationManager.format_key("upgrade.hero.damage_max", {
-			"damage": NumberFormatter.compact(state.click_damage),
-		})
+		milestone_label.text = LocalizationManager.tr_key("upgrade.hero.milestone_max")
 	button.disabled = false
 	button.text = LocalizationManager.format_key("upgrade.hero.button", {
 		"count": bulk_count,
@@ -141,6 +143,7 @@ func _update_ability_row(state: ClickerState, ability_index: int, row: Dictionar
 	var ability_name: String = LocalizationManager.tr_key(name_key) if name_key != "" else String(ability["name"])
 	var name_status_label: Label = row["name_status_label"]
 	var effect_label: Label = row["effect_label"]
+	var milestone_label: Label = row["milestone_label"]
 	var button: Button = row["button"]
 	var skill_buttons: Array = row["skill_buttons"]
 	var skill_image_holders: Array = row["skill_image_holders"]
@@ -152,6 +155,20 @@ func _update_ability_row(state: ClickerState, ability_index: int, row: Dictionar
 		"max_rank": state.ability_max_rank,
 	})
 	effect_label.text = state.get_ability_description(ability_id)
+	var status_hint: String = ""
+	if state.is_ability_purchased(ability_id):
+		status_hint = ""
+	elif not state.is_ability_unlocked(ability_id):
+		status_hint = LocalizationManager.format_key("upgrade.ability.requires_level", {
+			"level": state.get_ability_unlock_level(ability_id),
+		})
+	else:
+		status_hint = LocalizationManager.format_key("upgrade.ability.buy", {
+			"cost": NumberFormatter.compact(state.get_ability_unlock_cost(ability_id)),
+		})
+	milestone_label.text = LocalizationManager.format_key("upgrade.ability.status_hint", {
+		"status": status_hint,
+	})
 	_update_ability_unlock_button(state, ability_id, button)
 	var skills: Array[Dictionary] = state.get_ability_skills(ability_id)
 	_update_skill_icon_row(skills, skill_buttons, skill_image_holders, state, false)
@@ -199,6 +216,12 @@ func _add_card_content(row: PanelContainer, button_name: String) -> Dictionary:
 	effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	info_container.add_child(effect_label)
 
+	var milestone_label := Label.new()
+	milestone_label.name = "MilestoneLabel"
+	milestone_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	milestone_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	info_container.add_child(milestone_label)
+
 	var skill_row := HBoxContainer.new()
 	skill_row.name = "SkillRow"
 	skill_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -233,13 +256,14 @@ func _add_card_content(row: PanelContainer, button_name: String) -> Dictionary:
 
 	var button := Button.new()
 	button.name = button_name
-	button.custom_minimum_size = Vector2(210, 104)
+	button.custom_minimum_size = Vector2(210, 136)
 	button.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	content.add_child(button)
 
 	return {
 		"name_status_label": name_status_label,
 		"effect_label": effect_label,
+		"milestone_label": milestone_label,
 		"skill_buttons": skill_buttons,
 		"skill_image_holders": skill_image_holders,
 		"button": button,

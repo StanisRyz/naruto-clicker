@@ -5,7 +5,7 @@ signal partner_purchase_requested(partner_index: int, mode: String)
 signal skill_popup_requested(skill_id: String, anchor_global_position: Vector2)
 
 const BUY_MODES: Array[String] = ["x1", "x10", "x100", "max"]
-const PARTNER_IMAGE_SIZE: Vector2 = Vector2(104, 104)
+const PARTNER_IMAGE_SIZE: Vector2 = Vector2(136, 136)
 const SKILL_ICON_SIZE: Vector2 = Vector2(32, 32)
 const SKILL_COUNT: int = 5
 const SKILL_ICON_COLORS: Dictionary = {
@@ -79,11 +79,17 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 	name_count_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	right_content.add_child(name_count_label)
 
-	var effect_label := Label.new()
-	effect_label.name = "EffectLabel"
-	effect_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	right_content.add_child(effect_label)
+	var damage_summary_label := Label.new()
+	damage_summary_label.name = "DamageSummaryLabel"
+	damage_summary_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	damage_summary_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	right_content.add_child(damage_summary_label)
+
+	var milestone_label := Label.new()
+	milestone_label.name = "MilestoneLabel"
+	milestone_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	milestone_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	right_content.add_child(milestone_label)
 
 	var skill_row := HBoxContainer.new()
 	skill_row.name = "SkillRow"
@@ -125,7 +131,7 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 
 	var button := Button.new()
 	button.name = "HireButton"
-	button.custom_minimum_size = Vector2(210, 104)
+	button.custom_minimum_size = Vector2(210, 136)
 	button.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	button.pressed.connect(func() -> void: partner_purchase_requested.emit(partner_index, selected_buy_mode))
 	content.add_child(button)
@@ -133,7 +139,8 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 	return {
 		"row": row,
 		"name_count_label": name_count_label,
-		"effect_label": effect_label,
+		"damage_summary_label": damage_summary_label,
+		"milestone_label": milestone_label,
 		"skill_buttons": skill_buttons,
 		"skill_image_holders": skill_image_holders,
 		"button": button,
@@ -142,29 +149,30 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 
 func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionary) -> void:
 	var name_count_label: Label = row["name_count_label"]
-	var effect_label: Label = row["effect_label"]
+	var damage_summary_label: Label = row["damage_summary_label"]
+	var milestone_label: Label = row["milestone_label"]
 	var skill_buttons: Array = row["skill_buttons"]
 	var skill_image_holders: Array = row["skill_image_holders"]
 	var button: Button = row["button"]
 	var partner_name: String = LocalizationManager.tr_key(PartnerConfig.get_name_key(partner_index))
 	var partner_count: int = state.partner_counts[partner_index]
 	var tier_total_dps: int = state.get_partner_tier_total_dps(partner_index)
+	var dps_gain: int = state.get_partner_bulk_dps_gain(partner_index, selected_buy_mode)
 	var next_milestone: int = state.get_next_milestone(partner_count)
-	name_count_label.text = LocalizationManager.format_key("partner.name_header", {
+	name_count_label.text = LocalizationManager.format_key("partner.name_count", {
 		"name": partner_name,
 		"count": partner_count,
-		"dps": NumberFormatter.compact(tier_total_dps),
 	})
-	var base_dps_str: String = NumberFormatter.compact(BalanceConfig.PARTNER_DPS_VALUES[partner_index])
+	damage_summary_label.text = LocalizationManager.format_key("partner.damage_summary", {
+		"gain": NumberFormatter.compact(dps_gain),
+		"total": NumberFormatter.compact(tier_total_dps),
+	})
 	if next_milestone > 0:
-		effect_label.text = LocalizationManager.format_key("partner.dps_next_milestone", {
-			"dps": base_dps_str,
+		milestone_label.text = LocalizationManager.format_key("partner.milestone_next", {
 			"milestone": next_milestone,
 		})
 	else:
-		effect_label.text = LocalizationManager.format_key("partner.dps_max", {
-			"dps": base_dps_str,
-		})
+		milestone_label.text = LocalizationManager.tr_key("partner.milestone_max")
 
 	var skills: Array[Dictionary] = state.get_partner_skills_for_partner(partner_index)
 	for i in range(skill_buttons.size()):

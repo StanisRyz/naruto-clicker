@@ -566,6 +566,30 @@ func get_character_level_bulk_display_cost(mode: String) -> int:
 	return character_level_upgrade_cost
 
 
+func get_click_damage_for_character_level(level: int) -> int:
+	var base_damage: int = int(BalanceConfig.HERO_BASE_DAMAGE + float(level) * BalanceConfig.HERO_DAMAGE_PER_LEVEL) * get_milestone_multiplier(level)
+	return maxi(
+		1,
+		int(
+			base_damage
+			* get_focus_training_multiplier()
+			* get_partner_skill_bonus_multiplier("click_damage")
+			* get_hero_skill_bonus_multiplier("click_damage")
+			* get_partner_skill_bonus_multiplier("all_damage")
+			* get_focus_burst_multiplier()
+			* get_settlement_click_damage_multiplier()
+		)
+	)
+
+
+func get_character_level_bulk_damage_gain(mode: String) -> int:
+	var count: int = get_character_level_bulk_display_count(mode)
+	if count <= 0:
+		return 0
+	var future_damage: int = get_click_damage_for_character_level(character_level + count)
+	return maxi(future_damage - click_damage, 0)
+
+
 func buy_autoclick_ability() -> Dictionary:
 	return buy_ability_unlock("autoclick")
 
@@ -1155,6 +1179,26 @@ func get_partner_tier_total_dps(partner_index: int) -> int:
 		* get_partner_milestone_multiplier(partner_index)
 		* get_own_partner_skill_multiplier(partner_index)
 	)
+
+
+func get_partner_tier_total_dps_for_count(partner_index: int, count: int) -> int:
+	if partner_index < 0 or partner_index >= BalanceConfig.PARTNER_DPS_VALUES.size():
+		return 0
+	return int(
+		count
+		* BalanceConfig.PARTNER_DPS_VALUES[partner_index]
+		* get_milestone_multiplier(count)
+		* get_own_partner_skill_multiplier(partner_index)
+	)
+
+
+func get_partner_bulk_dps_gain(partner_index: int, mode: String) -> int:
+	var count: int = get_partner_bulk_display_count(partner_index, mode)
+	if count <= 0:
+		return 0
+	var current_dps: int = get_partner_tier_total_dps(partner_index)
+	var future_dps: int = get_partner_tier_total_dps_for_count(partner_index, partner_counts[partner_index] + count)
+	return maxi(future_dps - current_dps, 0)
 
 
 func _get_partner_skill_total_bonus(bonus_type: String) -> float:

@@ -46,15 +46,24 @@ upgrade.hero.name_level,Hero Level | Level {level} | Damage {damage},Герой 
 upgrade.hero.damage_info,Damage {damage} | Next x2 at Lv {milestone},Урон {damage} | х2 на уровне {milestone},UpgradePanel hero row effect,{damage} compact number; {milestone} is level integer
 upgrade.hero.damage_max,Damage {damage} | Max milestones,Урон {damage} | Максимум,UpgradePanel hero row effect,{damage} is compact number
 upgrade.hero.button,x{count} - {cost},x{count} - {cost},UpgradePanel hero upgrade button,{count} is integer; {cost} is compact number
+upgrade.hero.name_level_short,Hero | Level {level},Герой | Уровень {level},UpgradePanel hero row 1,{level} is integer
+upgrade.hero.damage_summary,+{gain} Damage | Damage {damage},+{gain} Урон | Урон {damage},UpgradePanel hero row 2,{gain} and {damage} are compact numbers
+upgrade.hero.milestone_next,Next x2 at Lv {milestone},x2 на уровне {milestone},UpgradePanel hero row 3,{milestone} is integer
+upgrade.hero.milestone_max,Max milestones,Максимум,UpgradePanel hero row 3 all reached,
 upgrade.ability.rank_info,{name} | Rank {rank}/{max_rank},{name} | Ранг {rank}/{max_rank},UpgradePanel ability row header,{name} is ability name; {rank} and {max_rank} are integers
 upgrade.ability.purchased,Purchased,Куплено,UpgradePanel ability unlock button,
 upgrade.ability.requires_level,Requires Lv {level},Требуется уровень {level},UpgradePanel ability unlock button,{level} is integer
 upgrade.ability.buy,Buy: {cost},Купить: {cost},UpgradePanel ability unlock button,{cost} is compact number
+upgrade.ability.status_hint,{status},{status},UpgradePanel ability row 3 status hint,{status} is status text
 partner.requires_previous,Requires Previous Partner,Требуется предыдущий партнер,PartnerPanel hire button when locked,
 partner.hire_button,x{count} - {cost},x{count} - {cost},PartnerPanel hire button,{count} is integer; {cost} is compact number
 partner.name_header,{name} | {count} | DPS {dps},{name} | {count} | Урон {dps},PartnerPanel partner name/count header,{name} is partner name; {count} integer; {dps} compact
 partner.dps_next_milestone,+{dps} DPS | Next x2 at {milestone},+{dps} Урон | x2 на уровне {milestone},PartnerPanel effect text,{dps} compact; {milestone} integer
 partner.dps_max,+{dps} DPS | Max milestones,+{dps} Урон | Максимум,PartnerPanel effect text,{dps} is compact number
+partner.name_count,{name} | {count},{name} | {count},PartnerPanel row 1 header,{name} is partner name; {count} is integer
+partner.damage_summary,+{gain} DPS | Total {total},+{gain} Урон | Всего {total},PartnerPanel DPS summary row 2,{gain} and {total} are compact numbers
+partner.milestone_next,Next x2 at {milestone},x2 на уровне {milestone},PartnerPanel milestone row 3,{milestone} is integer
+partner.milestone_max,Max milestones,Максимум,PartnerPanel milestone row 3 all reached,
 settlement.requires,Requires {building},Требуется {building},SettlementPanel build button when locked,{building} is the required building name
 settlement.build_button,x{count} - {cost},x{count} - {cost},SettlementPanel build button,{count} integer; {cost} compact number
 settlement.name_count,{name} | {count},{name} | {count},SettlementPanel building header,{name} is building name; {count} is integer
