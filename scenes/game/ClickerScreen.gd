@@ -906,7 +906,7 @@ func _toggle_debug_visual_test_mode() -> void:
 	_update_ui()
 	if balance_logger:
 		balance_logger.mark_enemy_spawned(state)
-	print("Debug visual test mode: %s" % ("ON (HP=100000)" if enabled else "OFF"))
+	print("Debug visual test mode: %s" % ("ON (HP=100000, purchases=1 gold, unlock restrictions bypassed)" if enabled else "OFF"))
 
 
 func _debug_visual_damage_51_percent() -> void:

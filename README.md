@@ -517,6 +517,19 @@ An Android export preset is configured in `export_presets.cfg` targeting `arm64-
 - Shop shows the "Prototype: Get 50 Gems" button.
 - SettingsWindow shows "Version 0.1.0-dev".
 - F5/F9/F10 keyboard shortcuts (save/load/delete save) are active.
+- **F12** toggles debug visual test mode (see below).
+
+**F12 Debug Visual Test Mode** (debug builds only):
+- **L** — deals 51% target HP damage instantly.
+- **K** — clears the current level and advances to the next.
+- While F12 mode is ON:
+  - All gold-based purchases cost **1 gold**.
+  - All partner and building rows are visible; ownership restrictions are bypassed.
+  - Ability unlock, hero skill, ability skill, and partner skill requirements are bypassed.
+  - Boss timer is paused.
+- Debug purchases modify runtime state. Use F10 (delete save) carefully.
+- Gems costs and prestige costs are not affected.
+- Release builds: F12 does nothing.
 
 **Release mode** (`IS_DEBUG_BUILD = false`):
 - Shop hides the Prototype Gems button; no empty spacing is left.

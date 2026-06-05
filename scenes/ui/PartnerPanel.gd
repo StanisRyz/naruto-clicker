@@ -199,6 +199,9 @@ func set_buy_mode(mode: String) -> void:
 
 
 func _should_show_partner_row(state: ClickerState, partner_index: int) -> bool:
+	if state.is_debug_purchase_override_enabled():
+		return true
+
 	if partner_index == 0:
 		return true
 

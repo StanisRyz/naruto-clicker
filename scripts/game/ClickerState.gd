@@ -103,6 +103,8 @@ var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 var debug_visual_test_mode_enabled: bool = false
 const DEBUG_VISUAL_TEST_HP: int = 100000
+const DEBUG_PURCHASE_COST: int = 1
+const DEBUG_PURCHASE_MAX_BULK: int = 100
 
 var prestige_points: int:
 	get:
@@ -518,6 +520,9 @@ func get_character_level_bulk_count(mode: String) -> int:
 	if fixed_count > 0:
 		return fixed_count
 
+	if is_debug_purchase_override_enabled():
+		return DEBUG_PURCHASE_MAX_BULK if gold >= DEBUG_PURCHASE_COST else 0
+
 	var simulated_gold: int = gold
 	var simulated_level: int = character_level
 	var simulated_cost: int = character_level_upgrade_cost
@@ -537,6 +542,9 @@ func get_character_level_bulk_cost(mode: String) -> int:
 	if count <= 0:
 		return 0
 
+	if is_debug_purchase_override_enabled():
+		return DEBUG_PURCHASE_COST
+
 	return _get_character_level_bulk_cost_for_count(count)
 
 
@@ -548,6 +556,9 @@ func get_character_level_bulk_display_count(mode: String) -> int:
 
 
 func get_character_level_bulk_display_cost(mode: String) -> int:
+	if is_debug_purchase_override_enabled():
+		return DEBUG_PURCHASE_COST
+
 	var display_count: int = get_character_level_bulk_display_count(mode)
 	if display_count > 0:
 		return _get_character_level_bulk_cost_for_count(display_count)
@@ -649,6 +660,12 @@ func get_partner_bulk_count(partner_index: int, mode: String) -> int:
 	if not can_buy_partner(partner_index):
 		return 0
 
+	if is_debug_purchase_override_enabled():
+		if mode == "max":
+			return DEBUG_PURCHASE_MAX_BULK if gold >= DEBUG_PURCHASE_COST else 0
+		var dbg_fixed: int = _get_fixed_buy_count(mode)
+		return dbg_fixed if gold >= DEBUG_PURCHASE_COST else 0
+
 	var fixed_count: int = _get_fixed_buy_count(mode)
 	if fixed_count > 0:
 		var fixed_cost: int = _get_partner_bulk_cost_for_count(partner_index, fixed_count)
@@ -673,6 +690,9 @@ func get_partner_bulk_cost(partner_index: int, mode: String) -> int:
 	if count <= 0:
 		return 0
 
+	if is_debug_purchase_override_enabled():
+		return DEBUG_PURCHASE_COST
+
 	return _get_partner_bulk_cost_for_count(partner_index, count)
 
 
@@ -696,6 +716,9 @@ func get_partner_bulk_display_cost(partner_index: int, mode: String) -> int:
 	if not can_buy_partner(partner_index):
 		return 0
 
+	if is_debug_purchase_override_enabled():
+		return DEBUG_PURCHASE_COST
+
 	var display_count: int = get_partner_bulk_display_count(partner_index, mode)
 	if display_count > 0:
 		return _get_partner_bulk_cost_for_count(partner_index, display_count)
@@ -704,6 +727,9 @@ func get_partner_bulk_display_cost(partner_index: int, mode: String) -> int:
 
 
 func can_buy_building(building_index: int) -> bool:
+	if is_debug_purchase_override_enabled():
+		return building_index >= 0 and building_index < building_counts.size()
+
 	if building_index == 0:
 		return true
 
@@ -744,6 +770,12 @@ func get_building_bulk_count(building_index: int, mode: String) -> int:
 	if not can_buy_building(building_index):
 		return 0
 
+	if is_debug_purchase_override_enabled():
+		if mode == "max":
+			return DEBUG_PURCHASE_MAX_BULK if gold >= DEBUG_PURCHASE_COST else 0
+		var dbg_fixed: int = _get_fixed_buy_count(mode)
+		return dbg_fixed if gold >= DEBUG_PURCHASE_COST else 0
+
 	var fixed_count: int = _get_fixed_buy_count(mode)
 	if fixed_count > 0:
 		var fixed_cost: int = _get_building_bulk_cost_for_count(building_index, fixed_count)
@@ -768,6 +800,9 @@ func get_building_bulk_cost(building_index: int, mode: String) -> int:
 	if count <= 0:
 		return 0
 
+	if is_debug_purchase_override_enabled():
+		return DEBUG_PURCHASE_COST
+
 	return _get_building_bulk_cost_for_count(building_index, count)
 
 
@@ -790,6 +825,9 @@ func get_building_bulk_display_cost(building_index: int, mode: String) -> int:
 
 	if not can_buy_building(building_index):
 		return 0
+
+	if is_debug_purchase_override_enabled():
+		return DEBUG_PURCHASE_COST
 
 	var display_count: int = get_building_bulk_display_count(building_index, mode)
 	if display_count > 0:
@@ -871,6 +909,8 @@ func is_hero_skill_unlocked(skill_id: String) -> bool:
 	var skill: Dictionary = get_hero_skill(skill_id)
 	if skill.is_empty():
 		return false
+	if is_debug_purchase_override_enabled():
+		return true
 	return character_level >= int(skill.get("unlock_character_level", 0))
 
 
@@ -893,6 +933,8 @@ func get_hero_skill_cost(skill_id: String) -> int:
 	var skill: Dictionary = get_hero_skill(skill_id)
 	if skill.is_empty():
 		return 0
+	if is_debug_purchase_override_enabled():
+		return DEBUG_PURCHASE_COST
 	var skill_level: int = int(skill.get("skill_level", 0))
 	var unlock_level: int = int(skill.get("unlock_character_level", 0))
 	if skill_level < 1 or skill_level > BalanceConfig.HERO_SKILL_COST_MULTIPLIERS.size() or unlock_level <= 1:
@@ -937,6 +979,8 @@ func is_ability_skill_unlocked(skill_id: String) -> bool:
 	var skill: Dictionary = get_ability_skill(skill_id)
 	if skill.is_empty():
 		return false
+	if is_debug_purchase_override_enabled():
+		return true
 	return character_level >= int(skill.get("unlock_character_level", 0)) and is_ability_purchased(String(skill.get("ability_id", "")))
 
 
@@ -959,6 +1003,8 @@ func get_ability_skill_cost(skill_id: String) -> int:
 	var skill: Dictionary = get_ability_skill(skill_id)
 	if skill.is_empty():
 		return 0
+	if is_debug_purchase_override_enabled():
+		return DEBUG_PURCHASE_COST
 	var skill_level: int = int(skill.get("skill_level", 0))
 	if skill_level < 1 or skill_level > BalanceConfig.ABILITY_SKILL_COST_MULTIPLIERS.size():
 		return 0
@@ -973,7 +1019,7 @@ func buy_ability_skill(skill_id: String) -> Dictionary:
 	if is_ability_skill_purchased(skill_id):
 		return _make_purchase_result("Ability skill already purchased")
 	var ability_id: String = String(skill.get("ability_id", ""))
-	if not is_ability_purchased(ability_id):
+	if not is_debug_purchase_override_enabled() and not is_ability_purchased(ability_id):
 		return _make_purchase_result("Requires buying %s first" % _get_ability_display_name(ability_id))
 	if not is_ability_skill_unlocked(skill_id):
 		return _make_purchase_result("Requires Hero Level %d" % int(skill.get("unlock_character_level", 0)))
@@ -1003,6 +1049,9 @@ func get_partner_skill_cost(skill_id: String) -> int:
 	if skill.is_empty():
 		return 0
 
+	if is_debug_purchase_override_enabled():
+		return DEBUG_PURCHASE_COST
+
 	var partner_index: int = int(skill.get("partner_index", -1))
 	var unlock_count: int = int(skill.get("unlock_count", 0))
 	var skill_level: int = int(skill.get("skill_level", 1))
@@ -1023,6 +1072,9 @@ func is_partner_skill_unlocked(skill_id: String) -> bool:
 	var partner_index: int = int(skill.get("partner_index", -1))
 	if partner_index < 0 or partner_index >= partner_counts.size():
 		return false
+
+	if is_debug_purchase_override_enabled():
+		return true
 
 	return partner_counts[partner_index] >= int(skill.get("unlock_count", 0))
 
@@ -1144,6 +1196,8 @@ func is_ability_purchased(ability_id: String) -> bool:
 
 
 func is_ability_unlocked(ability_id: String) -> bool:
+	if is_debug_purchase_override_enabled():
+		return true
 	match ability_id:
 		"autoclick": return autoclick_unlocked
 		"gold_bonus": return gold_bonus_unlocked
@@ -1162,6 +1216,8 @@ func get_ability_unlock_level(ability_id: String) -> int:
 
 
 func get_ability_unlock_cost(ability_id: String) -> int:
+	if is_debug_purchase_override_enabled():
+		return DEBUG_PURCHASE_COST
 	return _get_ability_base_cost(ability_id)
 
 
@@ -1348,6 +1404,9 @@ func recalculate_partner_cost(partner_index: int) -> void:
 
 
 func can_buy_partner(partner_index: int) -> bool:
+	if is_debug_purchase_override_enabled():
+		return partner_index >= 0 and partner_index < partner_counts.size()
+
 	if partner_index == 0:
 		return true
 
@@ -1719,6 +1778,21 @@ func set_debug_visual_test_mode_enabled(enabled: bool) -> void:
 
 func is_debug_visual_test_mode_enabled() -> bool:
 	return debug_visual_test_mode_enabled
+
+
+func is_debug_purchase_override_enabled() -> bool:
+	return BuildConfig.IS_DEBUG_BUILD and debug_visual_test_mode_enabled
+
+
+func get_debug_purchase_cost(normal_cost: int) -> int:
+	if is_debug_purchase_override_enabled() and normal_cost > 0:
+		return DEBUG_PURCHASE_COST
+	return normal_cost
+
+
+func can_afford_debug_or_normal_gold_cost(normal_cost: int) -> bool:
+	var actual_cost: int = get_debug_purchase_cost(normal_cost)
+	return actual_cost > 0 and gold >= actual_cost
 
 
 func debug_damage_current_target_by_percent(percent: float) -> Dictionary:

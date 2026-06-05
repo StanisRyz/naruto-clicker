@@ -133,6 +133,9 @@ func set_buy_mode(mode: String) -> void:
 
 
 func _should_show_building_row(state: ClickerState, building_index: int) -> bool:
+	if state.is_debug_purchase_override_enabled():
+		return true
+
 	if building_index == 0:
 		return true
 

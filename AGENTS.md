@@ -705,12 +705,27 @@ After each patch, validate manually in Godot:
 **Debug mode** (`IS_DEBUG_BUILD = true`):
 - Shop `TestGemsButton` ("Prototype: Get 50 Gems") is visible.
 - SettingsWindow version label reads "Version X.Y.Z-dev".
-- `ClickerScreen._input` F5/F9/F10 debug shortcuts are active.
+- `ClickerScreen._input` F5/F9/F10/F12/L/K debug shortcuts are active.
 
 **Release mode** (`IS_DEBUG_BUILD = false`):
 - `TestGemsButton` is hidden; VBoxContainer layout collapses the gap automatically.
 - SettingsWindow version label reads "Version X.Y.Z".
 - All keyboard debug shortcuts are disabled.
+
+**F12 Debug Visual Test Mode** (debug builds only):
+- Press **F12** to toggle. Activated state is stored in `ClickerState.debug_visual_test_mode_enabled`.
+- **L** — deals 51% of target HP as instant damage.
+- **K** — clears the current level and advances to the next.
+- While F12 mode is ON (`ClickerState.is_debug_purchase_override_enabled()` returns `true`):
+  - All gold-based purchases cost exactly **1 gold**.
+  - All partner rows are visible; previous-partner ownership requirement is bypassed.
+  - All building rows are visible; previous-building ownership requirement is bypassed.
+  - Ability unlock level requirements are ignored.
+  - Hero skill, ability skill, and partner skill level/count requirements are ignored.
+  - Boss timer does not count down.
+  - Enemy HP is capped at `DEBUG_VISUAL_TEST_HP` (100 000) for visual testing.
+- Debug purchases modify runtime state normally. Use F10 (delete save) carefully when testing.
+- Gems costs, prestige costs, and shop products that cost gems are **not** affected by the override.
 
 **Rules:**
 - Do not remove `_on_test_gems_requested` or the `test_gems_requested` signal — they are used during development.
