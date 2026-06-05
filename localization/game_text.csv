@@ -43,20 +43,33 @@ task.claim,Claim,Получить,TasksWindow task button,
 task.claimed,Claimed,Получено,TasksWindow task button after clicking,
 task.progress,{current} / {target} | Reward: {reward},{current} / {target} | Награда: {reward},TasksWindow progress line,{current} and {target} are integers; {reward} is compact number
 upgrade.hero.button,x{count} - {cost},x{count} - {cost},UpgradePanel hero upgrade button,{count} is integer; {cost} is compact number
-upgrade.hero.name_level_short,Hero | Level {level},Герой | Уровень {level},UpgradePanel hero row 1,{level} is integer
-upgrade.hero.damage_summary,+{gain} Damage | Damage {damage},+{gain} Урон | Урон {damage},UpgradePanel hero row 2,{gain} and {damage} are compact numbers
-upgrade.hero.milestone_next,Next x2 at Lv {milestone},x2 на уровне {milestone},UpgradePanel hero row 3,{milestone} is integer
-upgrade.hero.milestone_max,Max milestones,Максимум,UpgradePanel hero row 3 all reached,
-upgrade.ability.rank_info,{name} | Rank {rank}/{max_rank},{name} | Ранг {rank}/{max_rank},UpgradePanel ability row header,{name} is ability name; {rank} and {max_rank} are integers
+upgrade.hero.name_level_short,Hero | Level {level},Герой | Уровень {level},UpgradePanel hero row 1 (legacy),{level} is integer
+upgrade.hero.damage_summary,+{gain} Damage | Damage {damage},+{gain} Урон | Урон {damage},UpgradePanel hero row 2 (legacy),{gain} and {damage} are compact numbers
+upgrade.hero.milestone_next,Next x2 at Lv {milestone},x2 на уровне {milestone},UpgradePanel hero row 3 (legacy),{milestone} is integer
+upgrade.hero.milestone_max,Max milestones,Максимум,UpgradePanel hero row 3 all reached (legacy),
+upgrade.hero.card.name,Hero,Герой,UpgradePanel hero card row 1,
+upgrade.hero.card.level_gain,Level {level} | +{gain} Damage,Уровень {level} | +{gain} Урон,UpgradePanel hero card row 2,{level} is integer; {gain} is compact damage gain
+upgrade.hero.card.damage,Damage {damage},Урон {damage},UpgradePanel hero card row 3,{damage} is compact current damage
+upgrade.hero.card.milestone_next,Next x2 at Lv {milestone},x2 на уровне {milestone},UpgradePanel hero card row 4,{milestone} is integer
+upgrade.hero.card.milestone_max,Max milestones,Максимум,UpgradePanel hero card row 4 all reached,
+upgrade.ability.rank_info,{name} | Rank {rank}/{max_rank},{name} | Ранг {rank}/{max_rank},UpgradePanel ability row header (legacy),{name} is ability name; {rank} and {max_rank} are integers
 upgrade.ability.purchased,Purchased,Куплено,UpgradePanel ability unlock button,
 upgrade.ability.requires_level,Requires Lv {level},Требуется уровень {level},UpgradePanel ability unlock button,{level} is integer
 upgrade.ability.buy,Buy: {cost},Купить: {cost},UpgradePanel ability unlock button,{cost} is compact number
-upgrade.ability.status_hint,{status},{status},UpgradePanel ability row 3 status hint,{status} is status text
+upgrade.ability.status_hint,{status},{status},UpgradePanel ability row 3 status hint (legacy),{status} is status text
+upgrade.ability.card.name,{name},{name},UpgradePanel ability card row 1,{name} is ability name
+upgrade.ability.card.rank,Rank {rank}/{max_rank},Ранг {rank}/{max_rank},UpgradePanel ability card row 2,{rank} and {max_rank} are integers
+upgrade.ability.card.status,{status},{status},UpgradePanel ability card row 4,{status} is status text
 partner.hire_button,x{count} - {cost},x{count} - {cost},PartnerPanel hire button,{count} is integer; {cost} is compact number
-partner.name_count,{name} | {count},{name} | {count},PartnerPanel row 1 header,{name} is partner name; {count} is integer
-partner.damage_summary,+{gain} DPS | Total {total},+{gain} DPS | Всего {total},PartnerPanel DPS summary row 2,{gain} and {total} are compact numbers
-partner.milestone_next,x2 at {milestone} lv.,x2 на {milestone} ур.,PartnerPanel milestone row 3,{milestone} is integer
-partner.milestone_max,Max milestones,Максимум,PartnerPanel milestone row 3 all reached,
+partner.name_count,{name} | {count},{name} | {count},PartnerPanel row 1 header (legacy),{name} is partner name; {count} is integer
+partner.damage_summary,+{gain} DPS | Total {total},+{gain} DPS | Всего {total},PartnerPanel DPS summary row 2 (legacy),{gain} and {total} are compact numbers
+partner.milestone_next,x2 at {milestone} lv.,x2 на {milestone} ур.,PartnerPanel milestone row 3 (legacy),{milestone} is integer
+partner.milestone_max,Max milestones,Максимум,PartnerPanel milestone row 3 all reached (legacy),
+partner.card.name,{name},{name},PartnerPanel card row 1,{name} is partner name
+partner.card.count_gain,{count} | +{gain} DPS,{count} | +{gain} Урон,PartnerPanel card row 2,{count} is owned copies; {gain} is compact DPS gain
+partner.card.total_dps,Total {total} DPS,Всего {total} Урон,PartnerPanel card row 3,{total} is compact total DPS
+partner.card.milestone_next,Next x2 at {milestone},x2 на уровне {milestone},PartnerPanel card row 4,{milestone} is integer
+partner.card.milestone_max,Max milestones,Максимум,PartnerPanel card row 4 all reached,
 settlement.requires,Requires {building},Требуется {building},SettlementPanel build button when locked,{building} is the required building name
 settlement.build_button,x{count} - {cost},x{count} - {cost},SettlementPanel build button,{count} integer; {cost} compact number
 settlement.name_count,{name} | {count},{name} | {count},SettlementPanel building header,{name} is building name; {count} is integer
@@ -134,10 +147,10 @@ partner.12.name,Muu,Муу,PartnerConfig partner 12,
 partner.13.name,Gengetsu Hozuki,Генгецу Хозуки,PartnerConfig partner 13,
 partner.14.name,Killer B,Киллер Би,PartnerConfig partner 14,
 partner.15.name,Kabuto Yakushi,Кабуто Якуши,PartnerConfig partner 15,
-partner.16.name,A (Fourth Raikage),Эй (Четвертый Райкаге),PartnerConfig partner 16,
+partner.16.name,A (4th Raikage),Эй (4ый Райкаге),PartnerConfig partner 16,
 partner.17.name,Hiruzen Sarutobi,Хирузен Сарутоби,PartnerConfig partner 17,
 partner.18.name,Tobirama Senzu,Тобирама Сенджу,PartnerConfig partner 18,
-partner.19.name,A (Third Raikage),Эй (Третий Райкаге),PartnerConfig partner 19,
+partner.19.name,A (3rd Raikage),Эй (3ий Райкаге),PartnerConfig partner 19,
 partner.20.name,Hashirama Senzu,Хаширама Сенджу,PartnerConfig partner 20,
 partner.21.name,Obito Uchiha,Обито Учиха,PartnerConfig partner 21,
 partner.22.name,Madara Uchiha,Мадара Учиха,PartnerConfig partner 22,

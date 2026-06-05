@@ -71,20 +71,26 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 	var right_content := VBoxContainer.new()
 	right_content.name = "RightContent"
 	right_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	right_content.add_theme_constant_override("separation", 6)
+	right_content.add_theme_constant_override("separation", 4)
 	content.add_child(right_content)
 
-	var name_count_label := Label.new()
-	name_count_label.name = "NameCountLabel"
-	name_count_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	name_count_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	right_content.add_child(name_count_label)
+	var partner_name_label := Label.new()
+	partner_name_label.name = "PartnerNameLabel"
+	partner_name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	partner_name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	right_content.add_child(partner_name_label)
 
-	var damage_summary_label := Label.new()
-	damage_summary_label.name = "DamageSummaryLabel"
-	damage_summary_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	damage_summary_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	right_content.add_child(damage_summary_label)
+	var purchase_gain_label := Label.new()
+	purchase_gain_label.name = "PurchaseGainLabel"
+	purchase_gain_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	purchase_gain_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	right_content.add_child(purchase_gain_label)
+
+	var total_dps_label := Label.new()
+	total_dps_label.name = "TotalDpsLabel"
+	total_dps_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	total_dps_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	right_content.add_child(total_dps_label)
 
 	var milestone_label := Label.new()
 	milestone_label.name = "MilestoneLabel"
@@ -137,15 +143,17 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 	button.pressed.connect(func() -> void: partner_purchase_requested.emit(partner_index, selected_buy_mode))
 	content.add_child(button)
 
-	UiFontConfig.apply_label_font_size(name_count_label, UiFontConfig.PARTNER_TITLE_FONT_SIZE)
-	UiFontConfig.apply_label_font_size(damage_summary_label, UiFontConfig.PARTNER_INFO_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(partner_name_label, UiFontConfig.PARTNER_NAME_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(purchase_gain_label, UiFontConfig.PARTNER_COUNT_GAIN_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(total_dps_label, UiFontConfig.PARTNER_TOTAL_DPS_FONT_SIZE)
 	UiFontConfig.apply_label_font_size(milestone_label, UiFontConfig.PARTNER_MILESTONE_FONT_SIZE)
 	UiFontConfig.apply_button_font_size(button, UiFontConfig.PARTNER_BUTTON_FONT_SIZE)
 
 	return {
 		"row": row,
-		"name_count_label": name_count_label,
-		"damage_summary_label": damage_summary_label,
+		"partner_name_label": partner_name_label,
+		"purchase_gain_label": purchase_gain_label,
+		"total_dps_label": total_dps_label,
 		"milestone_label": milestone_label,
 		"skill_buttons": skill_buttons,
 		"skill_image_holders": skill_image_holders,
@@ -154,8 +162,9 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 
 
 func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionary) -> void:
-	var name_count_label: Label = row["name_count_label"]
-	var damage_summary_label: Label = row["damage_summary_label"]
+	var partner_name_label: Label = row["partner_name_label"]
+	var purchase_gain_label: Label = row["purchase_gain_label"]
+	var total_dps_label: Label = row["total_dps_label"]
 	var milestone_label: Label = row["milestone_label"]
 	var skill_buttons: Array = row["skill_buttons"]
 	var skill_image_holders: Array = row["skill_image_holders"]
@@ -165,20 +174,22 @@ func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionar
 	var tier_total_dps: int = state.get_partner_tier_total_dps(partner_index)
 	var dps_gain: int = state.get_partner_bulk_dps_gain(partner_index, selected_buy_mode)
 	var next_milestone: int = state.get_next_milestone(partner_count)
-	name_count_label.text = LocalizationManager.format_key("partner.name_count", {
+	partner_name_label.text = LocalizationManager.format_key("partner.card.name", {
 		"name": partner_name,
-		"count": partner_count,
 	})
-	damage_summary_label.text = LocalizationManager.format_key("partner.damage_summary", {
+	purchase_gain_label.text = LocalizationManager.format_key("partner.card.count_gain", {
+		"count": partner_count,
 		"gain": NumberFormatter.compact(dps_gain),
+	})
+	total_dps_label.text = LocalizationManager.format_key("partner.card.total_dps", {
 		"total": NumberFormatter.compact(tier_total_dps),
 	})
 	if next_milestone > 0:
-		milestone_label.text = LocalizationManager.format_key("partner.milestone_next", {
+		milestone_label.text = LocalizationManager.format_key("partner.card.milestone_next", {
 			"milestone": next_milestone,
 		})
 	else:
-		milestone_label.text = LocalizationManager.tr_key("partner.milestone_max")
+		milestone_label.text = LocalizationManager.tr_key("partner.card.milestone_max")
 
 	var skills: Array[Dictionary] = state.get_partner_skills_for_partner(partner_index)
 	for i in range(skill_buttons.size()):

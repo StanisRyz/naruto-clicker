@@ -78,6 +78,7 @@ func _create_hero_level_row() -> Dictionary:
 
 func _update_hero_level_row(state: ClickerState) -> void:
 	var name_status_label: Label = hero_level_row["name_status_label"]
+	var purchase_gain_label: Label = hero_level_row["purchase_gain_label"]
 	var effect_label: Label = hero_level_row["effect_label"]
 	var milestone_label: Label = hero_level_row["milestone_label"]
 	var button: Button = hero_level_row["button"]
@@ -88,19 +89,20 @@ func _update_hero_level_row(state: ClickerState) -> void:
 	var damage_gain: int = state.get_character_level_bulk_damage_gain(selected_buy_mode)
 	var next_milestone: int = state.get_next_milestone(state.character_level)
 
-	name_status_label.text = LocalizationManager.format_key("upgrade.hero.name_level_short", {
+	name_status_label.text = LocalizationManager.tr_key("upgrade.hero.card.name")
+	purchase_gain_label.text = LocalizationManager.format_key("upgrade.hero.card.level_gain", {
 		"level": state.character_level,
-	})
-	effect_label.text = LocalizationManager.format_key("upgrade.hero.damage_summary", {
 		"gain": NumberFormatter.compact(damage_gain),
+	})
+	effect_label.text = LocalizationManager.format_key("upgrade.hero.card.damage", {
 		"damage": NumberFormatter.compact(state.click_damage),
 	})
 	if next_milestone > 0:
-		milestone_label.text = LocalizationManager.format_key("upgrade.hero.milestone_next", {
+		milestone_label.text = LocalizationManager.format_key("upgrade.hero.card.milestone_next", {
 			"milestone": next_milestone,
 		})
 	else:
-		milestone_label.text = LocalizationManager.tr_key("upgrade.hero.milestone_max")
+		milestone_label.text = LocalizationManager.tr_key("upgrade.hero.card.milestone_max")
 	button.disabled = false
 	button.text = LocalizationManager.format_key("upgrade.hero.button", {
 		"count": bulk_count,
@@ -142,6 +144,7 @@ func _update_ability_row(state: ClickerState, ability_index: int, row: Dictionar
 	var name_key: String = String(ability.get("name_key", ""))
 	var ability_name: String = LocalizationManager.tr_key(name_key) if name_key != "" else String(ability["name"])
 	var name_status_label: Label = row["name_status_label"]
+	var purchase_gain_label: Label = row["purchase_gain_label"]
 	var effect_label: Label = row["effect_label"]
 	var milestone_label: Label = row["milestone_label"]
 	var button: Button = row["button"]
@@ -149,8 +152,10 @@ func _update_ability_row(state: ClickerState, ability_index: int, row: Dictionar
 	var skill_image_holders: Array = row["skill_image_holders"]
 
 	var rank: int = state.get_ability_rank(ability_id)
-	name_status_label.text = LocalizationManager.format_key("upgrade.ability.rank_info", {
+	name_status_label.text = LocalizationManager.format_key("upgrade.ability.card.name", {
 		"name": ability_name,
+	})
+	purchase_gain_label.text = LocalizationManager.format_key("upgrade.ability.card.rank", {
 		"rank": rank,
 		"max_rank": state.ability_max_rank,
 	})
@@ -166,7 +171,7 @@ func _update_ability_row(state: ClickerState, ability_index: int, row: Dictionar
 		status_hint = LocalizationManager.format_key("upgrade.ability.buy", {
 			"cost": NumberFormatter.compact(state.get_ability_unlock_cost(ability_id)),
 		})
-	milestone_label.text = LocalizationManager.format_key("upgrade.ability.status_hint", {
+	milestone_label.text = LocalizationManager.format_key("upgrade.ability.card.status", {
 		"status": status_hint,
 	})
 	_update_ability_unlock_button(state, ability_id, button)
@@ -201,7 +206,7 @@ func _add_card_content(row: PanelContainer, button_name: String) -> Dictionary:
 	var info_container := VBoxContainer.new()
 	info_container.name = "RightContent"
 	info_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	info_container.add_theme_constant_override("separation", 6)
+	info_container.add_theme_constant_override("separation", 4)
 	content.add_child(info_container)
 
 	var name_status_label := Label.new()
@@ -210,10 +215,16 @@ func _add_card_content(row: PanelContainer, button_name: String) -> Dictionary:
 	name_status_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	info_container.add_child(name_status_label)
 
+	var purchase_gain_label := Label.new()
+	purchase_gain_label.name = "PurchaseGainLabel"
+	purchase_gain_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	purchase_gain_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	info_container.add_child(purchase_gain_label)
+
 	var effect_label := Label.new()
 	effect_label.name = "EffectLabel"
 	effect_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	effect_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	info_container.add_child(effect_label)
 
 	var milestone_label := Label.new()
@@ -260,13 +271,15 @@ func _add_card_content(row: PanelContainer, button_name: String) -> Dictionary:
 	button.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	content.add_child(button)
 
-	UiFontConfig.apply_label_font_size(name_status_label, UiFontConfig.UPGRADE_TITLE_FONT_SIZE)
-	UiFontConfig.apply_label_font_size(effect_label, UiFontConfig.UPGRADE_INFO_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(name_status_label, UiFontConfig.UPGRADE_NAME_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(purchase_gain_label, UiFontConfig.UPGRADE_GAIN_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(effect_label, UiFontConfig.UPGRADE_VALUE_FONT_SIZE)
 	UiFontConfig.apply_label_font_size(milestone_label, UiFontConfig.UPGRADE_MILESTONE_FONT_SIZE)
 	UiFontConfig.apply_button_font_size(button, UiFontConfig.UPGRADE_BUTTON_FONT_SIZE)
 
 	return {
 		"name_status_label": name_status_label,
+		"purchase_gain_label": purchase_gain_label,
 		"effect_label": effect_label,
 		"milestone_label": milestone_label,
 		"skill_buttons": skill_buttons,
