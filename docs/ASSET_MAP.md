@@ -172,6 +172,11 @@ Do **not** create `zone_06`, `zone_07`, `zone_09`, `zone_12`–`zone_15`, `zone_
 
 Missing `stage.png` files are **warnings** (safe fallback color shown). Missing or unexpected zone folders are **errors**.
 
+### Locked overlay
+
+`assets/images/stage_navigation/common/locked.png` — 80×80 icon shown on top of locked stage buttons.
+Optional. If missing, locked stages are still darkened but no icon appears.
+
 Run the following to validate:
 
 ```

@@ -18,6 +18,8 @@ const STAGE_NAVIGATOR_EXTRA_BOTTOM_SPACE: int = 18
 const COLOR_CURRENT: Color = Color(0.2, 0.4, 0.9, 1.0)
 const COLOR_UNLOCKED: Color = Color(1.0, 1.0, 1.0, 1.0)
 const COLOR_LOCKED: Color = Color(0.35, 0.35, 0.35, 1.0)
+const LOCKED_STAGE_MODULATE: Color = Color(0.35, 0.35, 0.35, 1.0)
+const NORMAL_STAGE_MODULATE: Color = Color(1.0, 1.0, 1.0, 1.0)
 const COLOR_LATEST: Color = Color(0.8, 0.7, 0.1, 1.0)
 const COLOR_AUTO_ON: Color = Color(0.2, 0.75, 0.2, 1.0)
 const COLOR_AUTO_OFF: Color = Color(0.45, 0.45, 0.45, 1.0)
@@ -29,11 +31,13 @@ var visible_center_level: int = SIDE_COUNT + 1
 var _current_level: int = 1
 var _max_unlocked_level: int = 1
 var _has_initialized_view: bool = false
+var _last_centered_current_level: int = -1
 var _auto_transition_enabled: bool = true
 
 var _stage_buttons: Array = []
 var _stage_rects: Array = []
 var _stage_labels: Array = []
+var _stage_locked_overlays: Array = []
 var _latest_button: Button
 var _auto_btn: Button
 var _auto_btn_rect = null
@@ -79,6 +83,13 @@ func _build_ui() -> void:
 		rect.mouse_filter = MOUSE_FILTER_IGNORE
 		rect.fallback_color = COLOR_LOCKED
 		btn.add_child(rect)
+
+		var locked_overlay = ImageSlotClass.new()
+		locked_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		locked_overlay.mouse_filter = MOUSE_FILTER_IGNORE
+		locked_overlay.fallback_color = Color.TRANSPARENT
+		locked_overlay.show_fallback_behind_texture = false
+		btn.add_child(locked_overlay)
 		slot.add_child(btn)
 
 		var label_y: int = BUTTON_SIZE - STAGE_NUMBER_LABEL_HEIGHT / 2
@@ -101,6 +112,7 @@ func _build_ui() -> void:
 		_stage_buttons.append(btn)
 		_stage_rects.append(rect)
 		_stage_labels.append(label)
+		_stage_locked_overlays.append(locked_overlay)
 
 	_latest_button = _make_side_button(COLOR_LATEST, ">>")
 	_latest_button.size_flags_vertical = 0
@@ -203,7 +215,11 @@ func update_view(current_level: int, max_unlocked_level: int) -> void:
 	_max_unlocked_level = max_unlocked_level
 	if not _has_initialized_view:
 		visible_center_level = current_level
+		_last_centered_current_level = current_level
 		_has_initialized_view = true
+	elif current_level != _last_centered_current_level:
+		visible_center_level = current_level
+		_last_centered_current_level = current_level
 	_clamp_center()
 	_refresh_buttons()
 
@@ -242,16 +258,19 @@ func _scroll_by(delta_levels: int) -> void:
 
 
 func _refresh_buttons() -> void:
+	var locked_overlay_texture: Texture2D = StageNavigationAssetCatalogClass.load_locked_overlay_texture()
 	for i: int in DISPLAY_COUNT:
 		var stage_level: int = visible_center_level - SIDE_COUNT + i
 		var btn: Button = _stage_buttons[i]
 		var rect = _stage_rects[i]
 		var label: Label = _stage_labels[i]
+		var locked_overlay = _stage_locked_overlays[i]
 
 		label.text = str(stage_level)
 
 		var is_current: bool = stage_level == _current_level
 		var is_unlocked: bool = stage_level <= _max_unlocked_level
+		var is_locked: bool = not is_unlocked and not is_current
 
 		var fallback_color: Color = COLOR_LOCKED
 		if is_current:
@@ -261,8 +280,15 @@ func _refresh_buttons() -> void:
 
 		var stage_texture: Texture2D = StageNavigationAssetCatalogClass.load_stage_texture_for_level(stage_level)
 		rect.set_direct_texture(stage_texture, fallback_color, false)
+		rect.modulate = LOCKED_STAGE_MODULATE if is_locked else NORMAL_STAGE_MODULATE
 
-		btn.disabled = not is_unlocked and not is_current
+		if is_locked and locked_overlay_texture != null:
+			locked_overlay.set_direct_texture(locked_overlay_texture, Color.TRANSPARENT, false)
+			locked_overlay.visible = true
+		else:
+			locked_overlay.visible = false
+
+		btn.disabled = is_locked
 
 
 func _on_stage_button_pressed(button_index: int) -> void:
