@@ -65,6 +65,14 @@ func _build_ui() -> void:
 	hbox.mouse_filter = MOUSE_FILTER_PASS
 	add_child(hbox)
 
+	_auto_btn = _make_side_button(COLOR_AUTO_ON, "A")
+	_auto_btn.size_flags_vertical = 0
+	_auto_btn_rect = _auto_btn.get_child(0)
+	_auto_btn.pressed.connect(_on_auto_transition_button_pressed)
+	_clear_button_visual_styles(_auto_btn)
+	hbox.add_child(_auto_btn)
+	_auto_btn_rect.set_asset_key("stage.auto_on", COLOR_AUTO_ON)
+
 	for i: int in DISPLAY_COUNT:
 		var slot: Control = Control.new()
 		slot.custom_minimum_size = Vector2(BUTTON_SIZE, BUTTON_SIZE + STAGE_NAVIGATOR_EXTRA_BOTTOM_SPACE)
@@ -112,7 +120,7 @@ func _build_ui() -> void:
 		label.offset_bottom = label_y + STAGE_NUMBER_LABEL_HEIGHT
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		label.add_theme_font_size_override("font_size", UiFontConfig.STAGE_NUMBER_FONT_SIZE)
+		label.add_theme_font_size_override("font_size", UiFontConfig.STAGE_NAV_STAGE_NUMBER_FONT_SIZE)
 		label.mouse_filter = MOUSE_FILTER_IGNORE
 		label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		slot.add_child(label)
@@ -134,14 +142,6 @@ func _build_ui() -> void:
 	hbox.add_child(_latest_button)
 	_latest_button.get_child(0).set_asset_key("stage.latest", COLOR_LATEST)
 
-	_auto_btn = _make_side_button(COLOR_AUTO_ON, "A")
-	_auto_btn.size_flags_vertical = 0
-	_auto_btn_rect = _auto_btn.get_child(0)
-	_auto_btn.pressed.connect(_on_auto_transition_button_pressed)
-	_clear_button_visual_styles(_auto_btn)
-	hbox.add_child(_auto_btn)
-	_auto_btn_rect.set_asset_key("stage.auto_on", COLOR_AUTO_ON)
-
 
 func _make_side_button(bg_color: Color, label_text: String) -> Button:
 	var btn: Button = Button.new()
@@ -159,7 +159,7 @@ func _make_side_button(bg_color: Color, label_text: String) -> Button:
 	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", UiFontConfig.STAGE_SIDE_BUTTON_FONT_SIZE)
+	label.add_theme_font_size_override("font_size", UiFontConfig.STAGE_NAV_SIDE_BUTTON_FONT_SIZE)
 	label.mouse_filter = MOUSE_FILTER_IGNORE
 	label.text = label_text
 	btn.add_child(label)
