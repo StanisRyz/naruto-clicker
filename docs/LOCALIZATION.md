@@ -226,6 +226,54 @@ Checks:
 
 ---
 
+## Current 4-row card localization keys
+
+### PartnerPanel
+
+| Key | Usage |
+|-----|-------|
+| `partner.name_count` | Row 1 — partner name and owned count |
+| `partner.damage_summary` | Row 2 — DPS gain and total |
+| `partner.milestone_next` | Row 3 — next x2 milestone level |
+| `partner.milestone_max` | Row 3 — shown when all milestones are reached |
+| `partner.hire_button` | Hire button text |
+
+### UpgradePanel (Hero)
+
+| Key | Usage |
+|-----|-------|
+| `upgrade.hero.name_level_short` | Row 1 — hero level |
+| `upgrade.hero.damage_summary` | Row 2 — damage gain and current damage |
+| `upgrade.hero.milestone_next` | Row 3 — next x2 milestone level |
+| `upgrade.hero.milestone_max` | Row 3 — shown when all milestones are reached |
+| `upgrade.hero.button` | Upgrade button text |
+
+### UpgradePanel (Ability)
+
+| Key | Usage |
+|-----|-------|
+| `upgrade.ability.rank_info` | Row 1 — ability name and rank |
+| `upgrade.ability.status_hint` | Row 3 — status text (requires level / buy cost) |
+| `upgrade.ability.purchased` | Button label when already purchased |
+| `upgrade.ability.requires_level` | Button label when locked by level |
+| `upgrade.ability.buy` | Button label when available to purchase |
+
+### Deprecated 3-row card keys (removed)
+
+These keys were used in the old compact card layout and have been removed:
+
+- `partner.name_header` — replaced by `partner.name_count`
+- `partner.dps_next_milestone` — replaced by `partner.damage_summary` + `partner.milestone_next`
+- `partner.dps_max` — replaced by `partner.milestone_max`
+- `partner.requires_previous` — hiring no longer requires previous partner ownership
+- `upgrade.hero.name_level` — replaced by `upgrade.hero.name_level_short`
+- `upgrade.hero.damage_info` — replaced by `upgrade.hero.damage_summary` + `upgrade.hero.milestone_next`
+- `upgrade.hero.damage_max` — replaced by `upgrade.hero.milestone_max`
+
+Do not use these keys in new UI code.
+
+---
+
 ## Known gaps
 
 - **Scene-file static labels** (e.g. row labels in `SettingsWindow.tscn`): not yet localized. Requires editing `.tscn` scene files or adding Label references and setting text in `_ready()`.

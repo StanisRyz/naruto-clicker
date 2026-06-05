@@ -4,12 +4,41 @@ extends SceneTree
 
 const CSV_PATH: String = "res://localization/game_text.csv"
 const EXPORT_PRESETS_PATH: String = "res://export_presets.cfg"
+
 const REQUIRED_KEYS: Array = [
 	"ui.tab.upgrades",
 	"ui.tab.partners",
 	"settings.language",
 	"zone.01.name",
 	"partner.01.name",
+	# 4-row partner card keys
+	"partner.name_count",
+	"partner.damage_summary",
+	"partner.milestone_next",
+	"partner.milestone_max",
+	"partner.hire_button",
+	# 4-row hero card keys
+	"upgrade.hero.name_level_short",
+	"upgrade.hero.damage_summary",
+	"upgrade.hero.milestone_next",
+	"upgrade.hero.milestone_max",
+	"upgrade.hero.button",
+	# Ability card keys
+	"upgrade.ability.rank_info",
+	"upgrade.ability.status_hint",
+	"upgrade.ability.purchased",
+	"upgrade.ability.requires_level",
+	"upgrade.ability.buy",
+]
+
+const OBSOLETE_KEYS: Array = [
+	"partner.name_header",
+	"partner.dps_next_milestone",
+	"partner.dps_max",
+	"partner.requires_previous",
+	"upgrade.hero.name_level",
+	"upgrade.hero.damage_info",
+	"upgrade.hero.damage_max",
 ]
 
 const BuiltinLocalizationData = preload("res://scripts/ui/LocalizationData.gd")
@@ -36,7 +65,9 @@ func _init() -> void:
 			errors.append("Built-in data has empty English value for required key: " + req)
 
 	# --- CSV exists and can be opened ---
+	var csv_rows: Array = []   # Array of {key, en, ru}
 	var csv_keys: Dictionary = {}
+
 	if not FileAccess.file_exists(CSV_PATH):
 		errors.append("CSV missing: " + CSV_PATH)
 	else:
@@ -44,39 +75,80 @@ func _init() -> void:
 		if file == null:
 			errors.append("CSV cannot be opened: " + CSV_PATH)
 		else:
+			# --- Header check ---
 			var header_line: String = file.get_line()
-			var headers: Array = header_line.split(",")
-			var has_key_col: bool = false
-			var has_en_col: bool = false
-			var has_ru_col: bool = false
-			for h in headers:
-				match h.strip_edges():
-					"key": has_key_col = true
-					"en":  has_en_col  = true
-					"ru":  has_ru_col  = true
-			if not has_key_col:
-				errors.append("CSV missing required column: key")
-			if not has_en_col:
-				errors.append("CSV missing required column: en")
-			if not has_ru_col:
-				warnings.append("CSV missing column: ru (Russian translations unavailable)")
+			var headers: Array = _split_csv_line(header_line)
+			var key_col: int = -1
+			var en_col: int = -1
+			var ru_col: int = -1
+			var context_col: int = -1
+			var notes_col: int = -1
+			for i in range(headers.size()):
+				match headers[i].strip_edges():
+					"key":     key_col     = i
+					"en":      en_col      = i
+					"ru":      ru_col      = i
+					"context": context_col = i
+					"notes":   notes_col   = i
 
-			if has_key_col and has_en_col:
-				while not file.eof_reached():
-					var line: String = file.get_line()
-					if line.strip_edges() == "":
-						continue
-					var cols: Array = _split_csv_line(line)
-					if cols.size() < 1:
-						continue
-					var k: String = cols[0].strip_edges()
-					if k != "":
-						csv_keys[k] = true
-				for req in REQUIRED_KEYS:
-					if not csv_keys.has(req):
-						errors.append("CSV missing required key: " + req)
+			if key_col < 0:
+				errors.append("CSV missing required column: key")
+			if en_col < 0:
+				errors.append("CSV missing required column: en")
+			if ru_col < 0:
+				warnings.append("CSV missing column: ru (Russian translations unavailable)")
+			if headers.size() != 5:
+				errors.append("CSV header must have exactly 5 columns (key,en,ru,context,notes), found %d" % headers.size())
+
+			var row_num: int = 1
+			while not file.eof_reached():
+				var line: String = file.get_line()
+				row_num += 1
+				if line.strip_edges() == "":
+					continue
+				var cols: Array = _split_csv_line(line)
+				if cols.size() != 5:
+					errors.append("Row %d has %d columns (expected 5): %s" % [row_num, cols.size(), line.left(80)])
+					continue
+				if key_col < 0 or en_col < 0:
+					continue
+				var k: String = cols[key_col].strip_edges()
+				if k == "":
+					errors.append("Row %d has empty key" % row_num)
+					continue
+				if csv_keys.has(k):
+					errors.append("Duplicate key on row %d: %s" % [row_num, k])
+					continue
+				var en_val: String = cols[en_col]
+				var ru_val: String = cols[ru_col] if ru_col >= 0 else ""
+				csv_keys[k] = true
+				csv_rows.append({"key": k, "en": en_val, "ru": ru_val})
 
 			file.close()
+
+			# Required keys in CSV
+			for req in REQUIRED_KEYS:
+				if not csv_keys.has(req):
+					errors.append("CSV missing required key: " + req)
+
+			# Obsolete key warnings
+			for obs in OBSOLETE_KEYS:
+				if csv_keys.has(obs):
+					warnings.append("Obsolete key still present in CSV (should be removed): " + obs)
+
+			# Placeholder consistency
+			for row in csv_rows:
+				var en_placeholders: Array = _extract_placeholders(row["en"])
+				var ru_val: String = row["ru"]
+				if ru_val == "":
+					continue
+				var ru_placeholders: Array = _extract_placeholders(ru_val)
+				for ph in en_placeholders:
+					if not ph in ru_placeholders:
+						errors.append("Placeholder {%s} in 'en' missing from 'ru' for key: %s" % [ph, row["key"]])
+				for ph in ru_placeholders:
+					if not ph in en_placeholders:
+						errors.append("Placeholder {%s} in 'ru' not in 'en' for key: %s" % [ph, row["key"]])
 
 	# --- Cross-check CSV vs built-in ---
 	if csv_keys.size() > 0 and builtin_en.size() > 0:
@@ -141,6 +213,24 @@ func _init() -> void:
 	else:
 		print("RESULT: FAIL")
 		quit(1)
+
+
+func _extract_placeholders(text: String) -> Array:
+	var result: Array = []
+	var i: int = 0
+	while i < text.length():
+		if text[i] == "{":
+			var j: int = text.find("}", i + 1)
+			if j > i:
+				var ph: String = text.substr(i + 1, j - i - 1)
+				if ph != "" and not ph in result:
+					result.append(ph)
+				i = j + 1
+			else:
+				i += 1
+		else:
+			i += 1
+	return result
 
 
 func _count_nonempty(d: Dictionary) -> int:
