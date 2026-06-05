@@ -172,10 +172,16 @@ Do **not** create `zone_06`, `zone_07`, `zone_09`, `zone_12`–`zone_15`, `zone_
 
 Missing `stage.png` files are **warnings** (safe fallback color shown). Missing or unexpected zone folders are **errors**.
 
-### Locked overlay
+### Common overlays
 
-`assets/images/stage_navigation/common/locked.png` — 80×80 icon shown on top of locked stage buttons.
-Optional. If missing, locked stages are still darkened but no icon appears.
+`assets/images/stage_navigation/common/` — shared overlay icons, both 80×80, both optional.
+
+| File | When shown |
+|------|-----------|
+| `locked.png` | Locked stage buttons (also darkened by modulate) |
+| `current.png` | Current (active) stage button only |
+
+Overlays are layered above the zone stage image, below the stage number label. Missing files are safe — fallback colors and darkening still apply.
 
 Run the following to validate:
 

@@ -17,6 +17,7 @@ func _run() -> void:
 	var expected_zone_numbers: Array = _get_expected_zone_numbers()
 	_check_folders(expected_zone_numbers)
 	_check_stage_files(expected_zone_numbers)
+	_check_common_overlays()
 	_check_path_logic()
 	print("--- Results: %d error(s), %d warning(s) ---" % [_errors, _warnings])
 
@@ -84,6 +85,28 @@ func _check_stage_files(expected_zone_numbers: Array) -> void:
 			print("  FOUND   %s" % path)
 		else:
 			_warn("missing optional: %s" % path)
+
+
+func _check_common_overlays() -> void:
+	print("\n-- Common overlays (optional) --")
+	var common_folder: String = STAGE_NAV_ROOT + "common"
+	if DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(common_folder)):
+		print("  OK      %s/" % common_folder)
+	else:
+		_error("missing common folder: %s/" % common_folder)
+		return
+
+	var locked_path: String = STAGE_NAV_ROOT + "common/locked.png"
+	if ResourceLoader.exists(locked_path):
+		print("  FOUND   %s" % locked_path)
+	else:
+		_warn("missing optional: %s" % locked_path)
+
+	var current_path: String = STAGE_NAV_ROOT + "common/current.png"
+	if ResourceLoader.exists(current_path):
+		print("  FOUND   %s" % current_path)
+	else:
+		_warn("missing optional: %s" % current_path)
 
 
 func _check_path_logic() -> void:

@@ -4,6 +4,7 @@ extends RefCounted
 const STAGE_NAV_IMAGE_ROOT: String = "res://assets/images/stage_navigation/"
 const STAGE_NAV_COMMON_ROOT: String = STAGE_NAV_IMAGE_ROOT + "common/"
 const LOCKED_OVERLAY_PATH: String = STAGE_NAV_COMMON_ROOT + "locked.png"
+const CURRENT_OVERLAY_PATH: String = STAGE_NAV_COMMON_ROOT + "current.png"
 
 
 static func load_locked_overlay_texture() -> Texture2D:
@@ -14,6 +15,16 @@ static func load_locked_overlay_texture() -> Texture2D:
 
 static func has_locked_overlay_texture() -> bool:
 	return ResourceLoader.exists(LOCKED_OVERLAY_PATH)
+
+
+static func load_current_overlay_texture() -> Texture2D:
+	if ResourceLoader.exists(CURRENT_OVERLAY_PATH):
+		return ResourceLoader.load(CURRENT_OVERLAY_PATH) as Texture2D
+	return null
+
+
+static func has_current_overlay_texture() -> bool:
+	return ResourceLoader.exists(CURRENT_OVERLAY_PATH)
 
 
 static func get_zone_folder(zone_index: int) -> String:

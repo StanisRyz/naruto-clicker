@@ -37,6 +37,7 @@ var _auto_transition_enabled: bool = true
 var _stage_buttons: Array = []
 var _stage_rects: Array = []
 var _stage_labels: Array = []
+var _stage_current_overlays: Array = []
 var _stage_locked_overlays: Array = []
 var _latest_button: Button
 var _auto_btn: Button
@@ -84,12 +85,23 @@ func _build_ui() -> void:
 		rect.fallback_color = COLOR_LOCKED
 		btn.add_child(rect)
 
+		var current_overlay = ImageSlotClass.new()
+		current_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		current_overlay.mouse_filter = MOUSE_FILTER_IGNORE
+		current_overlay.fallback_color = Color.TRANSPARENT
+		current_overlay.show_fallback_behind_texture = false
+		current_overlay.visible = false
+		btn.add_child(current_overlay)
+
 		var locked_overlay = ImageSlotClass.new()
 		locked_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		locked_overlay.mouse_filter = MOUSE_FILTER_IGNORE
 		locked_overlay.fallback_color = Color.TRANSPARENT
 		locked_overlay.show_fallback_behind_texture = false
+		locked_overlay.visible = false
 		btn.add_child(locked_overlay)
+
+		_clear_button_visual_styles(btn)
 		slot.add_child(btn)
 
 		var label_y: int = BUTTON_SIZE - STAGE_NUMBER_LABEL_HEIGHT / 2
@@ -112,11 +124,13 @@ func _build_ui() -> void:
 		_stage_buttons.append(btn)
 		_stage_rects.append(rect)
 		_stage_labels.append(label)
+		_stage_current_overlays.append(current_overlay)
 		_stage_locked_overlays.append(locked_overlay)
 
 	_latest_button = _make_side_button(COLOR_LATEST, ">>")
 	_latest_button.size_flags_vertical = 0
 	_latest_button.pressed.connect(_on_latest_button_pressed)
+	_clear_button_visual_styles(_latest_button)
 	hbox.add_child(_latest_button)
 	_latest_button.get_child(0).set_asset_key("stage.latest", COLOR_LATEST)
 
@@ -124,6 +138,7 @@ func _build_ui() -> void:
 	_auto_btn.size_flags_vertical = 0
 	_auto_btn_rect = _auto_btn.get_child(0)
 	_auto_btn.pressed.connect(_on_auto_transition_button_pressed)
+	_clear_button_visual_styles(_auto_btn)
 	hbox.add_child(_auto_btn)
 	_auto_btn_rect.set_asset_key("stage.auto_on", COLOR_AUTO_ON)
 
@@ -245,6 +260,25 @@ func set_auto_transition_enabled(enabled: bool) -> void:
 			_auto_btn_rect.set_asset_key("stage.auto_off", COLOR_AUTO_OFF)
 
 
+func _clear_button_visual_styles(button: Button) -> void:
+	var empty_style := StyleBoxEmpty.new()
+	button.add_theme_stylebox_override("normal", empty_style)
+	button.add_theme_stylebox_override("hover", empty_style)
+	button.add_theme_stylebox_override("pressed", empty_style)
+	button.add_theme_stylebox_override("disabled", empty_style)
+	button.add_theme_stylebox_override("focus", empty_style)
+	button.focus_mode = Control.FOCUS_NONE
+
+
+func _clear_stage_button_focuses() -> void:
+	for button: Button in _stage_buttons:
+		button.release_focus()
+	if _latest_button != null:
+		_latest_button.release_focus()
+	if _auto_btn != null:
+		_auto_btn.release_focus()
+
+
 func _clamp_center() -> void:
 	var min_center: int = SIDE_COUNT + 1
 	var max_center: int = maxi(_max_unlocked_level, min_center)
@@ -259,11 +293,13 @@ func _scroll_by(delta_levels: int) -> void:
 
 func _refresh_buttons() -> void:
 	var locked_overlay_texture: Texture2D = StageNavigationAssetCatalogClass.load_locked_overlay_texture()
+	var current_overlay_texture: Texture2D = StageNavigationAssetCatalogClass.load_current_overlay_texture()
 	for i: int in DISPLAY_COUNT:
 		var stage_level: int = visible_center_level - SIDE_COUNT + i
 		var btn: Button = _stage_buttons[i]
 		var rect = _stage_rects[i]
 		var label: Label = _stage_labels[i]
+		var current_overlay = _stage_current_overlays[i]
 		var locked_overlay = _stage_locked_overlays[i]
 
 		label.text = str(stage_level)
@@ -282,6 +318,12 @@ func _refresh_buttons() -> void:
 		rect.set_direct_texture(stage_texture, fallback_color, false)
 		rect.modulate = LOCKED_STAGE_MODULATE if is_locked else NORMAL_STAGE_MODULATE
 
+		if is_current and current_overlay_texture != null:
+			current_overlay.set_direct_texture(current_overlay_texture, Color.TRANSPARENT, false)
+			current_overlay.visible = true
+		else:
+			current_overlay.visible = false
+
 		if is_locked and locked_overlay_texture != null:
 			locked_overlay.set_direct_texture(locked_overlay_texture, Color.TRANSPARENT, false)
 			locked_overlay.visible = true
@@ -299,6 +341,7 @@ func _on_stage_button_pressed(button_index: int) -> void:
 		return
 	if stage_level == _current_level:
 		return
+	_clear_stage_button_focuses()
 	stage_selected.emit(stage_level)
 
 

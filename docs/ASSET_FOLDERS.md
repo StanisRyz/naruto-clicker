@@ -210,16 +210,19 @@ Fallback behavior:
 - If `stage.png` exists: the button shows the image; the fallback color square is hidden.
 - If `stage.png` is missing: the button shows the fallback color (blue = current, white = unlocked, grey = locked). No crash.
 
-### Locked overlay
+### Common overlays
 
-Path: `assets/images/stage_navigation/common/locked.png`
+Folder: `assets/images/stage_navigation/common/`
 
-A single shared overlay drawn on top of locked stage buttons.
+| File | Purpose | Required |
+|------|---------|---------|
+| `locked.png` | Drawn on top of locked stage buttons | Optional |
+| `current.png` | Drawn on top of the current (active) stage button | Optional |
 
-- Recommended size: 80×80 px.
-- Drawn above the stage image, below the stage number label.
-- Optional: if missing, locked stages are still darkened (modulate `0.35, 0.35, 0.35`) but no icon is shown.
-- Does not block clicks or drag input.
+Both images should be **80×80 px**. They are layered above the zone stage image but below the stage number label. Neither blocks clicks or drag input.
+
+- If `locked.png` is missing, locked stages are still darkened (modulate `0.35, 0.35, 0.35`) but no icon appears.
+- If `current.png` is missing, the current stage still shows its fallback color (blue) but no icon appears.
 
 ---
 
