@@ -11,6 +11,9 @@ const BUTTON_SIZE: int = 80
 const SIDE_BUTTON_SIZE: int = 80
 const DRAG_STAGE_THRESHOLD: float = 60.0
 const DRAG_MOVED_THRESHOLD: float = 8.0
+const STAGE_NUMBER_LABEL_HEIGHT: int = 28
+const STAGE_NUMBER_LABEL_OUTSIDE_OFFSET: int = 14
+const STAGE_NAVIGATOR_EXTRA_BOTTOM_SPACE: int = 18
 
 const COLOR_CURRENT: Color = Color(0.2, 0.4, 0.9, 1.0)
 const COLOR_UNLOCKED: Color = Color(1.0, 1.0, 1.0, 1.0)
@@ -42,7 +45,7 @@ var _drag_moved: bool = false
 
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(0, BUTTON_SIZE + 8)
+	custom_minimum_size = Vector2(0, BUTTON_SIZE + STAGE_NAVIGATOR_EXTRA_BOTTOM_SPACE)
 	mouse_filter = MOUSE_FILTER_STOP
 	_build_ui()
 	_refresh_buttons()
@@ -57,8 +60,16 @@ func _build_ui() -> void:
 	add_child(hbox)
 
 	for i: int in DISPLAY_COUNT:
+		var slot: Control = Control.new()
+		slot.custom_minimum_size = Vector2(BUTTON_SIZE, BUTTON_SIZE + STAGE_NAVIGATOR_EXTRA_BOTTOM_SPACE)
+		slot.mouse_filter = MOUSE_FILTER_PASS
+
 		var btn: Button = Button.new()
 		btn.custom_minimum_size = Vector2(BUTTON_SIZE, BUTTON_SIZE)
+		btn.offset_left = 0
+		btn.offset_top = 0
+		btn.offset_right = BUTTON_SIZE
+		btn.offset_bottom = BUTTON_SIZE
 		btn.flat = true
 		btn.mouse_filter = MOUSE_FILTER_STOP
 
@@ -67,29 +78,37 @@ func _build_ui() -> void:
 		rect.mouse_filter = MOUSE_FILTER_IGNORE
 		rect.fallback_color = COLOR_LOCKED
 		btn.add_child(rect)
+		slot.add_child(btn)
 
+		var label_y: int = BUTTON_SIZE - STAGE_NUMBER_LABEL_HEIGHT / 2
 		var label: Label = Label.new()
-		label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		label.offset_left = 0
+		label.offset_top = label_y
+		label.offset_right = BUTTON_SIZE
+		label.offset_bottom = label_y + STAGE_NUMBER_LABEL_HEIGHT
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		label.add_theme_font_size_override("font_size", UiFontConfig.STAGE_NUMBER_FONT_SIZE)
 		label.mouse_filter = MOUSE_FILTER_IGNORE
-		btn.add_child(label)
+		label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		slot.add_child(label)
 
 		var captured_index: int = i
 		btn.pressed.connect(func() -> void: _on_stage_button_pressed(captured_index))
-		hbox.add_child(btn)
+		hbox.add_child(slot)
 
 		_stage_buttons.append(btn)
 		_stage_rects.append(rect)
 		_stage_labels.append(label)
 
 	_latest_button = _make_side_button(COLOR_LATEST, ">>")
+	_latest_button.size_flags_vertical = 0
 	_latest_button.pressed.connect(_on_latest_button_pressed)
 	hbox.add_child(_latest_button)
 	_latest_button.get_child(0).set_asset_key("stage.latest", COLOR_LATEST)
 
 	_auto_btn = _make_side_button(COLOR_AUTO_ON, "A")
+	_auto_btn.size_flags_vertical = 0
 	_auto_btn_rect = _auto_btn.get_child(0)
 	_auto_btn.pressed.connect(_on_auto_transition_button_pressed)
 	hbox.add_child(_auto_btn)

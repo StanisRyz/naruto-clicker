@@ -60,7 +60,11 @@ upgrade.ability.buy,Buy: {cost},Купить: {cost},UpgradePanel ability unlock
 upgrade.ability.status_hint,{status},{status},UpgradePanel ability row 3 status hint (legacy),{status} is status text
 upgrade.ability.card.name,{name},{name},UpgradePanel ability card row 1,{name} is ability name
 upgrade.ability.card.rank,Rank {rank}/{max_rank},Ранг {rank}/{max_rank},UpgradePanel ability card row 2,{rank} and {max_rank} are integers
-upgrade.ability.card.status,{status},{status},UpgradePanel ability card row 4,{status} is status text
+upgrade.ability.card.status,{status},{status},UpgradePanel ability card row 4 (legacy),{status} is status text
+upgrade.ability.card.effect,{effect},{effect},UpgradePanel ability card row 3,{effect} is effect description text
+upgrade.ability.card.duration,{duration},{duration},UpgradePanel ability card row 4,{duration} is duration text
+upgrade.ability.duration_seconds,Duration {seconds}s,Длительность {seconds}с,ability duration text,{seconds} is integer seconds
+upgrade.ability.unlock_with_duration,Unlock at Lv {level} | {duration},Откроется на уровне {level} | {duration},locked ability row 4,{level} is integer; {duration} is duration text
 partner.hire_button,x{count} - {cost},x{count} - {cost},PartnerPanel hire button,{count} is integer; {cost} is compact number
 partner.name_count,{name} | {count},{name} | {count},PartnerPanel row 1 header (legacy),{name} is partner name; {count} is integer
 partner.damage_summary,+{gain} DPS | Total {total},+{gain} DPS | Всего {total},PartnerPanel DPS summary row 2 (legacy),{gain} and {total} are compact numbers

@@ -96,9 +96,8 @@ naruto-clicker/
 |------|---------|
 | `PrimaryStatsPanel.tscn/.gd` | Compact top-centered stat overlay (gold, click damage, partner DPS, settings; 80×80 px icons; gems hidden from HUD) |
 | `ProgressInfoPanel.tscn/.gd` | Level, zone, enemy name, HP bar |
-| `ComboPanel.tscn/.gd` | Right-side vertical combo/chakra meter |
 | `GameField.tscn/.gd` | Fullscreen tap/click layer; enemy and background visuals |
-| `AbilityBar.tscn/.gd` | Left-side active ability buttons |
+| `AbilityBar.tscn/.gd` | Left-side 80×80 ability buttons; hidden until ability is purchased; first button aligns vertically with TasksButton |
 | `StageNavigator.tscn/.gd` | Horizontal 5-button stage strip (80×80 px) with scroll/drag |
 | `AutoTransitionPopup.tscn/.gd` | Info-only popup showing auto-transition ON/OFF status |
 | `SettingsWindow.tscn/.gd` | Modal: sound/music toggles, Save Now, Reset Progress |

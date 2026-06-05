@@ -46,8 +46,7 @@ Naruto Clicker is a vertical idle/clicker game targeting Web / Yandex Games, wit
 - Reset Progress must require confirmation, delete the local save, reset all game progress, and save a fresh new-game state.
 - The main screen does not use a general `StatusLabel`; status text may be ignored or routed through a no-op helper until a dedicated UI is requested.
 - `ProgressInfoPanel` shows level, zone name, enemies progress, enemy name, enemy HP, and a compact enemy HP bar directly under the HP text.
-- `ComboPanel` shows the runtime-only Manual Combo / Chakra Meter as a right-side vertically centered meter and should not be placed inside `PrimaryStatsPanel`, `ProgressInfoPanel`, `GameField`, bottom sheets, or bottom tabs.
-- `TasksButton` is a textless white square directly above `ComboPanel`.
+- `TasksButton` is a textless white square on the right side of the screen, vertically aligned with the top of `AbilityBar`.
 - `TasksWindow` shows exactly 5 active tasks from a repeatable pool of 10 total tasks, with the other 5 task ids inactive.
 - Active tasks snapshot a baseline when activated; inactive tasks must not calculate or accumulate progress.
 - Claiming a completed task gives dynamic gold, moves the claimed task back to the inactive pool, and activates one random inactive task with a fresh baseline.
@@ -62,17 +61,13 @@ Naruto Clicker is a vertical idle/clicker game targeting Web / Yandex Games, wit
 - Tasks do not add daily timers, ads, monetization, or new currencies yet.
 - Gems are a prototype premium currency for runtime testing only; they are not connected to real Yandex payments.
 - The Shop is the fifth bottom tab after Prestige and spends Gems on prototype gameplay rewards.
-- Shop products are Small Gold Pack, Large Gold Pack, Instant Combo, Boss Retry, and Task Reward Boost.
+- Shop products are Small Gold Pack, Large Gold Pack, Boss Retry, and Task Reward Boost.
 - `Prototype: Get 50 Gems` is temporary/dev-only and must not be treated as a real payment flow.
 - Boss Retry tokens automatically retry the same failed boss level once per token.
 - Task Reward Boost doubles the next claimed task reward only once, then resets to x1.
 - Gems, Boss Retry tokens, and Task Reward Boost are local-save prototype state until real payments/save integration are explicitly added.
 - Do not add real payments, ads, authentication, or cloud save integration for Gems until explicitly requested.
-- Only manual player clicks fill the combo meter. Autoclick and partner DPS must not fill it.
-- Manual clicks add +1% meter charge, the meter decays by 1% per second, and every 1% meter charge gives +1% manual click damage only.
-- At 100% meter charge, an empowered state starts: manual click damage is x3 for 10 seconds, the meter stays full during the state, and the meter resets to 0 when the state ends.
-- Combo resets on prestige, is runtime-only, and must not be added to `ClickerState` persistence/state.
-- Autoclick and partner DPS must not receive combo damage bonuses.
+- Manual click damage is flat (`maxi(1, click_damage)`). A critical hit doubles it if the partner `critical_manual` skill chance triggers. There is no combo meter or empowered state.
 - Prestige and settlement details belong in their tabs, not on the main screen.
 - Keep `UpgradePanel` responsible only for upgrade controls.
 - Use `BottomBar` to open `UpgradeSheet`, `PartnerSheet`, `SettlementSheet`, and `PrestigeSheet`; do not keep sheet controls permanently in the main gameplay flow.
@@ -103,7 +98,7 @@ Naruto Clicker is a vertical idle/clicker game targeting Web / Yandex Games, wit
 - Keep `GameField` responsible only for tap/click input and simple visual feedback.
 - Keep `AbilityBar` separate from `GameField` on the left-middle screen edge.
 - Abilities must be purchased in `UpgradeSheet` before activation.
-- AbilityBar buttons are placeholder ImageHolder-style controls: textless white squares until real icons are added.
+- AbilityBar buttons are 80×80 px placeholder ImageHolder-style controls: textless white squares until real icons are added. Buttons are hidden until the ability is purchased — `button.visible = purchased`.
 - AbilityBar state should be represented by disabled/color feedback or optional tiny labels outside the square, not text inside the button.
 - Active abilities are unlocked once through the large card button, then have passive ranks 0–5 from gold-purchased skill icons on the ability card. Prestige resets purchased abilities and passive ranks to 0.
 - Ability skill purchases must never use BuyModeSelector; each skill icon purchase buys exactly one rank through `UpgradeSkillPopup`, and ClickerScreen routes purchases to `buy_ability_skill()`.
@@ -164,7 +159,7 @@ Naruto Clicker is a vertical idle/clicker game targeting Web / Yandex Games, wit
 - Builder Wisdom increases settlement building bonus effectiveness.
 - Training Camp affects displayed final Partner DPS and partner tick damage.
 - Market affects normal, elite, and boss final gold gain.
-- Knight Hut affects displayed click damage and manual/autoclick damage; manual combo stays in `ClickerScreen`.
+- Knight Hut affects displayed click damage and manual/autoclick damage.
 - War Banner affects Focus Burst and Rally duration only when those abilities are activated.
 - Clock Tower affects Autoclick, Gold Bonus, Focus Burst, and Rally cooldowns when cooldown starts using diminishing returns.
 - Boss Shrine affects boss rewards only and stacks with Market, Trade Routes, and Gold Bonus.
@@ -186,7 +181,7 @@ Naruto Clicker is a vertical idle/clicker game targeting Web / Yandex Games, wit
 - Reduction bonuses use `final_multiplier = 100 / (100 + raw_bonus)` and must never reduce cooldowns, costs, or future timers to 0.
 - Clock Tower uses cooldown efficiency through the diminishing formula. Future cost-reduction buildings must use the same helper.
 - Character level replaces the old damage upgrade; base hero damage starts from character level and is boosted by hero milestones.
-- Hero base damage is `character_level * hero milestone multiplier` before Focus Burst, settlement Knight Hut, prestige talents, combo manual multiplier, and Boss Hunter.
+- Hero base damage is `character_level * hero milestone multiplier` before Focus Burst, settlement Knight Hut, prestige talents, and Boss Hunter.
 - Hero level and each partner tier use milestone levels `[10, 25, 50, 100, 250, 500]`.
 - Each reached milestone doubles the total accumulated contribution of that source, applying to all owned levels rather than only future purchases.
 - Hero and every partner tier track milestone multipliers independently.
@@ -500,8 +495,7 @@ After each patch, validate manually in Godot:
 - Level 11 uses one of the Forest Path normal enemies or its 7% elite enemy roll; level 15 boss is "Forest Guardian".
 - ProgressInfoPanel updates zone name, enemy name, and enemy HP.
 - ProgressInfoPanel shows zone name without the zone level range.
-- ComboPanel appears on the right side, vertically centered.
-- TasksButton appears directly above ComboPanel as a textless white square.
+- TasksButton appears on the right side of the screen, aligned with the top of AbilityBar.
 - TasksButton opens TasksWindow and does not attack the enemy.
 - TasksWindow shows 5 unique active tasks and the inactive pool has the other 5 task ids.
 - TasksWindow closes with Close button and outside-panel clicks.
@@ -515,24 +509,6 @@ After each patch, validate manually in Godot:
 - Task rewards scale from the current level's normal enemy reward plus zone reward multiplier, excluding elite/boss multipliers, settlement reward bonuses, prestige reward bonuses, Boss Shrine, and Gold Bonus.
 - Manual damage task progresses only from manual click damage.
 - Autoclick task progresses when Autoclick is activated.
-- Combo task progresses when combo empowered state starts.
-- Combo meter is vertical.
-- Multiplier text is below the meter.
-- Manual click increases meter by 1%.
-- Meter decays by 1% per second.
-- At 25% meter, manual click damage is approximately x1.25.
-- At 50% meter, manual click damage is approximately x1.50.
-- At 100% meter, empowered state starts.
-- During empowered state, manual click damage is x3.
-- Empowered state lasts 10 seconds.
-- After empowered state ends, meter instantly resets to 0.
-- Manual clicks do not refill meter during empowered state.
-- Autoclick does not fill meter.
-- Autoclick does not receive combo damage bonus.
-- Partner DPS does not fill meter.
-- Partner DPS does not receive combo damage bonus.
-- Prestige resets combo meter and empowered state.
-- ComboPanel updates correctly.
 - HP and reward values are higher in later zones than the base formula alone.
 - Zone defeat feedback shows "New Zone!" flash when zone changes.
 - Prestige button is not visible inside UpgradeSheet.
@@ -548,7 +524,6 @@ After each patch, validate manually in Godot:
 - `Prototype: Get 50 Gems` increases Gems and is temporary/dev-only.
 - Shop product buttons are disabled when Gems are insufficient and enabled when affordable.
 - Small Gold Pack and Large Gold Pack add stage-scaled gold.
-- Instant Combo fills the combo meter and starts the empowered combo state.
 - Boss Retry adds a token, and a failed boss consumes one token to retry the same boss level.
 - Task Reward Boost doubles the next claimed task reward only once.
 - Gems and shop reward state do not reset on prestige.

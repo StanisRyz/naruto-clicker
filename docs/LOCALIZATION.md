@@ -250,10 +250,16 @@ Checks:
 
 ### UpgradePanel (Ability)
 
+Active ability cards show 4 text rows. Hero card is intentionally unchanged.
+
 | Key | Usage |
 |-----|-------|
-| `upgrade.ability.rank_info` | Row 1 — ability name and rank |
-| `upgrade.ability.status_hint` | Row 3 — status text (requires level / buy cost) |
+| `upgrade.ability.card.name` | Row 1 — ability name |
+| `upgrade.ability.card.rank` | Row 2 — rank/max rank |
+| `upgrade.ability.card.effect` | Row 3 — effect (passthrough `{effect}`) |
+| `upgrade.ability.card.duration` | Row 4 — duration (passthrough `{duration}`) |
+| `upgrade.ability.duration_seconds` | Duration string: "Duration {seconds}s" |
+| `upgrade.ability.unlock_with_duration` | Row 4 for locked abilities: "Unlock at Lv {level} \| {duration}" |
 | `upgrade.ability.purchased` | Button label when already purchased |
 | `upgrade.ability.requires_level` | Button label when locked by level |
 | `upgrade.ability.buy` | Button label when available to purchase |

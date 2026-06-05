@@ -46,11 +46,7 @@ The main scene contains the first local clicker loop:
 - Sound and Music toggles are persisted but do not affect audio yet because audio is not implemented.
 - Reset Progress requires confirmation, deletes the local save, and starts a fresh new game.
 - Prestige and settlement details belong in their bottom tabs, not on the main screen.
-- Manual Combo / Chakra Meter is a vertical meter on the right side of the screen that rewards active clicking.
-- Manual `GameField` clicks add +1% meter charge, the meter decays by 1% per second, and every 1% charge gives +1% manual click damage.
-- At 100% charge, manual click damage becomes x3 for 10 seconds. When the empowered state ends, the meter resets to 0.
-- Combo resets on prestige and is runtime-only with no save persistence.
-- Autoclick and partner DPS do not build combo and do not receive combo damage bonuses.
+- Manual click damage is flat (`maxi(1, click_damage)`). A critical hit doubles the damage if the partner `critical_manual` skill chance triggers.
 - Each level requires defeating 10 enemies.
 - Enemy HP and gold reward scale with the current level.
 - Every 10th level is a boss level with one boss.
@@ -80,8 +76,8 @@ The main scene contains the first local clicker loop:
 - `ShopSheet` header shows a white resource placeholder and current Gems beside the title.
 - The visible upper game field remains clickable while bottom-half sheets are open.
 - The game field is the fullscreen bottom clickable layer.
-- Ability buttons are a separate left-middle overlay and must be purchased before activation.
-- `TasksButton` is a textless white square directly above the right-side `ComboPanel`.
+- Ability buttons are a separate left-middle overlay (80×80 px each), hidden until the ability is purchased. Hidden buttons do not leave gaps.
+- `TasksButton` is a textless white square on the right side of the screen, aligned vertically with the top of `AbilityBar`.
 - `TasksWindow` shows 5 active tasks from a repeatable pool of 10 tasks; the other 5 tasks stay inactive.
 - Active tasks snapshot their baseline when activated, so inactive tasks do not progress in the background.
 - Claiming a completed task gives dynamic gold, resets that task into the inactive pool, and swaps in one random inactive task with a fresh baseline.
@@ -94,7 +90,7 @@ The main scene contains the first local clicker loop:
 - Task claim refreshes should be deferred or otherwise input-safe so task rows are not rebuilt while the clicked Claim button is still handling input.
 - Tasks do not add new currencies, daily timers, ads, or monetization.
 - Gems are a prototype premium currency for runtime testing only; they are not connected to real Yandex payments.
-- The Shop is the fifth bottom tab after Prestige. It spends Gems on prototype gameplay rewards: Small Gold Pack, Large Gold Pack, Instant Combo, Boss Retry, and Task Reward Boost.
+- The Shop is the fifth bottom tab after Prestige. It spends Gems on prototype gameplay rewards: Small Gold Pack, Large Gold Pack, Boss Retry, and Task Reward Boost.
 - The Shop includes a temporary dev-only `Prototype: Get 50 Gems` button for testing product flow without payments.
 - Boss Retry tokens automatically retry the same failed boss level once per token. Task Reward Boost doubles the next claimed task reward only once.
 - Gems, Boss Retry tokens, and Task Reward Boost are local-save prototype state until real payments/save integration are explicitly added.

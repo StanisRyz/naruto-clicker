@@ -418,20 +418,9 @@ Previous untuned values (before this pass):
 - Focus Burst: 20s duration (too long for a burst tool)
 - Rally: 30s duration, 180s cooldown
 
-### Combo constants
+### Combo mechanic (removed)
 
-| Constant | Value | Notes |
-|----------|-------|-------|
-| `COMBO_FILL_PER_CLICK` | 1.0 | Each manual click fills 1% |
-| `COMBO_DECAY_PER_SECOND` | 5.0 | Idle decay — 20s to empty from full |
-| `COMBO_DAMAGE_PER_PERCENT` | 0.01 | +1% damage per 1% combo fill |
-| `COMBO_EMPOWERED_MULTIPLIER` | 3.0 | ×3 click damage at 100% |
-| `COMBO_EMPOWERED_DURATION_SEC` | 10.0 | Empowered lasts 10s then resets |
-
-Decay changed from 1.0/s to 5.0/s so casual slow tapping stays below 50% and only active clicking or autoclick reaches empowered. Partner DPS does not fill combo.
-
-Damage formula: `multiplier = 1.0 + meter_value × COMBO_DAMAGE_PER_PERCENT`
-At 50%: ×1.5. At 100% (empowered): ×3.0 for 10s.
+The x3 combo/chakra meter mechanic has been removed. Manual click damage is now flat (`maxi(1, click_damage)` with optional critical hit ×2). No combo meter, no empowered state, no ComboPanel. The `instant_combo` shop product and `combo_empowered_1` task have been removed.
 
 ### Boss friction (unchanged, confirmed correct)
 

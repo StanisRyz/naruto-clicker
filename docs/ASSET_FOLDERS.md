@@ -139,7 +139,7 @@ Building folders: `training_camp`, `market`, `knight_hut`, `war_banner`, `clock_
 
 Path: `assets/images/shop/product_id/icon.png`
 
-Product folders: `gems`, `gold_pack_small`, `gold_pack_large`, `instant_combo`, `boss_retry_token`, `task_reward_boost`
+Product folders: `gems`, `gold_pack_small`, `gold_pack_large`, `boss_retry_token`, `task_reward_boost`
 
 ---
 
@@ -154,7 +154,7 @@ Path: `assets/images/prestige/talents/talent_01.png` … `talent_06.png`
 
 Path: `assets/images/tasks/task_type/icon.png`
 
-Task folders: `tasks_button`, `manual_damage`, `defeat_enemies`, `defeat_elites`, `defeat_boss`, `hero_levels`, `hire_partners`, `buildings`, `autoclick`, `combo_empowered`, `game_levels`
+Task folders: `tasks_button`, `manual_damage`, `defeat_enemies`, `defeat_elites`, `defeat_boss`, `hero_levels`, `hire_partners`, `buildings`, `autoclick`, `game_levels`
 
 ---
 

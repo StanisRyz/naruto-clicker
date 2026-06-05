@@ -111,6 +111,44 @@ static func get_ability_description(state: ClickerState, ability_id: String) -> 
 			return ""
 
 
+# --- Ability card row helpers ---
+
+static func get_ability_effect_text(state: ClickerState, ability_id: String) -> String:
+	var rank: int = state.get_ability_rank(ability_id)
+	match ability_id:
+		"autoclick":
+			var hits: int = roundi(BalanceConfig.AUTOCLICK_BASE_HITS_PER_SEC * (1.0 + BalanceConfig.AUTOCLICK_RANK_RATE_STEP * rank))
+			return "%d hits/sec" % hits
+		"gold_bonus":
+			var mult: float = BalanceConfig.ABILITY_BASE_MULTIPLIER + BalanceConfig.ABILITY_RANK_MULTIPLIER_STEP * rank
+			return "x%.2f gold" % mult
+		"focus_burst":
+			var mult: float = BalanceConfig.ABILITY_BASE_MULTIPLIER + BalanceConfig.ABILITY_RANK_MULTIPLIER_STEP * rank
+			return "x%.2f damage" % mult
+		"rally":
+			var mult: float = BalanceConfig.ABILITY_BASE_MULTIPLIER + BalanceConfig.ABILITY_RANK_MULTIPLIER_STEP * rank
+			return "x%.2f partner DPS" % mult
+		_:
+			return ""
+
+
+static func get_ability_duration_text(state: ClickerState, ability_id: String) -> String:
+	var rank: int = state.get_ability_rank(ability_id)
+	var seconds: int
+	match ability_id:
+		"autoclick":
+			seconds = BalanceConfig.AUTOCLICK_BASE_DURATION_SEC + BalanceConfig.AUTOCLICK_RANK_DURATION_BONUS_SEC * rank
+		"gold_bonus":
+			seconds = int(BalanceConfig.GOLD_BONUS_BASE_DURATION_SEC)
+		"focus_burst":
+			seconds = int(BalanceConfig.FOCUS_BURST_BASE_DURATION_SEC)
+		"rally":
+			seconds = int(BalanceConfig.RALLY_BASE_DURATION_SEC)
+		_:
+			return ""
+	return LocalizationManager.format_key("upgrade.ability.duration_seconds", {"seconds": seconds})
+
+
 # --- Skill state labels ---
 
 static func get_hero_skill_state(state: ClickerState, skill_id: String) -> String:
