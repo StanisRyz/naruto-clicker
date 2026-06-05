@@ -23,6 +23,7 @@ const COLOR_AUTO_ON: Color = Color(0.2, 0.75, 0.2, 1.0)
 const COLOR_AUTO_OFF: Color = Color(0.45, 0.45, 0.45, 1.0)
 
 const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
+const StageNavigationAssetCatalogClass = preload("res://scripts/ui/StageNavigationAssetCatalog.gd")
 
 var visible_center_level: int = SIDE_COUNT + 1
 var _current_level: int = 1
@@ -252,15 +253,16 @@ func _refresh_buttons() -> void:
 		var is_current: bool = stage_level == _current_level
 		var is_unlocked: bool = stage_level <= _max_unlocked_level
 
+		var fallback_color: Color = COLOR_LOCKED
 		if is_current:
-			rect.set_asset_key("stage.current", COLOR_CURRENT)
-			btn.disabled = false
+			fallback_color = COLOR_CURRENT
 		elif is_unlocked:
-			rect.set_asset_key("stage.unlocked", COLOR_UNLOCKED)
-			btn.disabled = false
-		else:
-			rect.set_asset_key("stage.locked", COLOR_LOCKED)
-			btn.disabled = true
+			fallback_color = COLOR_UNLOCKED
+
+		var stage_texture: Texture2D = StageNavigationAssetCatalogClass.load_stage_texture_for_level(stage_level)
+		rect.set_direct_texture(stage_texture, fallback_color, false)
+
+		btn.disabled = not is_unlocked and not is_current
 
 
 func _on_stage_button_pressed(button_index: int) -> void:

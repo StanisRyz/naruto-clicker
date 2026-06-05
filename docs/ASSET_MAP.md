@@ -65,6 +65,20 @@ Every gameplay zone has a unique boss. Bosses load from the actual gameplay zone
 | 20            | enemies/zone_20/boss_01/ |
 | 21            | enemies/zone_21/boss_01/ |
 
+## Cyclic zones
+
+The game has 21 visual/content zones. After stage 105 (end of zone 21), zone data and assets loop cyclically:
+
+- Stages 106–110 → zone 1
+- Stages 111–115 → zone 2
+- …
+- Stages 206–210 → zone 21
+- Stages 211–215 → zone 1
+
+Stage numbers continue increasing normally. Only zone data/assets (backgrounds, enemies, boss names, zone names, stage navigation images) are cyclic. `ZoneConfig.get_zone_index_for_level(level)` returns the cyclic index for any level.
+
+---
+
 ## Background asset reuse
 
 Background textures are shared across zones. Every zone uses the `background_asset_zone` field from ZoneConfig.
@@ -133,6 +147,20 @@ Only these zone folders need a `background.png`:
 - `assets/images/backgrounds/zone_20/`
 
 Missing files fall back to the default game asset catalog placeholder (no crash).
+
+## Stage navigation asset reuse
+
+StageNavigator images live in `assets/images/stage_navigation/zone_##/stage.png`. They follow the same `background_asset_zone` mapping as backgrounds (see table above), so zones that share a background also share a stage navigation image.
+
+Run the following to validate:
+
+```
+godot --headless --script res://scripts/tools/ValidateStageNavigationAssets.gd
+```
+
+Missing `stage.png` files are **warnings** (safe fallback color shown). Missing zone folders are **errors**.
+
+---
 
 ## Enemy asset validation
 

@@ -262,15 +262,25 @@ const ZONE_DATA: Array = [
 ]
 
 
+const TOTAL_ZONE_LEVELS: int = LEVELS_PER_ZONE * 21
+
+
 static func get_zone_count() -> int:
 	return ZONE_DATA.size()
 
 
+static func get_cycle_level_for_level(level: int) -> int:
+	var safe_level: int = maxi(level, 1)
+	return ((safe_level - 1) % TOTAL_ZONE_LEVELS) + 1
+
+
+static func get_cycle_index_for_level(level: int) -> int:
+	var cycle_level: int = get_cycle_level_for_level(level)
+	return int((cycle_level - 1) / LEVELS_PER_ZONE)
+
+
 static func get_zone_index_for_level(level: int) -> int:
-	for i in range(ZONE_DATA.size()):
-		if level <= int(ZONE_DATA[i].get("level_end", 0)):
-			return i
-	return ZONE_DATA.size() - 1
+	return get_cycle_index_for_level(level)
 
 
 static func get_zone_data_for_level(level: int) -> Dictionary:

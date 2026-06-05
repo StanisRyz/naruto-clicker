@@ -1929,10 +1929,7 @@ func _apply_debug_visual_test_hp_to_current_target() -> void:
 
 
 func _get_zone_index_for_level(level: int) -> int:
-	for i in range(ZoneConfig.ZONE_DATA.size()):
-		if level <= ZoneConfig.ZONE_DATA[i].level_end:
-			return i
-	return ZoneConfig.ZONE_DATA.size() - 1
+	return ZoneConfig.get_zone_index_for_level(level)
 
 
 func _update_zone() -> void:

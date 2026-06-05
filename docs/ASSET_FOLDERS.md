@@ -166,6 +166,46 @@ UI folders: `gold`, `gems`, `prestige_points`, `settings`, `close`, `auto_transi
 
 ---
 
+## Stage navigation images
+
+Path: `assets/images/stage_navigation/zone_##/stage.png`
+
+All 21 zone folders exist (`zone_01/` through `zone_21/`). Empty folders carry `.gitkeep` until real PNG art is added.
+
+StageNavigator uses the same `background_asset_zone` distribution as backgrounds, so zones that share a background also share a stage navigation image.
+
+| Source zone | Used by gameplay zones (cyclic) |
+|-------------|--------------------------------|
+| zone_01     | 1, 7, 13, 14, and their cyclic repeats |
+| zone_02     | 2                              |
+| zone_03     | 3                              |
+| zone_04     | 4                              |
+| zone_05     | 5, 6                           |
+| zone_08     | 8, 9, 15                       |
+| zone_10     | 10, 21                         |
+| zone_11     | 11, 12                         |
+| zone_16     | 16                             |
+| zone_17     | 17, 18, 19                     |
+| zone_20     | 20                             |
+
+Fallback behavior:
+- If `stage.png` exists: the button shows the image; the fallback color square is hidden.
+- If `stage.png` is missing: the button shows the fallback color (blue = current, white = unlocked, grey = locked). No crash.
+
+---
+
+## Cyclic zones
+
+The game has 21 visual/content zones, each with 5 stages (levels 1–105). After stage 105, zone data and assets loop back to zone 1:
+
+- Stages 106–110 use zone 1 data/assets
+- Stages 111–115 use zone 2 data/assets
+- …and so on
+
+Stage numbers continue increasing normally (106, 107, …). Only zone data and assets are cyclic. This applies to backgrounds, enemies, boss names/keys, zone names, and stage navigation images.
+
+---
+
 ## File naming conventions
 
 | Type | Filename |
