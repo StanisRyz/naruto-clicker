@@ -4,7 +4,7 @@
 [ext_resource type="Script" path="res://scripts/ui/ImageSlot.gd" id="2_image_slot"]
 
 [node name="PrimaryStatsPanel" type="Control"]
-custom_minimum_size = Vector2(0, 72)
+custom_minimum_size = Vector2(0, 136)
 mouse_filter = 2
 script = ExtResource("1_primary_stats")
 

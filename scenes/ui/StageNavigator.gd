@@ -5,10 +5,10 @@ signal stage_selected(level: int)
 signal latest_requested
 signal auto_transition_popup_requested(anchor_global_position: Vector2, button_global_rect: Rect2)
 
-const DISPLAY_COUNT: int = 7
-const SIDE_COUNT: int = 3
-const BUTTON_SIZE: int = 60
-const SIDE_BUTTON_SIZE: int = 60
+const DISPLAY_COUNT: int = 5
+const SIDE_COUNT: int = 2
+const BUTTON_SIZE: int = 80
+const SIDE_BUTTON_SIZE: int = 80
 const DRAG_STAGE_THRESHOLD: float = 60.0
 const DRAG_MOVED_THRESHOLD: float = 8.0
 
@@ -72,7 +72,7 @@ func _build_ui() -> void:
 		label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		label.add_theme_font_size_override("font_size", 14)
+		label.add_theme_font_size_override("font_size", 18)
 		label.mouse_filter = MOUSE_FILTER_IGNORE
 		btn.add_child(label)
 
@@ -112,7 +112,7 @@ func _make_side_button(bg_color: Color, label_text: String) -> Button:
 	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 12)
+	label.add_theme_font_size_override("font_size", 16)
 	label.mouse_filter = MOUSE_FILTER_IGNORE
 	label.text = label_text
 	btn.add_child(label)

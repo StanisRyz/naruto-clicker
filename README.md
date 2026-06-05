@@ -36,10 +36,10 @@ The main scene contains the first local clicker loop:
 - The black defeated state still applies to all damage sources.
 - After enemy defeat, a 0.2 second transition lock keeps enemy HP at 0 and blocks manual, autoclick, and partner damage before reward, kill count, level changes, and the next enemy are applied.
 - The main screen has no general `StatusLabel`.
-- The main screen uses two independent panels: `PrimaryStatsPanel` for gold, Gems, character level, click damage, and partner DPS; `ProgressInfoPanel` for level, zone name, enemies progress, enemy name, enemy HP, and a compact HP bar under the HP text.
+- The main screen uses two independent panels: `PrimaryStatsPanel` for gold, click damage, partner DPS, and settings; `ProgressInfoPanel` for level, zone name, enemies progress, enemy name, enemy HP, and a compact HP bar under the HP text.
 - `PrimaryStatsPanel` is a compact top-centered overlay, not a child of stretching main content containers.
 - Its center should align with the viewport vertical center axis and it must not stretch full width.
-- `PrimaryStatsPanel` uses horizontal stat cards from left to right: gold, Gems, character level, click damage, partner DPS.
+- `PrimaryStatsPanel` uses horizontal stat cards from left to right: gold, click damage, partner DPS, settings. Gems are intentionally hidden from the top HUD but remain in the game economy and Shop.
 - Primary stat cards show only a temporary white `ColorRect` placeholder and the value, with transparent backgrounds.
 - `PrimaryStatsPanel` includes a white-square `SettingsButton` that opens `SettingsWindow`.
 - `SettingsWindow` is a modal overlay with Sound and Music placeholder toggles, Save Now, and Reset Progress.
@@ -270,7 +270,7 @@ The "Naruto Clicker" title has been replaced by a horizontal Stage Navigator row
 
 ### Side buttons
 
-To the right of the 7 stage buttons:
+To the right of the 5 stage buttons:
 
 - **Latest button** (`>>`, yellow) — jumps the visible strip to `max_unlocked_level`. Does not travel there; only scrolls the view.
 - **Auto-transition button** (`A`) — immediately toggles Auto-transition ON/OFF and opens the info popup. Green when ON, gray when OFF.
@@ -333,7 +333,7 @@ Pressing the `A` button immediately toggles Auto-transition ON/OFF and then open
 - `scenes/main/Main.gd` - Root startup script for YandexBridge ready/gameplay calls.
 - `scenes/game/ClickerScreen.tscn` - Main gameplay screen and layout.
 - `scenes/game/ClickerScreen.gd` - Owns gameplay flow and UI updates.
-- `scenes/ui/PrimaryStatsPanel.tscn` - Compact top-centered horizontal stat overlay for gold, Gems, character level, click damage, partner DPS, and the settings button.
+- `scenes/ui/PrimaryStatsPanel.tscn` - Compact top-centered horizontal stat overlay for gold, click damage, partner DPS, and the settings button. Icons are 128×128 px. Gems are hidden from the HUD but remain in the game economy.
 - `scenes/ui/SettingsWindow.tscn` - Modal settings overlay with Sound/Music placeholders, Save Now, and Reset Progress confirmation.
 - `scenes/ui/ProgressInfoPanel.tscn` - Compact progress UI for level, zone name, enemies progress, enemy name, enemy HP, and the enemy HP bar.
 - `scenes/ui/ComboPanel.tscn` - Right-side vertical runtime-only Manual Combo / Chakra Meter display for meter charge and manual damage multiplier.
@@ -367,7 +367,7 @@ Pressing the `A` button immediately toggles Auto-transition ON/OFF and then open
 - `scripts/game/config/PrestigeConfig.gd` - Prestige talent names and bonus types.
 - `scripts/game/config/TaskConfig.gd` - Task definitions (id, goal type, target, reward scale).
 - `scripts/game/config/ShopConfig.gd` - Shop product definitions.
-- `scenes/ui/StageNavigator.tscn` / `StageNavigator.gd` - Horizontal 7-button stage navigator; replaces the "Naruto Clicker" title label.
+- `scenes/ui/StageNavigator.tscn` / `StageNavigator.gd` - Horizontal 5-button stage navigator (80×80 px buttons); replaces the "Naruto Clicker" title label.
 
 ## Image Asset System
 

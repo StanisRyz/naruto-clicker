@@ -3,11 +3,11 @@ extends Control
 
 signal settings_requested
 
-const HUD_ICON_SIZE: float = 64.0
-const HUD_ICON_COUNT: int = 5
+const HUD_ICON_SIZE: float = 128.0
+const HUD_ICON_COUNT: int = 4
 const HUD_LABEL_GAP: float = 6.0
-const HUD_LABEL_MAX_WIDTH: float = 72.0
-const HUD_HEIGHT: float = 64.0
+const HUD_LABEL_MAX_WIDTH: float = 100.0
+const HUD_HEIGHT: float = 128.0
 
 @onready var gold_item: Control = $HudLayer/GoldItem
 @onready var gold_icon: ColorRect = $HudLayer/GoldItem/GoldIcon
@@ -26,6 +26,7 @@ const HUD_HEIGHT: float = 64.0
 
 
 func _ready() -> void:
+	gems_item.visible = false
 	settings_button.pressed.connect(_on_settings_button_pressed)
 	_layout_hud_items()
 
@@ -37,7 +38,6 @@ func _notification(what: int) -> void:
 
 func update_view(state: ClickerState) -> void:
 	gold_value_label.text = NumberFormatter.compact(state.gold)
-	gems_value_label.text = NumberFormatter.compact(state.gems)
 	damage_value_label.text = NumberFormatter.compact(state.click_damage)
 	partner_dps_value_label.text = NumberFormatter.compact(state.get_final_partner_dps(false))
 
@@ -57,10 +57,9 @@ func _layout_hud_items() -> void:
 	gap = maxf(gap, 0.0)
 
 	_place_stat_item(gold_item, gold_icon, gold_value_label, 0, gap)
-	_place_stat_item(gems_item, gems_icon, gems_value_label, 1, gap)
-	_place_stat_item(damage_item, damage_icon, damage_value_label, 2, gap)
-	_place_stat_item(partner_dps_item, partner_dps_icon, partner_dps_value_label, 3, gap)
-	_place_settings_button(4, gap)
+	_place_stat_item(damage_item, damage_icon, damage_value_label, 1, gap)
+	_place_stat_item(partner_dps_item, partner_dps_icon, partner_dps_value_label, 2, gap)
+	_place_settings_button(3, gap)
 
 
 func _place_stat_item(item: Control, icon: ColorRect, label: Label, index: int, gap: float) -> void:

@@ -459,7 +459,7 @@ After each patch, validate manually in Godot:
 - No missing scene/script errors.
 - No external plugins/assets were added.
 - "Naruto Clicker" title label is gone from the main screen.
-- StageNavigator appears at the top of MainContent showing 7 square buttons.
+- StageNavigator appears at the top of MainContent showing 5 square buttons (80×80 px).
 - Stage 1 / current stage button is blue on start.
 - Locked future stages are gray and unclickable.
 - Clicking a gray locked stage does nothing.
@@ -570,13 +570,13 @@ After each patch, validate manually in Godot:
 ## Stage Navigator Rules
 
 - `StageNavigator` replaces the "Naruto Clicker" `TitleLabel` in `MainContent/VBoxContainer`.
-- It shows exactly 7 stage buttons (60×60 ImageSlot-backed squares) at a time.
+- It shows exactly 5 stage buttons (80×80 ImageSlot-backed squares) at a time.
 - Button color states: blue = current stage, white = unlocked, gray = locked.
 - Clicking an unlocked (white) stage emits `stage_selected(level)` and triggers `travel_to_level` in `ClickerScreen`.
 - Clicking the current (blue) stage or a locked (gray) stage does nothing.
 - `StageNavigator` clicks, wheel, and drag must not propagate to `GameField` and must not trigger attacks.
 - There are no left/right step-scroll arrow buttons. The strip is scrolled only via mouse wheel and drag/swipe.
-- To the right of the 7 stage buttons: a **latest button** (`>>`, yellow) and an **auto-transition button** (`A`, green/gray).
+- To the right of the 5 stage buttons: a **latest button** (`>>`, yellow, 80×80) and an **auto-transition button** (`A`, green/gray, 80×80).
 - The latest button emits `latest_requested`; `ClickerScreen` responds by calling `stage_navigator.center_on_latest_level()`.
 - The auto-transition button emits `auto_transition_popup_requested(anchor_global_position: Vector2, button_global_rect: Rect2)` with its own global position; `ClickerScreen` immediately toggles `auto_stage_advance_enabled`, updates the navigator color, and opens `AutoTransitionPopup` as an info popup.
 - `center_on_latest_level()` sets `visible_center_level = max_unlocked_level`, clamps, and refreshes.

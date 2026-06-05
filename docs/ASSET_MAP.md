@@ -165,11 +165,13 @@ See `docs/ASSET_FOLDERS.md` for a complete folder listing with full paths.
 
 ## Top HUD layout
 
-The top HUD (`PrimaryStatsPanel`) uses a single horizontal row containing 5 elements (Hero Level was removed):
+The top HUD (`PrimaryStatsPanel`) uses a single horizontal row containing 4 elements:
 
-Gold | Gems | Click Damage | Partner DPS | Settings
+Gold | Click Damage | Partner DPS | Settings
 
-Each stat icon is displayed at **64×64 px**. Recommended source image size: 128×128 or 256×256 for sharper scaling. The panel spans the full screen width minus 25 px on each side (670 px on a 720 px screen). All 5 elements are evenly distributed via `SIZE_EXPAND_FILL` so spacing is equal on all sides. ImageSlot `show_fallback_behind_texture = false` is set on all HUD icons so that loaded PNG icons appear without a white square background; the fallback color is still shown when an image file is missing.
+Gems are intentionally hidden from the top HUD but remain in the game economy and Shop.
+
+Each stat icon is displayed at **128×128 px**. Recommended source image size: 256×256 for sharper scaling. The panel spans the full screen width. All 4 elements are evenly distributed across available width so spacing is equal on all sides. ImageSlot `show_fallback_behind_texture = false` is set on all HUD icons so that loaded PNG icons appear without a white square background; the fallback color is still shown when an image file is missing.
 
 ## Sheet header icons
 
