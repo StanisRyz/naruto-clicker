@@ -94,7 +94,7 @@ naruto-clicker/
 
 | File | Purpose |
 |------|---------|
-| `PrimaryStatsPanel.tscn/.gd` | Compact top-centered stat overlay (gold, click damage, partner DPS, settings; 128×128 px icons; gems hidden from HUD) |
+| `PrimaryStatsPanel.tscn/.gd` | Compact top-centered stat overlay (gold, click damage, partner DPS, settings; 80×80 px icons; gems hidden from HUD) |
 | `ProgressInfoPanel.tscn/.gd` | Level, zone, enemy name, HP bar |
 | `ComboPanel.tscn/.gd` | Right-side vertical combo/chakra meter |
 | `GameField.tscn/.gd` | Fullscreen tap/click layer; enemy and background visuals |

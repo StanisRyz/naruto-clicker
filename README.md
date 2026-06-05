@@ -333,7 +333,7 @@ Pressing the `A` button immediately toggles Auto-transition ON/OFF and then open
 - `scenes/main/Main.gd` - Root startup script for YandexBridge ready/gameplay calls.
 - `scenes/game/ClickerScreen.tscn` - Main gameplay screen and layout.
 - `scenes/game/ClickerScreen.gd` - Owns gameplay flow and UI updates.
-- `scenes/ui/PrimaryStatsPanel.tscn` - Compact top-centered horizontal stat overlay for gold, click damage, partner DPS, and the settings button. Icons are 128×128 px. Gems are hidden from the HUD but remain in the game economy.
+- `scenes/ui/PrimaryStatsPanel.tscn` - Compact top-centered horizontal stat overlay for gold, click damage, partner DPS, and the settings button. Icons are 80×80 px. Gems are hidden from the HUD but remain in the game economy.
 - `scenes/ui/SettingsWindow.tscn` - Modal settings overlay with Sound/Music placeholders, Save Now, and Reset Progress confirmation.
 - `scenes/ui/ProgressInfoPanel.tscn` - Compact progress UI for level, zone name, enemies progress, enemy name, enemy HP, and the enemy HP bar.
 - `scenes/ui/ComboPanel.tscn` - Right-side vertical runtime-only Manual Combo / Chakra Meter display for meter charge and manual damage multiplier.

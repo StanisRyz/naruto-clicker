@@ -44,7 +44,7 @@ anchor_right = 1.0
 offset_left = 40.0
 offset_top = 91.0
 offset_right = -40.0
-offset_bottom = 163.0
+offset_bottom = 179.0
 grow_horizontal = 2
 
 [node name="MainContent" type="MarginContainer" parent="."]
@@ -53,7 +53,7 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 48.0
-offset_top = 175.0
+offset_top = 210.0
 offset_right = -48.0
 offset_bottom = -128.0
 grow_horizontal = 2

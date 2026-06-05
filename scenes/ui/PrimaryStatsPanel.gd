@@ -3,11 +3,11 @@ extends Control
 
 signal settings_requested
 
-const HUD_ICON_SIZE: float = 92.0
+const HUD_ICON_SIZE: float = 80.0
 const HUD_ICON_COUNT: int = 4
 const HUD_LABEL_GAP: float = 6.0
 const HUD_LABEL_MAX_WIDTH: float = 100.0
-const HUD_HEIGHT: float = 92.0
+const HUD_HEIGHT: float = 80.0
 
 @onready var gold_item: Control = $HudLayer/GoldItem
 @onready var gold_icon: ColorRect = $HudLayer/GoldItem/GoldIcon
