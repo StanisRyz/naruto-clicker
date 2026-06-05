@@ -42,81 +42,81 @@ task.in_progress,In Progress,В Процессе,TasksWindow task button,
 task.claim,Claim,Получить,TasksWindow task button,
 task.claimed,Claimed,Получено,TasksWindow task button after clicking,
 task.progress,{current} / {target} | Reward: {reward},{current} / {target} | Награда: {reward},TasksWindow progress line,{current} and {target} are integers; {reward} is compact number
-upgrade.hero.name_level,Hero Level | Level {level} | Damage {damage},,UpgradePanel hero row header,{level} is integer; {damage} is compact number
-upgrade.hero.damage_info,Damage {damage} | Next x2 at Lv {milestone},,UpgradePanel hero row effect,{damage} compact number; {milestone} is level integer
-upgrade.hero.damage_max,Damage {damage} | Max milestones,,UpgradePanel hero row effect,{damage} is compact number
-upgrade.hero.button,Upgrade x{count} - Cost: {cost},,UpgradePanel hero upgrade button,{count} is integer; {cost} is compact number
-upgrade.ability.rank_info,{name} | Rank {rank}/{max_rank},,UpgradePanel ability row header,{name} is ability name; {rank} and {max_rank} are integers
-upgrade.ability.purchased,Purchased,,UpgradePanel ability unlock button,
-upgrade.ability.requires_level,Requires Lv {level},,UpgradePanel ability unlock button,{level} is integer
-upgrade.ability.buy,Buy: {cost},,UpgradePanel ability unlock button,{cost} is compact number
-partner.requires_previous,Requires Previous Partner,,PartnerPanel hire button when locked,
-partner.hire_button,Hire x{count} - Cost: {cost},,PartnerPanel hire button,{count} is integer; {cost} is compact number
-partner.name_header,{name} | {count} | DPS {dps},,PartnerPanel partner name/count header,{name} is partner name; {count} integer; {dps} compact
-partner.dps_next_milestone,+{dps} DPS | Next x2 at {milestone},,PartnerPanel effect text,{dps} compact; {milestone} integer
-partner.dps_max,+{dps} DPS | Max milestones,,PartnerPanel effect text,{dps} is compact number
-settlement.requires,Requires {building},,SettlementPanel build button when locked,{building} is the required building name
-settlement.build_button,Build x{count} - Cost: {cost},,SettlementPanel build button,{count} integer; {cost} compact number
-settlement.name_count,{name} | {count},,SettlementPanel building header,{name} is building name; {count} is integer
-settlement.next_milestone,{effect} | Next x2 at {milestone},,SettlementPanel milestone text,{effect} is effect description; {milestone} integer
-settlement.max_milestones,{effect} | Max milestones,,SettlementPanel milestone text,{effect} is effect description
-prestige.gain,Prestige | Gain {points},,PrestigePanel action row header,{points} is compact number
-prestige.description,Reset progress for permanent points,,PrestigePanel effect description,
-prestige.action,Prestige,,PrestigePanel button,
-prestige.talent_upgrade,Upgrade - Cost: {cost},,PrestigePanel talent button,{cost} is compact number
-prestige.talent_name_level,{name} | Lv {level},,PrestigePanel talent row header,{name} is talent name; {level} is integer
-prestige.confirm.stage_level,Stage level,,PrestigeConfirmDialog label,followed by colon and value in code
-prestige.confirm.character_level,Character level,,PrestigeConfirmDialog label,
-prestige.confirm.stage_points,Stage points,,PrestigeConfirmDialog label,
-prestige.confirm.character_points,Character points,,PrestigeConfirmDialog label,
-prestige.confirm.points_to_gain,Points to gain,,PrestigeConfirmDialog label,
-prestige.confirm.available_after,Available after,,PrestigeConfirmDialog label,
-prestige.confirm.total_earned_after,Total earned after,,PrestigeConfirmDialog label,
-prestige.confirm.warning,All normal progress will reset.,,PrestigeConfirmDialog warning text,
-prestige.confirm.talents_note,Purchased prestige talents remain.,,PrestigeConfirmDialog note,
-shop.buy_button,Buy,,ShopPanel buy button,
-zone.01.name,Training Grounds,,ZoneConfig zone 01,
-zone.02.name,Forest Path,,ZoneConfig zone 02,
-zone.03.name,Stone Valley,,ZoneConfig zone 03,
-zone.04.name,Shadow Camp,,ZoneConfig zone 04,
-zone.05.name,Burning Outpost,,ZoneConfig zone 05,
-zone.06.name,Scorched Outpost,,ZoneConfig zone 06,
-zone.07.name,Old Training Grounds,,ZoneConfig zone 07,
-zone.08.name,Mist River,,ZoneConfig zone 08,
-zone.09.name,Flooded Shrine,,ZoneConfig zone 09,
-zone.10.name,Thunder Ridge,,ZoneConfig zone 10,
-zone.11.name,Iron Fortress,,ZoneConfig zone 11,
-zone.12.name,Broken Fortress,,ZoneConfig zone 12,
-zone.13.name,Training Ruins,,ZoneConfig zone 13,
-zone.14.name,Ancient Training Yard,,ZoneConfig zone 14,
-zone.15.name,Hidden Waterfall,,ZoneConfig zone 15,
-zone.16.name,Desert Camp,,ZoneConfig zone 16,
-zone.17.name,Snow Pass,,ZoneConfig zone 17,
-zone.18.name,Frozen Village,,ZoneConfig zone 18,
-zone.19.name,Ice Shrine,,ZoneConfig zone 19,
-zone.20.name,Dark Temple,,ZoneConfig zone 20,
-zone.21.name,Storm Summit,,ZoneConfig zone 21,
-zone.01.boss,Training Master,,ZoneConfig zone 01 boss,
-zone.02.boss,Forest Guardian,,ZoneConfig zone 02 boss,
-zone.03.boss,Valley Warlord,,ZoneConfig zone 03 boss,
-zone.04.boss,Shadow Commander,,ZoneConfig zone 04 boss,
-zone.05.boss,Burning Outpost Chief,,ZoneConfig zone 05 boss,
-zone.06.boss,Scorched Outpost Captain,,ZoneConfig zone 06 boss,
-zone.07.boss,Old Grounds Champion,,ZoneConfig zone 07 boss,
-zone.08.boss,Mist River Lord,,ZoneConfig zone 08 boss,
-zone.09.boss,Flooded Shrine Keeper,,ZoneConfig zone 09 boss,
-zone.10.boss,Thunder Ridge General,,ZoneConfig zone 10 boss,
-zone.11.boss,Iron Fortress Commander,,ZoneConfig zone 11 boss,
-zone.12.boss,Broken Fortress Tyrant,,ZoneConfig zone 12 boss,
-zone.13.boss,Ruined Dojo Master,,ZoneConfig zone 13 boss,
-zone.14.boss,Ancient Yard Master,,ZoneConfig zone 14 boss,
-zone.15.boss,Hidden Waterfall Sage,,ZoneConfig zone 15 boss,
-zone.16.boss,Desert Camp Warlord,,ZoneConfig zone 16 boss,
-zone.17.boss,Snow Pass Captain,,ZoneConfig zone 17 boss,
-zone.18.boss,Frozen Village Elder,,ZoneConfig zone 18 boss,
-zone.19.boss,Ice Shrine Guardian,,ZoneConfig zone 19 boss,
-zone.20.boss,Dark Temple Overlord,,ZoneConfig zone 20 boss,
-zone.21.boss,Storm Summit Master,,ZoneConfig zone 21 boss,
+upgrade.hero.name_level,Hero Level | Level {level} | Damage {damage},Герой | Уровень {level} | Урон {damage},UpgradePanel hero row header,{level} is integer; {damage} is compact number
+upgrade.hero.damage_info,Damage {damage} | Next x2 at Lv {milestone},Урон {damage} | х2 на уровне {milestone},UpgradePanel hero row effect,{damage} compact number; {milestone} is level integer
+upgrade.hero.damage_max,Damage {damage} | Max milestones,Урон {damage} | Максимум,UpgradePanel hero row effect,{damage} is compact number
+upgrade.hero.button,x{count} - {cost},x{count} - {cost},UpgradePanel hero upgrade button,{count} is integer; {cost} is compact number
+upgrade.ability.rank_info,{name} | Rank {rank}/{max_rank},{name} | Ранг {rank}/{max_rank},UpgradePanel ability row header,{name} is ability name; {rank} and {max_rank} are integers
+upgrade.ability.purchased,Purchased,Куплено,UpgradePanel ability unlock button,
+upgrade.ability.requires_level,Requires Lv {level},Требуется уровень {level},UpgradePanel ability unlock button,{level} is integer
+upgrade.ability.buy,Buy: {cost},Купить: {cost},UpgradePanel ability unlock button,{cost} is compact number
+partner.requires_previous,Requires Previous Partner,Требуется предыдущий партнер,PartnerPanel hire button when locked,
+partner.hire_button,x{count} - {cost},x{count} - {cost},PartnerPanel hire button,{count} is integer; {cost} is compact number
+partner.name_header,{name} | {count} | DPS {dps},{name} | {count} | Урон {dps},PartnerPanel partner name/count header,{name} is partner name; {count} integer; {dps} compact
+partner.dps_next_milestone,+{dps} DPS | Next x2 at {milestone},+{dps} Урон | x2 на уровне {milestone},PartnerPanel effect text,{dps} compact; {milestone} integer
+partner.dps_max,+{dps} DPS | Max milestones,+{dps} Урон | Максимум,PartnerPanel effect text,{dps} is compact number
+settlement.requires,Requires {building},Требуется {building},SettlementPanel build button when locked,{building} is the required building name
+settlement.build_button,x{count} - {cost},x{count} - {cost},SettlementPanel build button,{count} integer; {cost} compact number
+settlement.name_count,{name} | {count},{name} | {count},SettlementPanel building header,{name} is building name; {count} is integer
+settlement.next_milestone,{effect} | Next x2 at {milestone},{effect} | x2 на уровне {milestone},SettlementPanel milestone text,{effect} is effect description; {milestone} integer
+settlement.max_milestones,{effect} | Max milestones,{effect} | Максимум,SettlementPanel milestone text,{effect} is effect description
+prestige.gain,Prestige | Gain {points},Престиж | Получить {points},PrestigePanel action row header,{points} is compact number
+prestige.description,Reset progress for permanent points,Сбросить прогресс для очков,PrestigePanel effect description,
+prestige.action,Prestige,Престиж,PrestigePanel button,
+prestige.talent_upgrade,Upgrade - {cost},Улучшение - {cost},PrestigePanel talent button,{cost} is compact number
+prestige.talent_name_level,{name} | Lv {level},{name} | Уровень {level},PrestigePanel talent row header,{name} is talent name; {level} is integer
+prestige.confirm.stage_level,Stage level,Этап,PrestigeConfirmDialog label,followed by colon and value in code
+prestige.confirm.character_level,Character level,Уровень,PrestigeConfirmDialog label,
+prestige.confirm.stage_points,Stage points,Очки этапа,PrestigeConfirmDialog label,
+prestige.confirm.character_points,Character points,Очки уровня,PrestigeConfirmDialog label,
+prestige.confirm.points_to_gain,Points to gain,Очки к получению,PrestigeConfirmDialog label,
+prestige.confirm.available_after,Available after,Доступно после,PrestigeConfirmDialog label,
+prestige.confirm.total_earned_after,Total earned after,Все заработано,PrestigeConfirmDialog label,
+prestige.confirm.warning,All normal progress will reset,Весь прогресс будет сброшен,PrestigeConfirmDialog warning text,
+prestige.confirm.talents_note,Purchased prestige talents remain,Купленные таланты престижа сохраняются,PrestigeConfirmDialog note,
+shop.buy_button,Buy,Купить,ShopPanel buy button,
+zone.01.name,Hidden Leaf Forest,Лес Скрытого Листа,ZoneConfig zone 01,
+zone.02.name,Training Camp,Тренировочная Площадка,ZoneConfig zone 02,
+zone.03.name,Fog Forest,Лес Тумана,ZoneConfig zone 03,
+zone.04.name,Great Naruto Bridge,Великий мост Наруто,ZoneConfig zone 04,
+zone.05.name,Challenge Forest,Лес Испытаний,ZoneConfig zone 05,
+zone.06.name,Challenge Forest,Лес Испытаний,ZoneConfig zone 06,
+zone.07.name,Hidden Leaf Forest,Лес Скрытого Листа,ZoneConfig zone 07,
+zone.08.name,Hidden Leaf Village,Деревня Скрытого Листа,ZoneConfig zone 08,
+zone.09.name,Hidden Leaf Village,Деревня Скрытого Листа,ZoneConfig zone 09,
+zone.10.name,Valley of the End,Долина Завершения,ZoneConfig zone 10,
+zone.11.name,Cave,Пещера,ZoneConfig zone 11,
+zone.12.name,Cave,Пещера,ZoneConfig zone 12,
+zone.13.name,Hidden Leaf Forest,Лес Скрытого Листа,ZoneConfig zone 13,
+zone.14.name,Hidden Leaf Forest,Лес Скрытого Листа,ZoneConfig zone 14,
+zone.15.name,Hidden Leaf Village,Деревня Скрытого Листа,ZoneConfig zone 15,
+zone.16.name,Five Kage Hall,Зал Пяти Каге,ZoneConfig zone 16,
+zone.17.name,Shinobi War Field,Поле Войны Шиноби,ZoneConfig zone 17,
+zone.18.name,Shinobi War Field,Поле Войны Шиноби,ZoneConfig zone 18,
+zone.19.name,Shinobi War Field,Поле Войны Шиноби,ZoneConfig zone 19,
+zone.20.name,Shinobi War Field,Поле Войны Шиноби,ZoneConfig zone 20,
+zone.21.name,Shinobi War Field,Поле Войны Шиноби,ZoneConfig zone 21,
+zone.01.boss,Mizuki,Мизуки,ZoneConfig zone 01 boss,
+zone.02.boss,Kakashi Hatake,Какаши Хатаке,ZoneConfig zone 02 boss,
+zone.03.boss,Haku,Хаку,ZoneConfig zone 03 boss,
+zone.04.boss,Zabuza Momochi,Забуза Момочи,ZoneConfig zone 04 boss,
+zone.05.boss,Kabuto Yakushi,Кабуто Якуши,ZoneConfig zone 05 boss,
+zone.06.boss,Orochimaru,Орочимару,ZoneConfig zone 06 boss,
+zone.07.boss,Gaara,Гаара,ZoneConfig zone 07 boss,
+zone.08.boss,Kisame,Кисаме,ZoneConfig zone 08 boss,
+zone.09.boss,Itachi Uchiha,Итачи Учиха,ZoneConfig zone 09 boss,
+zone.10.boss,Sasuke Uchiha,Саске Учиха,ZoneConfig zone 10 boss,
+zone.11.boss,Sasori,Сасори,ZoneConfig zone 11 boss,
+zone.12.boss,Deidara,Дейдара,ZoneConfig zone 12 boss,
+zone.13.boss,Hidan,Хидан,ZoneConfig zone 13 boss,
+zone.14.boss,Kakuzu,Какузу,ZoneConfig zone 14 boss,
+zone.15.boss,Pain,Пейн,ZoneConfig zone 15 boss,
+zone.16.boss,Sasuke Uchiha,Саске Учиха,ZoneConfig zone 16 boss,
+zone.17.boss,Tobi,Тоби,ZoneConfig zone 17 boss,
+zone.18.boss,Madara Uchiha,Мадара Учиха,ZoneConfig zone 18 boss,
+zone.19.boss,Madara Jinchuriki,Мадара Джинчурики,ZoneConfig zone 19 boss,
+zone.20.boss,Kaguya Otsutsuki,Кагуя Ооцуцуки,ZoneConfig zone 20 boss,
+zone.21.boss,Sasuke Uchiha,Саске Учиха,ZoneConfig zone 21 boss,
 partner.01.name,Partner 1,,PartnerConfig partner 01,
 partner.02.name,Partner 2,,PartnerConfig partner 02,
 partner.03.name,Partner 3,,PartnerConfig partner 03,
