@@ -61,29 +61,35 @@ func _init() -> void:
 				errors.append("Empty en value for localization key: " + key)
 
 	# --- Asset path resolution ---
+	var skills_folder: String = "res://assets/images/partners/Skills"
+	if not DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(skills_folder)):
+		errors.append("Shared Skills folder missing: " + skills_folder)
+
 	for i in range(EXPECTED_PARTNER_COUNT):
+		var folder: String = "res://assets/images/partners/partner_%02d" % (i + 1)
+		if not DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(folder)):
+			errors.append("Partner %d folder missing: %s" % [i + 1, folder])
+
 		var icon_key: String = GameAssetCatalog.partner_icon_key(i)
 		var icon_path: String = GameAssetCatalog.get_path(icon_key)
-		var expected_icon: String = "res://assets/images/partners/partner_%02d.png" % (i + 1)
+		var expected_icon: String = "res://assets/images/partners/partner_%02d/partner.png" % (i + 1)
 		if icon_path != expected_icon:
 			errors.append("Partner %d icon path wrong: expected '%s', got '%s'" % [i + 1, expected_icon, icon_path])
 		elif not ResourceLoader.exists(icon_path):
-			if i < 13:
-				errors.append("Partner %d icon file missing: %s" % [i + 1, icon_path])
-			else:
-				warnings.append("Partner %d icon file missing (placeholder): %s" % [i + 1, icon_path])
+			warnings.append("Partner %d icon file missing (art pending): %s" % [i + 1, icon_path])
 
-		for level in range(1, 6):
-			var skill_key: String = GameAssetCatalog.partner_skill_key(i, level)
-			var skill_path: String = GameAssetCatalog.get_path(skill_key)
-			var expected_skill: String = "res://assets/images/partners/skills/partner_%02d_skill_%02d.png" % [i + 1, level]
-			if skill_path != expected_skill:
-				errors.append("Partner %d skill %d path wrong: expected '%s', got '%s'" % [i + 1, level, expected_skill, skill_path])
-			elif not ResourceLoader.exists(skill_path):
-				if i < 13:
-					errors.append("Partner %d skill %d file missing: %s" % [i + 1, level, skill_path])
-				else:
-					warnings.append("Partner %d skill %d file missing (placeholder): %s" % [i + 1, level, skill_path])
+		var old_flat: String = "res://assets/images/partners/partner_%02d.png" % (i + 1)
+		if ResourceLoader.exists(old_flat):
+			warnings.append("Old flat partner icon still exists; move to partner_%02d/partner.png: %s" % [i + 1, old_flat])
+
+	for level in range(1, 6):
+		var skill_key: String = GameAssetCatalog.partner_skill_key(0, level)
+		var skill_path: String = GameAssetCatalog.get_path(skill_key)
+		var expected_skill: String = "res://assets/images/partners/Skills/skill%d.png" % level
+		if skill_path != expected_skill:
+			errors.append("Shared skill %d path wrong: expected '%s', got '%s'" % [level, expected_skill, skill_path])
+		elif not ResourceLoader.exists(skill_path):
+			warnings.append("Shared skill icon missing (art pending): %s" % skill_path)
 
 	# --- Report ---
 	print("")

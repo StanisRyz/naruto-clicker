@@ -90,14 +90,13 @@ static func get_path(asset_key: String) -> String:
 		var parts: PackedStringArray = asset_key.split(".")
 		if parts.size() == 3 and parts[2] == "icon":
 			var idx: int = parts[1].to_int()
-			return "res://assets/images/partners/partner_%02d.png" % (idx + 1)
-	# Dynamic partner skill: "partner.N.skill.M"
+			return "res://assets/images/partners/partner_%02d/partner.png" % (idx + 1)
+	# Dynamic partner skill: "partner.N.skill.M" — shared icons, partner_index unused
 	if asset_key.begins_with("partner.") and ".skill." in asset_key:
 		var parts: PackedStringArray = asset_key.split(".")
 		if parts.size() == 4 and parts[2] == "skill":
-			var idx: int = parts[1].to_int()
 			var level: int = parts[3].to_int()
-			return "res://assets/images/partners/skills/partner_%02d_skill_%02d.png" % [idx + 1, level]
+			return "res://assets/images/partners/Skills/skill%d.png" % level
 	return ""
 
 

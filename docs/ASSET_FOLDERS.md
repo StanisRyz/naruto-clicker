@@ -68,23 +68,34 @@ Only source zones listed in the reuse map need a `background.png`.
 
 ## Partner images
 
-Path: `assets/images/partners/partner_##.png`
+Path: `assets/images/partners/partner_##/partner.png`
 
-28 partner icons: `partner_01.png` through `partner_28.png`.
+Each partner has its own folder. 28 folders exist: `partner_01/` through `partner_28/`.
 
-Partners 14–28 do not have real PNG files yet. Missing icons fall back to the ImageSlot placeholder safely.
+Example:
+- `assets/images/partners/partner_01/partner.png`
+- `assets/images/partners/partner_28/partner.png`
+
+All 28 partner folders must exist. Empty folders carry `.gitkeep` until real PNG art is added. Missing `partner.png` files fall back to the ImageSlot placeholder safely.
 
 ---
 
 ## Partner skill icons
 
-Path: `assets/images/partners/skills/partner_##_skill_##.png`
+Path: `assets/images/partners/Skills/skill#.png`
 
-28 partners × 5 skill levels: `partner_01_skill_01.png` through `partner_28_skill_05.png`.
+Skill icons are **shared by all partners**. There are 5 shared icons:
+- `assets/images/partners/Skills/skill1.png`
+- `assets/images/partners/Skills/skill2.png`
+- `assets/images/partners/Skills/skill3.png`
+- `assets/images/partners/Skills/skill4.png`
+- `assets/images/partners/Skills/skill5.png`
 
-Partners 14–28 do not have skill PNG files yet. Missing skill icons fall back to the locked fallback color safely.
+Note: `Skills` uses a capital S — paths are case-sensitive in Web export.
 
-Partner skills for partners 14–28 are not defined in PartnerSkillConfig yet and will be balanced later.
+Missing shared skill icons fall back to the locked fallback color safely.
+
+TODO: old per-partner files in `assets/images/partners/skills/` can be removed after shared skill icons are confirmed in production.
 
 ---
 
