@@ -118,9 +118,11 @@ static func apply_save_data(state: ClickerState, data: Dictionary) -> bool:
 
 	state._reset_partner_state()
 	var raw_partner_counts = data.get("partner_counts", [])
-	if raw_partner_counts is Array and raw_partner_counts.size() == state.partner_counts.size():
-		for i in range(state.partner_counts.size()):
+	if raw_partner_counts is Array:
+		var copy_count: int = mini(raw_partner_counts.size(), state.partner_counts.size())
+		for i in range(copy_count):
 			state.partner_counts[i] = maxi(0, int(raw_partner_counts[i]))
+		for i in range(state.partner_counts.size()):
 			state.recalculate_partner_cost(i)
 
 	state._reset_building_state()

@@ -44,88 +44,6 @@ const ASSET_PATHS: Dictionary = {
 	"upgrade.focus_burst": "res://assets/images/upgrades/focus_burst.png",
 	"upgrade.rally": "res://assets/images/upgrades/rally.png",
 
-	# Partner icons (indexes 0–12)
-	"partner.0.icon": "res://assets/images/partners/partner_01.png",
-	"partner.1.icon": "res://assets/images/partners/partner_02.png",
-	"partner.2.icon": "res://assets/images/partners/partner_03.png",
-	"partner.3.icon": "res://assets/images/partners/partner_04.png",
-	"partner.4.icon": "res://assets/images/partners/partner_05.png",
-	"partner.5.icon": "res://assets/images/partners/partner_06.png",
-	"partner.6.icon": "res://assets/images/partners/partner_07.png",
-	"partner.7.icon": "res://assets/images/partners/partner_08.png",
-	"partner.8.icon": "res://assets/images/partners/partner_09.png",
-	"partner.9.icon": "res://assets/images/partners/partner_10.png",
-	"partner.10.icon": "res://assets/images/partners/partner_11.png",
-	"partner.11.icon": "res://assets/images/partners/partner_12.png",
-	"partner.12.icon": "res://assets/images/partners/partner_13.png",
-
-	# Partner skills (indexes 0–12, levels 1–5)
-	"partner.0.skill.1": "res://assets/images/partners/skills/partner_01_skill_01.png",
-	"partner.0.skill.2": "res://assets/images/partners/skills/partner_01_skill_02.png",
-	"partner.0.skill.3": "res://assets/images/partners/skills/partner_01_skill_03.png",
-	"partner.0.skill.4": "res://assets/images/partners/skills/partner_01_skill_04.png",
-	"partner.0.skill.5": "res://assets/images/partners/skills/partner_01_skill_05.png",
-	"partner.1.skill.1": "res://assets/images/partners/skills/partner_02_skill_01.png",
-	"partner.1.skill.2": "res://assets/images/partners/skills/partner_02_skill_02.png",
-	"partner.1.skill.3": "res://assets/images/partners/skills/partner_02_skill_03.png",
-	"partner.1.skill.4": "res://assets/images/partners/skills/partner_02_skill_04.png",
-	"partner.1.skill.5": "res://assets/images/partners/skills/partner_02_skill_05.png",
-	"partner.2.skill.1": "res://assets/images/partners/skills/partner_03_skill_01.png",
-	"partner.2.skill.2": "res://assets/images/partners/skills/partner_03_skill_02.png",
-	"partner.2.skill.3": "res://assets/images/partners/skills/partner_03_skill_03.png",
-	"partner.2.skill.4": "res://assets/images/partners/skills/partner_03_skill_04.png",
-	"partner.2.skill.5": "res://assets/images/partners/skills/partner_03_skill_05.png",
-	"partner.3.skill.1": "res://assets/images/partners/skills/partner_04_skill_01.png",
-	"partner.3.skill.2": "res://assets/images/partners/skills/partner_04_skill_02.png",
-	"partner.3.skill.3": "res://assets/images/partners/skills/partner_04_skill_03.png",
-	"partner.3.skill.4": "res://assets/images/partners/skills/partner_04_skill_04.png",
-	"partner.3.skill.5": "res://assets/images/partners/skills/partner_04_skill_05.png",
-	"partner.4.skill.1": "res://assets/images/partners/skills/partner_05_skill_01.png",
-	"partner.4.skill.2": "res://assets/images/partners/skills/partner_05_skill_02.png",
-	"partner.4.skill.3": "res://assets/images/partners/skills/partner_05_skill_03.png",
-	"partner.4.skill.4": "res://assets/images/partners/skills/partner_05_skill_04.png",
-	"partner.4.skill.5": "res://assets/images/partners/skills/partner_05_skill_05.png",
-	"partner.5.skill.1": "res://assets/images/partners/skills/partner_06_skill_01.png",
-	"partner.5.skill.2": "res://assets/images/partners/skills/partner_06_skill_02.png",
-	"partner.5.skill.3": "res://assets/images/partners/skills/partner_06_skill_03.png",
-	"partner.5.skill.4": "res://assets/images/partners/skills/partner_06_skill_04.png",
-	"partner.5.skill.5": "res://assets/images/partners/skills/partner_06_skill_05.png",
-	"partner.6.skill.1": "res://assets/images/partners/skills/partner_07_skill_01.png",
-	"partner.6.skill.2": "res://assets/images/partners/skills/partner_07_skill_02.png",
-	"partner.6.skill.3": "res://assets/images/partners/skills/partner_07_skill_03.png",
-	"partner.6.skill.4": "res://assets/images/partners/skills/partner_07_skill_04.png",
-	"partner.6.skill.5": "res://assets/images/partners/skills/partner_07_skill_05.png",
-	"partner.7.skill.1": "res://assets/images/partners/skills/partner_08_skill_01.png",
-	"partner.7.skill.2": "res://assets/images/partners/skills/partner_08_skill_02.png",
-	"partner.7.skill.3": "res://assets/images/partners/skills/partner_08_skill_03.png",
-	"partner.7.skill.4": "res://assets/images/partners/skills/partner_08_skill_04.png",
-	"partner.7.skill.5": "res://assets/images/partners/skills/partner_08_skill_05.png",
-	"partner.8.skill.1": "res://assets/images/partners/skills/partner_09_skill_01.png",
-	"partner.8.skill.2": "res://assets/images/partners/skills/partner_09_skill_02.png",
-	"partner.8.skill.3": "res://assets/images/partners/skills/partner_09_skill_03.png",
-	"partner.8.skill.4": "res://assets/images/partners/skills/partner_09_skill_04.png",
-	"partner.8.skill.5": "res://assets/images/partners/skills/partner_09_skill_05.png",
-	"partner.9.skill.1": "res://assets/images/partners/skills/partner_10_skill_01.png",
-	"partner.9.skill.2": "res://assets/images/partners/skills/partner_10_skill_02.png",
-	"partner.9.skill.3": "res://assets/images/partners/skills/partner_10_skill_03.png",
-	"partner.9.skill.4": "res://assets/images/partners/skills/partner_10_skill_04.png",
-	"partner.9.skill.5": "res://assets/images/partners/skills/partner_10_skill_05.png",
-	"partner.10.skill.1": "res://assets/images/partners/skills/partner_11_skill_01.png",
-	"partner.10.skill.2": "res://assets/images/partners/skills/partner_11_skill_02.png",
-	"partner.10.skill.3": "res://assets/images/partners/skills/partner_11_skill_03.png",
-	"partner.10.skill.4": "res://assets/images/partners/skills/partner_11_skill_04.png",
-	"partner.10.skill.5": "res://assets/images/partners/skills/partner_11_skill_05.png",
-	"partner.11.skill.1": "res://assets/images/partners/skills/partner_12_skill_01.png",
-	"partner.11.skill.2": "res://assets/images/partners/skills/partner_12_skill_02.png",
-	"partner.11.skill.3": "res://assets/images/partners/skills/partner_12_skill_03.png",
-	"partner.11.skill.4": "res://assets/images/partners/skills/partner_12_skill_04.png",
-	"partner.11.skill.5": "res://assets/images/partners/skills/partner_12_skill_05.png",
-	"partner.12.skill.1": "res://assets/images/partners/skills/partner_13_skill_01.png",
-	"partner.12.skill.2": "res://assets/images/partners/skills/partner_13_skill_02.png",
-	"partner.12.skill.3": "res://assets/images/partners/skills/partner_13_skill_03.png",
-	"partner.12.skill.4": "res://assets/images/partners/skills/partner_13_skill_04.png",
-	"partner.12.skill.5": "res://assets/images/partners/skills/partner_13_skill_05.png",
-
 	# Buildings (indexes 0–5)
 	"building.0.icon": "res://assets/images/buildings/training_camp.png",
 	"building.1.icon": "res://assets/images/buildings/market.png",
@@ -165,7 +83,22 @@ const ASSET_PATHS: Dictionary = {
 
 
 static func get_path(asset_key: String) -> String:
-	return ASSET_PATHS.get(asset_key, "")
+	if ASSET_PATHS.has(asset_key):
+		return ASSET_PATHS[asset_key]
+	# Dynamic partner icon: "partner.N.icon"
+	if asset_key.begins_with("partner.") and asset_key.ends_with(".icon"):
+		var parts: PackedStringArray = asset_key.split(".")
+		if parts.size() == 3 and parts[2] == "icon":
+			var idx: int = parts[1].to_int()
+			return "res://assets/images/partners/partner_%02d.png" % (idx + 1)
+	# Dynamic partner skill: "partner.N.skill.M"
+	if asset_key.begins_with("partner.") and ".skill." in asset_key:
+		var parts: PackedStringArray = asset_key.split(".")
+		if parts.size() == 4 and parts[2] == "skill":
+			var idx: int = parts[1].to_int()
+			var level: int = parts[3].to_int()
+			return "res://assets/images/partners/skills/partner_%02d_skill_%02d.png" % [idx + 1, level]
+	return ""
 
 
 static func has_texture(asset_key: String) -> bool:

@@ -47,10 +47,20 @@ const HERO_SKILL_COST_MULTIPLIERS: Array = [4, 7, 11, 17, 26]
 
 
 # --- Partners ---
-const PARTNER_DPS_VALUES: Array = [4, 12, 30, 70, 150, 320, 680, 1450, 3100, 6600, 14000, 30000, 64000]
+const PARTNER_DPS_VALUES: Array = [
+	4, 12, 30, 70, 150, 320, 680, 1450, 3100, 6600, 14000, 30000, 64000,
+	# Temporary placeholder values for partners 14–28. Final balance pass will be done later.
+	136000, 290000, 620000, 1320000, 2800000, 6000000, 12800000, 27000000,
+	58000000, 123000000, 260000000, 550000000, 1160000000, 2450000000, 5200000000,
+]
 # Partner 1 is a weak idle assistant; mid partners carry mid game; later partners are long-term goals.
 
-const PARTNER_BASE_COSTS: Array = [35, 110, 300, 750, 1700, 3800, 8500, 19000, 43000, 96000, 215000, 480000, 1050000]
+const PARTNER_BASE_COSTS: Array = [
+	35, 110, 300, 750, 1700, 3800, 8500, 19000, 43000, 96000, 215000, 480000, 1050000,
+	# Temporary placeholder values for partners 14–28. Final balance pass will be done later.
+	2300000, 5000000, 11000000, 24000000, 52000000, 115000000, 250000000, 550000000,
+	1200000000, 2600000000, 5700000000, 12500000000, 27000000000, 59000000000, 130000000000,
+]
 
 # Segmented adaptive exponential cost by owned count:
 # cost(count) = base_cost * growth^count, boundary applied continuously

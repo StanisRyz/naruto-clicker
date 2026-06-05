@@ -15,6 +15,21 @@ const PARTNER_NAMES: Array = [
 	"Beast Tamer",
 	"Blade Master",
 	"Legendary Commander",
+	"Silent Ronin",
+	"Chakra Archer",
+	"Sand Guardian",
+	"Mist Duelist",
+	"Lightning Striker",
+	"Puppet Tactician",
+	"Seal Specialist",
+	"Medical Ninja",
+	"Shadow Tracker",
+	"Summon Handler",
+	"Barrier Keeper",
+	"War Strategist",
+	"Sage Disciple",
+	"Anbu Captain",
+	"Legendary Sannin",
 ]
 
 

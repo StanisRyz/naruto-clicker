@@ -68,17 +68,23 @@ Only source zones listed in the reuse map need a `background.png`.
 
 ## Partner images
 
-Path: `assets/images/partners/partner_##/icon.png`
+Path: `assets/images/partners/partner_##.png`
 
-13 partner folders: `partner_01` through `partner_13`.
+28 partner icons: `partner_01.png` through `partner_28.png`.
+
+Partners 14–28 do not have real PNG files yet. Missing icons fall back to the ImageSlot placeholder safely.
 
 ---
 
 ## Partner skill icons
 
-Path: `assets/images/partner_skills/partner_##/skill_01.png` … `skill_05.png`
+Path: `assets/images/partners/skills/partner_##_skill_##.png`
 
-13 partner folders: `partner_01` through `partner_13`. Each has up to 5 skill icon slots.
+28 partners × 5 skill levels: `partner_01_skill_01.png` through `partner_28_skill_05.png`.
+
+Partners 14–28 do not have skill PNG files yet. Missing skill icons fall back to the locked fallback color safely.
+
+Partner skills for partners 14–28 are not defined in PartnerSkillConfig yet and will be balanced later.
 
 ---
 
