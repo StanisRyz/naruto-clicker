@@ -22,7 +22,8 @@ ui.tab.prestige,Prestige,Престиж,Bottom navigation,
 ui.tab.shop,Shop,Магазин,Bottom navigation,
 ui.progress.boss_time,Boss Time: {time}s,Таймер Босса: {time}с,ProgressInfoPanel boss timer,{time} = seconds remaining as float string
 ui.progress.enemies_count,Enemies {current} / {required},Врагов {current} / {required},ProgressInfoPanel enemy counter,{current} and {required} are integers
-ui.progress.hp_pair,HP {current} / {max},Здоровья {current} / {max},ProgressInfoPanel HP display,{current} and {max} are compact-formatted numbers
+ui.progress.hp_pair,HP {current} / {max},Здоровья {current} / {max},ProgressInfoPanel HP display (legacy),{current} and {max} are compact-formatted numbers
+ui.progress.hp_bar_value,{current} / {max},{current} / {max},ProgressInfoPanel HP bar text,{current} and {max} are compact-formatted HP values
 ui.buy_mode.x1,x1,x1,BuyModeSelector,
 ui.buy_mode.x10,x10,x10,BuyModeSelector,
 ui.buy_mode.x100,x100,x100,BuyModeSelector,

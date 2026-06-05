@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scenes/ui/ProgressInfoPanel.gd" id="1_progress_info"]
 
 [node name="ProgressInfoPanel" type="Control"]
-custom_minimum_size = Vector2(180, 132)
+custom_minimum_size = Vector2(180, 150)
 mouse_filter = 2
 script = ExtResource("1_progress_info")
 
@@ -16,13 +16,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme_override_constants/separation = 4
-
-[node name="BossTimerLabel" type="Label" parent="VBoxContainer"]
-visible = false
-layout_mode = 2
-mouse_filter = 2
-text = "Boss Time: 30.0s"
-horizontal_alignment = 1
 
 [node name="ZoneLabel" type="Label" parent="VBoxContainer"]
 layout_mode = 2
@@ -44,16 +37,30 @@ text = "Rogue Ninja"
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="EnemyHpLabel" type="Label" parent="VBoxContainer"]
-layout_mode = 2
-mouse_filter = 2
-text = "HP 10 / 10"
-horizontal_alignment = 1
-
 [node name="EnemyHpProgressBar" type="ProgressBar" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 12)
+custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
 mouse_filter = 2
 max_value = 10.0
 value = 10.0
 show_percentage = false
+
+[node name="HpTextLabel" type="Label" parent="VBoxContainer/EnemyHpProgressBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+text_overrun_behavior = 3
+text = "10 / 10"
+
+[node name="BossTimerLabel" type="Label" parent="VBoxContainer"]
+visible = false
+layout_mode = 2
+mouse_filter = 2
+text = "Boss Time: 30.0s"
+horizontal_alignment = 1
