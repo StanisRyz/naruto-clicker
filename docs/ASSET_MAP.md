@@ -134,6 +134,22 @@ Only these zone folders need a `background.png`:
 
 Missing files fall back to the default game asset catalog placeholder (no crash).
 
+## Enemy asset validation
+
+Run the following command from the project root to validate all required enemy PNG files:
+
+```
+godot --headless --script res://scripts/tools/ValidateEnemyAssets.gd
+```
+
+What the script checks:
+
+- All required PNG files exist under `assets/images/enemies/`
+- Missing PNG files are reported as **errors** (exit code 1)
+- Missing `.import` sidecar files are reported as **warnings** (exit code stays 0 if no PNG errors)
+- `assets/images/enemies/zone_21/` must contain only `boss_01/` — any `enemy_*` or `elite_*` subfolder is an **error**
+- Expected total: **72 slots** × 4 states = **288 required PNG files**
+
 ## Expected filenames
 
 | Asset type | Filename(s) |
