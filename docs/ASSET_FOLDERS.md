@@ -170,23 +170,41 @@ UI folders: `gold`, `gems`, `prestige_points`, `settings`, `close`, `auto_transi
 
 Path: `assets/images/stage_navigation/zone_##/stage.png`
 
-All 21 zone folders exist (`zone_01/` through `zone_21/`). Empty folders carry `.gitkeep` until real PNG art is added.
+Stage navigation uses the **same zone folders as backgrounds** — not one folder per gameplay zone. Only 11 folders exist, matching the unique `background_asset_zone` values in ZoneConfig.
 
-StageNavigator uses the same `background_asset_zone` distribution as backgrounds, so zones that share a background also share a stage navigation image.
+Required folders (mirrors background distribution):
 
-| Source zone | Used by gameplay zones (cyclic) |
-|-------------|--------------------------------|
-| zone_01     | 1, 7, 13, 14, and their cyclic repeats |
-| zone_02     | 2                              |
-| zone_03     | 3                              |
-| zone_04     | 4                              |
-| zone_05     | 5, 6                           |
-| zone_08     | 8, 9, 15                       |
-| zone_10     | 10, 21                         |
-| zone_11     | 11, 12                         |
-| zone_16     | 16                             |
-| zone_17     | 17, 18, 19                     |
-| zone_20     | 20                             |
+```
+assets/images/stage_navigation/zone_01/
+assets/images/stage_navigation/zone_02/
+assets/images/stage_navigation/zone_03/
+assets/images/stage_navigation/zone_04/
+assets/images/stage_navigation/zone_05/
+assets/images/stage_navigation/zone_08/
+assets/images/stage_navigation/zone_10/
+assets/images/stage_navigation/zone_11/
+assets/images/stage_navigation/zone_16/
+assets/images/stage_navigation/zone_17/
+assets/images/stage_navigation/zone_20/
+```
+
+Do **not** create `zone_06`, `zone_07`, `zone_09`, `zone_12`–`zone_15`, `zone_18`, `zone_19`, or `zone_21` — those gameplay zones reuse a background from another folder.
+
+| Folder   | Used by gameplay zones |
+|----------|------------------------|
+| zone_01  | 1, 7, 13, 14 (and cyclic repeats) |
+| zone_02  | 2                      |
+| zone_03  | 3                      |
+| zone_04  | 4                      |
+| zone_05  | 5, 6                   |
+| zone_08  | 8, 9, 15               |
+| zone_10  | 10, 21                 |
+| zone_11  | 11, 12                 |
+| zone_16  | 16                     |
+| zone_17  | 17, 18, 19             |
+| zone_20  | 20                     |
+
+Empty folders carry `.gitkeep` until real PNG art is added.
 
 Fallback behavior:
 - If `stage.png` exists: the button shows the image; the fallback color square is hidden.

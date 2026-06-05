@@ -1,6 +1,5 @@
 extends SceneTree
 
-const ZONE_COUNT: int = 21
 const STAGE_NAV_ROOT: String = "res://assets/images/stage_navigation/"
 
 var _errors: int = 0
@@ -15,10 +14,22 @@ func _init() -> void:
 func _run() -> void:
 	print("=== ValidateStageNavigationAssets ===")
 	_check_cyclic_zones()
-	_check_folders()
-	_check_stage_files()
+	var expected_zone_numbers: Array = _get_expected_zone_numbers()
+	_check_folders(expected_zone_numbers)
+	_check_stage_files(expected_zone_numbers)
 	_check_path_logic()
 	print("--- Results: %d error(s), %d warning(s) ---" % [_errors, _warnings])
+
+
+func _get_expected_zone_numbers() -> Array:
+	var seen: Dictionary = {}
+	for zone in ZoneConfig.ZONE_DATA:
+		var n: int = int(zone.get("background_asset_zone", 0))
+		if n > 0:
+			seen[n] = true
+	var result: Array = seen.keys()
+	result.sort()
+	return result
 
 
 func _check_cyclic_zones() -> void:
@@ -37,20 +48,38 @@ func _check_cyclic_zones() -> void:
 			_error("level %d expected zone %d but got zone %d" % [level, expected, got])
 
 
-func _check_folders() -> void:
+func _check_folders(expected_zone_numbers: Array) -> void:
 	print("\n-- Stage nav folders --")
-	for i in range(1, ZONE_COUNT + 1):
-		var folder: String = STAGE_NAV_ROOT + "zone_%02d" % i
+
+	var expected_names: Dictionary = {}
+	for n in expected_zone_numbers:
+		expected_names["zone_%02d" % n] = true
+
+	for n in expected_zone_numbers:
+		var folder: String = STAGE_NAV_ROOT + "zone_%02d" % n
 		if DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(folder)):
-			print("  OK  %s" % folder)
+			print("  OK      %s" % folder)
 		else:
-			_error("missing folder: %s" % folder)
+			_error("missing expected folder: %s" % folder)
+
+	var nav_dir := DirAccess.open(ProjectSettings.globalize_path(STAGE_NAV_ROOT))
+	if nav_dir == null:
+		_error("stage_navigation root not found: %s" % STAGE_NAV_ROOT)
+		return
+	nav_dir.list_dir_begin()
+	var entry: String = nav_dir.get_next()
+	while entry != "":
+		if nav_dir.current_is_dir() and entry.begins_with("zone_"):
+			if not expected_names.has(entry):
+				_error("unexpected folder (should not exist): %s%s" % [STAGE_NAV_ROOT, entry])
+		entry = nav_dir.get_next()
+	nav_dir.list_dir_end()
 
 
-func _check_stage_files() -> void:
+func _check_stage_files(expected_zone_numbers: Array) -> void:
 	print("\n-- Stage nav files (optional) --")
-	for i in range(1, ZONE_COUNT + 1):
-		var path: String = STAGE_NAV_ROOT + "zone_%02d/stage.png" % i
+	for n in expected_zone_numbers:
+		var path: String = STAGE_NAV_ROOT + "zone_%02d/stage.png" % n
 		if ResourceLoader.exists(path):
 			print("  FOUND   %s" % path)
 		else:
@@ -59,25 +88,21 @@ func _check_stage_files() -> void:
 
 func _check_path_logic() -> void:
 	print("\n-- Stage nav path logic --")
-	var path_1: String = StageNavigationAssetCatalog.get_stage_path_for_level(1)
-	var path_106: String = StageNavigationAssetCatalog.get_stage_path_for_level(106)
-	var path_6: String = StageNavigationAssetCatalog.get_stage_path_for_level(6)
-	var path_111: String = StageNavigationAssetCatalog.get_stage_path_for_level(111)
-
-	_check_paths_match("level 106 == level 1", path_106, path_1)
-	_check_paths_match("level 111 == level 6", path_111, path_6)
-
-	print("  level 1   path: %s" % path_1)
-	print("  level 105 path: %s" % StageNavigationAssetCatalog.get_stage_path_for_level(105))
-	print("  level 106 path: %s" % path_106)
-	print("  level 111 path: %s" % path_111)
-
-
-func _check_paths_match(label: String, a: String, b: String) -> void:
-	if a == b:
-		print("  OK  %s -> %s" % [label, a])
-	else:
-		_error("%s: expected '%s' == '%s'" % [label, a, b])
+	var cases: Array = [
+		[1,   "zone_01"], [6,   "zone_02"], [26,  "zone_05"],
+		[31,  "zone_01"], [101, "zone_10"], [105, "zone_10"],
+		[106, "zone_01"], [111, "zone_02"], [210, "zone_10"],
+		[211, "zone_01"],
+	]
+	for c in cases:
+		var level: int = c[0]
+		var expected_folder: String = c[1]
+		var path: String = StageNavigationAssetCatalog.get_stage_path_for_level(level)
+		var expected_path: String = STAGE_NAV_ROOT + expected_folder + "/stage.png"
+		if path == expected_path:
+			print("  OK  level %d -> %s" % [level, path])
+		else:
+			_error("level %d: expected '%s', got '%s'" % [level, expected_path, path])
 
 
 func _error(msg: String) -> void:

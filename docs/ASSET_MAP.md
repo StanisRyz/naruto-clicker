@@ -150,15 +150,33 @@ Missing files fall back to the default game asset catalog placeholder (no crash)
 
 ## Stage navigation asset reuse
 
-StageNavigator images live in `assets/images/stage_navigation/zone_##/stage.png`. They follow the same `background_asset_zone` mapping as backgrounds (see table above), so zones that share a background also share a stage navigation image.
+StageNavigator images live in `assets/images/stage_navigation/zone_##/stage.png`. The folder set mirrors the background asset distribution exactly — only 11 folders exist, one per unique `background_asset_zone` value.
+
+Required folders:
+
+```
+assets/images/stage_navigation/zone_01/stage.png
+assets/images/stage_navigation/zone_02/stage.png
+assets/images/stage_navigation/zone_03/stage.png
+assets/images/stage_navigation/zone_04/stage.png
+assets/images/stage_navigation/zone_05/stage.png
+assets/images/stage_navigation/zone_08/stage.png
+assets/images/stage_navigation/zone_10/stage.png
+assets/images/stage_navigation/zone_11/stage.png
+assets/images/stage_navigation/zone_16/stage.png
+assets/images/stage_navigation/zone_17/stage.png
+assets/images/stage_navigation/zone_20/stage.png
+```
+
+Do **not** create `zone_06`, `zone_07`, `zone_09`, `zone_12`–`zone_15`, `zone_18`, `zone_19`, or `zone_21`.
+
+Missing `stage.png` files are **warnings** (safe fallback color shown). Missing or unexpected zone folders are **errors**.
 
 Run the following to validate:
 
 ```
 godot --headless --script res://scripts/tools/ValidateStageNavigationAssets.gd
 ```
-
-Missing `stage.png` files are **warnings** (safe fallback color shown). Missing zone folders are **errors**.
 
 ---
 
