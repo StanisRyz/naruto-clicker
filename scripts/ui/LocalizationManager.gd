@@ -20,7 +20,7 @@ func _load_csv() -> void:
 
 	var file := FileAccess.open(CSV_PATH, FileAccess.READ)
 	if file == null:
-		push_warning("LocalizationManager: cannot open %s" % CSV_PATH)
+		push_warning("LocalizationManager: cannot open %s. Check export include_filter for localization/*.csv" % CSV_PATH)
 		return
 
 	if file.eof_reached():
@@ -43,6 +43,14 @@ func _load_csv() -> void:
 		_translations["ru"][key] = ru_text
 
 	file.close()
+
+	if OS.is_debug_build():
+		var en_count: int = _translations["en"].size()
+		var ru_count: int = 0
+		for v: String in _translations["ru"].values():
+			if v != "":
+				ru_count += 1
+		print("LocalizationManager: loaded %d English keys, %d Russian keys" % [en_count, ru_count])
 
 
 func _parse_csv_line(line: String) -> Array:
@@ -111,3 +119,13 @@ func get_language() -> String:
 
 func get_available_languages() -> Array[String]:
 	return SUPPORTED_LANGUAGES.duplicate()
+
+
+func get_loaded_translation_count(language_code: String = DEFAULT_LANGUAGE) -> int:
+	if _translations.has(language_code):
+		return _translations[language_code].size()
+	return 0
+
+
+func has_loaded_translations() -> bool:
+	return get_loaded_translation_count(DEFAULT_LANGUAGE) > 0

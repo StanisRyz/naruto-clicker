@@ -161,6 +161,54 @@ Checks all `enemy.pool_XX.*` and `zone.XX.boss` keys exist in the CSV. Missing `
 
 ---
 
+## Export requirements
+
+`game_text.csv` is loaded manually by `LocalizationManager` using `FileAccess` at runtime. It is **not** a Godot-native translation resource, so Godot does not include it automatically in exports.
+
+**Both Web and Android export presets must include:**
+
+```
+localization/*.csv
+```
+
+This is set via `include_filter` in `export_presets.cfg`:
+
+```
+include_filter="localization/*.csv"
+```
+
+If an exported build shows localization keys (e.g. `ui.tab.upgrades`) instead of translated text, check that `export_presets.cfg` has this include filter for the affected platform.
+
+### Startup warning
+
+If `game_text.csv` is missing at runtime, `LocalizationManager` emits:
+
+```
+LocalizationManager: cannot open res://localization/game_text.csv. Check export include_filter for localization/*.csv
+```
+
+And `ClickerScreen` emits:
+
+```
+No localization translations loaded. UI will display keys.
+```
+
+These appear in Android logcat and the browser console.
+
+### Validation command
+
+```
+godot --headless --script res://scripts/tools/ValidateLocalizationExport.gd
+```
+
+Checks:
+- `game_text.csv` exists and can be opened
+- Required header columns (`key`, `en`, `ru`) are present
+- Required keys exist in the CSV
+- Both Web and Android export presets include `localization/*.csv` in `include_filter`
+
+---
+
 ## Known gaps
 
 - **Scene-file static labels** (e.g. row labels in `SettingsWindow.tscn`): not yet localized. Requires editing `.tscn` scene files or adding Label references and setting text in `_ready()`.
