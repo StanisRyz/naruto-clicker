@@ -38,6 +38,28 @@ script = ExtResource("2_slot")
 fallback_color = Color(0.25, 0.25, 0.25, 0.65)
 show_fallback_behind_texture = false
 
+[node name="ActiveRadialOverlay" type="Control" parent="AutoclickButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+visible = false
+script = ExtResource("3_cooldown")
+
+[node name="CooldownOverlay" type="Control" parent="AutoclickButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+visible = false
+script = ExtResource("3_cooldown")
+
 [node name="ActiveOverlay" type="ColorRect" parent="AutoclickButton"]
 layout_mode = 1
 anchors_preset = 15
@@ -51,17 +73,6 @@ visible = false
 script = ExtResource("2_slot")
 fallback_color = Color(0, 0, 0, 0)
 show_fallback_behind_texture = false
-
-[node name="CooldownOverlay" type="Control" parent="AutoclickButton"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-visible = false
-script = ExtResource("3_cooldown")
 
 [node name="CountdownLabel" type="Label" parent="AutoclickButton"]
 layout_mode = 1
@@ -96,6 +107,28 @@ script = ExtResource("2_slot")
 fallback_color = Color(0.25, 0.25, 0.25, 0.65)
 show_fallback_behind_texture = false
 
+[node name="ActiveRadialOverlay" type="Control" parent="GoldBonusButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+visible = false
+script = ExtResource("3_cooldown")
+
+[node name="CooldownOverlay" type="Control" parent="GoldBonusButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+visible = false
+script = ExtResource("3_cooldown")
+
 [node name="ActiveOverlay" type="ColorRect" parent="GoldBonusButton"]
 layout_mode = 1
 anchors_preset = 15
@@ -109,17 +142,6 @@ visible = false
 script = ExtResource("2_slot")
 fallback_color = Color(0, 0, 0, 0)
 show_fallback_behind_texture = false
-
-[node name="CooldownOverlay" type="Control" parent="GoldBonusButton"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-visible = false
-script = ExtResource("3_cooldown")
 
 [node name="CountdownLabel" type="Label" parent="GoldBonusButton"]
 layout_mode = 1
@@ -154,6 +176,28 @@ script = ExtResource("2_slot")
 fallback_color = Color(0.25, 0.25, 0.25, 0.65)
 show_fallback_behind_texture = false
 
+[node name="ActiveRadialOverlay" type="Control" parent="FocusBurstButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+visible = false
+script = ExtResource("3_cooldown")
+
+[node name="CooldownOverlay" type="Control" parent="FocusBurstButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+visible = false
+script = ExtResource("3_cooldown")
+
 [node name="ActiveOverlay" type="ColorRect" parent="FocusBurstButton"]
 layout_mode = 1
 anchors_preset = 15
@@ -167,17 +211,6 @@ visible = false
 script = ExtResource("2_slot")
 fallback_color = Color(0, 0, 0, 0)
 show_fallback_behind_texture = false
-
-[node name="CooldownOverlay" type="Control" parent="FocusBurstButton"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-visible = false
-script = ExtResource("3_cooldown")
 
 [node name="CountdownLabel" type="Label" parent="FocusBurstButton"]
 layout_mode = 1
@@ -212,6 +245,28 @@ script = ExtResource("2_slot")
 fallback_color = Color(0.25, 0.25, 0.25, 0.65)
 show_fallback_behind_texture = false
 
+[node name="ActiveRadialOverlay" type="Control" parent="RallyButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+visible = false
+script = ExtResource("3_cooldown")
+
+[node name="CooldownOverlay" type="Control" parent="RallyButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+visible = false
+script = ExtResource("3_cooldown")
+
 [node name="ActiveOverlay" type="ColorRect" parent="RallyButton"]
 layout_mode = 1
 anchors_preset = 15
@@ -225,17 +280,6 @@ visible = false
 script = ExtResource("2_slot")
 fallback_color = Color(0, 0, 0, 0)
 show_fallback_behind_texture = false
-
-[node name="CooldownOverlay" type="Control" parent="RallyButton"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-visible = false
-script = ExtResource("3_cooldown")
 
 [node name="CountdownLabel" type="Label" parent="RallyButton"]
 layout_mode = 1

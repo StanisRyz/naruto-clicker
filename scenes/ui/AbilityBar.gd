@@ -14,14 +14,18 @@ signal rally_requested
 @onready var gold_bonus_icon: ImageSlot = $GoldBonusButton/ImageHolder
 @onready var focus_burst_icon: ImageSlot = $FocusBurstButton/ImageHolder
 @onready var rally_icon: ImageSlot = $RallyButton/ImageHolder
-@onready var autoclick_active_overlay: ImageSlot = $AutoclickButton/ActiveOverlay
-@onready var gold_bonus_active_overlay: ImageSlot = $GoldBonusButton/ActiveOverlay
-@onready var focus_burst_active_overlay: ImageSlot = $FocusBurstButton/ActiveOverlay
-@onready var rally_active_overlay: ImageSlot = $RallyButton/ActiveOverlay
+@onready var autoclick_active_radial_overlay: AbilityCooldownOverlay = $AutoclickButton/ActiveRadialOverlay
+@onready var gold_bonus_active_radial_overlay: AbilityCooldownOverlay = $GoldBonusButton/ActiveRadialOverlay
+@onready var focus_burst_active_radial_overlay: AbilityCooldownOverlay = $FocusBurstButton/ActiveRadialOverlay
+@onready var rally_active_radial_overlay: AbilityCooldownOverlay = $RallyButton/ActiveRadialOverlay
 @onready var autoclick_cooldown_overlay: AbilityCooldownOverlay = $AutoclickButton/CooldownOverlay
 @onready var gold_bonus_cooldown_overlay: AbilityCooldownOverlay = $GoldBonusButton/CooldownOverlay
 @onready var focus_burst_cooldown_overlay: AbilityCooldownOverlay = $FocusBurstButton/CooldownOverlay
 @onready var rally_cooldown_overlay: AbilityCooldownOverlay = $RallyButton/CooldownOverlay
+@onready var autoclick_active_overlay: ImageSlot = $AutoclickButton/ActiveOverlay
+@onready var gold_bonus_active_overlay: ImageSlot = $GoldBonusButton/ActiveOverlay
+@onready var focus_burst_active_overlay: ImageSlot = $FocusBurstButton/ActiveOverlay
+@onready var rally_active_overlay: ImageSlot = $RallyButton/ActiveOverlay
 @onready var autoclick_countdown_label: Label = $AutoclickButton/CountdownLabel
 @onready var gold_bonus_countdown_label: Label = $GoldBonusButton/CountdownLabel
 @onready var focus_burst_countdown_label: Label = $FocusBurstButton/CountdownLabel
@@ -67,27 +71,39 @@ func update_view(
 	autoclick_cooldown_duration: float,
 	gold_bonus_cooldown_duration: float,
 	focus_burst_cooldown_duration: float,
-	rally_cooldown_duration: float
+	rally_cooldown_duration: float,
+	autoclick_active_duration: float,
+	gold_bonus_active_duration: float,
+	focus_burst_active_duration: float,
+	rally_active_duration: float
 ) -> void:
 	_update_ability_button(
-		autoclick_button, autoclick_icon, autoclick_active_overlay, autoclick_cooldown_overlay, autoclick_countdown_label,
+		autoclick_button, autoclick_icon,
+		autoclick_active_radial_overlay, autoclick_cooldown_overlay, autoclick_active_overlay, autoclick_countdown_label,
 		state.is_ability_purchased("autoclick"),
-		state.autoclick_active, autoclick_time_left, autoclick_cooldown_left, autoclick_cooldown_duration
+		state.autoclick_active, autoclick_time_left, autoclick_active_duration,
+		autoclick_cooldown_left, autoclick_cooldown_duration
 	)
 	_update_ability_button(
-		gold_bonus_button, gold_bonus_icon, gold_bonus_active_overlay, gold_bonus_cooldown_overlay, gold_bonus_countdown_label,
+		gold_bonus_button, gold_bonus_icon,
+		gold_bonus_active_radial_overlay, gold_bonus_cooldown_overlay, gold_bonus_active_overlay, gold_bonus_countdown_label,
 		state.is_ability_purchased("gold_bonus"),
-		state.gold_bonus_active, gold_bonus_time_left, gold_bonus_cooldown_left, gold_bonus_cooldown_duration
+		state.gold_bonus_active, gold_bonus_time_left, gold_bonus_active_duration,
+		gold_bonus_cooldown_left, gold_bonus_cooldown_duration
 	)
 	_update_ability_button(
-		focus_burst_button, focus_burst_icon, focus_burst_active_overlay, focus_burst_cooldown_overlay, focus_burst_countdown_label,
+		focus_burst_button, focus_burst_icon,
+		focus_burst_active_radial_overlay, focus_burst_cooldown_overlay, focus_burst_active_overlay, focus_burst_countdown_label,
 		state.is_ability_purchased("focus_burst"),
-		state.focus_burst_active, focus_burst_time_left, focus_burst_cooldown_left, focus_burst_cooldown_duration
+		state.focus_burst_active, focus_burst_time_left, focus_burst_active_duration,
+		focus_burst_cooldown_left, focus_burst_cooldown_duration
 	)
 	_update_ability_button(
-		rally_button, rally_icon, rally_active_overlay, rally_cooldown_overlay, rally_countdown_label,
+		rally_button, rally_icon,
+		rally_active_radial_overlay, rally_cooldown_overlay, rally_active_overlay, rally_countdown_label,
 		state.is_ability_purchased("rally"),
-		state.rally_active, rally_time_left, rally_cooldown_left, rally_cooldown_duration
+		state.rally_active, rally_time_left, rally_active_duration,
+		rally_cooldown_left, rally_cooldown_duration
 	)
 
 
@@ -114,12 +130,14 @@ func _on_rally_button_pressed() -> void:
 func _update_ability_button(
 	button: Button,
 	icon: ImageSlot,
-	active_overlay: ImageSlot,
+	active_radial_overlay: AbilityCooldownOverlay,
 	cooldown_overlay: AbilityCooldownOverlay,
+	active_overlay: ImageSlot,
 	countdown_label: Label,
 	purchased: bool,
 	active: bool,
 	active_time_left: float,
+	active_duration: float,
 	cooldown_left: float,
 	cooldown_duration: float
 ) -> void:
@@ -127,31 +145,36 @@ func _update_ability_button(
 	button.disabled = not purchased or active or cooldown_left > 0.0
 	if not purchased:
 		icon.modulate = Color.WHITE
+		active_radial_overlay.clear()
+		cooldown_overlay.clear()
 		active_overlay.visible = false
-		cooldown_overlay.set_cooldown_ratio(0.0)
 		countdown_label.visible = false
 		return
 
 	if active:
 		icon.modulate = Color.WHITE
+		var active_ratio: float = clampf(active_time_left / maxf(active_duration, 0.001), 0.0, 1.0)
+		active_radial_overlay.set_active_ratio(active_ratio)
+		cooldown_overlay.clear()
 		active_overlay.visible = true
-		cooldown_overlay.set_cooldown_ratio(0.0)
 		countdown_label.visible = true
 		countdown_label.text = _format_countdown(active_time_left)
 		return
 
 	if cooldown_left > 0.0:
 		icon.modulate = Color.WHITE
+		active_radial_overlay.clear()
+		var cooldown_ratio: float = clampf(cooldown_left / maxf(cooldown_duration, 0.001), 0.0, 1.0)
+		cooldown_overlay.set_cooldown_ratio(cooldown_ratio)
 		active_overlay.visible = false
-		var ratio: float = clampf(cooldown_left / maxf(cooldown_duration, 0.001), 0.0, 1.0)
-		cooldown_overlay.set_cooldown_ratio(ratio)
 		countdown_label.visible = true
 		countdown_label.text = _format_countdown(cooldown_left)
 		return
 
 	icon.modulate = Color.WHITE
+	active_radial_overlay.clear()
+	cooldown_overlay.clear()
 	active_overlay.visible = false
-	cooldown_overlay.set_cooldown_ratio(0.0)
 	countdown_label.visible = false
 
 

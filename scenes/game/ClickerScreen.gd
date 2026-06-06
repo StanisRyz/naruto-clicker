@@ -191,7 +191,11 @@ func _update_ability_bar() -> void:
 		autoclick_cooldown_duration,
 		gold_bonus_cooldown_duration,
 		focus_burst_cooldown_duration,
-		rally_cooldown_duration
+		rally_cooldown_duration,
+		_get_autoclick_active_duration(),
+		_get_gold_bonus_active_duration(),
+		_get_focus_burst_active_duration(),
+		_get_rally_active_duration()
 	)
 
 
@@ -722,7 +726,11 @@ func _process_ability_timers(delta: float) -> void:
 		autoclick_cooldown_duration,
 		gold_bonus_cooldown_duration,
 		focus_burst_cooldown_duration,
-		rally_cooldown_duration
+		rally_cooldown_duration,
+		_get_autoclick_active_duration(),
+		_get_gold_bonus_active_duration(),
+		_get_focus_burst_active_duration(),
+		_get_rally_active_duration()
 	)
 
 
@@ -739,6 +747,23 @@ func _get_scaled_duration(base_duration: float, uses_war_banner: bool) -> float:
 
 func _get_scaled_cooldown(base_cooldown: float) -> float:
 	return base_cooldown * state.get_ability_cooldown_multiplier()
+
+
+func _get_autoclick_active_duration() -> float:
+	var rank: int = state.get_ability_rank("autoclick")
+	return _get_scaled_duration(autoclick_duration + float(BalanceConfig.AUTOCLICK_RANK_DURATION_BONUS_SEC) * rank, false)
+
+
+func _get_gold_bonus_active_duration() -> float:
+	return _get_scaled_duration(gold_bonus_duration, false)
+
+
+func _get_focus_burst_active_duration() -> float:
+	return _get_scaled_duration(focus_burst_duration, true)
+
+
+func _get_rally_active_duration() -> float:
+	return _get_scaled_duration(rally_duration, true)
 
 
 func _handle_defeat_result(result: Dictionary, was_boss_level: bool) -> void:
