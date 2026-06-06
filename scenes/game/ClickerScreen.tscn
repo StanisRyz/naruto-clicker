@@ -167,19 +167,6 @@ offset_top = -104.0
 grow_horizontal = 2
 grow_vertical = 0
 
-[node name="BackgroundImageHolder" type="ColorRect" parent="BottomBar"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-script = ExtResource("18_imageslot")
-asset_key = "ui.bottom_bar.background"
-fallback_color = Color(0, 0, 0, 1)
-show_fallback_behind_texture = false
-stretch_mode = 0
 
 [node name="MarginContainer" type="MarginContainer" parent="BottomBar"]
 layout_mode = 1

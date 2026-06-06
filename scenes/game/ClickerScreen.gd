@@ -34,7 +34,6 @@ var enemy_respawn_delay: float = 0.2
 var enemy_transition_token: int = 0
 const ENEMY_SPAWN_SMOKE_DURATION: float = 0.3
 const ENEMY_SPAWN_INVULNERABILITY_DURATION: float = 0.1
-const BOTTOM_BAR_BACKGROUND_FALLBACK_COLOR: Color = Color(0, 0, 0, 1)
 const BOTTOM_TAB_BUTTON_FALLBACK_COLOR: Color = Color(1, 1, 1, 1)
 var _autosave_timer: float = 0.0
 const _AUTOSAVE_INTERVAL: float = 10.0
@@ -64,7 +63,6 @@ var _is_initialized: bool = false
 @onready var prestige_sheet: PrestigeSheet = $PrestigeSheet
 @onready var shop_sheet: ShopSheet = $ShopSheet
 @onready var prestige_confirm_dialog: PrestigeConfirmDialog = $PrestigeSheet/PrestigeConfirmDialog
-@onready var bottom_bar_background_image = $BottomBar/BackgroundImageHolder
 @onready var upgrades_button_image = $BottomBar/MarginContainer/HBoxContainer/UpgradesButton/ImageHolder
 @onready var partners_button_image = $BottomBar/MarginContainer/HBoxContainer/PartnersButton/ImageHolder
 @onready var settlement_button_image = $BottomBar/MarginContainer/HBoxContainer/SettlementButton/ImageHolder
@@ -114,7 +112,6 @@ func _ready() -> void:
 	shop_sheet.closed.connect(_on_sheet_closed)
 	LocalizationManager.language_changed.connect(_on_language_changed)
 	_apply_ui_font_sizes()
-	bottom_bar_background_image.set_asset_key("ui.bottom_bar.background", BOTTOM_BAR_BACKGROUND_FALLBACK_COLOR)
 	_clear_button_visual_styles(upgrades_button)
 	_clear_button_visual_styles(partners_button)
 	_clear_button_visual_styles(settlement_button)

@@ -83,9 +83,7 @@ const ASSET_PATHS: Dictionary = {
 	"task.window_button.default": "res://assets/images/tasks/tasks_button/default.png",
 	"task.window_button.completed": "res://assets/images/tasks/tasks_button/completed.png",
 
-	# Bottom bar
-	"ui.bottom_bar.background": "res://assets/images/ui/bottom_bar/background.png",
-
+	# Bottom bar tabs
 	"ui.bottom_tab.upgrades.default": "res://assets/images/ui/bottom_bar/tabs/upgrades/default.png",
 	"ui.bottom_tab.upgrades.active": "res://assets/images/ui/bottom_bar/tabs/upgrades/active.png",
 

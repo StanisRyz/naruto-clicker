@@ -20,7 +20,6 @@ func _init() -> void:
 			errors.append("MISSING required folder: %s" % folder)
 
 	var required_keys: Dictionary = {
-		"ui.bottom_bar.background": "res://assets/images/ui/bottom_bar/background.png",
 		"ui.bottom_tab.upgrades.default": "res://assets/images/ui/bottom_bar/tabs/upgrades/default.png",
 		"ui.bottom_tab.upgrades.active": "res://assets/images/ui/bottom_bar/tabs/upgrades/active.png",
 		"ui.bottom_tab.partners.default": "res://assets/images/ui/bottom_bar/tabs/partners/default.png",

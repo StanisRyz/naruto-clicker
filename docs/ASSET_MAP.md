@@ -249,14 +249,6 @@ Rules:
 
 ---
 
-## Bottom bar background
-
-Asset key: `ui.bottom_bar.background`
-Path: `assets/images/ui/bottom_bar/background.png`
-Recommended size: **720×104**
-
-Purpose: Decorative background behind the five bottom tab buttons. Rendered by `BackgroundImageHolder` (`ImageSlot`) in `ClickerScreen.tscn`, pinned to the bottom with `offset_top = -104`. Missing file falls back to transparent — no crash.
-
 ## Bottom tab buttons
 
 Each tab has two image states: `default` and `active`.
@@ -274,7 +266,7 @@ Each tab has two image states: `default` and `active`.
 | `ui.bottom_tab.shop.default` | `assets/images/ui/bottom_bar/tabs/shop/default.png` |
 | `ui.bottom_tab.shop.active` | `assets/images/ui/bottom_bar/tabs/shop/active.png` |
 
-Recommended tab image size: **125×55 px**. Button nodes remain (`Button` type) so pressed signals continue to work. `ImageHolder` (`ImageSlot`) is visual only — mouse input passes through to the button. Godot no longer draws native text on these buttons.
+Recommended tab image size: **125×55 px**. BottomBar has no background texture. Button nodes remain (`Button` type) so pressed signals continue to work. `ImageHolder` (`ImageSlot`) is visual only — mouse input passes through to the button. Missing tab textures fall back to white. Godot no longer draws native text on these buttons.
 
 ---
 
