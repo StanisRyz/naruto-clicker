@@ -157,7 +157,7 @@ anchors_preset = -1
 layout_mode = 1
 anchors_preset = -1
 
-[node name="BottomBar" type="PanelContainer" parent="."]
+[node name="BottomBar" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -167,8 +167,27 @@ offset_top = -104.0
 grow_horizontal = 2
 grow_vertical = 0
 
+[node name="BackgroundImageHolder" type="ColorRect" parent="BottomBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("18_imageslot")
+asset_key = "ui.bottom_bar.background"
+fallback_color = Color(0, 0, 0, 1)
+show_fallback_behind_texture = false
+stretch_mode = 0
+
 [node name="MarginContainer" type="MarginContainer" parent="BottomBar"]
-layout_mode = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_constants/margin_left = 32
 theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 32
@@ -182,31 +201,106 @@ theme_override_constants/separation = 8
 custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Upgrades"
+focus_mode = 0
+flat = true
+text = ""
+
+[node name="ImageHolder" type="ColorRect" parent="BottomBar/MarginContainer/HBoxContainer/UpgradesButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("18_imageslot")
+fallback_color = Color(1, 1, 1, 1)
+show_fallback_behind_texture = false
+stretch_mode = 0
 
 [node name="PartnersButton" type="Button" parent="BottomBar/MarginContainer/HBoxContainer"]
 custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Partners"
+focus_mode = 0
+flat = true
+text = ""
+
+[node name="ImageHolder" type="ColorRect" parent="BottomBar/MarginContainer/HBoxContainer/PartnersButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("18_imageslot")
+fallback_color = Color(1, 1, 1, 1)
+show_fallback_behind_texture = false
+stretch_mode = 0
 
 [node name="SettlementButton" type="Button" parent="BottomBar/MarginContainer/HBoxContainer"]
 custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Settlement"
+focus_mode = 0
+flat = true
+text = ""
+
+[node name="ImageHolder" type="ColorRect" parent="BottomBar/MarginContainer/HBoxContainer/SettlementButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("18_imageslot")
+fallback_color = Color(1, 1, 1, 1)
+show_fallback_behind_texture = false
+stretch_mode = 0
 
 [node name="PrestigeButton" type="Button" parent="BottomBar/MarginContainer/HBoxContainer"]
 custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Prestige"
+focus_mode = 0
+flat = true
+text = ""
+
+[node name="ImageHolder" type="ColorRect" parent="BottomBar/MarginContainer/HBoxContainer/PrestigeButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("18_imageslot")
+fallback_color = Color(1, 1, 1, 1)
+show_fallback_behind_texture = false
+stretch_mode = 0
 
 [node name="ShopButton" type="Button" parent="BottomBar/MarginContainer/HBoxContainer"]
 custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Shop"
+focus_mode = 0
+flat = true
+text = ""
+
+[node name="ImageHolder" type="ColorRect" parent="BottomBar/MarginContainer/HBoxContainer/ShopButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("18_imageslot")
+fallback_color = Color(1, 1, 1, 1)
+show_fallback_behind_texture = false
+stretch_mode = 0
 
 [node name="AutoTransitionPopup" parent="." instance=ExtResource("14_atp")]
 layout_mode = 1

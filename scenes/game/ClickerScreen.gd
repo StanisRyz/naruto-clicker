@@ -34,6 +34,8 @@ var enemy_respawn_delay: float = 0.2
 var enemy_transition_token: int = 0
 const ENEMY_SPAWN_SMOKE_DURATION: float = 0.3
 const ENEMY_SPAWN_INVULNERABILITY_DURATION: float = 0.1
+const BOTTOM_BAR_BACKGROUND_FALLBACK_COLOR: Color = Color(0, 0, 0, 1)
+const BOTTOM_TAB_BUTTON_FALLBACK_COLOR: Color = Color(1, 1, 1, 1)
 var _autosave_timer: float = 0.0
 const _AUTOSAVE_INTERVAL: float = 10.0
 var balance_logger: BalancePlaytestLogger = null
@@ -62,6 +64,12 @@ var _is_initialized: bool = false
 @onready var prestige_sheet: PrestigeSheet = $PrestigeSheet
 @onready var shop_sheet: ShopSheet = $ShopSheet
 @onready var prestige_confirm_dialog: PrestigeConfirmDialog = $PrestigeSheet/PrestigeConfirmDialog
+@onready var bottom_bar_background_image = $BottomBar/BackgroundImageHolder
+@onready var upgrades_button_image = $BottomBar/MarginContainer/HBoxContainer/UpgradesButton/ImageHolder
+@onready var partners_button_image = $BottomBar/MarginContainer/HBoxContainer/PartnersButton/ImageHolder
+@onready var settlement_button_image = $BottomBar/MarginContainer/HBoxContainer/SettlementButton/ImageHolder
+@onready var prestige_button_image = $BottomBar/MarginContainer/HBoxContainer/PrestigeButton/ImageHolder
+@onready var shop_button_image = $BottomBar/MarginContainer/HBoxContainer/ShopButton/ImageHolder
 
 
 func _ready() -> void:
@@ -106,6 +114,12 @@ func _ready() -> void:
 	shop_sheet.closed.connect(_on_sheet_closed)
 	LocalizationManager.language_changed.connect(_on_language_changed)
 	_apply_ui_font_sizes()
+	bottom_bar_background_image.set_asset_key("ui.bottom_bar.background", BOTTOM_BAR_BACKGROUND_FALLBACK_COLOR)
+	_clear_button_visual_styles(upgrades_button)
+	_clear_button_visual_styles(partners_button)
+	_clear_button_visual_styles(settlement_button)
+	_clear_button_visual_styles(prestige_button)
+	_clear_button_visual_styles(shop_button)
 	_load_game_on_start()
 	LocalizationManager.set_language(state.language)
 	if not LocalizationManager.has_loaded_translations():
@@ -507,17 +521,34 @@ func _apply_ui_font_sizes() -> void:
 		UiFontConfig.apply_button_font_size(button, UiFontConfig.BOTTOM_TAB_FONT_SIZE)
 
 
+func _clear_button_visual_styles(button: Button) -> void:
+	var empty_style := StyleBoxEmpty.new()
+	button.add_theme_stylebox_override("normal", empty_style)
+	button.add_theme_stylebox_override("hover", empty_style)
+	button.add_theme_stylebox_override("pressed", empty_style)
+	button.add_theme_stylebox_override("disabled", empty_style)
+	button.add_theme_stylebox_override("focus", empty_style)
+	button.focus_mode = Control.FOCUS_NONE
+	button.flat = true
+
+
+func _set_bottom_tab_image(image_holder, tab_name: String, is_active: bool) -> void:
+	var state_name: String = "active" if is_active else "default"
+	var asset_key: String = "ui.bottom_tab.%s.%s" % [tab_name, state_name]
+	image_holder.set_asset_key(asset_key, BOTTOM_TAB_BUTTON_FALLBACK_COLOR)
+
+
 func _update_bottom_bar_view() -> void:
-	var u: String = LocalizationManager.tr_key("ui.tab.upgrades")
-	var pa: String = LocalizationManager.tr_key("ui.tab.partners")
-	var se: String = LocalizationManager.tr_key("ui.tab.settlement")
-	var pr: String = LocalizationManager.tr_key("ui.tab.prestige")
-	var sh: String = LocalizationManager.tr_key("ui.tab.shop")
-	upgrades_button.text = "[%s]" % u if active_bottom_tab == "upgrades" else u
-	partners_button.text = "[%s]" % pa if active_bottom_tab == "partners" else pa
-	settlement_button.text = "[%s]" % se if active_bottom_tab == "settlement" else se
-	prestige_button.text = "[%s]" % pr if active_bottom_tab == "prestige" else pr
-	shop_button.text = "[%s]" % sh if active_bottom_tab == "shop" else sh
+	upgrades_button.text = ""
+	partners_button.text = ""
+	settlement_button.text = ""
+	prestige_button.text = ""
+	shop_button.text = ""
+	_set_bottom_tab_image(upgrades_button_image, "upgrades", active_bottom_tab == "upgrades")
+	_set_bottom_tab_image(partners_button_image, "partners", active_bottom_tab == "partners")
+	_set_bottom_tab_image(settlement_button_image, "settlement", active_bottom_tab == "settlement")
+	_set_bottom_tab_image(prestige_button_image, "prestige", active_bottom_tab == "prestige")
+	_set_bottom_tab_image(shop_button_image, "shop", active_bottom_tab == "shop")
 
 
 func _on_language_changed() -> void:

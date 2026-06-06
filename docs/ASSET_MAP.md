@@ -249,6 +249,35 @@ Rules:
 
 ---
 
+## Bottom bar background
+
+Asset key: `ui.bottom_bar.background`
+Path: `assets/images/ui/bottom_bar/background.png`
+Recommended size: **720×104**
+
+Purpose: Decorative background behind the five bottom tab buttons. Rendered by `BackgroundImageHolder` (`ImageSlot`) in `ClickerScreen.tscn`, pinned to the bottom with `offset_top = -104`. Missing file falls back to transparent — no crash.
+
+## Bottom tab buttons
+
+Each tab has two image states: `default` and `active`.
+
+| Asset key | Path |
+|-----------|------|
+| `ui.bottom_tab.upgrades.default` | `assets/images/ui/bottom_bar/tabs/upgrades/default.png` |
+| `ui.bottom_tab.upgrades.active` | `assets/images/ui/bottom_bar/tabs/upgrades/active.png` |
+| `ui.bottom_tab.partners.default` | `assets/images/ui/bottom_bar/tabs/partners/default.png` |
+| `ui.bottom_tab.partners.active` | `assets/images/ui/bottom_bar/tabs/partners/active.png` |
+| `ui.bottom_tab.settlement.default` | `assets/images/ui/bottom_bar/tabs/settlement/default.png` |
+| `ui.bottom_tab.settlement.active` | `assets/images/ui/bottom_bar/tabs/settlement/active.png` |
+| `ui.bottom_tab.prestige.default` | `assets/images/ui/bottom_bar/tabs/prestige/default.png` |
+| `ui.bottom_tab.prestige.active` | `assets/images/ui/bottom_bar/tabs/prestige/active.png` |
+| `ui.bottom_tab.shop.default` | `assets/images/ui/bottom_bar/tabs/shop/default.png` |
+| `ui.bottom_tab.shop.active` | `assets/images/ui/bottom_bar/tabs/shop/active.png` |
+
+Recommended tab image height: **72 px**. Button nodes remain (`Button` type) so pressed signals continue to work. `ImageHolder` (`ImageSlot`) is visual only — mouse input passes through to the button. Godot no longer draws native text on these buttons.
+
+---
+
 ## Top HUD layout
 
 The top HUD (`PrimaryStatsPanel`) uses a single horizontal row containing 4 elements:

@@ -338,6 +338,57 @@ Only BossTimerLabel is affected. Other ProgressInfoPanel labels use the standard
 
 ---
 
+## Bottom bar background
+
+Path: `assets/images/ui/bottom_bar/background.png`
+
+Recommended size: **720×104**
+
+Purpose: Decorative background for the BottomBar area. Rendered by `BackgroundImageHolder` (a `ColorRect` + `ImageSlot`) placed behind the tab buttons in `ClickerScreen.tscn`.
+
+Rules:
+- Missing file falls back to transparent — no crash.
+- `mouse_filter = IGNORE` — does not block button input.
+
+---
+
+## Bottom tab button images
+
+Path: `assets/images/ui/bottom_bar/tabs/<tab_name>/default.png` and `active.png`
+
+Tab names: `upgrades`, `partners`, `settlement`, `prestige`, `shop`
+
+| File | Shown when |
+|------|-----------|
+| `default.png` | Tab is not the currently open sheet |
+| `active.png` | Tab is the currently open sheet |
+
+Recommended size: height **72 px**; width fills evenly across available space (depends on layout — approximately 720 / 5 = ~144 px before margins).
+
+Rules:
+- Button images may include baked-in text/art; Godot no longer draws native button text on the bottom bar.
+- Missing files fall back to transparent — no crash.
+- Switching tabs updates images immediately via `_update_bottom_bar_view()`.
+- Closing a sheet returns all tabs to `default.png`.
+
+Required folders:
+```
+assets/images/ui/bottom_bar/
+assets/images/ui/bottom_bar/tabs/upgrades/
+assets/images/ui/bottom_bar/tabs/partners/
+assets/images/ui/bottom_bar/tabs/settlement/
+assets/images/ui/bottom_bar/tabs/prestige/
+assets/images/ui/bottom_bar/tabs/shop/
+```
+
+Run the following to validate:
+
+```
+godot --headless --script res://scripts/tools/ValidateBottomBarAssets.gd
+```
+
+---
+
 ## File naming conventions
 
 | Type | Filename |

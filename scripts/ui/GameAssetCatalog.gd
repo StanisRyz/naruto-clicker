@@ -82,6 +82,24 @@ const ASSET_PATHS: Dictionary = {
 	# TasksWindow open button states
 	"task.window_button.default": "res://assets/images/tasks/tasks_button/default.png",
 	"task.window_button.completed": "res://assets/images/tasks/tasks_button/completed.png",
+
+	# Bottom bar
+	"ui.bottom_bar.background": "res://assets/images/ui/bottom_bar/background.png",
+
+	"ui.bottom_tab.upgrades.default": "res://assets/images/ui/bottom_bar/tabs/upgrades/default.png",
+	"ui.bottom_tab.upgrades.active": "res://assets/images/ui/bottom_bar/tabs/upgrades/active.png",
+
+	"ui.bottom_tab.partners.default": "res://assets/images/ui/bottom_bar/tabs/partners/default.png",
+	"ui.bottom_tab.partners.active": "res://assets/images/ui/bottom_bar/tabs/partners/active.png",
+
+	"ui.bottom_tab.settlement.default": "res://assets/images/ui/bottom_bar/tabs/settlement/default.png",
+	"ui.bottom_tab.settlement.active": "res://assets/images/ui/bottom_bar/tabs/settlement/active.png",
+
+	"ui.bottom_tab.prestige.default": "res://assets/images/ui/bottom_bar/tabs/prestige/default.png",
+	"ui.bottom_tab.prestige.active": "res://assets/images/ui/bottom_bar/tabs/prestige/active.png",
+
+	"ui.bottom_tab.shop.default": "res://assets/images/ui/bottom_bar/tabs/shop/default.png",
+	"ui.bottom_tab.shop.active": "res://assets/images/ui/bottom_bar/tabs/shop/active.png",
 }
 
 
