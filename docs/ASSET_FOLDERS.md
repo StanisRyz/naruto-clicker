@@ -296,6 +296,32 @@ Current values (100×100):
 
 ---
 
+## Custom fonts
+
+Path: `assets/fonts/`
+
+| File | Purpose | Required |
+|------|---------|---------|
+| `boss_timer.ttf` | Custom font for BossTimerLabel | Optional |
+| `boss_timer.otf` | Fallback if `.ttf` is missing | Optional |
+
+Both files are optional. If neither exists the boss timer falls back to the default project font. Color and outline are still applied regardless.
+
+Boss timer visual tuning — all constants in `scripts/ui/UiFontConfig.gd`:
+
+| Constant | Controls |
+|----------|---------|
+| `PROGRESS_BOSS_TIMER_FONT_SIZE` | Font size |
+| `PROGRESS_BOSS_TIMER_FONT_PATH` | Path to `.ttf` font |
+| `PROGRESS_BOSS_TIMER_FONT_FALLBACK_PATH` | Path to `.otf` fallback |
+| `PROGRESS_BOSS_TIMER_FONT_COLOR` | Text color |
+| `PROGRESS_BOSS_TIMER_OUTLINE_COLOR` | Outline color |
+| `PROGRESS_BOSS_TIMER_OUTLINE_SIZE` | Outline thickness in pixels |
+
+Only BossTimerLabel is affected. Other ProgressInfoPanel labels use the standard size-only overrides.
+
+---
+
 ## File naming conventions
 
 | Type | Filename |

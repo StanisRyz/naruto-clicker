@@ -19,7 +19,7 @@ func _apply_font_sizes() -> void:
 	UiFontConfig.apply_label_font_size(enemies_label, UiFontConfig.PROGRESS_ENEMIES_FONT_SIZE)
 	UiFontConfig.apply_label_font_size(enemy_name_label, UiFontConfig.PROGRESS_ENEMY_NAME_FONT_SIZE)
 	UiFontConfig.apply_label_font_size(enemy_hp_text_label, UiFontConfig.PROGRESS_HP_TEXT_FONT_SIZE)
-	UiFontConfig.apply_label_font_size(boss_timer_label, UiFontConfig.PROGRESS_BOSS_TIMER_FONT_SIZE)
+	UiFontConfig.apply_boss_timer_theme(boss_timer_label)
 
 
 func update_view(state: ClickerState) -> void:

@@ -35,11 +35,36 @@ const PROGRESS_ENEMY_NAME_FONT_SIZE: int = 24
 const PROGRESS_HP_TEXT_FONT_SIZE: int = 24
 const PROGRESS_BOSS_TIMER_FONT_SIZE: int = 28
 
+# Boss timer theme
+const PROGRESS_BOSS_TIMER_FONT_PATH: String = "res://assets/fonts/boss_timer.ttf"
+const PROGRESS_BOSS_TIMER_FONT_FALLBACK_PATH: String = "res://assets/fonts/boss_timer.otf"
+const PROGRESS_BOSS_TIMER_FONT_COLOR: Color = Color(1.0, 0.18, 0.12, 1.0)
+const PROGRESS_BOSS_TIMER_OUTLINE_COLOR: Color = Color(0.0, 0.0, 0.0, 1.0)
+const PROGRESS_BOSS_TIMER_OUTLINE_SIZE: int = 8
+
 # Stage navigator
 const STAGE_NAV_STAGE_NUMBER_FONT_SIZE: int = 28
 const STAGE_NAV_SIDE_BUTTON_FONT_SIZE: int = 28
 const STAGE_NUMBER_FONT_SIZE: int = STAGE_NAV_STAGE_NUMBER_FONT_SIZE
 const STAGE_SIDE_BUTTON_FONT_SIZE: int = STAGE_NAV_SIDE_BUTTON_FONT_SIZE
+
+
+static func apply_boss_timer_theme(label: Label) -> void:
+	if label == null:
+		return
+	apply_label_font_size(label, PROGRESS_BOSS_TIMER_FONT_SIZE)
+	label.add_theme_color_override("font_color", PROGRESS_BOSS_TIMER_FONT_COLOR)
+	label.add_theme_color_override("font_outline_color", PROGRESS_BOSS_TIMER_OUTLINE_COLOR)
+	label.add_theme_constant_override("outline_size", PROGRESS_BOSS_TIMER_OUTLINE_SIZE)
+	var font_path: String = ""
+	if ResourceLoader.exists(PROGRESS_BOSS_TIMER_FONT_PATH):
+		font_path = PROGRESS_BOSS_TIMER_FONT_PATH
+	elif ResourceLoader.exists(PROGRESS_BOSS_TIMER_FONT_FALLBACK_PATH):
+		font_path = PROGRESS_BOSS_TIMER_FONT_FALLBACK_PATH
+	if font_path != "":
+		var font_resource: Resource = ResourceLoader.load(font_path)
+		if font_resource is Font:
+			label.add_theme_font_override("font", font_resource)
 
 
 static func apply_label_font_size(label: Label, size: int) -> void:
