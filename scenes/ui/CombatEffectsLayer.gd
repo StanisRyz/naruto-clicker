@@ -7,6 +7,8 @@ const GOLD_PARTICLE_TRAVEL_DURATION: float = 0.55
 const GOLD_TEXT_DURATION: float = 0.8
 const SPAWN_SMOKE_PUFF_COUNT: int = 32
 
+var _has_logged_gold_particle_size: bool = false
+
 
 func _ready() -> void:
 	mouse_filter = MOUSE_FILTER_IGNORE
@@ -78,34 +80,42 @@ func _spawn_one_gold_particle(
 	texture: Texture2D,
 	rng: RandomNumberGenerator
 ) -> void:
-	var particle: Control
+	var container := Control.new()
+	container.custom_minimum_size = GOLD_PARTICLE_SIZE
+	container.size = GOLD_PARTICLE_SIZE
+	container.pivot_offset = GOLD_PARTICLE_SIZE * 0.5
+	container.mouse_filter = MOUSE_FILTER_IGNORE
+
 	if texture != null:
-		var tex_rect := TextureRect.new()
-		tex_rect.texture = texture
-		tex_rect.custom_minimum_size = GOLD_PARTICLE_SIZE
-		tex_rect.size = GOLD_PARTICLE_SIZE
-		tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		particle = tex_rect
+		var icon := TextureRect.new()
+		icon.texture = texture
+		icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_SCALE
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		container.add_child(icon)
 	else:
 		var fallback := ColorRect.new()
 		fallback.color = Color(1.0, 0.85, 0.1, 1.0)
-		fallback.custom_minimum_size = GOLD_PARTICLE_SIZE
-		fallback.size = GOLD_PARTICLE_SIZE
-		particle = fallback
+		fallback.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		fallback.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		container.add_child(fallback)
 
-	add_child(particle)
-	particle.pivot_offset = GOLD_PARTICLE_SIZE * 0.5
-	particle.global_position = spawn_pos - GOLD_PARTICLE_SIZE * 0.5
+	add_child(container)
+	container.global_position = spawn_pos - GOLD_PARTICLE_SIZE * 0.5
+
+	if BuildConfig.IS_DEBUG_BUILD and not _has_logged_gold_particle_size:
+		_has_logged_gold_particle_size = true
+		print("CombatEffectsLayer: gold particle size = %s, container size = %s" % [GOLD_PARTICLE_SIZE, container.size])
 
 	var travel_duration: float = rng.randf_range(0.35, GOLD_PARTICLE_TRAVEL_DURATION)
 	var flight_target: Vector2 = target_global - GOLD_PARTICLE_SIZE * 0.5
 
 	var tween := create_tween()
-	tween.tween_property(particle, "global_position", flight_target, travel_duration)
-	tween.parallel().tween_property(particle, "modulate:a", 0.0, travel_duration * 0.5) \
+	tween.tween_property(container, "global_position", flight_target, travel_duration)
+	tween.parallel().tween_property(container, "modulate:a", 0.0, travel_duration * 0.5) \
 		.set_delay(travel_duration * 0.5)
-	tween.tween_callback(particle.queue_free)
+	tween.tween_callback(container.queue_free)
 
 
 func _spawn_smoke_puff(
