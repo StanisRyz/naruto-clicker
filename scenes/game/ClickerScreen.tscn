@@ -198,9 +198,10 @@ layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="UpgradesButton" type="Button" parent="BottomBar/MarginContainer/HBoxContainer"]
-custom_minimum_size = Vector2(0, 72)
+custom_minimum_size = Vector2(0, 55)
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
 focus_mode = 0
 flat = true
 text = ""
@@ -219,9 +220,10 @@ show_fallback_behind_texture = false
 stretch_mode = 0
 
 [node name="PartnersButton" type="Button" parent="BottomBar/MarginContainer/HBoxContainer"]
-custom_minimum_size = Vector2(0, 72)
+custom_minimum_size = Vector2(0, 55)
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
 focus_mode = 0
 flat = true
 text = ""
@@ -240,9 +242,10 @@ show_fallback_behind_texture = false
 stretch_mode = 0
 
 [node name="SettlementButton" type="Button" parent="BottomBar/MarginContainer/HBoxContainer"]
-custom_minimum_size = Vector2(0, 72)
+custom_minimum_size = Vector2(0, 55)
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
 focus_mode = 0
 flat = true
 text = ""
@@ -261,9 +264,10 @@ show_fallback_behind_texture = false
 stretch_mode = 0
 
 [node name="PrestigeButton" type="Button" parent="BottomBar/MarginContainer/HBoxContainer"]
-custom_minimum_size = Vector2(0, 72)
+custom_minimum_size = Vector2(0, 55)
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
 focus_mode = 0
 flat = true
 text = ""
@@ -282,9 +286,10 @@ show_fallback_behind_texture = false
 stretch_mode = 0
 
 [node name="ShopButton" type="Button" parent="BottomBar/MarginContainer/HBoxContainer"]
-custom_minimum_size = Vector2(0, 72)
+custom_minimum_size = Vector2(0, 55)
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
 focus_mode = 0
 flat = true
 text = ""

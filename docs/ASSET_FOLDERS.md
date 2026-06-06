@@ -363,7 +363,7 @@ Tab names: `upgrades`, `partners`, `settlement`, `prestige`, `shop`
 | `default.png` | Tab is not the currently open sheet |
 | `active.png` | Tab is the currently open sheet |
 
-Recommended size: height **72 px**; width fills evenly across available space (depends on layout — approximately 720 / 5 = ~144 px before margins).
+Recommended size: **125×55 px** per tab button.
 
 Rules:
 - Button images may include baked-in text/art; Godot no longer draws native button text on the bottom bar.

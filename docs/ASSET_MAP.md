@@ -274,7 +274,7 @@ Each tab has two image states: `default` and `active`.
 | `ui.bottom_tab.shop.default` | `assets/images/ui/bottom_bar/tabs/shop/default.png` |
 | `ui.bottom_tab.shop.active` | `assets/images/ui/bottom_bar/tabs/shop/active.png` |
 
-Recommended tab image height: **72 px**. Button nodes remain (`Button` type) so pressed signals continue to work. `ImageHolder` (`ImageSlot`) is visual only — mouse input passes through to the button. Godot no longer draws native text on these buttons.
+Recommended tab image size: **125×55 px**. Button nodes remain (`Button` type) so pressed signals continue to work. `ImageHolder` (`ImageSlot`) is visual only — mouse input passes through to the button. Godot no longer draws native text on these buttons.
 
 ---
 
