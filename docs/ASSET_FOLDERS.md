@@ -260,6 +260,42 @@ Stage numbers continue increasing normally (106, 107, …). Only zone data and a
 
 ---
 
+## Manual UI size tuning locations
+
+These are the scene values to edit when button sizes need to change. Update container offsets together with button sizes to avoid clipping.
+
+### Active ability buttons
+
+File: `scenes/ui/AbilityBar.tscn`
+
+| What to change | Property |
+|----------------|----------|
+| Container width | `AbilityBar offset_right` (= offset_left + button_size) |
+| Container height | `AbilityBar offset_bottom` (= offset_top + 4×size + 3×separation) |
+| Button size | `AutoclickButton / GoldBonusButton / FocusBurstButton / RallyButton custom_minimum_size` |
+| Button spacing | `AbilityBar theme_override_constants/separation` |
+
+Current values (100×100 buttons, separation 12):
+- `offset_left = 16`, `offset_right = 116`
+- `offset_top = -141`, `offset_bottom = 295`
+- `custom_minimum_size = Vector2(100, 100)`
+
+### TasksWindow open button
+
+File: `scenes/game/ClickerScreen.tscn`
+
+| What to change | Property |
+|----------------|----------|
+| Button size | `TasksButton custom_minimum_size` |
+| Horizontal position | `TasksButton offset_left` and `offset_right` (keep right margin = −24) |
+| Vertical position | `TasksButton offset_top` and `offset_bottom` (keep top = −141 to align with AbilityBar) |
+
+Current values (100×100):
+- `custom_minimum_size = Vector2(100, 100)`
+- `offset_left = -124`, `offset_right = -24`, `offset_top = -141`, `offset_bottom = -41`
+
+---
+
 ## File naming conventions
 
 | Type | Filename |
