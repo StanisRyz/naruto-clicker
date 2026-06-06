@@ -2,10 +2,10 @@ class_name CombatEffectsLayer
 extends Control
 
 const GOLD_PARTICLE_COUNT: int = 12
-const GOLD_PARTICLE_SIZE: Vector2 = Vector2(18, 18)
+const GOLD_PARTICLE_SIZE: Vector2 = Vector2(32, 32)
 const GOLD_PARTICLE_TRAVEL_DURATION: float = 0.55
 const GOLD_TEXT_DURATION: float = 0.8
-const SPAWN_SMOKE_PUFF_COUNT: int = 16
+const SPAWN_SMOKE_PUFF_COUNT: int = 32
 
 
 func _ready() -> void:
@@ -13,11 +13,12 @@ func _ready() -> void:
 	set_anchors_preset(PRESET_FULL_RECT)
 
 
-func play_gold_reward_effect(origin_global: Vector2, target_global: Vector2, amount: int) -> void:
+func play_gold_reward_effect(enemy_global_rect: Rect2, target_global: Vector2, amount: int) -> void:
 	if amount <= 0:
 		return
-	_spawn_gold_text(origin_global, amount)
-	_spawn_gold_particles(origin_global, target_global)
+	var text_origin: Vector2 = enemy_global_rect.get_center() + Vector2(10.0, -enemy_global_rect.size.y * 0.20)
+	_spawn_gold_text(text_origin, amount)
+	_spawn_gold_particles(enemy_global_rect, target_global)
 
 
 func play_spawn_smoke_effect(enemy_global_rect: Rect2, duration: float = 0.3) -> void:
@@ -37,7 +38,7 @@ func _spawn_gold_text(origin_global: Vector2, amount: int) -> void:
 	label.modulate.a = 0.0
 	add_child(label)
 
-	var start_pos: Vector2 = origin_global + Vector2(10.0, -20.0)
+	var start_pos: Vector2 = origin_global
 	label.global_position = start_pos
 
 	var tween := create_tween()
@@ -48,16 +49,31 @@ func _spawn_gold_text(origin_global: Vector2, amount: int) -> void:
 	tween.tween_callback(label.queue_free)
 
 
-func _spawn_gold_particles(origin_global: Vector2, target_global: Vector2) -> void:
+func _get_enemy_particle_spawn_rect(enemy_global_rect: Rect2) -> Rect2:
+	var inset_x: float = enemy_global_rect.size.x * 0.12
+	var inset_y: float = enemy_global_rect.size.y * 0.12
+	return enemy_global_rect.grow_individual(-inset_x, -inset_y, -inset_x, -inset_y)
+
+
+func _get_random_point_in_rect(rect: Rect2, rng: RandomNumberGenerator) -> Vector2:
+	return Vector2(
+		rng.randf_range(rect.position.x, rect.position.x + rect.size.x),
+		rng.randf_range(rect.position.y, rect.position.y + rect.size.y)
+	)
+
+
+func _spawn_gold_particles(enemy_global_rect: Rect2, target_global: Vector2) -> void:
 	var gold_texture: Texture2D = GameAssetCatalog.load_texture("ui.gold")
+	var spawn_rect: Rect2 = _get_enemy_particle_spawn_rect(enemy_global_rect)
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
 	for i in range(GOLD_PARTICLE_COUNT):
-		_spawn_one_gold_particle(origin_global, target_global, gold_texture, rng)
+		var spawn_pos: Vector2 = _get_random_point_in_rect(spawn_rect, rng)
+		_spawn_one_gold_particle(spawn_pos, target_global, gold_texture, rng)
 
 
 func _spawn_one_gold_particle(
-	origin_global: Vector2,
+	spawn_pos: Vector2,
 	target_global: Vector2,
 	texture: Texture2D,
 	rng: RandomNumberGenerator
@@ -72,31 +88,20 @@ func _spawn_one_gold_particle(
 		tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		particle = tex_rect
 	else:
-		var rect := ColorRect.new()
-		rect.color = Color(1.0, 0.85, 0.1, 1.0)
-		rect.custom_minimum_size = GOLD_PARTICLE_SIZE
-		rect.size = GOLD_PARTICLE_SIZE
-		particle = rect
+		var fallback := ColorRect.new()
+		fallback.color = Color(1.0, 0.85, 0.1, 1.0)
+		fallback.custom_minimum_size = GOLD_PARTICLE_SIZE
+		fallback.size = GOLD_PARTICLE_SIZE
+		particle = fallback
 
 	add_child(particle)
 	particle.pivot_offset = GOLD_PARTICLE_SIZE * 0.5
-
-	var scatter_offset := Vector2(
-		rng.randf_range(-28.0, 28.0),
-		rng.randf_range(-28.0, 28.0)
-	)
-	var start_pos: Vector2 = origin_global + scatter_offset - GOLD_PARTICLE_SIZE * 0.5
-	particle.global_position = start_pos
-
-	var scatter_dir: Vector2 = scatter_offset.normalized() if scatter_offset.length() > 1.0 \
-		else Vector2(rng.randf_range(-1.0, 1.0), -1.0).normalized()
-	var scatter_target: Vector2 = start_pos + scatter_dir * rng.randf_range(18.0, 40.0)
+	particle.global_position = spawn_pos - GOLD_PARTICLE_SIZE * 0.5
 
 	var travel_duration: float = rng.randf_range(0.35, GOLD_PARTICLE_TRAVEL_DURATION)
 	var flight_target: Vector2 = target_global - GOLD_PARTICLE_SIZE * 0.5
 
 	var tween := create_tween()
-	tween.tween_property(particle, "global_position", scatter_target, 0.12)
 	tween.tween_property(particle, "global_position", flight_target, travel_duration)
 	tween.parallel().tween_property(particle, "modulate:a", 0.0, travel_duration * 0.5) \
 		.set_delay(travel_duration * 0.5)

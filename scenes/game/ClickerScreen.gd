@@ -29,7 +29,8 @@ var active_bottom_tab: String = ""
 var enemy_transition_locked: bool = false
 var enemy_respawn_delay: float = 0.2
 var enemy_transition_token: int = 0
-const ENEMY_SPAWN_EFFECT_DURATION: float = 0.3
+const ENEMY_SPAWN_SMOKE_DURATION: float = 0.3
+const ENEMY_SPAWN_INVULNERABILITY_DURATION: float = 0.1
 var _autosave_timer: float = 0.0
 const _AUTOSAVE_INTERVAL: float = 10.0
 var balance_logger: BalancePlaytestLogger = null
@@ -742,7 +743,7 @@ func _handle_defeat_result(result: Dictionary, was_boss_level: bool) -> void:
 
 	var reward_gold: int = state.get_current_target_reward_gold_preview()
 	combat_effects_layer.play_gold_reward_effect(
-		game_field.get_enemy_reward_origin_global(),
+		game_field.get_enemy_global_rect(),
 		primary_stats_panel.get_gold_icon_global_center(),
 		reward_gold
 	)
@@ -776,13 +777,7 @@ func _on_stage_selected(level: int) -> void:
 	_update_ui()
 	_save_game_now()
 
-	combat_effects_layer.play_spawn_smoke_effect(game_field.get_enemy_global_rect(), ENEMY_SPAWN_EFFECT_DURATION)
-	await get_tree().create_timer(ENEMY_SPAWN_EFFECT_DURATION).timeout
-	if current_token != enemy_transition_token:
-		return
-	enemy_transition_locked = false
-	_update_ui()
-	_sync_boss_timer()
+	await _play_spawn_smoke_and_unlock_after_invulnerability(current_token)
 
 
 func _on_stage_latest_requested() -> void:
@@ -818,6 +813,19 @@ func _handle_status_text(_text: String) -> void:
 	pass
 
 
+func _play_spawn_smoke_and_unlock_after_invulnerability(transition_token: int) -> void:
+	combat_effects_layer.play_spawn_smoke_effect(
+		game_field.get_enemy_global_rect(),
+		ENEMY_SPAWN_SMOKE_DURATION
+	)
+	await get_tree().create_timer(ENEMY_SPAWN_INVULNERABILITY_DURATION).timeout
+	if transition_token != enemy_transition_token:
+		return
+	enemy_transition_locked = false
+	_update_ui()
+	_sync_boss_timer()
+
+
 func _finish_enemy_transition_after_delay(transition_token: int) -> void:
 	await get_tree().create_timer(enemy_respawn_delay).timeout
 	if transition_token != enemy_transition_token:
@@ -840,14 +848,9 @@ func _finish_enemy_transition_after_delay(transition_token: int) -> void:
 		stage_navigator.center_on_level(state.current_level)
 	_update_ui()
 
-	combat_effects_layer.play_spawn_smoke_effect(game_field.get_enemy_global_rect(), ENEMY_SPAWN_EFFECT_DURATION)
-	await get_tree().create_timer(ENEMY_SPAWN_EFFECT_DURATION).timeout
+	await _play_spawn_smoke_and_unlock_after_invulnerability(transition_token)
 	if transition_token != enemy_transition_token:
 		return
-
-	enemy_transition_locked = false
-	_update_ui()
-	_sync_boss_timer()
 	if result.get("level_unlocked", false):
 		_save_game_now()
 
@@ -915,13 +918,7 @@ func _debug_visual_clear_level() -> void:
 	_update_ui()
 	print("Debug visual clear: level %d -> %d" % [previous_level, state.current_level])
 
-	combat_effects_layer.play_spawn_smoke_effect(game_field.get_enemy_global_rect(), ENEMY_SPAWN_EFFECT_DURATION)
-	await get_tree().create_timer(ENEMY_SPAWN_EFFECT_DURATION).timeout
-	if current_token != enemy_transition_token:
-		return
-	enemy_transition_locked = false
-	_update_ui()
-	_sync_boss_timer()
+	await _play_spawn_smoke_and_unlock_after_invulnerability(current_token)
 
 
 func _run_balance_simulation() -> void:
