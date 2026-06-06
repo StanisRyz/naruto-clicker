@@ -25,6 +25,9 @@ const UPGRADE_VALUE_FONT_SIZE: int = 14
 const UPGRADE_MILESTONE_FONT_SIZE: int = 13
 const UPGRADE_BUTTON_FONT_SIZE: int = 14
 
+# Ability bar
+const ABILITY_BAR_COUNTDOWN_FONT_SIZE: int = 24
+
 # Stage navigator
 const STAGE_NAV_STAGE_NUMBER_FONT_SIZE: int = 25
 const STAGE_NAV_SIDE_BUTTON_FONT_SIZE: int = 16

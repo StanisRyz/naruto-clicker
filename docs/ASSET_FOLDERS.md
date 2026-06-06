@@ -121,6 +121,15 @@ Ability folders: `autoclick`, `gold_bonus`, `focus_burst`, `rally`
 
 Do **not** create `assets/images/ability_skills/` or rank-numbered files (`rank_01.png` … `rank_05.png`) for abilities.
 
+### Active ability overlay
+
+File: `assets/images/abilities/active.png`
+
+- Drawn on top of an active ability button while the ability is running.
+- Should be 80×80 px.
+- **Optional** — missing file does not crash; countdown text still appears.
+- Asset key: `ability.active_overlay`
+
 ---
 
 ## Upgrade tab main cards

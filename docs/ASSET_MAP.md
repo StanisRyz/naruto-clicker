@@ -219,6 +219,8 @@ What the script checks:
 
 Note: Ability rank does **not** change the icon. All rank buttons reuse `abilities/ability_id/icon.png`. There is no `ability_skills/` folder and no `rank_01.png` … `rank_05.png` for abilities.
 
+Active ability overlay: `assets/images/abilities/active.png` (optional, 80×80). Shown over the button while the ability is running. Missing file is safe — countdown text still appears.
+
 See `docs/ASSET_FOLDERS.md` for a complete folder listing with full paths.
 
 ## Top HUD layout

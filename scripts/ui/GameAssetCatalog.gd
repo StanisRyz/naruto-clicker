@@ -36,6 +36,7 @@ const ASSET_PATHS: Dictionary = {
 	"ability.gold_bonus": "res://assets/images/abilities/gold_bonus/icon.png",
 	"ability.focus_burst": "res://assets/images/abilities/focus_burst/icon.png",
 	"ability.rally": "res://assets/images/abilities/rally/icon.png",
+	"ability.active_overlay": "res://assets/images/abilities/active.png",
 
 	# Upgrade cards
 	"upgrade.hero": "res://assets/images/upgrades/hero.png",
