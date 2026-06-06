@@ -1,6 +1,6 @@
 [gd_resource type="Theme" load_steps=8 format=3 uid="uid://wdthdulajagr"]
 
-[ext_resource type="FontFile" uid="uid://dynb23i53ixlv" path="res://assets/fonts/main_font.ttf" id="1_rjgu6"]
+[ext_resource type="FontFile" uid="uid://cgbknw7rtidqy" path="res://assets/fonts/Montserrat-Bold.ttf" id="1_rjgu6"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rjgu6"]
 content_margin_left = 4.0

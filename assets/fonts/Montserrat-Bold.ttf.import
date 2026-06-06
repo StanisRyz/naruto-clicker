@@ -2,13 +2,13 @@
 
 importer="font_data_dynamic"
 type="FontFile"
-uid="uid://dynb23i53ixlv"
-path="res://.godot/imported/main_font.ttf-36d79ba454878c9b3ab34b1c4d76239a.fontdata"
+uid="uid://cgbknw7rtidqy"
+path="res://.godot/imported/Montserrat-Bold.ttf-8477ce3226e0594e97e6b14ec5422d35.fontdata"
 
 [deps]
 
-source_file="res://assets/fonts/main_font.ttf"
-dest_files=["res://.godot/imported/main_font.ttf-36d79ba454878c9b3ab34b1c4d76239a.fontdata"]
+source_file="res://assets/fonts/Montserrat-Bold.ttf"
+dest_files=["res://.godot/imported/Montserrat-Bold.ttf-8477ce3226e0594e97e6b14ec5422d35.fontdata"]
 
 [params]
 
