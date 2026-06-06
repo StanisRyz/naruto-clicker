@@ -10,7 +10,16 @@ extends Control
 
 
 func _ready() -> void:
+	_apply_font_sizes()
 	_apply_hp_bar_style()
+
+
+func _apply_font_sizes() -> void:
+	UiFontConfig.apply_label_font_size(zone_label, UiFontConfig.PROGRESS_ZONE_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(enemies_label, UiFontConfig.PROGRESS_ENEMIES_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(enemy_name_label, UiFontConfig.PROGRESS_ENEMY_NAME_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(enemy_hp_text_label, UiFontConfig.PROGRESS_HP_TEXT_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(boss_timer_label, UiFontConfig.PROGRESS_BOSS_TIMER_FONT_SIZE)
 
 
 func update_view(state: ClickerState) -> void:
