@@ -60,20 +60,6 @@ mouse_filter = 2
 visible = false
 script = ExtResource("3_cooldown")
 
-[node name="ActiveOverlay" type="ColorRect" parent="AutoclickButton"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0, 0, 0, 0)
-visible = false
-script = ExtResource("2_slot")
-fallback_color = Color(0, 0, 0, 0)
-show_fallback_behind_texture = false
-
 [node name="CountdownLabel" type="Label" parent="AutoclickButton"]
 layout_mode = 1
 anchors_preset = 15
@@ -128,20 +114,6 @@ grow_vertical = 2
 mouse_filter = 2
 visible = false
 script = ExtResource("3_cooldown")
-
-[node name="ActiveOverlay" type="ColorRect" parent="GoldBonusButton"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0, 0, 0, 0)
-visible = false
-script = ExtResource("2_slot")
-fallback_color = Color(0, 0, 0, 0)
-show_fallback_behind_texture = false
 
 [node name="CountdownLabel" type="Label" parent="GoldBonusButton"]
 layout_mode = 1
@@ -198,20 +170,6 @@ mouse_filter = 2
 visible = false
 script = ExtResource("3_cooldown")
 
-[node name="ActiveOverlay" type="ColorRect" parent="FocusBurstButton"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0, 0, 0, 0)
-visible = false
-script = ExtResource("2_slot")
-fallback_color = Color(0, 0, 0, 0)
-show_fallback_behind_texture = false
-
 [node name="CountdownLabel" type="Label" parent="FocusBurstButton"]
 layout_mode = 1
 anchors_preset = 15
@@ -266,20 +224,6 @@ grow_vertical = 2
 mouse_filter = 2
 visible = false
 script = ExtResource("3_cooldown")
-
-[node name="ActiveOverlay" type="ColorRect" parent="RallyButton"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0, 0, 0, 0)
-visible = false
-script = ExtResource("2_slot")
-fallback_color = Color(0, 0, 0, 0)
-show_fallback_behind_texture = false
 
 [node name="CountdownLabel" type="Label" parent="RallyButton"]
 layout_mode = 1
