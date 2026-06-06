@@ -17,7 +17,7 @@ Naruto Clicker is a vertical idle/clicker game targeting Web / Yandex Games, wit
 ## Current Priorities
 
 - Keep the main scene stable and Control-based.
-- Preserve the 720x1280 portrait layout.
+- Preserve the 720x1600 (9:20) portrait layout.
 - Keep YandexBridge as a future integration point.
 - Keep `Main.tscn` as the app/root scene.
 - Keep `ClickerScreen` responsible for gameplay flow and UI updates.
@@ -450,7 +450,7 @@ After each patch, validate manually in Godot:
 - No error appears because `Main.gd` extends `Control`.
 - YandexBridge calls do not crash in non-Web/editor runs.
 - `project.godot` still points to the main scene.
-- Project remains configured for 720x1280 portrait layout.
+- Project remains configured for 720x1600 (9:20) portrait layout.
 - Renderer remains GL Compatibility.
 - No missing scene/script errors.
 - No external plugins/assets were added.

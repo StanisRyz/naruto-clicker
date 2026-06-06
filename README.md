@@ -14,7 +14,7 @@ Heroes, loot/items, ads, cloud saves, and real-money payments are intentionally 
 - Language: GDScript
 - Target platform: Web / Yandex Games
 - Orientation: vertical / portrait
-- Viewport: 720x1280
+- Viewport: 720x1600 (9:20 portrait)
 - Renderer: GL Compatibility
 
 ## Local Development
@@ -520,7 +520,13 @@ Two helper methods apply overrides at runtime:
 
 ## Web Export Notes
 
-The project is intended for Yandex Games Web export. Keep the 720x1280 portrait setup, GL Compatibility renderer, and Web-friendly Control-based UI layout.
+The project is intended for Yandex Games Web export. Keep the 720x1600 (9:20) portrait setup, GL Compatibility renderer, and Web-friendly Control-based UI layout.
+
+Recommended manual test window sizes:
+- 720×1600 — primary target, 9:20
+- 720×1280 — older 9:16 compatibility check
+- 1080×2400 — high-DPI 9:20 device check
+- 720×1560 — common tall Android approximation
 
 YandexBridge is present for future platform integration, but real ads, payments, cloud saves, cloud features, authentication, heroes, loot/items, and additional enemy systems should not be added until explicitly requested.
 
