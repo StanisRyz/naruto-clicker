@@ -249,3 +249,4 @@ enemy.pool_17.enemy_09.name,A (Fourth Raikage),Эй (Четвертый Райк
 enemy.pool_17.elite_01.name,Minato Namikaze,Минато Намикадзе,EnemyPoolConfig pool 17 elite enemy 01,
 enemy.pool_17.elite_02.name,Hashirama Senzu,Хаширама Сенджу,EnemyPoolConfig pool 17 elite enemy 02,
 enemy.pool_17.elite_03.name,Maito Guy (8 Gates),Майто Гай (8 Врат),EnemyPoolConfig pool 17 elite enemy 03,
+ui.combat.gold_reward,+{amount} gold,+{amount} золота,Combat reward floating text,{amount} is compact formatted gold amount

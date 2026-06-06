@@ -29,11 +29,13 @@ var active_bottom_tab: String = ""
 var enemy_transition_locked: bool = false
 var enemy_respawn_delay: float = 0.2
 var enemy_transition_token: int = 0
+const ENEMY_SPAWN_EFFECT_DURATION: float = 0.3
 var _autosave_timer: float = 0.0
 const _AUTOSAVE_INTERVAL: float = 10.0
 var balance_logger: BalancePlaytestLogger = null
 var _is_initialized: bool = false
 
+@onready var combat_effects_layer: CombatEffectsLayer = $CombatEffectsLayer
 @onready var primary_stats_panel: PrimaryStatsPanel = $PrimaryStatsPanel
 @onready var stage_navigator: Control = $MainContent/VBoxContainer/StageNavigator
 @onready var auto_transition_popup: Control = $AutoTransitionPopup
@@ -738,6 +740,13 @@ func _handle_defeat_result(result: Dictionary, was_boss_level: bool) -> void:
 	game_field.play_defeat_feedback(result.get("level_up", false), result.get("zone_changed", false))
 	_handle_status_text(result.get("status_text", ""))
 
+	var reward_gold: int = state.get_current_target_reward_gold_preview()
+	combat_effects_layer.play_gold_reward_effect(
+		game_field.get_enemy_reward_origin_global(),
+		primary_stats_panel.get_gold_icon_global_center(),
+		reward_gold
+	)
+
 	if was_boss_level:
 		boss_timer_active = false
 		boss_time_left = 0.0
@@ -758,13 +767,22 @@ func _on_stage_selected(level: int) -> void:
 	partner_damage_accumulator = 0.0
 	autoclick_accumulator = 0.0
 	enemy_transition_token += 1
+	var current_token: int = enemy_transition_token
+	enemy_transition_locked = true
 	game_field.set_enemy_transition_locked(false)
 	if balance_logger:
 		balance_logger.mark_level_started(state)
 		balance_logger.mark_enemy_spawned(state)
-	_sync_boss_timer()
 	_update_ui()
 	_save_game_now()
+
+	combat_effects_layer.play_spawn_smoke_effect(game_field.get_enemy_global_rect(), ENEMY_SPAWN_EFFECT_DURATION)
+	await get_tree().create_timer(ENEMY_SPAWN_EFFECT_DURATION).timeout
+	if current_token != enemy_transition_token:
+		return
+	enemy_transition_locked = false
+	_update_ui()
+	_sync_boss_timer()
 
 
 func _on_stage_latest_requested() -> void:
@@ -815,10 +833,19 @@ func _finish_enemy_transition_after_delay(transition_token: int) -> void:
 		if result.get("advanced_to_next_level", false):
 			balance_logger.log_level_changed(state, prev_level, state.current_level)
 		balance_logger.mark_enemy_spawned(state)
-	enemy_transition_locked = false
+
+	# Show new enemy (clear defeated texture) while keeping ClickerScreen locked
 	game_field.set_enemy_transition_locked(false)
 	if result.get("advanced_to_next_level", false):
 		stage_navigator.center_on_level(state.current_level)
+	_update_ui()
+
+	combat_effects_layer.play_spawn_smoke_effect(game_field.get_enemy_global_rect(), ENEMY_SPAWN_EFFECT_DURATION)
+	await get_tree().create_timer(ENEMY_SPAWN_EFFECT_DURATION).timeout
+	if transition_token != enemy_transition_token:
+		return
+
+	enemy_transition_locked = false
 	_update_ui()
 	_sync_boss_timer()
 	if result.get("level_unlocked", false):
@@ -874,6 +901,8 @@ func _debug_visual_clear_level() -> void:
 	var previous_level: int = state.current_level
 	var result: Dictionary = state.debug_clear_current_level_for_visual_test()
 	enemy_transition_token += 1
+	var current_token: int = enemy_transition_token
+	enemy_transition_locked = true
 	game_field.set_enemy_transition_locked(false)
 	partner_damage_accumulator = 0.0
 	autoclick_accumulator = 0.0
@@ -883,9 +912,16 @@ func _debug_visual_clear_level() -> void:
 		if balance_logger:
 			balance_logger.log_level_changed(state, previous_level, state.current_level)
 			balance_logger.mark_enemy_spawned(state)
-	_sync_boss_timer()
 	_update_ui()
 	print("Debug visual clear: level %d -> %d" % [previous_level, state.current_level])
+
+	combat_effects_layer.play_spawn_smoke_effect(game_field.get_enemy_global_rect(), ENEMY_SPAWN_EFFECT_DURATION)
+	await get_tree().create_timer(ENEMY_SPAWN_EFFECT_DURATION).timeout
+	if current_token != enemy_transition_token:
+		return
+	enemy_transition_locked = false
+	_update_ui()
+	_sync_boss_timer()
 
 
 func _run_balance_simulation() -> void:

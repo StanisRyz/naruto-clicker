@@ -99,21 +99,41 @@ func play_defeat_feedback(level_up: bool, zone_changed: bool = false) -> void:
 
 	enemy_image_holder.set_direct_texture(_tex_defeated, DEFEATED_COLOR, false)
 
+	if defeat_tween != null:
+		defeat_tween.kill()
+		defeat_tween = null
+
+	var feedback_text: String = ""
 	if zone_changed:
-		defeat_feedback_label.text = "New Zone!"
+		feedback_text = "New Zone!"
 	elif level_up:
-		defeat_feedback_label.text = "Level Up!"
-	else:
-		defeat_feedback_label.text = "Defeated!"
+		feedback_text = "Level Up!"
+
+	if feedback_text.is_empty():
+		defeat_feedback_label.modulate.a = 0.0
+		return
+
+	defeat_feedback_label.text = feedback_text
 	defeat_feedback_label.modulate.a = 1.0
 	defeat_feedback_label.scale = Vector2.ONE
 
-	if defeat_tween != null:
-		defeat_tween.kill()
 	defeat_tween = create_tween()
 	defeat_tween.tween_property(defeat_feedback_label, "scale", Vector2(1.08, 1.08), 0.08)
 	defeat_tween.tween_interval(0.22)
 	defeat_tween.tween_property(defeat_feedback_label, "modulate:a", 0.0, 0.18)
+
+
+func get_enemy_global_center() -> Vector2:
+	return enemy_image_holder.get_global_rect().get_center()
+
+
+func get_enemy_global_rect() -> Rect2:
+	return enemy_image_holder.get_global_rect()
+
+
+func get_enemy_reward_origin_global() -> Vector2:
+	var rect: Rect2 = enemy_image_holder.get_global_rect()
+	return rect.get_center() + Vector2(0, -rect.size.y * 0.15)
 
 
 func set_enemy_transition_locked(is_locked: bool) -> void:

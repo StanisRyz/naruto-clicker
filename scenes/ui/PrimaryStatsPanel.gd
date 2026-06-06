@@ -83,6 +83,10 @@ func _place_stat_item(item: Control, icon: ColorRect, label: Label, index: int, 
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 
 
+func get_gold_icon_global_center() -> Vector2:
+	return gold_icon.get_global_rect().get_center()
+
+
 func _place_settings_button(index: int, gap: float) -> void:
 	var icon_x: float = float(index) * (HUD_ICON_SIZE + gap)
 

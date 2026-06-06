@@ -393,18 +393,13 @@ func attack_with_damage(damage: int) -> Dictionary:
 	return _make_attack_result(true, did_level_up, 0, damage_dealt, target_hp_before, 0, "Enemy defeated!", zone_changed, new_zone_name)
 
 
-func resolve_defeated_target() -> Dictionary:
+func get_current_target_reward_gold_preview() -> int:
 	if target_hp > 0:
-		return _make_attack_result(false, false, 0, 0, target_hp, target_hp, "")
-
-	var target_hp_before: int = target_hp
-	var damage_dealt: int = 0
-	var defeated_boss: bool = is_boss_level
-	var defeated_elite: bool = is_elite_enemy
+		return 0
 	var source_reward: int = reward_gold
-	if defeated_boss:
+	if is_boss_level:
 		source_reward = int(source_reward * get_boss_reward_multiplier())
-	if defeated_elite:
+	if is_elite_enemy:
 		source_reward = int(source_reward * get_partner_skill_bonus_multiplier("elite_reward"))
 	var talent_gold: int = int(
 		source_reward
@@ -413,7 +408,18 @@ func resolve_defeated_target() -> Dictionary:
 		* get_hero_skill_bonus_multiplier("gold")
 	)
 	var settlement_gold: int = int(talent_gold * get_settlement_gold_multiplier())
-	var earned_gold: int = int(settlement_gold * get_gold_bonus_multiplier()) if gold_bonus_active else settlement_gold
+	return int(settlement_gold * get_gold_bonus_multiplier()) if gold_bonus_active else settlement_gold
+
+
+func resolve_defeated_target() -> Dictionary:
+	if target_hp > 0:
+		return _make_attack_result(false, false, 0, 0, target_hp, target_hp, "")
+
+	var target_hp_before: int = target_hp
+	var damage_dealt: int = 0
+	var defeated_boss: bool = is_boss_level
+	var defeated_elite: bool = is_elite_enemy
+	var earned_gold: int = get_current_target_reward_gold_preview()
 	gold += earned_gold
 	enemies_defeated_on_level += 1
 	total_enemies_defeated += 1

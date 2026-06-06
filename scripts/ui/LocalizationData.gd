@@ -257,6 +257,7 @@ const TRANSLATIONS: Dictionary = {
 		"enemy.pool_17.elite_01.name": "Minato Namikaze",
 		"enemy.pool_17.elite_02.name": "Hashirama Senzu",
 		"enemy.pool_17.elite_03.name": "Maito Guy (8 Gates)",
+		"ui.combat.gold_reward": "+{amount} gold",
 	},
 	"ru": {
 		"ui.common.close": "Закрыть",
@@ -509,6 +510,7 @@ const TRANSLATIONS: Dictionary = {
 		"enemy.pool_17.elite_01.name": "Минато Намикадзе",
 		"enemy.pool_17.elite_02.name": "Хаширама Сенджу",
 		"enemy.pool_17.elite_03.name": "Майто Гай (8 Врат)",
+		"ui.combat.gold_reward": "+{amount} золота",
 	},
 }
 
