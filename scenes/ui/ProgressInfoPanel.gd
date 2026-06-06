@@ -6,7 +6,7 @@ extends Control
 @onready var enemy_name_label: Label = $VBoxContainer/EnemyNameLabel
 @onready var enemy_hp_progress_bar: ProgressBar = $VBoxContainer/EnemyHpProgressBar
 @onready var enemy_hp_text_label: Label = $VBoxContainer/EnemyHpProgressBar/HpTextLabel
-@onready var boss_timer_label: Label = $VBoxContainer/BossTimerLabel
+@onready var boss_timer_label: Label = $VBoxContainer/BossTimerSlot/BossTimerLabel
 
 
 func _ready() -> void:
@@ -49,11 +49,15 @@ func _get_localized_enemy_name(state: ClickerState) -> String:
 
 
 func update_boss_timer(time_left: float, is_active: bool) -> void:
-	boss_timer_label.visible = is_active
+	boss_timer_label.visible = true
 	if is_active:
+		boss_timer_label.modulate.a = 1.0
 		boss_timer_label.text = LocalizationManager.format_key("ui.progress.boss_time", {
 			"time": "%.1f" % maxf(time_left, 0.0),
 		})
+	else:
+		boss_timer_label.modulate.a = 0.0
+		boss_timer_label.text = ""
 
 
 func _apply_hp_bar_style() -> void:
