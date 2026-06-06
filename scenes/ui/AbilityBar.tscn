@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/AbilityBar.gd" id="1_pn5dq"]
+[ext_resource type="Script" path="res://scripts/ui/ImageSlot.gd" id="2_slot"]
 
 [node name="AbilityBar" type="VBoxContainer"]
 layout_mode = 1
@@ -32,6 +33,9 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0.25, 0.25, 0.25, 0.65)
+script = ExtResource("2_slot")
+fallback_color = Color(0.25, 0.25, 0.25, 0.65)
+show_fallback_behind_texture = false
 
 [node name="GoldBonusButton" type="Button" parent="."]
 custom_minimum_size = Vector2(80, 80)
@@ -49,6 +53,9 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0.25, 0.25, 0.25, 0.65)
+script = ExtResource("2_slot")
+fallback_color = Color(0.25, 0.25, 0.25, 0.65)
+show_fallback_behind_texture = false
 
 [node name="FocusBurstButton" type="Button" parent="."]
 custom_minimum_size = Vector2(80, 80)
@@ -66,6 +73,9 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0.25, 0.25, 0.25, 0.65)
+script = ExtResource("2_slot")
+fallback_color = Color(0.25, 0.25, 0.25, 0.65)
+show_fallback_behind_texture = false
 
 [node name="RallyButton" type="Button" parent="."]
 custom_minimum_size = Vector2(80, 80)
@@ -83,3 +93,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0.25, 0.25, 0.25, 0.65)
+script = ExtResource("2_slot")
+fallback_color = Color(0.25, 0.25, 0.25, 0.65)
+show_fallback_behind_texture = false

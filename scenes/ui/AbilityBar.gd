@@ -10,10 +10,10 @@ signal rally_requested
 @onready var gold_bonus_button: Button = $GoldBonusButton
 @onready var focus_burst_button: Button = $FocusBurstButton
 @onready var rally_button: Button = $RallyButton
-@onready var autoclick_icon: ColorRect = $AutoclickButton/ImageHolder
-@onready var gold_bonus_icon: ColorRect = $GoldBonusButton/ImageHolder
-@onready var focus_burst_icon: ColorRect = $FocusBurstButton/ImageHolder
-@onready var rally_icon: ColorRect = $RallyButton/ImageHolder
+@onready var autoclick_icon: ImageSlot = $AutoclickButton/ImageHolder
+@onready var gold_bonus_icon: ImageSlot = $GoldBonusButton/ImageHolder
+@onready var focus_burst_icon: ImageSlot = $FocusBurstButton/ImageHolder
+@onready var rally_icon: ImageSlot = $RallyButton/ImageHolder
 
 
 func _ready() -> void:
@@ -21,6 +21,11 @@ func _ready() -> void:
 	gold_bonus_button.pressed.connect(_on_gold_bonus_button_pressed)
 	focus_burst_button.pressed.connect(_on_focus_burst_button_pressed)
 	rally_button.pressed.connect(_on_rally_button_pressed)
+
+	autoclick_icon.set_asset_key(GameAssetCatalog.ability_icon_key("autoclick"), Color(0.25, 0.25, 0.25, 0.65))
+	gold_bonus_icon.set_asset_key(GameAssetCatalog.ability_icon_key("gold_bonus"), Color(0.25, 0.25, 0.25, 0.65))
+	focus_burst_icon.set_asset_key(GameAssetCatalog.ability_icon_key("focus_burst"), Color(0.25, 0.25, 0.25, 0.65))
+	rally_icon.set_asset_key(GameAssetCatalog.ability_icon_key("rally"), Color(0.25, 0.25, 0.25, 0.65))
 
 
 func update_view(
@@ -74,7 +79,7 @@ func _on_rally_button_pressed() -> void:
 
 func _update_ability_button(
 	button: Button,
-	icon: ColorRect,
+	icon: ImageSlot,
 	purchased: bool,
 	active: bool,
 	cooldown_left: float
@@ -83,15 +88,11 @@ func _update_ability_button(
 	button.disabled = not purchased or active or cooldown_left > 0.0
 	if not purchased:
 		return
-	_update_icon_color(icon, purchased, active, cooldown_left)
+	_update_icon_modulate(icon, active, cooldown_left)
 
 
-func _update_icon_color(icon: ColorRect, purchased: bool, active: bool, cooldown_left: float) -> void:
-	if not purchased:
-		icon.color = Color(0.25, 0.25, 0.25, 0.65)
-	elif active:
-		icon.color = Color(1.0, 1.0, 1.0, 1.0)
-	elif cooldown_left > 0.0:
-		icon.color = Color(0.55, 0.55, 0.55, 1.0)
+func _update_icon_modulate(icon: ImageSlot, active: bool, cooldown_left: float) -> void:
+	if active or cooldown_left <= 0.0:
+		icon.modulate = Color.WHITE
 	else:
-		icon.color = Color.WHITE
+		icon.modulate = Color(0.55, 0.55, 0.55, 1.0)

@@ -214,9 +214,10 @@ What the script checks:
 | Enemy state | `healthy.png`, `hit.png`, `wounded.png`, `defeated.png` |
 | Background | `background.png` |
 | Partner / ability / building / shop / task / UI icon | `icon.png` |
-| Partner skill icons | `skill_01.png` … `skill_05.png` |
-| Ability rank icons | `rank_01.png` … `rank_05.png` |
+| Hero skill icons | `skill_01.png` … `skill_05.png` |
 | Prestige talent icons | `talent_01.png` … `talent_06.png` |
+
+Note: Ability rank does **not** change the icon. All rank buttons reuse `abilities/ability_id/icon.png`. There is no `ability_skills/` folder and no `rank_01.png` … `rank_05.png` for abilities.
 
 See `docs/ASSET_FOLDERS.md` for a complete folder listing with full paths.
 

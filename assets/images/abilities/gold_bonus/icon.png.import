@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://3s7vijbh8aad"
-path="res://.godot/imported/autoclick.png-24a7c04f8a062db52eee28442b858ec3.ctex"
+uid="uid://bshd54tgjg40h"
+path="res://.godot/imported/icon.png-808e0d49209da59793668626fa90d4df.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/abilities/autoclick.png"
-dest_files=["res://.godot/imported/autoclick.png-24a7c04f8a062db52eee28442b858ec3.ctex"]
+source_file="res://assets/images/abilities/gold_bonus/icon.png"
+dest_files=["res://.godot/imported/icon.png-808e0d49209da59793668626fa90d4df.ctex"]
 
 [params]
 

@@ -117,13 +117,19 @@ Path: `assets/images/abilities/ability_id/icon.png`
 
 Ability folders: `autoclick`, `gold_bonus`, `focus_burst`, `rally`
 
+**Important:** Ability rank is gameplay/text only. It does **not** affect the icon. All rank buttons in the UpgradePanel reuse the same `icon.png` and communicate state through color/tint.
+
+Do **not** create `assets/images/ability_skills/` or rank-numbered files (`rank_01.png` … `rank_05.png`) for abilities.
+
 ---
 
-## Ability rank/skill icons
+## Upgrade tab main cards
 
-Path: `assets/images/ability_skills/ability_id/rank_01.png` … `rank_05.png`
+Path: `assets/images/upgrades/ability_id.png`
 
-Ability folders: `autoclick`, `gold_bonus`, `focus_burst`, `rally`
+Files: `hero.png`, `autoclick.png`, `gold_bonus.png`, `focus_burst.png`, `rally.png`
+
+These are large card images used in the Upgrades tab. Separate from the active ability button icons above.
 
 ---
 
@@ -245,5 +251,6 @@ Stage numbers continue increasing normally (106, 107, …). Only zone data and a
 | Enemy state | `healthy.png`, `hit.png`, `wounded.png`, `defeated.png` |
 | Background | `background.png` |
 | Icon (partner/ability/building/shop/task/UI) | `icon.png` |
-| Skill/rank | `skill_01.png` … `skill_05.png` or `rank_01.png` … `rank_05.png` |
+| Hero skill | `skill_01.png` … `skill_05.png` |
+| Active ability icon | `icon.png` (same file for all ranks) |
 | Prestige talent | `talent_01.png` … `talent_06.png` |

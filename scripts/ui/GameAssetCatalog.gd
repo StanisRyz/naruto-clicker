@@ -32,10 +32,10 @@ const ASSET_PATHS: Dictionary = {
 	"stage.auto_off": "res://assets/images/ui/auto_off.png",
 
 	# Abilities
-	"ability.autoclick": "res://assets/images/abilities/autoclick.png",
-	"ability.gold_bonus": "res://assets/images/abilities/gold_bonus.png",
-	"ability.focus_burst": "res://assets/images/abilities/focus_burst.png",
-	"ability.rally": "res://assets/images/abilities/rally.png",
+	"ability.autoclick": "res://assets/images/abilities/autoclick/icon.png",
+	"ability.gold_bonus": "res://assets/images/abilities/gold_bonus/icon.png",
+	"ability.focus_burst": "res://assets/images/abilities/focus_burst/icon.png",
+	"ability.rally": "res://assets/images/abilities/rally/icon.png",
 
 	# Upgrade cards
 	"upgrade.hero": "res://assets/images/upgrades/hero.png",
@@ -95,6 +95,12 @@ static func get_path(asset_key: String) -> String:
 		if parts.size() == 4 and parts[2] == "skill":
 			var level: int = parts[3].to_int()
 			return "res://assets/images/partners/Skills/skill%d.png" % level
+	# Dynamic hero skill: "hero_skill.N"
+	if asset_key.begins_with("hero_skill."):
+		var parts: PackedStringArray = asset_key.split(".")
+		if parts.size() == 2:
+			var level: int = parts[1].to_int()
+			return "res://assets/images/hero_skills/skill_%02d.png" % level
 	return ""
 
 
@@ -122,12 +128,12 @@ static func ability_icon_key(ability_id: String) -> String:
 	return "ability.%s" % ability_id
 
 
-static func ability_skill_key(ability_id: String, skill_level: int) -> String:
-	return "upgrade.%s.skill.%d" % [ability_id, skill_level]
+static func ability_skill_key(ability_id: String, _skill_level: int) -> String:
+	return ability_icon_key(ability_id)
 
 
 static func hero_skill_key(skill_level: int) -> String:
-	return "upgrade.hero.skill.%d" % skill_level
+	return "hero_skill.%d" % skill_level
 
 
 static func building_icon_key(building_index: int) -> String:

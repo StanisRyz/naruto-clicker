@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://2w4g338n8jc2"
-path="res://.godot/imported/gold_bonus.png-6c4b36fd7e973433554862e33daf53d2.ctex"
+uid="uid://v0jsvl2rbcy5"
+path="res://.godot/imported/icon.png-bb0d1a23e3c3136252202d989fbda60c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/abilities/gold_bonus.png"
-dest_files=["res://.godot/imported/gold_bonus.png-6c4b36fd7e973433554862e33daf53d2.ctex"]
+source_file="res://assets/images/abilities/rally/icon.png"
+dest_files=["res://.godot/imported/icon.png-bb0d1a23e3c3136252202d989fbda60c.ctex"]
 
 [params]
 

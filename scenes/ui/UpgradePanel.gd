@@ -133,7 +133,7 @@ func _create_ability_row(ability_index: int) -> Dictionary:
 	row_content["image_holder"].set_asset_key("upgrade.%s" % ability_id)
 	var skill_holders: Array = row_content["skill_image_holders"]
 	for i in range(skill_holders.size()):
-		skill_holders[i].set_asset_key(GameAssetCatalog.ability_skill_key(ability_id, i + 1), SKILL_ICON_COLORS["locked"])
+		skill_holders[i].set_asset_key(GameAssetCatalog.ability_icon_key(ability_id), SKILL_ICON_COLORS["locked"])
 
 	return row_content
 
