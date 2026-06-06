@@ -180,6 +180,22 @@ Both files should be designed for an 80×80 button. Missing files fall back safe
 
 ---
 
+## Top interface image
+
+Path: `assets/images/ui/top_interface.png`
+
+Recommended size: **720×430**
+
+Purpose: Decorative unified background/frame for the upper HUD area (resource HUD, StageNavigator, ProgressInfoPanel, HP bar). Existing labels, icons, stage buttons, and HP bar are rendered by Godot above it.
+
+Rules:
+- Missing file falls back to transparent — no crash.
+- Keep transparent background where possible.
+- Do not include real text, numbers, or dynamic values.
+- Do not include the boss timer area unless the design intentionally leaves room for it.
+
+---
+
 ## UI icons
 
 Path: `assets/images/ui/element_name/icon.png`

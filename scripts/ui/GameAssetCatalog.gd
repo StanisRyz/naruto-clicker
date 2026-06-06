@@ -4,6 +4,7 @@ const IMAGE_ROOT: String = "res://assets/images/"
 
 const ASSET_PATHS: Dictionary = {
 	# Core UI
+	"ui.top_interface": "res://assets/images/ui/top_interface.png",
 	"ui.gold": "res://assets/images/ui/gold.png",
 	"ui.gems": "res://assets/images/ui/gems.png",
 	"ui.hero_level": "res://assets/images/ui/hero_level.png",

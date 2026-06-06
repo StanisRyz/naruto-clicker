@@ -234,6 +234,21 @@ Active ability visual: a white radial timer drawn by `AbilityCooldownOverlay` (A
 
 See `docs/ASSET_FOLDERS.md` for a complete folder listing with full paths.
 
+## Top interface image
+
+Asset key: `ui.top_interface`
+Path: `assets/images/ui/top_interface.png`
+Recommended size: **720×430**
+
+Purpose: Decorative unified background/frame placed behind the upper HUD (resource HUD, StageNavigator, ProgressInfoPanel, HP bar). The image is rendered by `TopInterfaceImageHolder` (a `ColorRect` + `ImageSlot` in `ClickerScreen.tscn`), positioned above `GameField` and below all dynamic UI elements.
+
+Rules:
+- Missing file falls back to transparent — no crash.
+- `mouse_filter = IGNORE` — does not block any input.
+- Do not include real text, numbers, or dynamic values.
+
+---
+
 ## Top HUD layout
 
 The top HUD (`PrimaryStatsPanel`) uses a single horizontal row containing 4 elements:

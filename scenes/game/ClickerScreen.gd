@@ -39,6 +39,7 @@ const _AUTOSAVE_INTERVAL: float = 10.0
 var balance_logger: BalancePlaytestLogger = null
 var _is_initialized: bool = false
 
+@onready var top_interface_image_holder = $TopInterfaceImageHolder
 @onready var combat_effects_layer: CombatEffectsLayer = $CombatEffectsLayer
 @onready var primary_stats_panel: PrimaryStatsPanel = $PrimaryStatsPanel
 @onready var stage_navigator: Control = $MainContent/VBoxContainer/StageNavigator
