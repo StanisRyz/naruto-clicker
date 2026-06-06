@@ -187,7 +187,11 @@ func _update_ability_bar() -> void:
 		focus_burst_time_left,
 		rally_time_left,
 		focus_burst_cooldown_left,
-		rally_cooldown_left
+		rally_cooldown_left,
+		autoclick_cooldown_duration,
+		gold_bonus_cooldown_duration,
+		focus_burst_cooldown_duration,
+		rally_cooldown_duration
 	)
 
 
@@ -714,7 +718,11 @@ func _process_ability_timers(delta: float) -> void:
 		focus_burst_time_left,
 		rally_time_left,
 		focus_burst_cooldown_left,
-		rally_cooldown_left
+		rally_cooldown_left,
+		autoclick_cooldown_duration,
+		gold_bonus_cooldown_duration,
+		focus_burst_cooldown_duration,
+		rally_cooldown_duration
 	)
 
 

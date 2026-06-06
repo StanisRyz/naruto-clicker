@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/AbilityBar.gd" id="1_pn5dq"]
 [ext_resource type="Script" path="res://scripts/ui/ImageSlot.gd" id="2_slot"]
+[ext_resource type="Script" path="res://scripts/ui/AbilityCooldownOverlay.gd" id="3_cooldown"]
 
 [node name="AbilityBar" type="VBoxContainer"]
 layout_mode = 1
@@ -51,6 +52,17 @@ script = ExtResource("2_slot")
 fallback_color = Color(0, 0, 0, 0)
 show_fallback_behind_texture = false
 
+[node name="CooldownOverlay" type="Control" parent="AutoclickButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+visible = false
+script = ExtResource("3_cooldown")
+
 [node name="CountdownLabel" type="Label" parent="AutoclickButton"]
 layout_mode = 1
 anchors_preset = 15
@@ -97,6 +109,17 @@ visible = false
 script = ExtResource("2_slot")
 fallback_color = Color(0, 0, 0, 0)
 show_fallback_behind_texture = false
+
+[node name="CooldownOverlay" type="Control" parent="GoldBonusButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+visible = false
+script = ExtResource("3_cooldown")
 
 [node name="CountdownLabel" type="Label" parent="GoldBonusButton"]
 layout_mode = 1
@@ -145,6 +168,17 @@ script = ExtResource("2_slot")
 fallback_color = Color(0, 0, 0, 0)
 show_fallback_behind_texture = false
 
+[node name="CooldownOverlay" type="Control" parent="FocusBurstButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+visible = false
+script = ExtResource("3_cooldown")
+
 [node name="CountdownLabel" type="Label" parent="FocusBurstButton"]
 layout_mode = 1
 anchors_preset = 15
@@ -191,6 +225,17 @@ visible = false
 script = ExtResource("2_slot")
 fallback_color = Color(0, 0, 0, 0)
 show_fallback_behind_texture = false
+
+[node name="CooldownOverlay" type="Control" parent="RallyButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+visible = false
+script = ExtResource("3_cooldown")
 
 [node name="CountdownLabel" type="Label" parent="RallyButton"]
 layout_mode = 1
