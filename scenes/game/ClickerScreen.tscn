@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://iyfdkc71gxgi"]
+[gd_scene load_steps=18 format=3 uid="uid://iyfdkc71gxgi"]
 
 [ext_resource type="Theme" path="res://themes/main_theme.tres" id="16_main_theme"]
 [ext_resource type="Script" uid="uid://dnim7mf4hei23" path="res://scenes/game/ClickerScreen.gd" id="1_ymqc8"]
@@ -16,6 +16,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/AutoTransitionPopup.tscn" id="14_atp"]
 [ext_resource type="PackedScene" path="res://scenes/ui/SettingsWindow.tscn" id="15_settings"]
 [ext_resource type="Script" path="res://scenes/ui/CombatEffectsLayer.gd" id="17_combat"]
+[ext_resource type="Script" path="res://scripts/ui/ImageSlot.gd" id="18_imageslot"]
 
 [node name="ClickerScreen" type="Control"]
 layout_mode = 3
@@ -102,6 +103,7 @@ offset_right = -24.0
 offset_bottom = -61.0
 grow_horizontal = 0
 grow_vertical = 2
+focus_mode = 0
 flat = true
 
 [node name="ImageHolder" type="ColorRect" parent="TasksButton"]
@@ -112,6 +114,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+script = ExtResource("18_imageslot")
+fallback_color = Color(1, 1, 1, 1)
+show_fallback_behind_texture = false
 
 [node name="UpgradeSheet" parent="." instance=ExtResource("4_vcx67")]
 layout_mode = 1

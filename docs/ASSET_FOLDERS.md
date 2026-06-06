@@ -167,6 +167,17 @@ Path: `assets/images/tasks/task_type/icon.png`
 
 Task folders: `tasks_button`, `manual_damage`, `defeat_enemies`, `defeat_elites`, `defeat_boss`, `hero_levels`, `hire_partners`, `buildings`, `autoclick`, `game_levels`
 
+## TasksWindow open button
+
+Path: `assets/images/tasks/tasks_button/`
+
+| File | Shown when |
+|------|-----------|
+| `default.png` | No active task can be claimed |
+| `completed.png` | At least one active task is completed and ready to claim |
+
+Both files should be designed for an 80×80 button. Missing files fall back safely to a white placeholder — no crash.
+
 ---
 
 ## UI icons

@@ -77,6 +77,10 @@ const ASSET_PATHS: Dictionary = {
 	"task.build_5_buildings": "res://assets/images/tasks/buildings.png",
 	"task.activate_autoclick_1": "res://assets/images/tasks/autoclick.png",
 	"task.gain_10_game_levels": "res://assets/images/tasks/game_levels.png",
+
+	# TasksWindow open button states
+	"task.window_button.default": "res://assets/images/tasks/tasks_button/default.png",
+	"task.window_button.completed": "res://assets/images/tasks/tasks_button/completed.png",
 }
 
 

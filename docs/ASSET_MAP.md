@@ -148,6 +148,17 @@ Only these zone folders need a `background.png`:
 
 Missing files fall back to the default game asset catalog placeholder (no crash).
 
+### TasksWindow open button
+
+Path: `assets/images/tasks/tasks_button/`
+
+| File | Asset key | Shown when |
+|------|-----------|-----------|
+| `default.png` | `task.window_button.default` | No active task can be claimed |
+| `completed.png` | `task.window_button.completed` | At least one active task is completed and ready to claim |
+
+Both files are optional during development. Missing files fall back to a white placeholder — no crash.
+
 ## Stage navigation asset reuse
 
 StageNavigator images live in `assets/images/stage_navigation/zone_##/stage.png`. The folder set mirrors the background asset distribution exactly — only 11 folders exist, one per unique `background_asset_zone` value.

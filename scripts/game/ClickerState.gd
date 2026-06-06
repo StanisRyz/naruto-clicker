@@ -169,6 +169,13 @@ func is_task_completed(task_id: String) -> bool:
 	return TaskRT.is_task_completed(self, task_id)
 
 
+func has_claimable_tasks() -> bool:
+	for task_id in active_task_ids:
+		if is_task_completed(task_id):
+			return true
+	return false
+
+
 func get_active_task_view_data() -> Array[Dictionary]:
 	return Presentation.get_active_task_view_data(self)
 

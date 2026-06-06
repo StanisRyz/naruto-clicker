@@ -1,5 +1,8 @@
 extends Control
 
+const TASK_BUTTON_DEFAULT_ASSET_KEY: String = "task.window_button.default"
+const TASK_BUTTON_COMPLETED_ASSET_KEY: String = "task.window_button.completed"
+
 var state: ClickerState = ClickerState.new()
 var boss_time_left: float = 0.0
 var boss_timer_active: bool = false
@@ -42,6 +45,7 @@ var _is_initialized: bool = false
 @onready var auto_transition_popup: Control = $AutoTransitionPopup
 @onready var progress_info_panel: ProgressInfoPanel = $MainContent/VBoxContainer/ProgressInfoPanel
 @onready var tasks_button: Button = $TasksButton
+@onready var tasks_button_image_holder = $TasksButton/ImageHolder
 @onready var tasks_window: TasksWindow = $TasksWindow
 @onready var settings_window: SettingsWindow = $SettingsWindow
 @onready var game_field: GameField = $GameField
@@ -158,6 +162,7 @@ func _update_ui() -> void:
 	_update_combat_ui()
 	_update_ability_bar()
 	_update_active_sheet()
+	_update_tasks_button_image()
 	_update_tasks_if_visible()
 	_update_settings_if_visible()
 
@@ -211,6 +216,11 @@ func _update_active_sheet() -> void:
 			prestige_sheet.update_view(state)
 		"shop":
 			shop_sheet.update_view(state)
+
+
+func _update_tasks_button_image() -> void:
+	var asset_key: String = TASK_BUTTON_COMPLETED_ASSET_KEY if state.has_claimable_tasks() else TASK_BUTTON_DEFAULT_ASSET_KEY
+	tasks_button_image_holder.set_asset_key(asset_key, Color.WHITE)
 
 
 func _update_tasks_if_visible() -> void:
