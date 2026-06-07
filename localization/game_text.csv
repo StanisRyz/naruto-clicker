@@ -70,7 +70,7 @@ prestige.action_card.title,Prestige,Престиж,PrestigePanel action card row
 prestige.action_card.reward,Receive +{points},Получить +{points},PrestigePanel action card row 2,{points} is compact number
 prestige.action_card.reset_progress,Reset progress,Сбросить прогресс,PrestigePanel action card row 3,
 prestige.action_card.get_points,get points,получить очки,PrestigePanel action card row 4,
-prestige.talent_upgrade_bulk,Upgrade x{count}\n{cost} PP,Улучшить x{count}\n{cost} ОП,PrestigePanel talent upgrade button,{count} is integer; {cost} is compact PP cost
+prestige.talent_upgrade_bulk,x{count} - {cost},x{count} - {cost},PrestigePanel talent upgrade button,{count} is integer; {cost} is compact PP cost
 prestige.card.name,{name},{name},PrestigePanel talent card row 1,{name} is talent name
 prestige.card.count,Owned: {count},Кол-во: {count},PrestigePanel talent card row 2,{count} is integer talent level
 prestige.card.empty, , ,PrestigePanel talent card row 5 (reserved blank row),
@@ -174,7 +174,7 @@ building.06.purchase_gain,+{bonus}% Boss Gold,+{bonus}% Золота Босса,
 building.06.total_bonus,Boss Gold +{bonus}%,Золото Босса +{bonus}%,SettlementPanel building 06 card row 4,{bonus} is integer current total bonus
 prestige.talent.01.name,Empower,Мощь,PrestigeConfig talent 01,
 prestige.talent.02.name,Bounty Hunter,Охотник,PrestigeConfig talent 02,
-prestige.talent.03.name,Command Aura,Коллектив,PrestigeConfig talent 03,
+prestige.talent.03.name,Warchief,Военачальник,PrestigeConfig talent 03,
 prestige.talent.04.name,Quick Hands,Быстрые руки,PrestigeConfig talent 04,
 prestige.talent.05.name,Builder,Строитель,PrestigeConfig talent 05,
 prestige.talent.06.name,Boss Hunter,Убийца Боссов,PrestigeConfig talent 06,

@@ -5,7 +5,7 @@ extends RefCounted
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
 # Generated key count: 272
-# Generated at: 1780829892
+# Generated at: 1780830835
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -80,7 +80,7 @@ const TRANSLATIONS: Dictionary = {
 		"prestige.action_card.reward": "Receive +{points}",
 		"prestige.action_card.reset_progress": "Reset progress",
 		"prestige.action_card.get_points": "get points",
-		"prestige.talent_upgrade_bulk": "Upgrade x{count}\\n{cost} PP",
+		"prestige.talent_upgrade_bulk": "x{count} - {cost}",
 		"prestige.card.name": "{name}",
 		"prestige.card.count": "Owned: {count}",
 		"prestige.card.empty": " ",
@@ -184,7 +184,7 @@ const TRANSLATIONS: Dictionary = {
 		"building.06.total_bonus": "Boss Gold +{bonus}%",
 		"prestige.talent.01.name": "Empower",
 		"prestige.talent.02.name": "Bounty Hunter",
-		"prestige.talent.03.name": "Command Aura",
+		"prestige.talent.03.name": "Warchief",
 		"prestige.talent.04.name": "Quick Hands",
 		"prestige.talent.05.name": "Builder",
 		"prestige.talent.06.name": "Boss Hunter",
@@ -354,7 +354,7 @@ const TRANSLATIONS: Dictionary = {
 		"prestige.action_card.reward": "Получить +{points}",
 		"prestige.action_card.reset_progress": "Сбросить прогресс",
 		"prestige.action_card.get_points": "получить очки",
-		"prestige.talent_upgrade_bulk": "Улучшить x{count}\\n{cost} ОП",
+		"prestige.talent_upgrade_bulk": "x{count} - {cost}",
 		"prestige.card.name": "{name}",
 		"prestige.card.count": "Кол-во: {count}",
 		"prestige.card.empty": " ",
@@ -458,7 +458,7 @@ const TRANSLATIONS: Dictionary = {
 		"building.06.total_bonus": "Золото Босса +{bonus}%",
 		"prestige.talent.01.name": "Мощь",
 		"prestige.talent.02.name": "Охотник",
-		"prestige.talent.03.name": "Коллектив",
+		"prestige.talent.03.name": "Военачальник",
 		"prestige.talent.04.name": "Быстрые руки",
 		"prestige.talent.05.name": "Строитель",
 		"prestige.talent.06.name": "Убийца Боссов",
