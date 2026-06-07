@@ -17,12 +17,12 @@ ui.common.yes,Yes,Да,Dialogs,
 ui.common.no,No,Нет,Dialogs,
 ui.tab.upgrades,Upgrades,Улучшения,Bottom navigation,
 ui.tab.partners,Partners,Команда,Bottom navigation,
-ui.tab.settlement,Settlement,Деревня,Bottom navigation,
+ui.tab.settlement,Village,Деревня,Bottom navigation,
 ui.tab.prestige,Prestige,Престиж,Bottom navigation,
 ui.tab.shop,Shop,Магазин,Bottom navigation,
 ui.progress.boss_time,Boss Time: {time}s,Таймер Босса: {time}с,ProgressInfoPanel boss timer,{time} = seconds remaining as float string
 ui.progress.enemies_count,Enemies {current} / {required},Врагов {current} / {required},ProgressInfoPanel enemy counter,{current} and {required} are integers
-ui.progress.hp_pair,HP {current} / {max},Здоровья {current} / {max},ProgressInfoPanel HP display (legacy),{current} and {max} are compact-formatted numbers
+ui.progress.hp_pair,HP {current} / {max},Здоровье {current} / {max},ProgressInfoPanel HP display (legacy),{current} and {max} are compact-formatted numbers
 ui.progress.hp_bar_value,{current} / {max},{current} / {max},ProgressInfoPanel HP bar text,{current} and {max} are compact-formatted HP values
 ui.buy_mode.x1,x1,x1,BuyModeSelector,
 ui.buy_mode.x10,x10,x10,BuyModeSelector,
@@ -32,30 +32,30 @@ settings.title,Settings,Настройки,SettingsWindow title,
 settings.language,Language,Язык,SettingsWindow language row label,
 settings.language.en,English,English,Language selector option,
 settings.language.ru,Русский,Русский,Language selector option,
-settings.reset_progress,Reset Progress,Сбросить прогресс,SettingsWindow,
-settings.confirm_reset,Confirm Reset,Подтвердить сброс,SettingsWindow reset confirm dialog,
+settings.reset_progress,Reset Progress,Сбросить Прогресс,SettingsWindow,
+settings.confirm_reset,Confirm Reset,Подтвердить Сброс,SettingsWindow reset confirm dialog,
 settings.saved,Saved,Сохранено,SettingsWindow save status message,
-settings.save_failed,Save failed,Ошибка сохранения,SettingsWindow save status message,
-settings.progress_reset,Progress reset,Сброс прогресса,SettingsWindow reset status message,
-auto_transition.status_on,ON,Включено,AutoTransitionPopup status label,
-auto_transition.status_off,OFF,Выключено,AutoTransitionPopup status label,
+settings.save_failed,Save failed,Ошибка Сохранения,SettingsWindow save status message,
+settings.progress_reset,Progress Reset,Сброс Прогресса,SettingsWindow reset status message,
+auto_transition.status_on,ON,Вкл,AutoTransitionPopup status label,
+auto_transition.status_off,OFF,Выкл,AutoTransitionPopup status label,
 task.in_progress,In Progress,В Процессе,TasksWindow task button,
 task.claim,Claim,Получить,TasksWindow task button,
 task.claimed,Claimed,Получено,TasksWindow task button after clicking,
 task.progress,{current} / {target} | Reward: {reward},{current} / {target} | Награда: {reward},TasksWindow progress line,{current} and {target} are integers; {reward} is compact number
 upgrade.hero.button,x{count} - {cost},x{count} - {cost},UpgradePanel hero upgrade button,{count} is integer; {cost} is compact number
-upgrade.hero.name_level_short,Hero | Level {level},Герой | Уровень {level},UpgradePanel hero row 1 (legacy),{level} is integer
+upgrade.hero.name_level_short,Hero | {level},Герой | {level},UpgradePanel hero row 1 (legacy),{level} is integer
 upgrade.hero.damage_summary,+{gain} Damage | Damage {damage},+{gain} Урон | Урон {damage},UpgradePanel hero row 2 (legacy),{gain} and {damage} are compact numbers
-upgrade.hero.milestone_next,Next x2 at Lv {milestone},x2 на уровне {milestone},UpgradePanel hero row 3 (legacy),{milestone} is integer
-upgrade.hero.milestone_max,Max milestones,Максимум,UpgradePanel hero row 3 all reached (legacy),
+upgrade.hero.milestone_next,x2 at {milestone} Lv,x2 на {milestone} Ур,UpgradePanel hero row 3 (legacy),{milestone} is integer
+upgrade.hero.milestone_max,Max,Максимум,UpgradePanel hero row 3 all reached (legacy),
 upgrade.hero.card.name,Hero,Герой,UpgradePanel hero card row 1,
-upgrade.hero.card.level_gain,Level {level} | +{gain} Damage,Уровень {level} | +{gain} Урон,UpgradePanel hero card row 2,{level} is integer; {gain} is compact damage gain
+upgrade.hero.card.level_gain,{level} Lv | +{gain} Damage,{level} Ур | +{gain} Урон,UpgradePanel hero card row 2,{level} is integer; {gain} is compact damage gain
 upgrade.hero.card.damage,Damage {damage},Урон {damage},UpgradePanel hero card row 3,{damage} is compact current damage
-upgrade.hero.card.milestone_next,Next x2 at Lv {milestone},x2 на уровне {milestone},UpgradePanel hero card row 4,{milestone} is integer
-upgrade.hero.card.milestone_max,Max milestones,Максимум,UpgradePanel hero card row 4 all reached,
+upgrade.hero.card.milestone_next,x2 at {milestone} Lv,x2 на {milestone} Ур,UpgradePanel hero card row 4,{milestone} is integer
+upgrade.hero.card.milestone_max,Max,Максимум,UpgradePanel hero card row 4 all reached,
 upgrade.ability.rank_info,{name} | Rank {rank}/{max_rank},{name} | Ранг {rank}/{max_rank},UpgradePanel ability row header (legacy),{name} is ability name; {rank} and {max_rank} are integers
 upgrade.ability.purchased,Purchased,Куплено,UpgradePanel ability unlock button,
-upgrade.ability.requires_level,Requires Lv {level},Требуется уровень {level},UpgradePanel ability unlock button,{level} is integer
+upgrade.ability.requires_level,Requires {level} Lv,Требуется {level} Ур,UpgradePanel ability unlock button,{level} is integer
 upgrade.ability.buy,Buy: {cost},Купить: {cost},UpgradePanel ability unlock button,{cost} is compact number
 upgrade.ability.status_hint,{status},{status},UpgradePanel ability row 3 status hint (legacy),{status} is status text
 upgrade.ability.card.name,{name},{name},UpgradePanel ability card row 1,{name} is ability name
