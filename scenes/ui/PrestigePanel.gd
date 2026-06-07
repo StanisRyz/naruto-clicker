@@ -240,11 +240,9 @@ func _update_talent_row(state: ClickerState, talent_index: int, row: Dictionary)
 
 	talent_count_label.text = LocalizationManager.format_key("prestige.card.count", {"count": level})
 
-	var bonus_gain: int = state.get_prestige_talent_bulk_bonus_gain(talent_index, selected_buy_mode)
-	purchase_bonus_gain_label.text = LocalizationManager.format_key("prestige.card.purchase_bonus_gain", {"bonus": bonus_gain})
+	purchase_bonus_gain_label.text = ClickerStatePresentation.get_prestige_talent_purchase_bonus_gain_text(state, talent_index, selected_buy_mode)
 
-	var total_bonus: int = state.get_prestige_talent_total_bonus_percent(talent_index)
-	total_bonus_label.text = LocalizationManager.format_key("prestige.card.total_bonus", {"bonus": total_bonus})
+	total_bonus_label.text = ClickerStatePresentation.get_prestige_talent_total_bonus_text(state, talent_index)
 
 	var bulk_count: int = state.get_prestige_talent_bulk_display_count(talent_index, selected_buy_mode)
 	var bulk_cost: int = state.get_prestige_talent_bulk_display_cost(talent_index, selected_buy_mode)

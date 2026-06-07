@@ -361,6 +361,14 @@ func get_prestige_talent_bulk_bonus_gain(talent_index: int, mode: String) -> int
 	return maxi(future_bonus - current_bonus, 0)
 
 
+func get_prestige_talent_display_total_bonus_percent(talent_index: int) -> int:
+	return get_prestige_talent_total_bonus_percent(talent_index)
+
+
+func get_prestige_talent_display_bulk_bonus_gain(talent_index: int, mode: String) -> int:
+	return get_prestige_talent_bulk_bonus_gain(talent_index, mode)
+
+
 func buy_prestige_talents(talent_index: int, mode: String) -> Dictionary:
 	if talent_index < 0 or talent_index >= prestige_talent_levels.size():
 		return _make_purchase_result("Invalid prestige talent")
@@ -1507,6 +1515,37 @@ func get_building_bulk_bonus_gain(building_index: int, mode: String) -> int:
 		return 0
 	var current_bonus: int = get_building_bonus_percent_for_count(building_index, building_counts[building_index])
 	var future_bonus: int = get_building_bonus_percent_for_count(building_index, building_counts[building_index] + count)
+	return maxi(future_bonus - current_bonus, 0)
+
+
+func get_building_display_bonus_percent_for_count(building_index: int, count: int) -> int:
+	if building_index < 0 or building_index >= building_counts.size():
+		return 0
+	if count <= 0:
+		return 0
+	var base_bonus: int = count * building_bonus_percent_per_level
+	var milestone_bonus: int = base_bonus * get_milestone_multiplier(count)
+	var effective_raw_bonus: int = int(milestone_bonus * get_settlement_effectiveness_multiplier())
+	if SettlementConfig.get_bonus_type(building_index) == "ability_cooldown":
+		return int((1.0 - get_diminishing_reduction_multiplier(effective_raw_bonus)) * 100.0)
+	return effective_raw_bonus
+
+
+func get_building_display_total_bonus_percent(building_index: int) -> int:
+	if building_index < 0 or building_index >= building_counts.size():
+		return 0
+	return get_building_display_bonus_percent_for_count(building_index, building_counts[building_index])
+
+
+func get_building_display_bulk_bonus_gain(building_index: int, mode: String) -> int:
+	if building_index < 0 or building_index >= building_counts.size():
+		return 0
+	var count: int = get_building_bulk_display_count(building_index, mode)
+	if count <= 0:
+		return 0
+	var current_count: int = building_counts[building_index]
+	var current_bonus: int = get_building_display_bonus_percent_for_count(building_index, current_count)
+	var future_bonus: int = get_building_display_bonus_percent_for_count(building_index, current_count + count)
 	return maxi(future_bonus - current_bonus, 0)
 
 

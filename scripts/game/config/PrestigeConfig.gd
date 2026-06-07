@@ -23,3 +23,11 @@ static func get_talent_bonus_type(index: int) -> String:
 
 static func get_name_key(index: int) -> String:
 	return "prestige.talent.%02d.name" % (index + 1)
+
+
+static func get_purchase_gain_key(index: int) -> String:
+	return "prestige.talent.%02d.purchase_gain" % (index + 1)
+
+
+static func get_total_bonus_key(index: int) -> String:
+	return "prestige.talent.%02d.total_bonus" % (index + 1)

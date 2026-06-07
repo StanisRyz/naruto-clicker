@@ -29,3 +29,11 @@ static func get_base_cost(index: int) -> int:
 
 static func get_name_key(index: int) -> String:
 	return "building.%02d.name" % (index + 1)
+
+
+static func get_purchase_gain_key(index: int) -> String:
+	return "building.%02d.purchase_gain" % (index + 1)
+
+
+static func get_total_bonus_key(index: int) -> String:
+	return "building.%02d.total_bonus" % (index + 1)

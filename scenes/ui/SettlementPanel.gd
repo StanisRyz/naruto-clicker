@@ -131,11 +131,9 @@ func _update_building_row(state: ClickerState, building_index: int, row: Diction
 
 	building_count_label.text = LocalizationManager.format_key("settlement.card.count", {"count": owned_count})
 
-	var bonus_gain: int = state.get_building_bulk_bonus_gain(building_index, selected_buy_mode)
-	purchase_bonus_gain_label.text = LocalizationManager.format_key("settlement.card.purchase_bonus_gain", {"bonus": bonus_gain})
+	purchase_bonus_gain_label.text = ClickerStatePresentation.get_building_purchase_bonus_gain_text(state, building_index, selected_buy_mode)
 
-	var total_bonus: int = state.get_building_total_bonus_percent(building_index)
-	total_bonus_label.text = LocalizationManager.format_key("settlement.card.total_bonus", {"bonus": total_bonus})
+	total_bonus_label.text = ClickerStatePresentation.get_building_total_bonus_text(state, building_index)
 
 	var next_milestone: int = state.get_next_milestone(owned_count)
 	if next_milestone > 0:

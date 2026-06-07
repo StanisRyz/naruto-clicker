@@ -32,6 +32,24 @@ static func get_building_short_effect_description(state: ClickerState, building_
 			return "+%d%% Bonus" % amount
 
 
+# --- Building card localized text helpers ---
+
+static func get_building_purchase_bonus_gain_text(state: ClickerState, building_index: int, mode: String) -> String:
+	var bonus: int = state.get_building_display_bulk_bonus_gain(building_index, mode)
+	return LocalizationManager.format_key(
+		SettlementConfig.get_purchase_gain_key(building_index),
+		{"bonus": NumberFormatter.compact(bonus)}
+	)
+
+
+static func get_building_total_bonus_text(state: ClickerState, building_index: int) -> String:
+	var bonus: int = state.get_building_display_total_bonus_percent(building_index)
+	return LocalizationManager.format_key(
+		SettlementConfig.get_total_bonus_key(building_index),
+		{"bonus": NumberFormatter.compact(bonus)}
+	)
+
+
 # --- Partner descriptions ---
 
 static func get_partner_description(partner_index: int) -> String:
@@ -63,6 +81,24 @@ static func get_prestige_talent_description(state: ClickerState, talent_index: i
 			return "+%d%% Boss Damage per level" % amount
 		_:
 			return "+%d%% Bonus per level" % amount
+
+
+# --- Prestige talent card localized text helpers ---
+
+static func get_prestige_talent_purchase_bonus_gain_text(state: ClickerState, talent_index: int, mode: String) -> String:
+	var bonus: int = state.get_prestige_talent_display_bulk_bonus_gain(talent_index, mode)
+	return LocalizationManager.format_key(
+		PrestigeConfig.get_purchase_gain_key(talent_index),
+		{"bonus": NumberFormatter.compact(bonus)}
+	)
+
+
+static func get_prestige_talent_total_bonus_text(state: ClickerState, talent_index: int) -> String:
+	var bonus: int = state.get_prestige_talent_display_total_bonus_percent(talent_index)
+	return LocalizationManager.format_key(
+		PrestigeConfig.get_total_bonus_key(talent_index),
+		{"bonus": NumberFormatter.compact(bonus)}
+	)
 
 
 # --- Ability descriptions ---

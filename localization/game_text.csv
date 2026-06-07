@@ -82,8 +82,6 @@ settlement.next_milestone,{effect} | Next x2 at {milestone},{effect} | x2 на �
 settlement.max_milestones,{effect} | Max milestones,{effect} | Максимум,SettlementPanel milestone text (legacy),{effect} is effect description
 settlement.card.name,{name},{name},SettlementPanel card row 1,{name} is building name
 settlement.card.count,Owned: {count},Кол-во: {count},SettlementPanel card row 2,{count} is integer
-settlement.card.purchase_bonus_gain,+{bonus}% from purchase,+{bonus}% за покупку,SettlementPanel card row 3,{bonus} is integer percent gain from selected purchase mode
-settlement.card.total_bonus,Total bonus: {bonus}%,Всего бонус: {bonus}%,SettlementPanel card row 4,{bonus} is integer current total bonus
 settlement.card.milestone_next,Next milestone: {milestone},Следующий milestone: {milestone},SettlementPanel card row 5,{milestone} is integer next milestone count
 settlement.card.milestone_max,Max milestones,Максимальный milestone,SettlementPanel card row 5 all reached,
 prestige.gain,Prestige | Gain {points},Престиж | Получить {points},PrestigePanel action row header (legacy),{points} is compact number
@@ -98,8 +96,6 @@ prestige.talent_name_level,{name} | Lv {level},{name} | Уровень {level},P
 prestige.talent_upgrade_bulk,Upgrade x{count}\n{cost} PP,Улучшить x{count}\n{cost} ОП,PrestigePanel talent upgrade button,{count} is integer; {cost} is compact PP cost
 prestige.card.name,{name},{name},PrestigePanel talent card row 1,{name} is talent name
 prestige.card.count,Owned: {count},Кол-во: {count},PrestigePanel talent card row 2,{count} is integer talent level
-prestige.card.purchase_bonus_gain,+{bonus}% from purchase,+{bonus}% за покупку,PrestigePanel talent card row 3,{bonus} is integer percent gain from selected purchase mode
-prestige.card.total_bonus,Total bonus: {bonus}%,Всего бонус: {bonus}%,PrestigePanel talent card row 4,{bonus} is integer current total bonus
 prestige.card.empty, , ,PrestigePanel talent card row 5 (reserved blank row),
 prestige.confirm.stage_level,Stage level,Этап,PrestigeConfirmDialog label,followed by colon and value in code
 prestige.confirm.character_level,Character level,Уровень,PrestigeConfirmDialog label,
@@ -181,18 +177,42 @@ partner.25.name,Obito Jinchuriki,Обито Джинчурики,PartnerConfig p
 partner.26.name,Madara Jinchuriki,Мадара Джинчурики,PartnerConfig partner 26,
 partner.27.name,Sasuke Six Paths,Саске Шесть Путей,PartnerConfig partner 27,
 partner.28.name,Naruto Six Paths,Наруто Шесть Путей,PartnerConfig partner 28,
-building.01.name,Training Camp,,SettlementConfig building 01,
-building.02.name,Market,,SettlementConfig building 02,
-building.03.name,Knight Hut,,SettlementConfig building 03,
+building.01.name,Training Ground,Тренировочное Поле,SettlementConfig building 01,
+building.02.name,Ichiraku Ramen,Ичираку Рамен,SettlementConfig building 02,
+building.03.name,,,SettlementConfig building 03,
 building.04.name,War Banner,,SettlementConfig building 04,
 building.05.name,Clock Tower,,SettlementConfig building 05,
 building.06.name,Boss Shrine,,SettlementConfig building 06,
+building.01.purchase_gain,+{bonus}% Partner DPS from purchase,+{bonus}% к ДПС партнёров за покупку,SettlementPanel building 01 card row 3,{bonus} is integer percent gain
+building.01.total_bonus,Total Partner DPS bonus: +{bonus}%,Текущий бонус к ДПС партнёров: +{bonus}%,SettlementPanel building 01 card row 4,{bonus} is integer current total bonus
+building.02.purchase_gain,+{bonus}% Gold gain from purchase,+{bonus}% к получаемому золоту за покупку,SettlementPanel building 02 card row 3,{bonus} is integer percent gain
+building.02.total_bonus,Total Gold gain bonus: +{bonus}%,Текущий бонус к получаемому золоту: +{bonus}%,SettlementPanel building 02 card row 4,{bonus} is integer current total bonus
+building.03.purchase_gain,+{bonus}% Click damage from purchase,+{bonus}% к урону клика за покупку,SettlementPanel building 03 card row 3,{bonus} is integer percent gain
+building.03.total_bonus,Total Click damage bonus: +{bonus}%,Текущий бонус к урону клика: +{bonus}%,SettlementPanel building 03 card row 4,{bonus} is integer current total bonus
+building.04.purchase_gain,+{bonus}% Ability duration from purchase,+{bonus}% к длительности способностей за покупку,SettlementPanel building 04 card row 3,{bonus} is integer percent gain
+building.04.total_bonus,Total Ability duration bonus: +{bonus}%,Текущий бонус к длительности способностей: +{bonus}%,SettlementPanel building 04 card row 4,{bonus} is integer current total bonus
+building.05.purchase_gain,+{bonus}% Cooldown reduction from purchase,+{bonus}% к сокращению перезарядки за покупку,SettlementPanel building 05 card row 3,{bonus} is integer percent gain
+building.05.total_bonus,Total Cooldown reduction: +{bonus}%,Текущее сокращение перезарядки: +{bonus}%,SettlementPanel building 05 card row 4,{bonus} is integer current total bonus
+building.06.purchase_gain,+{bonus}% Boss Gold from purchase,+{bonus}% к золоту с боссов за покупку,SettlementPanel building 06 card row 3,{bonus} is integer percent gain
+building.06.total_bonus,Total Boss Gold bonus: +{bonus}%,Текущий бонус к золоту с боссов: +{bonus}%,SettlementPanel building 06 card row 4,{bonus} is integer current total bonus
 prestige.talent.01.name,Focus Training,,PrestigeConfig talent 01,
 prestige.talent.02.name,Trade Routes,,PrestigeConfig talent 02,
 prestige.talent.03.name,Command Aura,,PrestigeConfig talent 03,
 prestige.talent.04.name,Quick Hands,,PrestigeConfig talent 04,
 prestige.talent.05.name,Builder Wisdom,,PrestigeConfig talent 05,
 prestige.talent.06.name,Boss Hunter,,PrestigeConfig talent 06,
+prestige.talent.01.purchase_gain,+{bonus}% Click damage from purchase,+{bonus}% к урону клика за покупку,PrestigePanel talent 01 card row 3,{bonus} is integer percent gain
+prestige.talent.01.total_bonus,Total Click damage bonus: +{bonus}%,Текущий бонус к урону клика: +{bonus}%,PrestigePanel talent 01 card row 4,{bonus} is integer current total bonus
+prestige.talent.02.purchase_gain,+{bonus}% Gold gain from purchase,+{bonus}% к получаемому золоту за покупку,PrestigePanel talent 02 card row 3,{bonus} is integer percent gain
+prestige.talent.02.total_bonus,Total Gold gain bonus: +{bonus}%,Текущий бонус к получаемому золоту: +{bonus}%,PrestigePanel talent 02 card row 4,{bonus} is integer current total bonus
+prestige.talent.03.purchase_gain,+{bonus}% Partner DPS from purchase,+{bonus}% к ДПС партнёров за покупку,PrestigePanel talent 03 card row 3,{bonus} is integer percent gain
+prestige.talent.03.total_bonus,Total Partner DPS bonus: +{bonus}%,Текущий бонус к ДПС партнёров: +{bonus}%,PrestigePanel talent 03 card row 4,{bonus} is integer current total bonus
+prestige.talent.04.purchase_gain,+{bonus}% Autoclick speed from purchase,+{bonus}% к скорости автоклика за покупку,PrestigePanel talent 04 card row 3,{bonus} is integer percent gain
+prestige.talent.04.total_bonus,Total Autoclick speed bonus: +{bonus}%,Текущий бонус к скорости автоклика: +{bonus}%,PrestigePanel talent 04 card row 4,{bonus} is integer current total bonus
+prestige.talent.05.purchase_gain,+{bonus}% Settlement effectiveness from purchase,+{bonus}% к эффективности поселения за покупку,PrestigePanel talent 05 card row 3,{bonus} is integer percent gain
+prestige.talent.05.total_bonus,Total Settlement effectiveness bonus: +{bonus}%,Текущий бонус к эффективности поселения: +{bonus}%,PrestigePanel talent 05 card row 4,{bonus} is integer current total bonus
+prestige.talent.06.purchase_gain,+{bonus}% Boss damage from purchase,+{bonus}% к урону по боссам за покупку,PrestigePanel talent 06 card row 3,{bonus} is integer percent gain
+prestige.talent.06.total_bonus,Total Boss damage bonus: +{bonus}%,Текущий бонус к урону по боссам: +{bonus}%,PrestigePanel talent 06 card row 4,{bonus} is integer current total bonus
 shop.gold_pack_small.name,Small Gold Pack,,ShopConfig product name,
 shop.gold_pack_small.description,Gain stage-scaled gold,,ShopConfig product description,
 shop.gold_pack_large.name,Large Gold Pack,,ShopConfig product name,
