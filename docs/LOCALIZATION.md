@@ -174,9 +174,24 @@ To ensure translations are always available, `LocalizationManager` uses a two-so
 
 If the CSV is unavailable, the built-in data is used silently. The game displays correctly on all platforms.
 
-### Keeping LocalizationData.gd in sync
+### Keeping LocalizationData.gd in sync — automatic (editor plugin)
 
-`LocalizationData.gd` is auto-generated from `game_text.csv`. After editing the CSV, regenerate it:
+An EditorPlugin (`addons/localization_sync/`) watches `game_text.csv` every 2 seconds while the Godot editor is open. When it detects a file change it automatically regenerates `LocalizationData.gd` and triggers a filesystem scan. No manual step is required during normal development.
+
+**Daily editor workflow:**
+
+1. Edit `res://localization/game_text.csv` (text editor, spreadsheet, or the Godot filesystem panel).
+2. Save the file (`Ctrl+S`).
+3. Watch the Godot Output panel — within 2 seconds you will see:
+   ```
+   LocalizationSyncPlugin: regenerated LocalizationData.gd from game_text.csv (N keys)
+   ```
+4. Commit both `game_text.csv` and `LocalizationData.gd`.
+5. Export Android/Web — the compiled GDScript carries the fresh data automatically.
+
+### Keeping LocalizationData.gd in sync — manual fallback
+
+If the editor is not open (CI, headless, or plugin disabled), regenerate manually:
 
 ```
 godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
@@ -184,7 +199,7 @@ godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
 
 Commit the updated `LocalizationData.gd` to the repository.
 
-**Do not edit `LocalizationData.gd` by hand.** It will be overwritten by the generator.
+**Do not edit `LocalizationData.gd` by hand.** It will be overwritten by the next auto-sync or manual run.
 
 ### Export presets
 
@@ -212,7 +227,19 @@ No localization translations loaded. UI will display keys. builtin=true csv=fals
 
 This appears in Android logcat and the browser console.
 
-### Validation command
+### Validation commands
+
+**Check that LocalizationData.gd is fresh (matches CSV exactly):**
+
+```
+godot --headless --script res://scripts/tools/ValidateLocalizationDataFreshness.gd
+```
+
+Compares every key, English value, and Russian value between the CSV and the built-in `LocalizationData.gd`. Reports missing keys, stale keys, and value mismatches. Exit 0 = fresh, exit 1 = stale.
+
+Run this before every Android/Web export to catch regressions.
+
+**Check required keys and export preset config:**
 
 ```
 godot --headless --script res://scripts/tools/ValidateLocalizationExport.gd
@@ -223,6 +250,43 @@ Checks:
 - CSV exists, can be opened, and has required columns and keys
 - CSV key count matches built-in key count (flags out-of-sync)
 - Both Web and Android export presets include `localization/*.csv` in `include_filter`
+
+**Check for legacy rows, empty Russian, and key usage drift:**
+
+```
+godot --headless --script res://scripts/tools/ValidateLocalizationUsage.gd
+```
+
+---
+
+## Android troubleshooting — old text still showing
+
+If an Android build shows old/English text after editing the CSV:
+
+1. **Check the editor Output panel.** After saving the CSV you should have seen `LocalizationSyncPlugin: regenerated LocalizationData.gd`. If you did not, the plugin may be disabled — enable it in **Project → Project Settings → Plugins**.
+
+2. **Check git diff.** Run `git diff scripts/ui/LocalizationData.gd`. If there is no diff, the file was not regenerated. Run the manual generator command above, then commit.
+
+3. **Run the freshness validator** to confirm which keys/values are out of sync:
+   ```
+   godot --headless --script res://scripts/tools/ValidateLocalizationDataFreshness.gd
+   ```
+
+4. **Delete the old app from the device.** Android can cache the previous APK's assets. Uninstall the existing build before installing the new one.
+
+5. **Export a fresh APK/AAB.** After confirming `LocalizationData.gd` is current, do a clean export from **Project → Export**.
+
+6. **Install the fresh build** and launch it.
+
+7. **Check logcat** for the `LocalizationManager` startup line:
+   ```
+   LocalizationManager: source=csv+builtin en=N ru_filled=N
+   ```
+   If `source=builtin-only`, the CSV was not bundled or not readable — but the built-in data should still carry the correct text. If `en=0`, `LocalizationData.gd` was empty when exported.
+
+8. **Check in-game diagnostics.** The Settings panel shows a **Debug Info** row (debug builds only) with `LocalizationManager.get_localization_source_status()`.
+
+> **Root cause reminder:** `LocalizationData.gd` is a compiled GDScript file that is always included in the export. The raw CSV is included via `include_filter` but may not be readable via `FileAccess` in all Android environments. `LocalizationData.gd` is the primary reliability mechanism — keep it committed and fresh.
 
 ---
 

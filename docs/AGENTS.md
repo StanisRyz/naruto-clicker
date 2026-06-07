@@ -55,3 +55,51 @@ If the bottom tab button height changes, update `offset_bottom` in all five shee
 
 - New image-only button → call `ButtonVisualUtils.clear_image_button_styles(button)` after creating it.
 - New text button → call `ButtonVisualUtils.disable_focus_artifact(button)` after creating it.
+
+---
+
+## Localization workflow
+
+### Auto-sync plugin
+
+`addons/localization_sync/LocalizationSyncPlugin.gd` runs inside the Godot editor and polls `game_text.csv` every 2 seconds. When it detects a file change it calls `LocalizationDataGenerator.generate()` and writes `scripts/ui/LocalizationData.gd`, then triggers a filesystem scan.
+
+**Result:** editing and saving `game_text.csv` automatically regenerates `LocalizationData.gd` with no manual step.
+
+If the plugin is not running (disabled, CI, headless), run the manual fallback:
+
+```
+godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
+```
+
+### Why LocalizationData.gd freshness matters for Android/Web
+
+On Android and Web, `FileAccess` may not be able to read raw files from `res://`. The CSV is included in the export via `include_filter` and loaded as an overlay when available, but it is not guaranteed to be readable.
+
+`LocalizationData.gd` is a GDScript file — it is compiled into the export PCK and is always available. It is the primary reliability mechanism. If it is stale at export time, Android/Web users see old text.
+
+**Commit both `game_text.csv` and `LocalizationData.gd` together every time you edit strings.** Never commit one without the other.
+
+### Validation before export
+
+Run these before every Android/Web export:
+
+```
+# Verify LocalizationData.gd matches CSV exactly
+godot --headless --script res://scripts/tools/ValidateLocalizationDataFreshness.gd
+
+# Verify required keys exist and export presets include the CSV
+godot --headless --script res://scripts/tools/ValidateLocalizationExport.gd
+```
+
+Exit 0 = pass. Exit 1 = fix required before exporting.
+
+### Adding or changing localization keys
+
+1. Add/edit a row in `res://localization/game_text.csv`.
+2. Save — the editor plugin regenerates `LocalizationData.gd` automatically.
+3. Reference the key in code via `LocalizationManager.tr_key("key")` or `format_key("key", {...})`.
+4. Run `ValidateLocalizationDataFreshness.gd` to confirm sync.
+5. Commit both files.
+
+See `docs/LOCALIZATION.md` for key naming conventions, the full API, and the Android troubleshooting checklist.

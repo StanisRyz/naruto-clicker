@@ -32,7 +32,10 @@ func _load_translations() -> void:
 		for v: String in _translations["ru"].values():
 			if v != "":
 				ru_count += 1
-		print("LocalizationManager: built-in keys en=%d ru=%d, csv_loaded=%s" % [en_count, ru_count, _csv_loaded])
+		var source: String = "csv+builtin" if _csv_loaded else "builtin-only"
+		print("LocalizationManager: source=%s en=%d ru_filled=%d" % [source, en_count, ru_count])
+		if not _csv_loaded:
+			print("LocalizationManager: CSV unavailable; using built-in LocalizationData.gd.")
 
 
 func _try_load_csv() -> bool:
@@ -154,9 +157,8 @@ func get_localization_source_status() -> String:
 		for v: String in _translations["ru"].values():
 			if v != "":
 				ru_count += 1
-	return "builtin=%s csv=%s en=%d ru=%d" % [
-		str(BuiltinLocalizationData.TRANSLATIONS["en"].size() > 0),
-		str(_csv_loaded),
-		en_count,
-		ru_count,
+	var builtin_count: int = BuiltinLocalizationData.TRANSLATIONS["en"].size()
+	var source: String = "csv+builtin" if _csv_loaded else "builtin-only"
+	return "source=%s builtin_en=%d csv_loaded=%s final_en=%d ru_filled=%d" % [
+		source, builtin_count, str(_csv_loaded), en_count, ru_count,
 	]
