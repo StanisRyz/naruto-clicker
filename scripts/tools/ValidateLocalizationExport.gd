@@ -11,24 +11,40 @@ const REQUIRED_KEYS: Array = [
 	"settings.language",
 	"zone.01.name",
 	"partner.01.name",
-	# 4-row partner card keys
-	"partner.name_count",
-	"partner.damage_summary",
-	"partner.milestone_next",
-	"partner.milestone_max",
+	# current partner card keys
 	"partner.hire_button",
-	# 4-row hero card keys
-	"upgrade.hero.name_level_short",
-	"upgrade.hero.damage_summary",
-	"upgrade.hero.milestone_next",
-	"upgrade.hero.milestone_max",
+	"partner.card.name",
+	"partner.card.count_gain",
+	"partner.card.total_dps",
+	"partner.card.milestone_next",
+	"partner.card.milestone_max",
+	# current hero card keys
 	"upgrade.hero.button",
-	# Ability card keys
-	"upgrade.ability.rank_info",
-	"upgrade.ability.status_hint",
+	"upgrade.hero.card.name",
+	"upgrade.hero.card.level_gain",
+	"upgrade.hero.card.damage",
+	"upgrade.hero.card.milestone_next",
+	"upgrade.hero.card.milestone_max",
+	# current ability card keys
+	"upgrade.ability.card.name",
+	"upgrade.ability.card.rank",
 	"upgrade.ability.purchased",
 	"upgrade.ability.requires_level",
 	"upgrade.ability.buy",
+	"upgrade.ability.unlock_with_duration",
+	# ability-specific effect and duration keys
+	"ability.autoclick.name",
+	"ability.autoclick.effect",
+	"ability.autoclick.duration",
+	"ability.gold_bonus.name",
+	"ability.gold_bonus.effect",
+	"ability.gold_bonus.duration",
+	"ability.focus_burst.name",
+	"ability.focus_burst.effect",
+	"ability.focus_burst.duration",
+	"ability.rally.name",
+	"ability.rally.effect",
+	"ability.rally.duration",
 ]
 
 const OBSOLETE_KEYS: Array = [
@@ -39,6 +55,29 @@ const OBSOLETE_KEYS: Array = [
 	"upgrade.hero.name_level",
 	"upgrade.hero.damage_info",
 	"upgrade.hero.damage_max",
+	# legacy rows removed in localization cleanup
+	"ui.progress.hp_pair",
+	"upgrade.hero.name_level_short",
+	"upgrade.hero.damage_summary",
+	"upgrade.hero.milestone_next",
+	"upgrade.hero.milestone_max",
+	"upgrade.ability.rank_info",
+	"upgrade.ability.status_hint",
+	"upgrade.ability.card.status",
+	"upgrade.ability.card.effect",
+	"upgrade.ability.card.duration",
+	"upgrade.ability.duration_seconds",
+	"partner.name_count",
+	"partner.damage_summary",
+	"partner.milestone_next",
+	"partner.milestone_max",
+	"settlement.name_count",
+	"settlement.next_milestone",
+	"settlement.max_milestones",
+	"prestige.gain",
+	"prestige.description",
+	"prestige.talent_upgrade",
+	"prestige.talent_name_level",
 ]
 
 const BuiltinLocalizationData = preload("res://scripts/ui/LocalizationData.gd")

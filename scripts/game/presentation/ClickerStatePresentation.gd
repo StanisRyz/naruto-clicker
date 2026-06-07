@@ -153,19 +153,33 @@ static func get_ability_effect_text(state: ClickerState, ability_id: String) -> 
 	var rank: int = state.get_ability_rank(ability_id)
 	match ability_id:
 		"autoclick":
-			var hits: int = roundi(BalanceConfig.AUTOCLICK_BASE_HITS_PER_SEC * (1.0 + BalanceConfig.AUTOCLICK_RANK_RATE_STEP * rank))
-			return "%d hits/sec" % hits
+			var hits: int = roundi(
+				BalanceConfig.AUTOCLICK_BASE_HITS_PER_SEC
+				* (1.0 + BalanceConfig.AUTOCLICK_RANK_RATE_STEP * rank)
+			)
+			return LocalizationManager.format_key(
+				AbilityConfig.get_effect_key(ability_id),
+				{"hits": hits}
+			)
 		"gold_bonus":
-			var mult: float = BalanceConfig.ABILITY_BASE_MULTIPLIER + BalanceConfig.ABILITY_RANK_MULTIPLIER_STEP * rank
-			return "x%.2f gold" % mult
+			var multiplier: float = BalanceConfig.ABILITY_BASE_MULTIPLIER + BalanceConfig.ABILITY_RANK_MULTIPLIER_STEP * rank
+			return LocalizationManager.format_key(
+				AbilityConfig.get_effect_key(ability_id),
+				{"multiplier": "%.2f" % multiplier}
+			)
 		"focus_burst":
-			var mult: float = BalanceConfig.ABILITY_BASE_MULTIPLIER + BalanceConfig.ABILITY_RANK_MULTIPLIER_STEP * rank
-			return "x%.2f damage" % mult
+			var multiplier: float = BalanceConfig.ABILITY_BASE_MULTIPLIER + BalanceConfig.ABILITY_RANK_MULTIPLIER_STEP * rank
+			return LocalizationManager.format_key(
+				AbilityConfig.get_effect_key(ability_id),
+				{"multiplier": "%.2f" % multiplier}
+			)
 		"rally":
-			var mult: float = BalanceConfig.ABILITY_BASE_MULTIPLIER + BalanceConfig.ABILITY_RANK_MULTIPLIER_STEP * rank
-			return "x%.2f partner DPS" % mult
-		_:
-			return ""
+			var multiplier: float = BalanceConfig.ABILITY_BASE_MULTIPLIER + BalanceConfig.ABILITY_RANK_MULTIPLIER_STEP * rank
+			return LocalizationManager.format_key(
+				AbilityConfig.get_effect_key(ability_id),
+				{"multiplier": "%.2f" % multiplier}
+			)
+	return ""
 
 
 static func get_ability_duration_text(state: ClickerState, ability_id: String) -> String:
@@ -182,7 +196,7 @@ static func get_ability_duration_text(state: ClickerState, ability_id: String) -
 			seconds = int(BalanceConfig.RALLY_BASE_DURATION_SEC)
 		_:
 			return ""
-	return LocalizationManager.format_key("upgrade.ability.duration_seconds", {"seconds": seconds})
+	return LocalizationManager.format_key(AbilityConfig.get_duration_key(ability_id), {"seconds": seconds})
 
 
 # --- Skill state labels ---

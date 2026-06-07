@@ -58,3 +58,15 @@ static func get_purchase_cost(ability_id: String) -> int:
 		"focus_burst": return BalanceConfig.FOCUS_BURST_PURCHASE_COST
 		"rally": return BalanceConfig.RALLY_PURCHASE_COST
 	return 0
+
+
+static func get_effect_key(ability_id: String) -> String:
+	return "ability.%s.effect" % ability_id
+
+
+static func get_effect_next_key(ability_id: String) -> String:
+	return "ability.%s.effect_next" % ability_id
+
+
+static func get_duration_key(ability_id: String) -> String:
+	return "ability.%s.duration" % ability_id

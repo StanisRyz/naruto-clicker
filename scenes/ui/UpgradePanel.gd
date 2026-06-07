@@ -159,9 +159,7 @@ func _update_ability_row(state: ClickerState, ability_index: int, row: Dictionar
 		"rank": rank,
 		"max_rank": state.ability_max_rank,
 	})
-	effect_label.text = LocalizationManager.format_key("upgrade.ability.card.effect", {
-		"effect": ClickerStatePresentation.get_ability_effect_text(state, ability_id),
-	})
+	effect_label.text = ClickerStatePresentation.get_ability_effect_text(state, ability_id)
 	var dur_text: String = ClickerStatePresentation.get_ability_duration_text(state, ability_id)
 	if not state.is_ability_purchased(ability_id) and not state.is_ability_unlocked(ability_id):
 		milestone_label.text = LocalizationManager.format_key("upgrade.ability.unlock_with_duration", {
@@ -169,9 +167,7 @@ func _update_ability_row(state: ClickerState, ability_index: int, row: Dictionar
 			"duration": dur_text,
 		})
 	else:
-		milestone_label.text = LocalizationManager.format_key("upgrade.ability.card.duration", {
-			"duration": dur_text,
-		})
+		milestone_label.text = dur_text
 	_update_ability_unlock_button(state, ability_id, button)
 	var skills: Array[Dictionary] = state.get_ability_skills(ability_id)
 	_update_skill_icon_row(skills, skill_buttons, skill_image_holders, state, false)

@@ -22,7 +22,6 @@ ui.tab.prestige,Prestige,Престиж,Bottom navigation,
 ui.tab.shop,Shop,Магазин,Bottom navigation,
 ui.progress.boss_time,Boss Time: {time}s,Таймер Босса: {time}с,ProgressInfoPanel boss timer,{time} = seconds remaining as float string
 ui.progress.enemies_count,Enemies {current} / {required},Врагов {current} / {required},ProgressInfoPanel enemy counter,{current} and {required} are integers
-ui.progress.hp_pair,HP {current} / {max},Здоровье {current} / {max},ProgressInfoPanel HP display (legacy),{current} and {max} are compact-formatted numbers
 ui.progress.hp_bar_value,{current} / {max},{current} / {max},ProgressInfoPanel HP bar text,{current} and {max} are compact-formatted HP values
 ui.buy_mode.x1,x1,x1,BuyModeSelector,
 ui.buy_mode.x10,x10,x10,BuyModeSelector,
@@ -44,55 +43,34 @@ task.claim,Claim,Получить,TasksWindow task button,
 task.claimed,Claimed,Получено,TasksWindow task button after clicking,
 task.progress,{current} / {target} | Reward: {reward},{current} / {target} | Награда: {reward},TasksWindow progress line,{current} and {target} are integers; {reward} is compact number
 upgrade.hero.button,x{count} - {cost},x{count} - {cost},UpgradePanel hero upgrade button,{count} is integer; {cost} is compact number
-upgrade.hero.name_level_short,Hero | {level},Герой | {level},UpgradePanel hero row 1 (legacy),{level} is integer
-upgrade.hero.damage_summary,+{gain} Damage | Damage {damage},+{gain} Урон | Урон {damage},UpgradePanel hero row 2 (legacy),{gain} and {damage} are compact numbers
-upgrade.hero.milestone_next,x2 at {milestone} Lv,x2 на {milestone} Ур,UpgradePanel hero row 3 (legacy),{milestone} is integer
-upgrade.hero.milestone_max,Max,Максимум,UpgradePanel hero row 3 all reached (legacy),
 upgrade.hero.card.name,Hero,Герой,UpgradePanel hero card row 1,
 upgrade.hero.card.level_gain,{level} Lv | +{gain} Damage,{level} Ур | +{gain} Урон,UpgradePanel hero card row 2,{level} is integer; {gain} is compact damage gain
 upgrade.hero.card.damage,Damage {damage},Урон {damage},UpgradePanel hero card row 3,{damage} is compact current damage
 upgrade.hero.card.milestone_next,x2 at {milestone} Lv,x2 на {milestone} Ур,UpgradePanel hero card row 4,{milestone} is integer
 upgrade.hero.card.milestone_max,Max,Максимум,UpgradePanel hero card row 4 all reached,
-upgrade.ability.rank_info,{name} | Rank {rank}/{max_rank},{name} | Ранг {rank}/{max_rank},UpgradePanel ability row header (legacy),{name} is ability name; {rank} and {max_rank} are integers
 upgrade.ability.purchased,Purchased,Куплено,UpgradePanel ability unlock button,
 upgrade.ability.requires_level,Requires {level} Lv,Требуется {level} Ур,UpgradePanel ability unlock button,{level} is integer
 upgrade.ability.buy,Buy: {cost},Купить: {cost},UpgradePanel ability unlock button,{cost} is compact number
-upgrade.ability.status_hint,{status},{status},UpgradePanel ability row 3 status hint (legacy),{status} is status text
 upgrade.ability.card.name,{name},{name},UpgradePanel ability card row 1,{name} is ability name
 upgrade.ability.card.rank,Rank {rank}/{max_rank},Ранг {rank}/{max_rank},UpgradePanel ability card row 2,{rank} and {max_rank} are integers
-upgrade.ability.card.status,{status},{status},UpgradePanel ability card row 4 (legacy),{status} is status text
-upgrade.ability.card.effect,{effect},{effect},UpgradePanel ability card row 3,{effect} is effect description text
-upgrade.ability.card.duration,{duration},{duration},UpgradePanel ability card row 4,{duration} is duration text
-upgrade.ability.duration_seconds,Duration {seconds}s,Длительность {seconds}с,ability duration text,{seconds} is integer seconds
-upgrade.ability.unlock_with_duration,Unlock at Lv {level} | {duration},Откроется на уровне {level} | {duration},locked ability row 4,{level} is integer; {duration} is duration text
+upgrade.ability.unlock_with_duration,Requires {level} Lv | {duration},Требуется {level} Ур | {duration},locked ability row 4,{level} is integer; {duration} is duration text
 partner.hire_button,x{count} - {cost},x{count} - {cost},PartnerPanel hire button,{count} is integer; {cost} is compact number
-partner.name_count,{name} | {count},{name} | {count},PartnerPanel row 1 header (legacy),{name} is partner name; {count} is integer
-partner.damage_summary,+{gain} DPS | Total {total},+{gain} DPS | Всего {total},PartnerPanel DPS summary row 2 (legacy),{gain} and {total} are compact numbers
-partner.milestone_next,x2 at {milestone} lv.,x2 на {milestone} ур.,PartnerPanel milestone row 3 (legacy),{milestone} is integer
-partner.milestone_max,Max milestones,Максимум,PartnerPanel milestone row 3 all reached (legacy),
 partner.card.name,{name},{name},PartnerPanel card row 1,{name} is partner name
 partner.card.count_gain,{count} | +{gain} DPS,{count} | +{gain} Урон,PartnerPanel card row 2,{count} is owned copies; {gain} is compact DPS gain
-partner.card.total_dps,Total {total} DPS,Всего {total} Урон,PartnerPanel card row 3,{total} is compact total DPS
-partner.card.milestone_next,Next x2 at {milestone},x2 на уровне {milestone},PartnerPanel card row 4,{milestone} is integer
-partner.card.milestone_max,Max milestones,Максимум,PartnerPanel card row 4 all reached,
+partner.card.total_dps,Total {total} DPS,Всего {total} DPS,PartnerPanel card row 3,{total} is compact total DPS
+partner.card.milestone_next,x2 at {milestone} Lv,x2 на {milestone} Ур,PartnerPanel card row 4,{milestone} is integer
+partner.card.milestone_max,Max,Максимум,PartnerPanel card row 4 all reached,
 settlement.requires,Requires {building},Требуется {building},SettlementPanel build button when locked,{building} is the required building name
 settlement.build_button,x{count} - {cost},x{count} - {cost},SettlementPanel build button,{count} integer; {cost} compact number
-settlement.name_count,{name} | {count},{name} | {count},SettlementPanel building header (legacy),{name} is building name; {count} is integer
-settlement.next_milestone,{effect} | Next x2 at {milestone},{effect} | x2 на уровне {milestone},SettlementPanel milestone text (legacy),{effect} is effect description; {milestone} integer
-settlement.max_milestones,{effect} | Max milestones,{effect} | Максимум,SettlementPanel milestone text (legacy),{effect} is effect description
 settlement.card.name,{name},{name},SettlementPanel card row 1,{name} is building name
 settlement.card.count,Owned: {count},Кол-во: {count},SettlementPanel card row 2,{count} is integer
 settlement.card.milestone_next,Next milestone: {milestone},Следующий milestone: {milestone},SettlementPanel card row 5,{milestone} is integer next milestone count
 settlement.card.milestone_max,Max milestones,Максимальный milestone,SettlementPanel card row 5 all reached,
-prestige.gain,Prestige | Gain {points},Престиж | Получить {points},PrestigePanel action row header (legacy),{points} is compact number
-prestige.description,Reset progress for permanent points,Сбросить прогресс для очков,PrestigePanel effect description (legacy),
 prestige.action,Prestige,Престиж,PrestigePanel button,
 prestige.action_card.title,Prestige,Престиж,PrestigePanel action card row 1,
 prestige.action_card.reward,Receive +{points},Получить +{points},PrestigePanel action card row 2,{points} is compact number
 prestige.action_card.reset_progress,Reset progress,Сбросить прогресс,PrestigePanel action card row 3,
 prestige.action_card.get_points,get points,получить очки,PrestigePanel action card row 4,
-prestige.talent_upgrade,Upgrade - {cost},Улучшение - {cost},PrestigePanel talent button (legacy),{cost} is compact number
-prestige.talent_name_level,{name} | Lv {level},{name} | Уровень {level},PrestigePanel talent row header (legacy),{name} is talent name; {level} is integer
 prestige.talent_upgrade_bulk,Upgrade x{count}\n{cost} PP,Улучшить x{count}\n{cost} ОП,PrestigePanel talent upgrade button,{count} is integer; {cost} is compact PP cost
 prestige.card.name,{name},{name},PrestigePanel talent card row 1,{name} is talent name
 prestige.card.count,Owned: {count},Кол-во: {count},PrestigePanel talent card row 2,{count} is integer talent level
@@ -178,29 +156,29 @@ partner.26.name,Madara Jinchuriki,Мадара Джинчурики,PartnerConfi
 partner.27.name,Sasuke Six Paths,Саске Шесть Путей,PartnerConfig partner 27,
 partner.28.name,Naruto Six Paths,Наруто Шесть Путей,PartnerConfig partner 28,
 building.01.name,Training Ground,Тренировочное Поле,SettlementConfig building 01,
-building.02.name,Ichiraku Ramen,Ичираку Рамен,SettlementConfig building 02,
-building.03.name,,,SettlementConfig building 03,
-building.04.name,War Banner,,SettlementConfig building 04,
-building.05.name,Clock Tower,,SettlementConfig building 05,
-building.06.name,Boss Shrine,,SettlementConfig building 06,
-building.01.purchase_gain,+{bonus}% Partner DPS from purchase,+{bonus}% к ДПС партнёров за покупку,SettlementPanel building 01 card row 3,{bonus} is integer percent gain
-building.01.total_bonus,Total Partner DPS bonus: +{bonus}%,Текущий бонус к ДПС партнёров: +{bonus}%,SettlementPanel building 01 card row 4,{bonus} is integer current total bonus
-building.02.purchase_gain,+{bonus}% Gold gain from purchase,+{bonus}% к получаемому золоту за покупку,SettlementPanel building 02 card row 3,{bonus} is integer percent gain
-building.02.total_bonus,Total Gold gain bonus: +{bonus}%,Текущий бонус к получаемому золоту: +{bonus}%,SettlementPanel building 02 card row 4,{bonus} is integer current total bonus
-building.03.purchase_gain,+{bonus}% Click damage from purchase,+{bonus}% к урону клика за покупку,SettlementPanel building 03 card row 3,{bonus} is integer percent gain
-building.03.total_bonus,Total Click damage bonus: +{bonus}%,Текущий бонус к урону клика: +{bonus}%,SettlementPanel building 03 card row 4,{bonus} is integer current total bonus
-building.04.purchase_gain,+{bonus}% Ability duration from purchase,+{bonus}% к длительности способностей за покупку,SettlementPanel building 04 card row 3,{bonus} is integer percent gain
-building.04.total_bonus,Total Ability duration bonus: +{bonus}%,Текущий бонус к длительности способностей: +{bonus}%,SettlementPanel building 04 card row 4,{bonus} is integer current total bonus
-building.05.purchase_gain,+{bonus}% Cooldown reduction from purchase,+{bonus}% к сокращению перезарядки за покупку,SettlementPanel building 05 card row 3,{bonus} is integer percent gain
-building.05.total_bonus,Total Cooldown reduction: +{bonus}%,Текущее сокращение перезарядки: +{bonus}%,SettlementPanel building 05 card row 4,{bonus} is integer current total bonus
-building.06.purchase_gain,+{bonus}% Boss Gold from purchase,+{bonus}% к золоту с боссов за покупку,SettlementPanel building 06 card row 3,{bonus} is integer percent gain
-building.06.total_bonus,Total Boss Gold bonus: +{bonus}%,Текущий бонус к золоту с боссов: +{bonus}%,SettlementPanel building 06 card row 4,{bonus} is integer current total bonus
-prestige.talent.01.name,Focus Training,,PrestigeConfig talent 01,
-prestige.talent.02.name,Trade Routes,,PrestigeConfig talent 02,
-prestige.talent.03.name,Command Aura,,PrestigeConfig talent 03,
-prestige.talent.04.name,Quick Hands,,PrestigeConfig talent 04,
-prestige.talent.05.name,Builder Wisdom,,PrestigeConfig talent 05,
-prestige.talent.06.name,Boss Hunter,,PrestigeConfig talent 06,
+building.02.name,Hokage Residence,Резиденция Хокаге,SettlementConfig building 02,
+building.03.name,Ichiraku Ramen,Ичираку Рамен,SettlementConfig building 03,
+building.04.name,Hospital,Госпиталь,SettlementConfig building 04,
+building.05.name,Shinobi Academy,Академия Шиноби,SettlementConfig building 05,
+building.06.name,Hokage Rock,Скала Хокаге,SettlementConfig building 06,
+building.01.purchase_gain,+{bonus}% DPS,+{bonus}% DPS,SettlementPanel building 01 card row 3,{bonus} is integer percent gain
+building.01.total_bonus,DPS +{bonus}%,DPS +{bonus}%,SettlementPanel building 01 card row 4,{bonus} is integer current total bonus
+building.02.purchase_gain,+{bonus}% Gold,+{bonus}% Золота,SettlementPanel building 02 card row 3,{bonus} is integer percent gain
+building.02.total_bonus,Gold +{bonus}%,Золото +{bonus}%,SettlementPanel building 02 card row 4,{bonus} is integer current total bonus
+building.03.purchase_gain,+{bonus}% Damage,+{bonus}% Урона,SettlementPanel building 03 card row 3,{bonus} is integer percent gain
+building.03.total_bonus,Damage +{bonus}%,Урон +{bonus}%,SettlementPanel building 03 card row 4,{bonus} is integer current total bonus
+building.04.purchase_gain,+{bonus}%s Ability,+{bonus}%с Навыка,SettlementPanel building 04 card row 3,{bonus} is integer percent gain
+building.04.total_bonus,Ability +{bonus}%s,Навыка +{bonus}%с,SettlementPanel building 04 card row 4,{bonus} is integer current total bonus
+building.05.purchase_gain,-{bonus}% CD,-{bonus}% CD,SettlementPanel building 05 card row 3,{bonus} is integer percent gain
+building.05.total_bonus,CD -{bonus}%,CD -{bonus}%,SettlementPanel building 05 card row 4,{bonus} is integer current total bonus
+building.06.purchase_gain,+{bonus}% Boss Gold,+{bonus}% Золота Босса,SettlementPanel building 06 card row 3,{bonus} is integer percent gain
+building.06.total_bonus,Boss Gold +{bonus}%,Золото Босса +{bonus}%,SettlementPanel building 06 card row 4,{bonus} is integer current total bonus
+prestige.talent.01.name,Focus Training,Тренировка фокуса,PrestigeConfig talent 01,
+prestige.talent.02.name,Trade Routes,Торговые пути,PrestigeConfig talent 02,
+prestige.talent.03.name,Command Aura,Аура командира,PrestigeConfig talent 03,
+prestige.talent.04.name,Quick Hands,Быстрые руки,PrestigeConfig talent 04,
+prestige.talent.05.name,Builder Wisdom,Мудрость строителя,PrestigeConfig talent 05,
+prestige.talent.06.name,Boss Hunter,Охотник на боссов,PrestigeConfig talent 06,
 prestige.talent.01.purchase_gain,+{bonus}% Click damage from purchase,+{bonus}% к урону клика за покупку,PrestigePanel talent 01 card row 3,{bonus} is integer percent gain
 prestige.talent.01.total_bonus,Total Click damage bonus: +{bonus}%,Текущий бонус к урону клика: +{bonus}%,PrestigePanel talent 01 card row 4,{bonus} is integer current total bonus
 prestige.talent.02.purchase_gain,+{bonus}% Gold gain from purchase,+{bonus}% к получаемому золоту за покупку,PrestigePanel talent 02 card row 3,{bonus} is integer percent gain
@@ -230,10 +208,18 @@ task.hire_10_partners.title,Hire 10 partners,,TaskConfig task title,
 task.build_5_buildings.title,Build 5 settlement buildings,,TaskConfig task title,
 task.activate_autoclick_1.title,Activate Autoclick 1 time,,TaskConfig task title,
 task.gain_10_game_levels.title,Reach 10 more levels,,TaskConfig task title,
-ability.autoclick.name,Autoclick,,UpgradePanel ability name,
-ability.gold_bonus.name,Gold Bonus,,UpgradePanel ability name,
-ability.focus_burst.name,Focus Burst,,UpgradePanel ability name,
-ability.rally.name,Rally,,UpgradePanel ability name,
+ability.autoclick.name,Autoclick,Автоклик,UpgradePanel ability name,
+ability.gold_bonus.name,Gold Bonus,Бонус Золота,UpgradePanel ability name,
+ability.focus_burst.name,Focus Burst,Взрывной Урон,UpgradePanel ability name,
+ability.rally.name,Rally,Боевой Клич,UpgradePanel ability name,
+ability.autoclick.effect,Autoclick {hits}/s,Автоклик {hits}/с,UpgradePanel ability card effect row,{hits} is attacks per second
+ability.gold_bonus.effect,Gold x{multiplier},Золото x{multiplier},UpgradePanel ability card effect row,{multiplier} is formatted multiplier
+ability.focus_burst.effect,Damage x{multiplier},Урон x{multiplier},UpgradePanel ability card effect row,{multiplier} is formatted multiplier
+ability.rally.effect,DPS x{multiplier},DPS x{multiplier},UpgradePanel ability card effect row,{multiplier} is formatted multiplier
+ability.autoclick.duration,Duration: {seconds}s,Длительность: {seconds}с,UpgradePanel ability duration row,{seconds} is integer seconds
+ability.gold_bonus.duration,Duration: {seconds}s,Длительность: {seconds}с,UpgradePanel ability duration row,{seconds} is integer seconds
+ability.focus_burst.duration,Duration: {seconds}s,Длительность: {seconds}с,UpgradePanel ability duration row,{seconds} is integer seconds
+ability.rally.duration,Duration: {seconds}s,Длительность: {seconds}с,UpgradePanel ability duration row,{seconds} is integer seconds
 enemy.pool_01.enemy_01.name,Naruto Uzumaki,Наруто Узумаки,EnemyPoolConfig pool 01 normal enemy 01,
 enemy.pool_01.enemy_02.name,Sasuke Uchiha,Саске Учиха,EnemyPoolConfig pool 01 normal enemy 02,
 enemy.pool_01.enemy_03.name,Sakura Haruno,Сакура Харуно,EnemyPoolConfig pool 01 normal enemy 03,
@@ -285,4 +271,4 @@ enemy.pool_17.enemy_09.name,A (Fourth Raikage),Эй (Четвертый Райк
 enemy.pool_17.elite_01.name,Minato Namikaze,Минато Намикадзе,EnemyPoolConfig pool 17 elite enemy 01,
 enemy.pool_17.elite_02.name,Hashirama Senzu,Хаширама Сенджу,EnemyPoolConfig pool 17 elite enemy 02,
 enemy.pool_17.elite_03.name,Maito Guy (8 Gates),Майто Гай (8 Врат),EnemyPoolConfig pool 17 elite enemy 03,
-ui.combat.gold_reward,+{amount} gold,+{amount} золота,Combat reward floating text,{amount} is compact formatted gold amount
+ui.combat.gold_reward,+{amount} Gold,+{amount} Золота,Combat reward floating text,{amount} is compact formatted gold amount
