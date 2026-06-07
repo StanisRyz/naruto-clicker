@@ -174,24 +174,46 @@ To ensure translations are always available, `LocalizationManager` uses a two-so
 
 If the CSV is unavailable, the built-in data is used silently. The game displays correctly on all platforms.
 
-### Keeping LocalizationData.gd in sync — automatic (editor plugin)
+### Keeping LocalizationData.gd in sync — export hook (mandatory)
 
-An EditorPlugin (`addons/localization_sync/`) watches `game_text.csv` every 2 seconds while the Godot editor is open. When it detects a file change it automatically regenerates `LocalizationData.gd` and triggers a filesystem scan. No manual step is required during normal development.
+`addons/localization_sync/LocalizationSyncPlugin.gd` registers an `EditorExportPlugin` that runs immediately before every export begins. This is the primary freshness guarantee.
+
+When you trigger **Project → Export** (Android, Web, or any platform), you will see in the Output panel:
+
+```
+LocalizationSyncPlugin: regenerating LocalizationData.gd before export...
+LocalizationSyncPlugin: generated N localization keys.
+```
+
+The freshly generated `LocalizationData.gd` is then compiled into the export PCK. Android/Web builds cannot use stale localization as long as the plugin is enabled.
+
+If generation fails (CSV missing, parse error), you will see:
+
+```
+ERROR: LocalizationSyncPlugin: ...error detail...
+ERROR: LocalizationSyncPlugin: export may contain stale localization — fix errors above before shipping.
+```
+
+Fix the CSV issue and export again.
+
+### Keeping LocalizationData.gd in sync — editor file watcher (convenience)
+
+The same plugin also polls `game_text.csv` every 2 seconds while the editor is open. When it detects a file change it regenerates `LocalizationData.gd` so the editor immediately reflects your edits. This is a development convenience — it is not the export reliability mechanism.
 
 **Daily editor workflow:**
 
 1. Edit `res://localization/game_text.csv` (text editor, spreadsheet, or the Godot filesystem panel).
 2. Save the file (`Ctrl+S`).
-3. Watch the Godot Output panel — within 2 seconds you will see:
+3. Within 2 seconds in the Godot Output panel:
    ```
    LocalizationSyncPlugin: regenerated LocalizationData.gd from game_text.csv (N keys)
    ```
 4. Commit both `game_text.csv` and `LocalizationData.gd`.
-5. Export Android/Web — the compiled GDScript carries the fresh data automatically.
+5. Export Android/Web — the export hook regenerates `LocalizationData.gd` again immediately before packaging.
 
 ### Keeping LocalizationData.gd in sync — manual fallback
 
-If the editor is not open (CI, headless, or plugin disabled), regenerate manually:
+If the editor plugin is disabled or unavailable (CI, headless):
 
 ```
 godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
@@ -199,7 +221,7 @@ godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
 
 Commit the updated `LocalizationData.gd` to the repository.
 
-**Do not edit `LocalizationData.gd` by hand.** It will be overwritten by the next auto-sync or manual run.
+**Do not edit `LocalizationData.gd` by hand.** It will be overwritten by the next auto-sync or export hook run.
 
 ### Export presets
 
@@ -213,19 +235,24 @@ This gives the CSV a chance to load at runtime, but is not the primary reliabili
 
 ### Startup diagnostics
 
-In debug builds, `LocalizationManager` prints:
+In debug builds, `LocalizationManager` prints these lines on startup:
 
 ```
-LocalizationManager: built-in keys en=234 ru=120, csv_loaded=true/false
+LocalizationManager: source=builtin-only en=N ru_filled=N
+LocalizationManager: CSV unavailable; using built-in LocalizationData.gd.
+LocalizationManager: building.02.purchase_gain en='+{bonus}% Gold' ru='+{bonus}% Золота'
 ```
 
-If translations fail to load entirely, `ClickerScreen` pushes:
+Or if CSV loaded successfully:
 
 ```
-No localization translations loaded. UI will display keys. builtin=true csv=false en=0 ru=0
+LocalizationManager: source=csv+builtin en=N ru_filled=N
+LocalizationManager: building.02.purchase_gain en='+{bonus}% Gold' ru='+{bonus}% Золота'
 ```
 
-This appears in Android logcat and the browser console.
+The `building.02.purchase_gain` probe line is included as a regression canary — if it shows the old value (`Gold gain from purchase`) in Android logcat, the build contains stale `LocalizationData.gd`.
+
+Use `LocalizationManager.get_localization_source_status()` for in-game diagnostics (Settings debug row in debug builds).
 
 ### Validation commands
 
@@ -261,32 +288,39 @@ godot --headless --script res://scripts/tools/ValidateLocalizationUsage.gd
 
 ## Android troubleshooting — old text still showing
 
-If an Android build shows old/English text after editing the CSV:
+If an Android build shows old text (e.g. "Gold gain from purchase" instead of "+{bonus}% Gold"):
 
-1. **Check the editor Output panel.** After saving the CSV you should have seen `LocalizationSyncPlugin: regenerated LocalizationData.gd`. If you did not, the plugin may be disabled — enable it in **Project → Project Settings → Plugins**.
+1. **Check the export Output panel.** During export you should see:
+   ```
+   LocalizationSyncPlugin: regenerating LocalizationData.gd before export...
+   LocalizationSyncPlugin: generated N localization keys.
+   ```
+   If this is absent, the plugin is disabled — enable it in **Project → Project Settings → Plugins → Localization Sync**.
 
-2. **Check git diff.** Run `git diff scripts/ui/LocalizationData.gd`. If there is no diff, the file was not regenerated. Run the manual generator command above, then commit.
-
-3. **Run the freshness validator** to confirm which keys/values are out of sync:
+2. **Run the freshness validator** to confirm which keys/values are stale:
    ```
    godot --headless --script res://scripts/tools/ValidateLocalizationDataFreshness.gd
    ```
-
-4. **Delete the old app from the device.** Android can cache the previous APK's assets. Uninstall the existing build before installing the new one.
-
-5. **Export a fresh APK/AAB.** After confirming `LocalizationData.gd` is current, do a clean export from **Project → Export**.
-
-6. **Install the fresh build** and launch it.
-
-7. **Check logcat** for the `LocalizationManager` startup line:
+   Exit 1 means `LocalizationData.gd` is out of sync. Run the generator manually, then re-export:
    ```
-   LocalizationManager: source=csv+builtin en=N ru_filled=N
+   godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
    ```
-   If `source=builtin-only`, the CSV was not bundled or not readable — but the built-in data should still carry the correct text. If `en=0`, `LocalizationData.gd` was empty when exported.
 
-8. **Check in-game diagnostics.** The Settings panel shows a **Debug Info** row (debug builds only) with `LocalizationManager.get_localization_source_status()`.
+3. **Check logcat** for the canary probe line printed at startup:
+   ```
+   LocalizationManager: building.02.purchase_gain en='+{bonus}% Gold' ru='+{bonus}% Золота'
+   ```
+   If this shows the old value, `LocalizationData.gd` was stale at export time.
 
-> **Root cause reminder:** `LocalizationData.gd` is a compiled GDScript file that is always included in the export. The raw CSV is included via `include_filter` but may not be readable via `FileAccess` in all Android environments. `LocalizationData.gd` is the primary reliability mechanism — keep it committed and fresh.
+4. **Delete the old app from the device.** Uninstall before installing the new APK — Android may otherwise not replace all cached assets.
+
+5. **Export a fresh APK/AAB** from **Project → Export** and confirm the Output panel shows the regeneration line.
+
+6. **Install and retest.**
+
+7. **Check in-game diagnostics.** Settings panel shows a **Debug Info** row (debug builds) with `LocalizationManager.get_localization_source_status()`. If `source=builtin-only` and `en=0`, `LocalizationData.gd` was empty at export time.
+
+> **Root cause:** Android cannot reliably read raw CSV files via `FileAccess`. `LocalizationData.gd` (a compiled GDScript) is the only guaranteed source. The export hook ensures it is always regenerated from the latest CSV immediately before packaging.
 
 ---
 

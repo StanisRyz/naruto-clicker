@@ -77,6 +77,8 @@ static func generate(csv_path: String, output_path: String) -> Dictionary:
 	lines.append("# AUTO-GENERATED — do not edit by hand.")
 	lines.append("# Source: res://localization/game_text.csv")
 	lines.append("# Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd")
+	lines.append("# Generated key count: %d" % key_count)
+	lines.append("# Generated at: %d" % int(Time.get_unix_time_from_system()))
 	lines.append("")
 	lines.append("const TRANSLATIONS: Dictionary = {")
 	lines.append("\t\"en\": {")

@@ -36,6 +36,10 @@ func _load_translations() -> void:
 		print("LocalizationManager: source=%s en=%d ru_filled=%d" % [source, en_count, ru_count])
 		if not _csv_loaded:
 			print("LocalizationManager: CSV unavailable; using built-in LocalizationData.gd.")
+		var _probe_key: String = "building.02.purchase_gain"
+		var _probe_en: String = _translations["en"].get(_probe_key, "(missing)")
+		var _probe_ru: String = _translations["ru"].get(_probe_key, "(missing)")
+		print("LocalizationManager: %s en='%s' ru='%s'" % [_probe_key, _probe_en, _probe_ru])
 
 
 func _try_load_csv() -> bool:
