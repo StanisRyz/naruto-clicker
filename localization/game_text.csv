@@ -60,7 +60,6 @@ partner.card.count_gain,{count} | +{gain} DPS,{count} | +{gain} Урон,Partner
 partner.card.total_dps,Total {total} DPS,Всего {total} DPS,PartnerPanel card row 3,{total} is compact total DPS
 partner.card.milestone_next,x2 at {milestone} Lv,x2 на {milestone} Ур,PartnerPanel card row 4,{milestone} is integer
 partner.card.milestone_max,Max,Максимум,PartnerPanel card row 4 all reached,
-settlement.requires,Requires {building},Требуется {building},SettlementPanel build button when locked,{building} is the required building name
 settlement.build_button,x{count} - {cost},x{count} - {cost},SettlementPanel build button,{count} integer; {cost} compact number
 settlement.card.name,{name},{name},SettlementPanel card row 1,{name} is building name
 settlement.card.count,Owned: {count},Кол-во: {count},SettlementPanel card row 2,{count} is integer

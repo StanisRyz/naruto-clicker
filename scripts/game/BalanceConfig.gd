@@ -119,7 +119,16 @@ const ABILITY_SKILL_COST_MULTIPLIERS: Array = [1, 3, 7, 13, 22]
 
 # --- Settlement — exponential building cost growth ---
 # cost(count) = base_cost * BUILDING_COST_GROWTH^count
-const BUILDING_BASE_COSTS: Array = [500, 750, 1000, 1800, 2600, 4000]
+# All buildings share the same base cost and growth; only owned count differentiates price.
+const BUILDING_BASE_COST: int = 500
+const BUILDING_BASE_COSTS: Array = [
+	BUILDING_BASE_COST,
+	BUILDING_BASE_COST,
+	BUILDING_BASE_COST,
+	BUILDING_BASE_COST,
+	BUILDING_BASE_COST,
+	BUILDING_BASE_COST,
+]
 const BUILDING_COST_GROWTH: float = 1.22
 const BUILDING_BONUS_PERCENT_PER_LEVEL: int = 1
 # Positive effects (partner DPS, gold, click damage, boss gold): additive percent

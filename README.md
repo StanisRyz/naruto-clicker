@@ -142,33 +142,30 @@ These formulas are prototype balance values.
 
 Settlement is a separate bottom tab between `Partners` and `Prestige`.
 
-- Training Camp gives +1% final partner DPS per level.
-- Market gives +1% final gold gain per level.
-- Knight Hut gives +1% final click damage per level.
-- War Banner gives +1% Focus Burst and Rally duration per level.
+- Training Ground gives +1% final partner DPS per level.
+- Ichiraku Ramen gives +1% final gold gain per level.
+- Ninja Academy gives +1% final click damage per level.
+- Chakra Forge gives +1% Focus Burst and Rally duration per level.
 - Clock Tower gives +1% cooldown efficiency per level.
 - Boss Shrine gives +1% boss reward gold per level.
 - Builder Wisdom increases settlement building bonus effectiveness.
+- All six Settlement buildings are visible and purchasable immediately — no prerequisites.
+- All buildings share the same base cost (`BalanceConfig.BUILDING_BASE_COST = 500`) and cost growth (`BalanceConfig.BUILDING_COST_GROWTH = 1.22`). Two buildings with the same owned count cost the same.
 - Settlement buildings use independent milestone multipliers at 10, 25, 50, 100, 250, and 500 owned buildings.
 - Each reached building milestone doubles that building's total accumulated effect, and Builder Wisdom applies after the milestone multiplier.
 - Settlement effects use two scaling types: positive additive bonuses and diminishing reduction bonuses.
 - Positive bonuses can grow above 100%.
 - Reduction bonuses use `final_multiplier = 100 / (100 + raw_bonus)`, so cooldowns, costs, and future reduction effects never reach 0.
 - Clock Tower uses cooldown efficiency through this diminishing formula. Future cost-reduction buildings should use the same formula.
-- Training Camp affects both displayed final Partner DPS and partner tick damage.
-- Gold rewards apply Boss Shrine only for bosses, then Trade Routes, Market, and finally Gold Bonus.
-- Knight Hut affects displayed click damage and the click damage used by manual clicks and Autoclick; manual combo remains owned by `ClickerScreen`.
-- War Banner applies when Focus Burst or Rally is activated and does not affect Autoclick or Gold Bonus duration.
+- Training Ground affects both displayed final Partner DPS and partner tick damage.
+- Gold rewards apply Boss Shrine only for bosses, then Trade Routes, Ichiraku Ramen, and finally Gold Bonus.
+- Ninja Academy affects displayed click damage and the click damage used by manual clicks and Autoclick; manual combo remains owned by `ClickerScreen`.
+- Chakra Forge applies when Focus Burst or Rally is activated and does not affect Autoclick or Gold Bonus duration.
 - Clock Tower applies its cooldown efficiency multiplier when ability cooldowns start and does not need to reduce already-running cooldowns.
-- Each building requires at least one of the previous building.
-- Building initial costs are `[25, 75, 150, 500, 1200, 3000]`.
-- Building costs scale by adding `[25, 50, 100, 250, 600, 1500]` per owned building.
 - Buildings use the same bulk modes as partners: `x1`, `x10`, `x100`, and `Max`.
 - `x10` and `x100` are strict all-or-nothing purchases; `Max` buys as many as current gold allows.
-- Settlement building rows use a temporary white `ColorRect` image placeholder, a two-line building summary, and a buy button.
-- Building rows show the building name, owned count, per-purchase effect, and next x2 milestone; total owned effects belong in summary/stats UI, not each row.
-- SettlementPanel should not show a combined settlement bonus summary line above building rows.
-- Settlement building cards progressively reveal: visible available building cards plus one next locked requirement card; deeper locked buildings stay hidden.
+- Building cards show: name, owned count, per-purchase effect gain, current total bonus, and next x2 milestone.
+- SettlementPanel does not show a combined settlement bonus summary line above building rows.
 - Settlement buildings reset on prestige, while prestige points, prestige talents, and `total_prestiges` are kept.
 - Settlement state is included in local Save System v1.
 

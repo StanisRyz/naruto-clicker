@@ -2,6 +2,55 @@
 
 ---
 
+## Settlement Equal-Cost Patch (2026-06-07)
+
+All Settlement buildings are now available immediately and share the same base cost.
+
+### Unlock rule
+
+Previously buildings required owning at least one copy of the previous building. Now all six buildings are visible and purchasable from the start with no prerequisites.
+
+### Cost config
+
+`BalanceConfig.BUILDING_BASE_COST = 500` (single tunable constant)
+
+`BalanceConfig.BUILDING_BASE_COSTS` is an array of six identical copies of `BUILDING_BASE_COST`. `BUILDING_COST_GROWTH = 1.22` is unchanged.
+
+Formula unchanged: `cost(count) = BUILDING_BASE_COSTS[i] * BUILDING_COST_GROWTH ^ owned_count`
+
+Because all base costs are equal, two buildings with the same owned count have identical prices. A building bought more times than another will always cost more.
+
+### Effects
+
+All building effects are unchanged. Each building still has a unique effect:
+
+| # | Building | Effect |
+|---|---------|--------|
+| 1 | Training Ground | Partner DPS |
+| 2 | Ichiraku Ramen | Gold gain |
+| 3 | Ninja Academy | Click damage |
+| 4 | Chakra Forge | Ability duration |
+| 5 | Clock Tower | Ability cooldown reduction |
+| 6 | Boss Shrine | Boss gold |
+
+### Intentionally not changed
+
+- Building effects and formulas
+- Building names and icons
+- Card layout (5 rows)
+- Localization keys except `settlement.requires` (removed — no longer needed)
+- Save format and save_version
+- Partner/upgrade/prestige/shop logic
+- Milestone thresholds (10, 25, 50, 100, 250, 500)
+
+### Validation
+
+```
+godot --headless --script res://scripts/tools/ValidateSettlementBalance.gd
+```
+
+---
+
 ## Zone Pacing Patch (2026-05-31)
 
 Reduced zone length from 10 levels to 5. Boss interval reduced from every 10th level to every 5th level.

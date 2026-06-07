@@ -58,6 +58,20 @@ If the bottom tab button height changes, update `offset_bottom` in all five shee
 
 ---
 
+## Settlement buildings — always unlocked, equal base cost
+
+All six Settlement buildings are visible and purchasable immediately. There are no prerequisites or progressive-reveal rules.
+
+`ClickerState.can_buy_building(index)` returns `true` for any valid index regardless of what else the player owns.
+
+`BalanceConfig.BUILDING_BASE_COST = 500` — single value, all buildings share it. `BUILDING_BASE_COSTS` is an array of six identical copies. `BUILDING_COST_GROWTH = 1.22` is shared.
+
+`settlement.requires` localization key was removed — do not reference it.
+
+Validation: `godot --headless --script res://scripts/tools/ValidateSettlementBalance.gd`
+
+---
+
 ## Localization workflow
 
 ### Export hook (mandatory — primary mechanism)

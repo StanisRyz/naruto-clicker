@@ -847,16 +847,7 @@ func get_partner_bulk_display_cost(partner_index: int, mode: String) -> int:
 
 
 func can_buy_building(building_index: int) -> bool:
-	if is_debug_purchase_override_enabled():
-		return building_index >= 0 and building_index < building_counts.size()
-
-	if building_index == 0:
-		return true
-
-	if building_index > 0 and building_index < building_counts.size():
-		return building_counts[building_index - 1] > 0
-
-	return false
+	return building_index >= 0 and building_index < building_counts.size()
 
 
 func buy_building(building_index: int) -> Dictionary:
@@ -866,9 +857,6 @@ func buy_building(building_index: int) -> Dictionary:
 func buy_buildings(building_index: int, mode: String) -> Dictionary:
 	if building_index < 0 or building_index >= building_counts.size():
 		return _make_purchase_result("Invalid building")
-
-	if not can_buy_building(building_index):
-		return _make_purchase_result("Requires %s" % SettlementConfig.BUILDING_NAMES[building_index - 1])
 
 	var bought: int = get_building_bulk_count(building_index, mode)
 	var total_cost: int = get_building_bulk_cost(building_index, mode)

@@ -141,12 +141,6 @@ func _update_building_row(state: ClickerState, building_index: int, row: Diction
 	else:
 		milestone_label.text = LocalizationManager.tr_key("settlement.card.milestone_max")
 
-	if not state.can_buy_building(building_index):
-		button.disabled = true
-		var prev_name: String = LocalizationManager.tr_key(SettlementConfig.get_name_key(building_index - 1))
-		button.text = LocalizationManager.format_key("settlement.requires", {"building": prev_name})
-		return
-
 	var bulk_count: int = state.get_building_bulk_display_count(building_index, selected_buy_mode)
 	var bulk_cost: int = state.get_building_bulk_display_cost(building_index, selected_buy_mode)
 	button.disabled = not state.can_afford_building_bulk(building_index, selected_buy_mode)
@@ -162,17 +156,8 @@ func set_buy_mode(mode: String) -> void:
 	selected_buy_mode = mode
 
 
-func _should_show_building_row(state: ClickerState, building_index: int) -> bool:
-	if state.is_debug_purchase_override_enabled():
-		return true
-
-	if building_index == 0:
-		return true
-
-	if state.can_buy_building(building_index):
-		return true
-
-	return building_index > 0 and state.can_buy_building(building_index - 1)
+func _should_show_building_row(_state: ClickerState, building_index: int) -> bool:
+	return building_index >= 0 and building_index < SettlementConfig.BUILDING_NAMES.size()
 
 
 func _create_row_stylebox() -> StyleBoxFlat:
