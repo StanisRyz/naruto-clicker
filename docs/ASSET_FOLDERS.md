@@ -397,6 +397,33 @@ godot --headless --script res://scripts/tools/ValidateBottomBarAssets.gd
 
 ---
 
+## ImageSlot fallback behavior
+
+`ImageSlot` (`scripts/ui/ImageSlot.gd`) is a `ColorRect` subclass that displays a texture on top of a colored fallback background.
+
+Rules:
+- **If texture exists:** fallback background must be hidden. The `ColorRect` becomes `Color.TRANSPARENT` behind the image so transparent PNGs do not show a white square.
+- **If texture is missing:** fallback color is shown (white for icon slots, colored for state-communicating slots, transparent for decorative slots).
+
+Key property: `show_fallback_behind_texture` (default: `false`)
+- `false` — texture hides the fallback background. Use this for almost all game UI assets.
+- `true` — fallback background remains visible behind a loaded texture. Only use intentionally if an asset needs a colored background behind a transparent PNG.
+
+Fallback color policy by slot type:
+
+| Slot type | Missing-texture fallback |
+|-----------|--------------------------|
+| Card icons (partner, upgrade, building, prestige, shop, task) | White |
+| Ability bar icons | Colored (locked / available / purchased state) |
+| Bottom tab button images | White |
+| Decorative backgrounds (top interface, bottom tabs backdrop) | Transparent |
+| Stage navigation buttons | Color communicates lock state (grey / white / blue) |
+| Enemy / field images | Transparent (always driven by `set_direct_texture`) |
+
+Validation script: `godot --headless --script res://scripts/tools/ValidateImageSlotFallbacks.gd`
+
+---
+
 ## File naming conventions
 
 | Type | Filename |

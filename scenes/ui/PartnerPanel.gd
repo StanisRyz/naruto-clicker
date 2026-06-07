@@ -124,6 +124,7 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 		var skill_image_holder = ImageSlotClass.new()
 		skill_image_holder.name = "ImageHolder"
 		skill_image_holder.fallback_color = SKILL_ICON_COLORS["locked"]
+		skill_image_holder.show_fallback_behind_texture = false
 		skill_image_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		skill_image_holder.set_anchors_preset(Control.PRESET_FULL_RECT)
 		skill_button.add_child(skill_image_holder)

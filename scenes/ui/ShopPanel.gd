@@ -55,6 +55,7 @@ func _create_product_row(product_id: String) -> Dictionary:
 	var image_holder = ImageSlotClass.new()
 	image_holder.name = "ImageHolder"
 	image_holder.fallback_color = Color.WHITE
+	image_holder.show_fallback_behind_texture = false
 	image_holder.custom_minimum_size = Vector2(72, 72)
 	content.add_child(image_holder)
 	image_holder.set_asset_key(GameAssetCatalog.shop_product_icon_key(product_id))

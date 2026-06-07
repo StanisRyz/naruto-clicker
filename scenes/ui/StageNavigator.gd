@@ -91,6 +91,7 @@ func _build_ui() -> void:
 		rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		rect.mouse_filter = MOUSE_FILTER_IGNORE
 		rect.fallback_color = COLOR_LOCKED
+		rect.show_fallback_behind_texture = false
 		btn.add_child(rect)
 
 		var current_overlay = ImageSlotClass.new()
@@ -153,6 +154,7 @@ func _make_side_button(bg_color: Color, label_text: String) -> Button:
 	rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	rect.mouse_filter = MOUSE_FILTER_IGNORE
 	rect.fallback_color = bg_color
+	rect.show_fallback_behind_texture = false
 	btn.add_child(rect)
 
 	var label: Label = Label.new()

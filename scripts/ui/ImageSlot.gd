@@ -4,7 +4,7 @@ extends ColorRect
 @export var asset_key: String = ""
 @export var fallback_color: Color = Color.WHITE
 @export var stretch_mode: TextureRect.StretchMode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-@export var show_fallback_behind_texture: bool = true
+@export var show_fallback_behind_texture: bool = false
 
 var _texture_view: TextureRect = null
 
@@ -22,6 +22,16 @@ func _ready() -> void:
 	refresh_image()
 
 
+func has_loaded_texture() -> bool:
+	return _texture_view != null and _texture_view.texture != null and _texture_view.visible
+
+
+func _get_visible_fallback_color_for_texture_state(has_texture: bool) -> Color:
+	if has_texture:
+		return fallback_color if show_fallback_behind_texture else Color.TRANSPARENT
+	return fallback_color
+
+
 func set_asset_key(new_key: String, new_fallback_color: Color = fallback_color) -> void:
 	asset_key = new_key
 	fallback_color = new_fallback_color
@@ -36,31 +46,28 @@ func refresh_image() -> void:
 	if texture != null:
 		_texture_view.texture = texture
 		_texture_view.visible = true
-		color = fallback_color if show_fallback_behind_texture else Color.TRANSPARENT
+		color = _get_visible_fallback_color_for_texture_state(true)
 	else:
 		_texture_view.texture = null
 		_texture_view.visible = false
-		color = fallback_color
+		color = _get_visible_fallback_color_for_texture_state(false)
 
 
 func set_fallback_color(new_color: Color) -> void:
 	fallback_color = new_color
-	if _texture_view != null and _texture_view.texture != null and _texture_view.visible:
-		color = fallback_color if show_fallback_behind_texture else Color.TRANSPARENT
-	else:
-		color = fallback_color
+	color = _get_visible_fallback_color_for_texture_state(has_loaded_texture())
 
 
-func set_direct_texture(texture: Texture2D, new_fallback_color: Color, show_fallback: bool = true) -> void:
+func set_direct_texture(texture: Texture2D, new_fallback_color: Color, show_fallback: bool = false) -> void:
 	fallback_color = new_fallback_color
+	show_fallback_behind_texture = show_fallback
 	if _texture_view == null:
 		color = new_fallback_color
 		return
 	if texture != null:
 		_texture_view.texture = texture
 		_texture_view.visible = true
-		color = new_fallback_color if show_fallback else Color.TRANSPARENT
 	else:
 		_texture_view.texture = null
 		_texture_view.visible = false
-		color = new_fallback_color
+	color = _get_visible_fallback_color_for_texture_state(texture != null)

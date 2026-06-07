@@ -41,6 +41,8 @@ func _ready() -> void:
 	reset_confirm_button.pressed.connect(_on_reset_confirm_button_pressed)
 	version_label.text = "Version %s%s" % [BuildConfig.APP_VERSION, "-dev" if BuildConfig.IS_DEBUG_BUILD else ""]
 	_create_language_row()
+	if BuildConfig.IS_DEBUG_BUILD:
+		_create_debug_localization_row()
 	hide()
 
 
@@ -63,6 +65,26 @@ func _create_language_row() -> void:
 	vbox.move_child(lang_row, save_button.get_index())
 
 	_update_language_button()
+
+
+func _create_debug_localization_row() -> void:
+	var vbox: VBoxContainer = panel_container.get_node("MarginContainer/VBoxContainer")
+
+	var source_label := Label.new()
+	source_label.name = "DebugLocalizationSourceLabel"
+	source_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	source_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	source_label.modulate = Color(0.5, 0.85, 0.5, 1.0)
+	source_label.text = "Localization: %s" % LocalizationManager.get_localization_source_status()
+	vbox.add_child(source_label)
+
+	var probe_label := Label.new()
+	probe_label.name = "DebugLocalizationProbeLabel"
+	probe_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	probe_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	probe_label.modulate = Color(0.5, 0.85, 0.5, 1.0)
+	probe_label.text = "Probe: building.02.purchase_gain = '%s'" % LocalizationManager.tr_key("building.02.purchase_gain")
+	vbox.add_child(probe_label)
 
 
 func _update_language_button() -> void:

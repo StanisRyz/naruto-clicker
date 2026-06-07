@@ -55,6 +55,7 @@ func _create_building_row(building_index: int) -> Dictionary:
 	var image_holder = ImageSlotClass.new()
 	image_holder.name = "ImageHolder"
 	image_holder.fallback_color = Color.WHITE
+	image_holder.show_fallback_behind_texture = false
 	image_holder.custom_minimum_size = BUILDING_IMAGE_SIZE
 	content.add_child(image_holder)
 	image_holder.set_asset_key(GameAssetCatalog.building_icon_key(building_index))

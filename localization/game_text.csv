@@ -53,7 +53,7 @@ upgrade.ability.requires_level,Requires {level} Lv,Требуется {level} У
 upgrade.ability.buy,Buy: {cost},Купить: {cost},UpgradePanel ability unlock button,{cost} is compact number
 upgrade.ability.card.name,{name},{name},UpgradePanel ability card row 1,{name} is ability name
 upgrade.ability.card.rank,Rank {rank}/{max_rank},Ранг {rank}/{max_rank},UpgradePanel ability card row 2,{rank} and {max_rank} are integers
-upgrade.ability.unlock_with_duration,Requires {level} Lv | {duration},Требуется {level} Ур | {duration},locked ability row 4,{level} is integer; {duration} is duration text
+upgrade.ability.unlock_with_duration,{duration},{duration},locked ability row 4,{level} is integer; {duration} is duration text
 partner.hire_button,x{count} - {cost},x{count} - {cost},PartnerPanel hire button,{count} is integer; {cost} is compact number
 partner.card.name,{name},{name},PartnerPanel card row 1,{name} is partner name
 partner.card.count_gain,{count} | +{gain} DPS,{count} | +{gain} Урон,PartnerPanel card row 2,{count} is owned copies; {gain} is compact DPS gain

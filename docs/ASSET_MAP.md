@@ -302,6 +302,18 @@ Sheet header resource icons (gold in Upgrades/Partners/Settlement, prestige poin
 
 ## Number formatting
 
+## ImageSlot fallback rule
+
+`ImageSlot` (`scripts/ui/ImageSlot.gd`) renders a texture on top of a `ColorRect` fallback.
+
+- **Texture exists → fallback must be hidden.** `show_fallback_behind_texture = false` (default) makes the `ColorRect` transparent so transparent PNGs do not show white squares behind them.
+- **Texture missing → fallback color is shown.** White for icon slots, colored for state-communicating slots, transparent for decorative slots.
+- Only set `show_fallback_behind_texture = true` when an asset intentionally needs a colored background behind a transparent texture. No current slots require this.
+
+Run `godot --headless --script res://scripts/tools/ValidateImageSlotFallbacks.gd` to catch accidental `true` values.
+
+---
+
 All player-facing economy and power values (costs, damage, DPS, HP, gold, rewards, gems, prestige points) use `NumberFormatter.compact()` from `res://scripts/ui/NumberFormatter.gd`. Raw values are preserved in save data, balance calculations, and the playtest logger. Standard compact thresholds (K from 1 000, M from 1 000 000, etc.) — 304 400 displays as 304.4K. Value labels use compact number formatting to prevent overflow:
 
 | Raw value | Displayed |

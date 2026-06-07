@@ -204,6 +204,26 @@ func _init() -> void:
 			if not csv_keys.has(builtin_key):
 				warnings.append("Built-in key not in CSV (stale?): " + builtin_key)
 
+		# Strict value comparison — stale values are export-blocking errors.
+		# A key count match or key presence match is not enough; if the en/ru text
+		# differs between CSV and LocalizationData.gd, Android will show old text.
+		for row: Dictionary in csv_rows:
+			var key: String = row["key"]
+			var csv_en_val: String = row["en"]
+			var csv_ru_val: String = row["ru"]
+			if builtin_en.has(key):
+				var builtin_en_val: String = String(builtin_en[key])
+				if builtin_en_val != csv_en_val:
+					errors.append(
+						"LocalizationData stale for %s:\n  CSV en='%s'\n  Builtin en='%s'" % [key, csv_en_val, builtin_en_val]
+					)
+			if builtin_ru.has(key):
+				var builtin_ru_val: String = String(builtin_ru[key])
+				if builtin_ru_val != csv_ru_val:
+					errors.append(
+						"LocalizationData stale for %s:\n  CSV ru='%s'\n  Builtin ru='%s'" % [key, csv_ru_val, builtin_ru_val]
+					)
+
 	# --- export_presets.cfg ---
 	if not FileAccess.file_exists(EXPORT_PRESETS_PATH):
 		errors.append("export_presets.cfg not found: " + EXPORT_PRESETS_PATH)

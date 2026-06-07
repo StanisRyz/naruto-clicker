@@ -193,6 +193,7 @@ func _add_card_content(row: PanelContainer, button_name: String) -> Dictionary:
 	var image_holder = ImageSlotClass.new()
 	image_holder.name = "ImageHolder"
 	image_holder.fallback_color = Color.WHITE
+	image_holder.show_fallback_behind_texture = false
 	image_holder.custom_minimum_size = UPGRADE_IMAGE_SIZE
 	image_holder.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	content.add_child(image_holder)
@@ -248,6 +249,7 @@ func _add_card_content(row: PanelContainer, button_name: String) -> Dictionary:
 		var skill_image_holder = ImageSlotClass.new()
 		skill_image_holder.name = "ImageHolder"
 		skill_image_holder.fallback_color = SKILL_ICON_COLORS["locked"]
+		skill_image_holder.show_fallback_behind_texture = false
 		skill_image_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		skill_image_holder.set_anchors_preset(Control.PRESET_FULL_RECT)
 		skill_button.add_child(skill_image_holder)

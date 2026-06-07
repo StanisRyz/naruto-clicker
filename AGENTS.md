@@ -726,6 +726,37 @@ UI font sizes are centralized in `res://scripts/ui/UiFontConfig.gd`. This is the
 - Do not add font size magic numbers to individual UI panels; put new font size constants in `UiFontConfig.gd`.
 - Colors, margins, icon sizes, and layout constants do not belong in `UiFontConfig.gd`.
 
+## Localization Workflow Rules
+
+All player-facing strings live in `res://localization/game_text.csv`. The `LocalizationData.gd` file is auto-generated from the CSV and must always be in sync before export.
+
+**After editing `game_text.csv`:**
+1. The editor plugin (`addons/localization_sync`) auto-regenerates `LocalizationData.gd` within 2 seconds.
+2. Before exporting, the export hook regenerates it again automatically.
+3. Always commit both `game_text.csv` and `LocalizationData.gd` together.
+
+**Validation commands:**
+```
+godot --headless --script res://scripts/tools/ValidateLocalizationDataFreshness.gd
+godot --headless --script res://scripts/tools/ValidateLocalizationExport.gd
+```
+
+Both must exit 0 before an Android/Web export is shipped.
+
+**Android still shows old text — checklist:**
+1. Open `Project → Export`. Confirm Output panel shows:
+   `LocalizationSyncPlugin: generated N localization keys.`
+   If absent, the plugin is disabled — enable it in **Project Settings → Plugins**.
+2. Run `ValidateLocalizationDataFreshness.gd`. Exit 1 = stale. Run `GenerateLocalizationData.gd` to fix, then re-export.
+3. In Android logcat, check:
+   `LocalizationManager: building.02.purchase_gain en='...'`
+   Old value there = `LocalizationData.gd` was stale at export time.
+4. **Uninstall the old APK before installing the new one.** Android caches assets from the old install.
+5. In debug builds, open Settings → the green debug lines show `LocalizationManager.get_localization_source_status()` and the probe value.
+6. Root cause: Android cannot reliably read raw CSV via `FileAccess`. `LocalizationData.gd` (compiled GDScript) is the only guaranteed source — keep it in sync.
+
+See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
+
 ## Documentation Update Rules
 
 Update this file when adding important systems, scenes, architecture decisions, workflow rules, or validation requirements. Keep README.md aligned with major project setup or workflow changes.

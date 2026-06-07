@@ -138,6 +138,7 @@ func _create_task_row(task_data: Dictionary) -> PanelContainer:
 	var image_holder = ImageSlotClass.new()
 	image_holder.name = "ImageHolder"
 	image_holder.fallback_color = Color.WHITE
+	image_holder.show_fallback_behind_texture = false
 	image_holder.custom_minimum_size = Vector2(56, 56)
 	image_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.add_child(image_holder)
