@@ -355,9 +355,9 @@ func get_prestige_talent_bulk_bonus_gain(talent_index: int, mode: String) -> int
 	var count: int = get_prestige_talent_bulk_display_count(talent_index, mode)
 	if count <= 0:
 		return 0
-	var current_level: int = prestige_talent_levels[talent_index]
-	var current_bonus: int = get_prestige_talent_bonus_percent_for_level(current_level)
-	var future_bonus: int = get_prestige_talent_bonus_percent_for_level(current_level + count)
+	var talent_level: int = prestige_talent_levels[talent_index]
+	var current_bonus: int = get_prestige_talent_bonus_percent_for_level(talent_level)
+	var future_bonus: int = get_prestige_talent_bonus_percent_for_level(talent_level + count)
 	return maxi(future_bonus - current_bonus, 0)
 
 

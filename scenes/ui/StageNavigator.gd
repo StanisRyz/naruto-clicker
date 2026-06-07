@@ -112,7 +112,7 @@ func _build_ui() -> void:
 		_clear_button_visual_styles(btn)
 		slot.add_child(btn)
 
-		var label_y: int = BUTTON_SIZE - STAGE_NUMBER_LABEL_HEIGHT / 2
+		var label_y: int = BUTTON_SIZE - (STAGE_NUMBER_LABEL_HEIGHT >> 1)
 		var label: Label = Label.new()
 		label.offset_left = 0
 		label.offset_top = label_y

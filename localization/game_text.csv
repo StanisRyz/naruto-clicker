@@ -86,9 +86,13 @@ settlement.card.purchase_bonus_gain,+{bonus}% from purchase,+{bonus}% за по�
 settlement.card.total_bonus,Total bonus: {bonus}%,Всего бонус: {bonus}%,SettlementPanel card row 4,{bonus} is integer current total bonus
 settlement.card.milestone_next,Next milestone: {milestone},Следующий milestone: {milestone},SettlementPanel card row 5,{milestone} is integer next milestone count
 settlement.card.milestone_max,Max milestones,Максимальный milestone,SettlementPanel card row 5 all reached,
-prestige.gain,Prestige | Gain {points},Престиж | Получить {points},PrestigePanel action row header,{points} is compact number
-prestige.description,Reset progress for permanent points,Сбросить прогресс для очков,PrestigePanel effect description,
+prestige.gain,Prestige | Gain {points},Престиж | Получить {points},PrestigePanel action row header (legacy),{points} is compact number
+prestige.description,Reset progress for permanent points,Сбросить прогресс для очков,PrestigePanel effect description (legacy),
 prestige.action,Prestige,Престиж,PrestigePanel button,
+prestige.action_card.title,Prestige,Престиж,PrestigePanel action card row 1,
+prestige.action_card.reward,Receive +{points},Получить +{points},PrestigePanel action card row 2,{points} is compact number
+prestige.action_card.reset_progress,Reset progress,Сбросить прогресс,PrestigePanel action card row 3,
+prestige.action_card.get_points,get points,получить очки,PrestigePanel action card row 4,
 prestige.talent_upgrade,Upgrade - {cost},Улучшение - {cost},PrestigePanel talent button (legacy),{cost} is compact number
 prestige.talent_name_level,{name} | Lv {level},{name} | Уровень {level},PrestigePanel talent row header (legacy),{name} is talent name; {level} is integer
 prestige.talent_upgrade_bulk,Upgrade x{count}\n{cost} PP,Улучшить x{count}\n{cost} ОП,PrestigePanel talent upgrade button,{count} is integer; {cost} is compact PP cost

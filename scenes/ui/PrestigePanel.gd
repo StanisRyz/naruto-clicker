@@ -60,51 +60,73 @@ func _create_prestige_action_row() -> Dictionary:
 	var image_holder = ImageSlotClass.new()
 	image_holder.name = "ImageHolder"
 	image_holder.fallback_color = Color.WHITE
-	image_holder.custom_minimum_size = Vector2(72, 72)
+	image_holder.custom_minimum_size = TALENT_IMAGE_SIZE
 	content.add_child(image_holder)
 	image_holder.set_asset_key("prestige.action")
 
-	var info_container := VBoxContainer.new()
-	info_container.name = "InfoContainer"
-	info_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	info_container.add_theme_constant_override("separation", 4)
-	content.add_child(info_container)
+	var right_content := VBoxContainer.new()
+	right_content.name = "RightContent"
+	right_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	right_content.add_theme_constant_override("separation", 4)
+	content.add_child(right_content)
 
-	var name_gain_label := Label.new()
-	name_gain_label.name = "NameGainLabel"
-	name_gain_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	name_gain_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	info_container.add_child(name_gain_label)
+	var prestige_title_label := Label.new()
+	prestige_title_label.name = "PrestigeTitleLabel"
+	prestige_title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	prestige_title_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	UiFontConfig.apply_label_font_size(prestige_title_label, UiFontConfig.PRESTIGE_ACTION_TITLE_FONT_SIZE)
+	right_content.add_child(prestige_title_label)
 
-	var effect_label := Label.new()
-	effect_label.name = "EffectLabel"
-	effect_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	info_container.add_child(effect_label)
+	var prestige_reward_label := Label.new()
+	prestige_reward_label.name = "PrestigeRewardLabel"
+	prestige_reward_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	UiFontConfig.apply_label_font_size(prestige_reward_label, UiFontConfig.PRESTIGE_ACTION_REWARD_FONT_SIZE)
+	right_content.add_child(prestige_reward_label)
+
+	var reset_progress_label := Label.new()
+	reset_progress_label.name = "ResetProgressLabel"
+	reset_progress_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	UiFontConfig.apply_label_font_size(reset_progress_label, UiFontConfig.PRESTIGE_ACTION_RESET_FONT_SIZE)
+	right_content.add_child(reset_progress_label)
+
+	var get_points_label := Label.new()
+	get_points_label.name = "GetPointsLabel"
+	get_points_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	UiFontConfig.apply_label_font_size(get_points_label, UiFontConfig.PRESTIGE_ACTION_GET_POINTS_FONT_SIZE)
+	right_content.add_child(get_points_label)
 
 	var button := Button.new()
 	button.name = "PrestigeButton"
-	button.custom_minimum_size = Vector2(180, 64)
+	button.custom_minimum_size = TALENT_BUTTON_SIZE
+	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	button.pressed.connect(_on_prestige_button_pressed)
 	ButtonVisualUtils.disable_focus_artifact(button)
+	UiFontConfig.apply_button_font_size(button, UiFontConfig.PRESTIGE_ACTION_BUTTON_FONT_SIZE)
 	content.add_child(button)
 
 	return {
-		"name_gain_label": name_gain_label,
-		"effect_label": effect_label,
+		"prestige_title_label": prestige_title_label,
+		"prestige_reward_label": prestige_reward_label,
+		"reset_progress_label": reset_progress_label,
+		"get_points_label": get_points_label,
 		"button": button,
 	}
 
 
 func _update_prestige_action_row(total_reward: int) -> void:
-	var name_gain_label: Label = prestige_action_row["name_gain_label"]
-	var effect_label: Label = prestige_action_row["effect_label"]
+	var prestige_title_label: Label = prestige_action_row["prestige_title_label"]
+	var prestige_reward_label: Label = prestige_action_row["prestige_reward_label"]
+	var reset_progress_label: Label = prestige_action_row["reset_progress_label"]
+	var get_points_label: Label = prestige_action_row["get_points_label"]
 	var button: Button = prestige_action_row["button"]
 
-	name_gain_label.text = LocalizationManager.format_key("prestige.gain", {
+	prestige_title_label.text = LocalizationManager.tr_key("prestige.action_card.title")
+	prestige_reward_label.text = LocalizationManager.format_key("prestige.action_card.reward", {
 		"points": NumberFormatter.compact(total_reward),
 	})
-	effect_label.text = LocalizationManager.tr_key("prestige.description")
+	reset_progress_label.text = LocalizationManager.tr_key("prestige.action_card.reset_progress")
+	get_points_label.text = LocalizationManager.tr_key("prestige.action_card.get_points")
+
 	button.disabled = total_reward <= 0
 	button.text = LocalizationManager.tr_key("prestige.action")
 
