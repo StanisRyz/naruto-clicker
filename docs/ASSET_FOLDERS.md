@@ -204,7 +204,13 @@ UI folders: `gold`, `gems`, `prestige_points`, `settings`, `close`, `auto_transi
 
 ---
 
-## Auto-transition button textures
+## StageNavigator side button textures
+
+Side buttons no longer draw text labels. All visual state comes from the `ImageSlot` texture or the fallback color.
+
+Recommended size: **80×80 px** (matches `SIDE_BUTTON_SIZE` / `BUTTON_SIZE` in `StageNavigator.gd`). Square, transparent background if needed, no baked-in text, clear icon at small size.
+
+### Auto-transition button
 
 Path: `assets/images/ui/stage_navigation/auto_transition/`
 
@@ -213,10 +219,15 @@ Path: `assets/images/ui/stage_navigation/auto_transition/`
 | `enabled.png` | `stage.auto_on` | Auto-transition is ON | Green (`COLOR_AUTO_ON`) |
 | `disabled.png` | `stage.auto_off` | Auto-transition is OFF | Gray (`COLOR_AUTO_OFF`) |
 
-Recommended size: **80×80 px** (matches `SIDE_BUTTON_SIZE` and `BUTTON_SIZE` in `StageNavigator.gd`).
+### Latest-stage / forced-scroll-right button
 
-Rules:
-- Square, transparent background if needed, no text, clear icon readable at small size.
+Path: `assets/images/ui/stage_navigation/latest_stage/`
+
+| File | Asset key | Shown when | Fallback |
+|------|-----------|------------|---------|
+| `default.png` | `stage.latest` | Always | Gold (`COLOR_LATEST`) |
+
+Rules (both buttons):
 - Missing file falls back to the respective color — no crash.
 - Fallback color is hidden once a texture loads (`show_fallback_behind_texture = false`).
 

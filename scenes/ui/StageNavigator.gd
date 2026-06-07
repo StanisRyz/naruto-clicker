@@ -65,7 +65,7 @@ func _build_ui() -> void:
 	hbox.mouse_filter = MOUSE_FILTER_PASS
 	add_child(hbox)
 
-	_auto_btn = _make_side_button(COLOR_AUTO_ON, "A")
+	_auto_btn = _make_side_button(COLOR_AUTO_ON)
 	_auto_btn.size_flags_vertical = 0
 	_auto_btn_rect = _auto_btn.get_child(0)
 	_auto_btn.pressed.connect(_on_auto_transition_button_pressed)
@@ -136,7 +136,7 @@ func _build_ui() -> void:
 		_stage_current_overlays.append(current_overlay)
 		_stage_locked_overlays.append(locked_overlay)
 
-	_latest_button = _make_side_button(COLOR_LATEST, ">>")
+	_latest_button = _make_side_button(COLOR_LATEST)
 	_latest_button.size_flags_vertical = 0
 	_latest_button.pressed.connect(_on_latest_button_pressed)
 	_clear_button_visual_styles(_latest_button)
@@ -144,7 +144,7 @@ func _build_ui() -> void:
 	_latest_button.get_child(0).set_asset_key("stage.latest", COLOR_LATEST)
 
 
-func _make_side_button(bg_color: Color, label_text: String) -> Button:
+func _make_side_button(bg_color: Color) -> Button:
 	var btn: Button = Button.new()
 	btn.custom_minimum_size = Vector2(SIDE_BUTTON_SIZE, BUTTON_SIZE)
 	btn.flat = true
@@ -156,15 +156,6 @@ func _make_side_button(bg_color: Color, label_text: String) -> Button:
 	rect.fallback_color = bg_color
 	rect.show_fallback_behind_texture = false
 	btn.add_child(rect)
-
-	var label: Label = Label.new()
-	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", UiFontConfig.STAGE_NAV_SIDE_BUTTON_FONT_SIZE)
-	label.mouse_filter = MOUSE_FILTER_IGNORE
-	label.text = label_text
-	btn.add_child(label)
 
 	return btn
 

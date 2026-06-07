@@ -130,17 +130,22 @@ func _check_path_logic() -> void:
 
 
 func _check_auto_transition() -> void:
-	print("\n-- Auto-transition button assets --")
+	print("\n-- Side button assets --")
 
-	var folder: String = "res://assets/images/ui/stage_navigation/auto_transition"
-	if DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(folder)):
-		print("  OK      %s/" % folder)
-	else:
-		_error("missing folder: %s/" % folder)
+	var folders: Array = [
+		"res://assets/images/ui/stage_navigation/auto_transition",
+		"res://assets/images/ui/stage_navigation/latest_stage",
+	]
+	for folder in folders:
+		if DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(folder)):
+			print("  OK      %s/" % folder)
+		else:
+			_error("missing folder: %s/" % folder)
 
 	var expected: Dictionary = {
 		"stage.auto_on":  "res://assets/images/ui/stage_navigation/auto_transition/enabled.png",
 		"stage.auto_off": "res://assets/images/ui/stage_navigation/auto_transition/disabled.png",
+		"stage.latest":   "res://assets/images/ui/stage_navigation/latest_stage/default.png",
 	}
 	for key in expected:
 		if not GameAssetCatalog.ASSET_PATHS.has(key):

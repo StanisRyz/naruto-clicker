@@ -202,19 +202,21 @@ godot --headless --script res://scripts/tools/ValidateStageNavigationAssets.gd
 
 ---
 
-## Auto-transition button textures
+## StageNavigator side button textures
+
+Side buttons no longer render text labels. Visuals come entirely from `ImageSlot` texture or fallback color.
+
+Recommended size: **80×80 px**.
 
 | Asset key | Path | Fallback |
 |-----------|------|---------|
 | `stage.auto_on` | `assets/images/ui/stage_navigation/auto_transition/enabled.png` | Green (`COLOR_AUTO_ON`) |
 | `stage.auto_off` | `assets/images/ui/stage_navigation/auto_transition/disabled.png` | Gray (`COLOR_AUTO_OFF`) |
+| `stage.latest` | `assets/images/ui/stage_navigation/latest_stage/default.png` | Gold (`COLOR_LATEST`) |
 
-Recommended size: **80×80 px**.
-
-- `enabled.png` — shown when auto-transition is ON.
-- `disabled.png` — shown when auto-transition is OFF.
 - Missing files are **warnings** (safe color fallback shown, no crash).
-- Keys are set by `StageNavigator.set_auto_transition_enabled()` — key names must not change.
+- `stage.auto_on` / `stage.auto_off` keys are set by `StageNavigator.set_auto_transition_enabled()` — key names must not change.
+- `stage.latest` key is set once in `_build_ui()` — key name must not change.
 
 Validated by: `godot --headless --script res://scripts/tools/ValidateStageNavigationAssets.gd`
 
