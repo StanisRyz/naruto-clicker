@@ -202,6 +202,24 @@ godot --headless --script res://scripts/tools/ValidateStageNavigationAssets.gd
 
 ---
 
+## Auto-transition button textures
+
+| Asset key | Path | Fallback |
+|-----------|------|---------|
+| `stage.auto_on` | `assets/images/ui/stage_navigation/auto_transition/enabled.png` | Green (`COLOR_AUTO_ON`) |
+| `stage.auto_off` | `assets/images/ui/stage_navigation/auto_transition/disabled.png` | Gray (`COLOR_AUTO_OFF`) |
+
+Recommended size: **80×80 px**.
+
+- `enabled.png` — shown when auto-transition is ON.
+- `disabled.png` — shown when auto-transition is OFF.
+- Missing files are **warnings** (safe color fallback shown, no crash).
+- Keys are set by `StageNavigator.set_auto_transition_enabled()` — key names must not change.
+
+Validated by: `godot --headless --script res://scripts/tools/ValidateStageNavigationAssets.gd`
+
+---
+
 ## Enemy asset validation
 
 Run the following command from the project root to validate all required enemy PNG files:

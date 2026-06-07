@@ -5,7 +5,7 @@ extends RefCounted
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
 # Generated key count: 272
-# Generated at: 1780830835
+# Generated at: 1780842636
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -456,7 +456,7 @@ const TRANSLATIONS: Dictionary = {
 		"building.05.total_bonus": "CD -{bonus}%",
 		"building.06.purchase_gain": "+{bonus}% Золота Босса",
 		"building.06.total_bonus": "Золото Босса +{bonus}%",
-		"prestige.talent.01.name": "Мощь",
+		"prestige.talent.01.name": "Мощь Каге",
 		"prestige.talent.02.name": "Охотник",
 		"prestige.talent.03.name": "Военачальник",
 		"prestige.talent.04.name": "Быстрые руки",

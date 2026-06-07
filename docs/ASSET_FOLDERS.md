@@ -204,6 +204,24 @@ UI folders: `gold`, `gems`, `prestige_points`, `settings`, `close`, `auto_transi
 
 ---
 
+## Auto-transition button textures
+
+Path: `assets/images/ui/stage_navigation/auto_transition/`
+
+| File | Asset key | Shown when | Fallback |
+|------|-----------|------------|---------|
+| `enabled.png` | `stage.auto_on` | Auto-transition is ON | Green (`COLOR_AUTO_ON`) |
+| `disabled.png` | `stage.auto_off` | Auto-transition is OFF | Gray (`COLOR_AUTO_OFF`) |
+
+Recommended size: **80×80 px** (matches `SIDE_BUTTON_SIZE` and `BUTTON_SIZE` in `StageNavigator.gd`).
+
+Rules:
+- Square, transparent background if needed, no text, clear icon readable at small size.
+- Missing file falls back to the respective color — no crash.
+- Fallback color is hidden once a texture loads (`show_fallback_behind_texture = false`).
+
+---
+
 ## Stage navigation images
 
 Path: `assets/images/stage_navigation/zone_##/stage.png`

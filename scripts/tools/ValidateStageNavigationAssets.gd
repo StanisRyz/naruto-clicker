@@ -19,6 +19,7 @@ func _run() -> void:
 	_check_stage_files(expected_zone_numbers)
 	_check_common_overlays()
 	_check_path_logic()
+	_check_auto_transition()
 	print("--- Results: %d error(s), %d warning(s) ---" % [_errors, _warnings])
 
 
@@ -126,6 +127,35 @@ func _check_path_logic() -> void:
 			print("  OK  level %d -> %s" % [level, path])
 		else:
 			_error("level %d: expected '%s', got '%s'" % [level, expected_path, path])
+
+
+func _check_auto_transition() -> void:
+	print("\n-- Auto-transition button assets --")
+
+	var folder: String = "res://assets/images/ui/stage_navigation/auto_transition"
+	if DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(folder)):
+		print("  OK      %s/" % folder)
+	else:
+		_error("missing folder: %s/" % folder)
+
+	var expected: Dictionary = {
+		"stage.auto_on":  "res://assets/images/ui/stage_navigation/auto_transition/enabled.png",
+		"stage.auto_off": "res://assets/images/ui/stage_navigation/auto_transition/disabled.png",
+	}
+	for key in expected:
+		if not GameAssetCatalog.ASSET_PATHS.has(key):
+			_error("GameAssetCatalog missing key: %s" % key)
+			continue
+		var actual: String = GameAssetCatalog.ASSET_PATHS[key]
+		var want: String = expected[key]
+		if actual != want:
+			_error("key '%s' path mismatch: expected '%s', got '%s'" % [key, want, actual])
+		else:
+			print("  OK      key '%s' -> %s" % [key, actual])
+		if ResourceLoader.exists(actual):
+			print("  FOUND   %s" % actual)
+		else:
+			_warn("missing optional PNG: %s" % actual)
 
 
 func _error(msg: String) -> void:

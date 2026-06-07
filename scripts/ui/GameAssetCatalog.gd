@@ -29,8 +29,8 @@ const ASSET_PATHS: Dictionary = {
 	"stage.locked": "res://assets/images/ui/stage_locked.png",
 	"stage.current": "res://assets/images/ui/stage_current.png",
 	"stage.latest": "res://assets/images/ui/stage_latest.png",
-	"stage.auto_on": "res://assets/images/ui/auto_on.png",
-	"stage.auto_off": "res://assets/images/ui/auto_off.png",
+	"stage.auto_on": "res://assets/images/ui/stage_navigation/auto_transition/enabled.png",
+	"stage.auto_off": "res://assets/images/ui/stage_navigation/auto_transition/disabled.png",
 
 	# Abilities
 	"ability.autoclick": "res://assets/images/abilities/autoclick/icon.png",

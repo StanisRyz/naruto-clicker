@@ -172,7 +172,7 @@ building.05.purchase_gain,-{bonus}% CD,-{bonus}% CD,SettlementPanel building 05 
 building.05.total_bonus,CD -{bonus}%,CD -{bonus}%,SettlementPanel building 05 card row 4,{bonus} is integer current total bonus
 building.06.purchase_gain,+{bonus}% Boss Gold,+{bonus}% Золота Босса,SettlementPanel building 06 card row 3,{bonus} is integer percent gain
 building.06.total_bonus,Boss Gold +{bonus}%,Золото Босса +{bonus}%,SettlementPanel building 06 card row 4,{bonus} is integer current total bonus
-prestige.talent.01.name,Empower,Мощь,PrestigeConfig talent 01,
+prestige.talent.01.name,Empower,Мощь Каге,PrestigeConfig talent 01,
 prestige.talent.02.name,Bounty Hunter,Охотник,PrestigeConfig talent 02,
 prestige.talent.03.name,Warchief,Военачальник,PrestigeConfig talent 03,
 prestige.talent.04.name,Quick Hands,Быстрые руки,PrestigeConfig talent 04,
