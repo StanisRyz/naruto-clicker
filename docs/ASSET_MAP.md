@@ -259,6 +259,8 @@ Recommended size: **820×165 px** (50px bleed each side beyond the 720px viewpor
 
 Rendered by `BottomTabsBackdrop` in `ClickerScreen.tscn` — a `ColorRect` + `ImageSlot` positioned behind `BottomBar`. `mouse_filter = IGNORE`. Missing file falls back to transparent. This is a decorative layer only; do not put important detail within ~50px of the left/right edges.
 
+Layout: BottomBar height = 165px, vertical margins = 20/20, button height = 125px. Buttons are vertically centered inside the backdrop (20 + 125 + 20 = 165).
+
 No old `BottomBar` panel background (`ui.bottom_bar.background`) is used.
 
 ---

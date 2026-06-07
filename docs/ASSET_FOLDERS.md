@@ -346,6 +346,12 @@ Recommended size: **820×165 px**
 
 The backdrop is a decorative layer placed behind the five tab buttons. It is 820px wide for a 720px viewport, providing 50px of horizontal bleed on each side so the texture does not look cropped at the screen edges. Do not put important details near the extreme left/right edges (within ~50px of each edge).
 
+Layout (BottomBar matches backdrop height, buttons are vertically centered):
+- BottomTabsBackdrop height: 165px
+- BottomBar height: 165px
+- BottomBar vertical margins: 20px top / 20px bottom
+- Button height: 125px (20 + 125 + 20 = 165)
+
 Rules:
 - Rendered by `BottomTabsBackdrop` (`ColorRect` + `ImageSlot`) in `ClickerScreen.tscn`.
 - `mouse_filter = IGNORE` — does not block clicks.
