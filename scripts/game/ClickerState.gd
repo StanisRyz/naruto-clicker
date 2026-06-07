@@ -275,25 +275,110 @@ func get_current_enemy_type() -> String:
 	return "elite" if is_elite_enemy else "normal"
 
 
+func get_prestige_talent_cost_for_level(level: int) -> int:
+	return 1 + maxi(level, 0)
+
+
 func get_prestige_talent_cost(talent_index: int) -> int:
 	if talent_index < 0 or talent_index >= prestige_talent_levels.size():
 		return 0
+	return get_prestige_talent_cost_for_level(prestige_talent_levels[talent_index])
 
-	return 1 + prestige_talent_levels[talent_index]
+
+func get_prestige_talent_bulk_cost_for_count(talent_index: int, count: int) -> int:
+	if talent_index < 0 or talent_index >= prestige_talent_levels.size():
+		return 0
+	var simulated_level: int = prestige_talent_levels[talent_index]
+	var total_cost: int = 0
+	for i in range(count):
+		total_cost += get_prestige_talent_cost_for_level(simulated_level)
+		simulated_level += 1
+	return total_cost
 
 
-func buy_prestige_talent(talent_index: int) -> Dictionary:
+func get_prestige_talent_bulk_count(talent_index: int, mode: String) -> int:
+	if talent_index < 0 or talent_index >= prestige_talent_levels.size():
+		return 0
+
+	var fixed_count: int = _get_fixed_buy_count(mode)
+	if fixed_count > 0:
+		var fixed_cost: int = get_prestige_talent_bulk_cost_for_count(talent_index, fixed_count)
+		return fixed_count if prestige_points_available >= fixed_cost else 0
+
+	var simulated_points: int = prestige_points_available
+	var simulated_level: int = prestige_talent_levels[talent_index]
+	var count: int = 0
+
+	while simulated_points >= get_prestige_talent_cost_for_level(simulated_level):
+		simulated_points -= get_prestige_talent_cost_for_level(simulated_level)
+		simulated_level += 1
+		count += 1
+
+	return count
+
+
+func get_prestige_talent_bulk_cost(talent_index: int, mode: String) -> int:
+	var count: int = get_prestige_talent_bulk_count(talent_index, mode)
+	if count <= 0:
+		return 0
+	return get_prestige_talent_bulk_cost_for_count(talent_index, count)
+
+
+func get_prestige_talent_bulk_display_count(talent_index: int, mode: String) -> int:
+	if talent_index < 0 or talent_index >= prestige_talent_levels.size():
+		return 0
+	if mode == "max":
+		return get_prestige_talent_bulk_count(talent_index, mode)
+	return _get_fixed_buy_count(mode)
+
+
+func get_prestige_talent_bulk_display_cost(talent_index: int, mode: String) -> int:
+	var display_count: int = get_prestige_talent_bulk_display_count(talent_index, mode)
+	if display_count > 0:
+		return get_prestige_talent_bulk_cost_for_count(talent_index, display_count)
+	return get_prestige_talent_cost(talent_index)
+
+
+func get_prestige_talent_bonus_percent_for_level(level: int) -> int:
+	return maxi(level, 0) * prestige_talent_bonus_percent_per_level
+
+
+func get_prestige_talent_total_bonus_percent(talent_index: int) -> int:
+	if talent_index < 0 or talent_index >= prestige_talent_levels.size():
+		return 0
+	return get_prestige_talent_bonus_percent_for_level(prestige_talent_levels[talent_index])
+
+
+func get_prestige_talent_bulk_bonus_gain(talent_index: int, mode: String) -> int:
+	if talent_index < 0 or talent_index >= prestige_talent_levels.size():
+		return 0
+	var count: int = get_prestige_talent_bulk_display_count(talent_index, mode)
+	if count <= 0:
+		return 0
+	var current_level: int = prestige_talent_levels[talent_index]
+	var current_bonus: int = get_prestige_talent_bonus_percent_for_level(current_level)
+	var future_bonus: int = get_prestige_talent_bonus_percent_for_level(current_level + count)
+	return maxi(future_bonus - current_bonus, 0)
+
+
+func buy_prestige_talents(talent_index: int, mode: String) -> Dictionary:
 	if talent_index < 0 or talent_index >= prestige_talent_levels.size():
 		return _make_purchase_result("Invalid prestige talent")
 
-	var cost: int = get_prestige_talent_cost(talent_index)
-	if prestige_points_available < cost:
+	var bought: int = get_prestige_talent_bulk_count(talent_index, mode)
+	var total_cost: int = get_prestige_talent_bulk_cost(talent_index, mode)
+
+	if bought <= 0 or total_cost <= 0 or prestige_points_available < total_cost:
 		return _make_purchase_result("Not enough Prestige Points")
 
-	prestige_points_available -= cost
-	prestige_talent_levels[talent_index] += 1
+	prestige_points_available -= total_cost
+	prestige_talent_levels[talent_index] += bought
 	_update_character_state()
-	return _make_purchase_result("Prestige talent upgraded!", false, true)
+	return _make_purchase_result("Prestige talent upgraded x%d!" % bought, false, true)
+
+
+func buy_prestige_talent(talent_index: int) -> Dictionary:
+	return buy_prestige_talents(talent_index, "x1")
 
 
 func add_gems(amount: int) -> void:
@@ -1392,17 +1477,45 @@ func get_building_bonus_percent(building_index: int) -> int:
 	return get_building_raw_bonus_percent(building_index)
 
 
+func get_building_bonus_percent_for_count(building_index: int, count: int) -> int:
+	if building_index < 0 or building_index >= building_counts.size():
+		return 0
+	if count <= 0:
+		return 0
+	var base_bonus: int = count * building_bonus_percent_per_level
+	var milestone_bonus: int = base_bonus * get_milestone_multiplier(count)
+	return int(milestone_bonus * get_settlement_effectiveness_multiplier())
+
+
 func get_building_raw_bonus_percent(building_index: int) -> int:
 	if building_index < 0 or building_index >= building_counts.size():
 		return 0
+	return get_building_bonus_percent_for_count(building_index, building_counts[building_index])
 
-	var building_count: int = building_counts[building_index]
-	if building_count <= 0:
+
+func get_building_total_bonus_percent(building_index: int) -> int:
+	if building_index < 0 or building_index >= building_counts.size():
 		return 0
+	return get_building_bonus_percent_for_count(building_index, building_counts[building_index])
 
-	var base_bonus: int = building_count * building_bonus_percent_per_level
-	var milestone_bonus: int = base_bonus * get_milestone_multiplier(building_count)
-	return int(milestone_bonus * get_settlement_effectiveness_multiplier())
+
+func get_building_bulk_bonus_gain(building_index: int, mode: String) -> int:
+	if building_index < 0 or building_index >= building_counts.size():
+		return 0
+	var count: int = get_building_bulk_display_count(building_index, mode)
+	if count <= 0:
+		return 0
+	var current_bonus: int = get_building_bonus_percent_for_count(building_index, building_counts[building_index])
+	var future_bonus: int = get_building_bonus_percent_for_count(building_index, building_counts[building_index] + count)
+	return maxi(future_bonus - current_bonus, 0)
+
+
+func can_afford_building_bulk(building_index: int, mode: String) -> bool:
+	var display_count: int = get_building_bulk_display_count(building_index, mode)
+	if display_count <= 0:
+		return false
+	var cost: int = get_building_bulk_display_cost(building_index, mode)
+	return cost > 0 and gold >= cost
 
 
 func get_diminishing_reduction_multiplier(raw_bonus_percent: int) -> float:

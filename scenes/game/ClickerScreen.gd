@@ -432,12 +432,12 @@ func _on_prestige_requested() -> void:
 	prestige_sheet.show_prestige_confirm(state)
 
 
-func _on_prestige_talent_purchase_requested(talent_index: int) -> void:
+func _on_prestige_talent_purchase_requested(talent_index: int, mode: String) -> void:
 	var pp_before: int = state.prestige_points_available
-	var result: Dictionary = state.buy_prestige_talent(talent_index)
+	var result: Dictionary = state.buy_prestige_talents(talent_index, mode)
 	_handle_status_text(result.get("status_text", ""))
 	if balance_logger:
-		balance_logger.log_purchase(state, "prestige_talent", "talent_%d" % talent_index, pp_before - state.prestige_points_available, result)
+		balance_logger.log_purchase(state, "prestige_talent", "talent_%d_x%s" % [talent_index, mode], pp_before - state.prestige_points_available, result)
 	_update_ui()
 	if result.get("upgraded", false):
 		_save_game_now()

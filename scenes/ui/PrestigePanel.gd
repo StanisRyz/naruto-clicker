@@ -2,10 +2,15 @@ class_name PrestigePanel
 extends VBoxContainer
 
 signal prestige_requested
-signal prestige_talent_purchase_requested(talent_index: int)
+signal prestige_talent_purchase_requested(talent_index: int, mode: String)
+
+const BUY_MODES: Array[String] = ["x1", "x10", "x100", "max"]
+const TALENT_IMAGE_SIZE: Vector2 = Vector2(136, 136)
+const TALENT_BUTTON_SIZE: Vector2 = Vector2(210, 136)
 
 const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 
+var selected_buy_mode: String = "x1"
 var prestige_action_row: Dictionary = {}
 var talent_rows: Array[Dictionary] = []
 
@@ -15,6 +20,12 @@ var talent_rows: Array[Dictionary] = []
 
 func _ready() -> void:
 	prestige_action_row = _create_prestige_action_row()
+
+
+func set_buy_mode(mode: String) -> void:
+	if not BUY_MODES.has(mode):
+		return
+	selected_buy_mode = mode
 
 
 func update_view(state: ClickerState) -> void:
@@ -128,38 +139,63 @@ func _create_talent_row(talent_index: int, talent_id: String) -> Dictionary:
 	var image_holder = ImageSlotClass.new()
 	image_holder.name = "ImageHolder"
 	image_holder.fallback_color = Color.WHITE
-	image_holder.custom_minimum_size = Vector2(72, 72)
+	image_holder.custom_minimum_size = TALENT_IMAGE_SIZE
 	content.add_child(image_holder)
 	image_holder.set_asset_key(GameAssetCatalog.prestige_talent_icon_key(talent_id))
 
-	var info_container := VBoxContainer.new()
-	info_container.name = "InfoContainer"
-	info_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	info_container.add_theme_constant_override("separation", 4)
-	content.add_child(info_container)
+	var right_content := VBoxContainer.new()
+	right_content.name = "RightContent"
+	right_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	right_content.add_theme_constant_override("separation", 4)
+	content.add_child(right_content)
 
-	var name_level_label := Label.new()
-	name_level_label.name = "NameLevelLabel"
-	name_level_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	name_level_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	info_container.add_child(name_level_label)
+	var talent_name_label := Label.new()
+	talent_name_label.name = "TalentNameLabel"
+	talent_name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	talent_name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	UiFontConfig.apply_label_font_size(talent_name_label, UiFontConfig.PRESTIGE_NAME_FONT_SIZE)
+	right_content.add_child(talent_name_label)
 
-	var effect_label := Label.new()
-	effect_label.name = "EffectLabel"
-	effect_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	info_container.add_child(effect_label)
+	var talent_count_label := Label.new()
+	talent_count_label.name = "TalentCountLabel"
+	talent_count_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	UiFontConfig.apply_label_font_size(talent_count_label, UiFontConfig.PRESTIGE_COUNT_FONT_SIZE)
+	right_content.add_child(talent_count_label)
+
+	var purchase_bonus_gain_label := Label.new()
+	purchase_bonus_gain_label.name = "PurchaseBonusGainLabel"
+	purchase_bonus_gain_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	UiFontConfig.apply_label_font_size(purchase_bonus_gain_label, UiFontConfig.PRESTIGE_PURCHASE_GAIN_FONT_SIZE)
+	right_content.add_child(purchase_bonus_gain_label)
+
+	var total_bonus_label := Label.new()
+	total_bonus_label.name = "TotalBonusLabel"
+	total_bonus_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	UiFontConfig.apply_label_font_size(total_bonus_label, UiFontConfig.PRESTIGE_TOTAL_BONUS_FONT_SIZE)
+	right_content.add_child(total_bonus_label)
+
+	var empty_row_label := Label.new()
+	empty_row_label.name = "EmptyRowLabel"
+	empty_row_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	empty_row_label.text = " "
+	UiFontConfig.apply_label_font_size(empty_row_label, UiFontConfig.PRESTIGE_EMPTY_ROW_FONT_SIZE)
+	right_content.add_child(empty_row_label)
 
 	var button := Button.new()
 	button.name = "UpgradeButton"
-	button.custom_minimum_size = Vector2(180, 64)
-	button.pressed.connect(func() -> void: prestige_talent_purchase_requested.emit(talent_index))
+	button.custom_minimum_size = TALENT_BUTTON_SIZE
+	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	button.pressed.connect(func() -> void: prestige_talent_purchase_requested.emit(talent_index, selected_buy_mode))
 	ButtonVisualUtils.disable_focus_artifact(button)
+	UiFontConfig.apply_button_font_size(button, UiFontConfig.PRESTIGE_BUTTON_FONT_SIZE)
 	content.add_child(button)
 
 	return {
-		"name_level_label": name_level_label,
-		"effect_label": effect_label,
+		"talent_name_label": talent_name_label,
+		"talent_count_label": talent_count_label,
+		"purchase_bonus_gain_label": purchase_bonus_gain_label,
+		"total_bonus_label": total_bonus_label,
+		"empty_row_label": empty_row_label,
 		"button": button,
 	}
 
@@ -169,21 +205,32 @@ func _on_prestige_button_pressed() -> void:
 
 
 func _update_talent_row(state: ClickerState, talent_index: int, row: Dictionary) -> void:
-	var name_level_label: Label = row["name_level_label"]
-	var effect_label: Label = row["effect_label"]
+	var talent_name_label: Label = row["talent_name_label"]
+	var talent_count_label: Label = row["talent_count_label"]
+	var purchase_bonus_gain_label: Label = row["purchase_bonus_gain_label"]
+	var total_bonus_label: Label = row["total_bonus_label"]
 	var button: Button = row["button"]
+
 	var level: int = state.prestige_talent_levels[talent_index]
-	var cost: int = state.get_prestige_talent_cost(talent_index)
 	var talent_name: String = LocalizationManager.tr_key(PrestigeConfig.get_name_key(talent_index))
 
-	name_level_label.text = LocalizationManager.format_key("prestige.talent_name_level", {
-		"name": talent_name,
-		"level": level,
-	})
-	effect_label.text = state.get_prestige_talent_description(talent_index)
-	button.disabled = state.prestige_points_available < cost
-	button.text = LocalizationManager.format_key("prestige.talent_upgrade", {
-		"cost": NumberFormatter.compact(cost),
+	talent_name_label.text = LocalizationManager.format_key("prestige.card.name", {"name": talent_name})
+
+	talent_count_label.text = LocalizationManager.format_key("prestige.card.count", {"count": level})
+
+	var bonus_gain: int = state.get_prestige_talent_bulk_bonus_gain(talent_index, selected_buy_mode)
+	purchase_bonus_gain_label.text = LocalizationManager.format_key("prestige.card.purchase_bonus_gain", {"bonus": bonus_gain})
+
+	var total_bonus: int = state.get_prestige_talent_total_bonus_percent(talent_index)
+	total_bonus_label.text = LocalizationManager.format_key("prestige.card.total_bonus", {"bonus": total_bonus})
+
+	var bulk_count: int = state.get_prestige_talent_bulk_display_count(talent_index, selected_buy_mode)
+	var bulk_cost: int = state.get_prestige_talent_bulk_display_cost(talent_index, selected_buy_mode)
+	var can_afford: bool = state.get_prestige_talent_bulk_count(talent_index, selected_buy_mode) > 0
+	button.disabled = not can_afford
+	button.text = LocalizationManager.format_key("prestige.talent_upgrade_bulk", {
+		"count": bulk_count,
+		"cost": NumberFormatter.compact(bulk_cost),
 	})
 
 

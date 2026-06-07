@@ -77,14 +77,26 @@ partner.card.milestone_next,Next x2 at {milestone},x2 на уровне {milesto
 partner.card.milestone_max,Max milestones,Максимум,PartnerPanel card row 4 all reached,
 settlement.requires,Requires {building},Требуется {building},SettlementPanel build button when locked,{building} is the required building name
 settlement.build_button,x{count} - {cost},x{count} - {cost},SettlementPanel build button,{count} integer; {cost} compact number
-settlement.name_count,{name} | {count},{name} | {count},SettlementPanel building header,{name} is building name; {count} is integer
-settlement.next_milestone,{effect} | Next x2 at {milestone},{effect} | x2 на уровне {milestone},SettlementPanel milestone text,{effect} is effect description; {milestone} integer
-settlement.max_milestones,{effect} | Max milestones,{effect} | Максимум,SettlementPanel milestone text,{effect} is effect description
+settlement.name_count,{name} | {count},{name} | {count},SettlementPanel building header (legacy),{name} is building name; {count} is integer
+settlement.next_milestone,{effect} | Next x2 at {milestone},{effect} | x2 на уровне {milestone},SettlementPanel milestone text (legacy),{effect} is effect description; {milestone} integer
+settlement.max_milestones,{effect} | Max milestones,{effect} | Максимум,SettlementPanel milestone text (legacy),{effect} is effect description
+settlement.card.name,{name},{name},SettlementPanel card row 1,{name} is building name
+settlement.card.count,Owned: {count},Кол-во: {count},SettlementPanel card row 2,{count} is integer
+settlement.card.purchase_bonus_gain,+{bonus}% from purchase,+{bonus}% за покупку,SettlementPanel card row 3,{bonus} is integer percent gain from selected purchase mode
+settlement.card.total_bonus,Total bonus: {bonus}%,Всего бонус: {bonus}%,SettlementPanel card row 4,{bonus} is integer current total bonus
+settlement.card.milestone_next,Next milestone: {milestone},Следующий milestone: {milestone},SettlementPanel card row 5,{milestone} is integer next milestone count
+settlement.card.milestone_max,Max milestones,Максимальный milestone,SettlementPanel card row 5 all reached,
 prestige.gain,Prestige | Gain {points},Престиж | Получить {points},PrestigePanel action row header,{points} is compact number
 prestige.description,Reset progress for permanent points,Сбросить прогресс для очков,PrestigePanel effect description,
 prestige.action,Prestige,Престиж,PrestigePanel button,
-prestige.talent_upgrade,Upgrade - {cost},Улучшение - {cost},PrestigePanel talent button,{cost} is compact number
-prestige.talent_name_level,{name} | Lv {level},{name} | Уровень {level},PrestigePanel talent row header,{name} is talent name; {level} is integer
+prestige.talent_upgrade,Upgrade - {cost},Улучшение - {cost},PrestigePanel talent button (legacy),{cost} is compact number
+prestige.talent_name_level,{name} | Lv {level},{name} | Уровень {level},PrestigePanel talent row header (legacy),{name} is talent name; {level} is integer
+prestige.talent_upgrade_bulk,Upgrade x{count}\n{cost} PP,Улучшить x{count}\n{cost} ОП,PrestigePanel talent upgrade button,{count} is integer; {cost} is compact PP cost
+prestige.card.name,{name},{name},PrestigePanel talent card row 1,{name} is talent name
+prestige.card.count,Owned: {count},Кол-во: {count},PrestigePanel talent card row 2,{count} is integer talent level
+prestige.card.purchase_bonus_gain,+{bonus}% from purchase,+{bonus}% за покупку,PrestigePanel talent card row 3,{bonus} is integer percent gain from selected purchase mode
+prestige.card.total_bonus,Total bonus: {bonus}%,Всего бонус: {bonus}%,PrestigePanel talent card row 4,{bonus} is integer current total bonus
+prestige.card.empty, , ,PrestigePanel talent card row 5 (reserved blank row),
 prestige.confirm.stage_level,Stage level,Этап,PrestigeConfirmDialog label,followed by colon and value in code
 prestige.confirm.character_level,Character level,Уровень,PrestigeConfirmDialog label,
 prestige.confirm.stage_points,Stage points,Очки этапа,PrestigeConfirmDialog label,
