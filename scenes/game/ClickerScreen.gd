@@ -68,6 +68,7 @@ var _is_initialized: bool = false
 @onready var settlement_button_image = $BottomBar/MarginContainer/HBoxContainer/SettlementButton/ImageHolder
 @onready var prestige_button_image = $BottomBar/MarginContainer/HBoxContainer/PrestigeButton/ImageHolder
 @onready var shop_button_image = $BottomBar/MarginContainer/HBoxContainer/ShopButton/ImageHolder
+@onready var bottom_tabs_backdrop = $BottomTabsBackdrop
 
 
 func _ready() -> void:
@@ -117,6 +118,7 @@ func _ready() -> void:
 	_clear_button_visual_styles(settlement_button)
 	_clear_button_visual_styles(prestige_button)
 	_clear_button_visual_styles(shop_button)
+	bottom_tabs_backdrop.set_asset_key("ui.bottom_tabs.backdrop", Color.TRANSPARENT)
 	_load_game_on_start()
 	LocalizationManager.set_language(state.language)
 	if not LocalizationManager.has_loaded_translations():

@@ -338,6 +338,22 @@ Only BossTimerLabel is affected. Other ProgressInfoPanel labels use the standard
 
 ---
 
+## Bottom tabs decorative backdrop
+
+Path: `assets/images/ui/bottom_bar/tabs_backdrop.png`
+
+Recommended size: **820×165 px**
+
+The backdrop is a decorative layer placed behind the five tab buttons. It is 820px wide for a 720px viewport, providing 50px of horizontal bleed on each side so the texture does not look cropped at the screen edges. Do not put important details near the extreme left/right edges (within ~50px of each edge).
+
+Rules:
+- Rendered by `BottomTabsBackdrop` (`ColorRect` + `ImageSlot`) in `ClickerScreen.tscn`.
+- `mouse_filter = IGNORE` — does not block clicks.
+- Missing file falls back to transparent — no crash.
+- This is NOT the old `BottomBar` panel background. No `background.png` is used for the BottomBar.
+
+---
+
 ## Bottom tab button images
 
 Path: `assets/images/ui/bottom_bar/tabs/<tab_name>/default.png` and `active.png`
@@ -349,7 +365,7 @@ Tab names: `upgrades`, `partners`, `settlement`, `prestige`, `shop`
 | `default.png` | Tab is not the currently open sheet |
 | `active.png` | Tab is the currently open sheet |
 
-Recommended size: **125×55 px** per tab button.
+Recommended size: **125×125 px** per tab button (square).
 
 Rules:
 - BottomBar has no background texture — only tab button textures are used.

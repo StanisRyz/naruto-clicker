@@ -98,6 +98,9 @@ const ASSET_PATHS: Dictionary = {
 
 	"ui.bottom_tab.shop.default": "res://assets/images/ui/bottom_bar/tabs/shop/default.png",
 	"ui.bottom_tab.shop.active": "res://assets/images/ui/bottom_bar/tabs/shop/active.png",
+
+	# Bottom tabs decorative backdrop (820px wide, bleeds 50px each side beyond 720px viewport)
+	"ui.bottom_tabs.backdrop": "res://assets/images/ui/bottom_bar/tabs_backdrop.png",
 }
 
 

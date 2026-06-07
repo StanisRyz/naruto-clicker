@@ -249,6 +249,20 @@ Rules:
 
 ---
 
+## Bottom tabs decorative backdrop
+
+| Asset key | Path |
+|-----------|------|
+| `ui.bottom_tabs.backdrop` | `assets/images/ui/bottom_bar/tabs_backdrop.png` |
+
+Recommended size: **820×165 px** (50px bleed each side beyond the 720px viewport).
+
+Rendered by `BottomTabsBackdrop` in `ClickerScreen.tscn` — a `ColorRect` + `ImageSlot` positioned behind `BottomBar`. `mouse_filter = IGNORE`. Missing file falls back to transparent. This is a decorative layer only; do not put important detail within ~50px of the left/right edges.
+
+No old `BottomBar` panel background (`ui.bottom_bar.background`) is used.
+
+---
+
 ## Bottom tab buttons
 
 Each tab has two image states: `default` and `active`.
@@ -266,7 +280,7 @@ Each tab has two image states: `default` and `active`.
 | `ui.bottom_tab.shop.default` | `assets/images/ui/bottom_bar/tabs/shop/default.png` |
 | `ui.bottom_tab.shop.active` | `assets/images/ui/bottom_bar/tabs/shop/active.png` |
 
-Recommended tab image size: **125×55 px**. BottomBar has no background texture. Button nodes remain (`Button` type) so pressed signals continue to work. `ImageHolder` (`ImageSlot`) is visual only — mouse input passes through to the button. Missing tab textures fall back to white. Godot no longer draws native text on these buttons.
+Recommended tab image size: **125×125 px** (square). BottomBar has no background texture. Button nodes remain (`Button` type) so pressed signals continue to work. `ImageHolder` (`ImageSlot`) is visual only — mouse input passes through to the button. Missing tab textures fall back to white. Godot no longer draws native text on these buttons.
 
 ---
 

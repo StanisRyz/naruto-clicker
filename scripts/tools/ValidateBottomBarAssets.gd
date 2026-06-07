@@ -32,6 +32,14 @@ func _init() -> void:
 		"ui.bottom_tab.shop.active": "res://assets/images/ui/bottom_bar/tabs/shop/active.png",
 	}
 
+	var backdrop_key: String = "ui.bottom_tabs.backdrop"
+	var backdrop_expected: String = "res://assets/images/ui/bottom_bar/tabs_backdrop.png"
+	var backdrop_actual: String = GameAssetCatalog.get_path(backdrop_key)
+	if backdrop_actual != backdrop_expected:
+		errors.append("WRONG path for '%s': got '%s', expected '%s'" % [backdrop_key, backdrop_actual, backdrop_expected])
+	elif not ResourceLoader.exists(backdrop_actual):
+		warnings.append("MISSING file (warning only): %s" % backdrop_actual)
+
 	for key in required_keys:
 		var expected_path: String = required_keys[key]
 		var actual_path: String = GameAssetCatalog.get_path(key)
