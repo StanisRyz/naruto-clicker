@@ -165,6 +165,7 @@ func _create_task_row(task_data: Dictionary) -> PanelContainer:
 
 	var claim_button := Button.new()
 	claim_button.custom_minimum_size = Vector2(160, 56)
+	ButtonVisualUtils.disable_focus_artifact(claim_button)
 	if bool(task_data.get("completed", false)):
 		claim_button.disabled = false
 		claim_button.text = LocalizationManager.tr_key("task.claim")

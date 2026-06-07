@@ -246,6 +246,7 @@ func _add_card_content(row: PanelContainer, button_name: String) -> Dictionary:
 		skill_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		skill_button.focus_mode = Control.FOCUS_NONE
 		skill_button.text = ""
+		ButtonVisualUtils.clear_image_button_styles(skill_button)
 		skill_row.add_child(skill_button)
 
 		var skill_image_holder = ImageSlotClass.new()
@@ -267,6 +268,7 @@ func _add_card_content(row: PanelContainer, button_name: String) -> Dictionary:
 	button.name = button_name
 	button.custom_minimum_size = Vector2(210, 136)
 	button.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	ButtonVisualUtils.disable_focus_artifact(button)
 	content.add_child(button)
 
 	UiFontConfig.apply_label_font_size(name_status_label, UiFontConfig.UPGRADE_NAME_FONT_SIZE)

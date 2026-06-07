@@ -81,6 +81,7 @@ func _create_product_row(product_id: String) -> Dictionary:
 	button.name = "BuyButton"
 	button.custom_minimum_size = Vector2(140, 64)
 	button.pressed.connect(func() -> void: product_purchase_requested.emit(product_id))
+	ButtonVisualUtils.disable_focus_artifact(button)
 	content.add_child(button)
 
 	return {

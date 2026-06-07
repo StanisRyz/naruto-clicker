@@ -78,6 +78,7 @@ func _create_building_row(building_index: int) -> Dictionary:
 	button.name = "BuyButton"
 	button.custom_minimum_size = Vector2(220, 64)
 	button.pressed.connect(func() -> void: building_purchase_requested.emit(building_index, selected_buy_mode))
+	ButtonVisualUtils.disable_focus_artifact(button)
 	content.add_child(button)
 
 	return {

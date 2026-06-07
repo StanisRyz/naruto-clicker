@@ -114,6 +114,7 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 		skill_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		skill_button.focus_mode = Control.FOCUS_NONE
 		skill_button.text = ""
+		ButtonVisualUtils.clear_image_button_styles(skill_button)
 		var captured_index: int = i
 		skill_button.pressed.connect(
 			func() -> void: _on_skill_button_pressed(partner_index, captured_index, skill_button)
@@ -141,6 +142,7 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 	button.custom_minimum_size = Vector2(210, 136)
 	button.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	button.pressed.connect(func() -> void: partner_purchase_requested.emit(partner_index, selected_buy_mode))
+	ButtonVisualUtils.disable_focus_artifact(button)
 	content.add_child(button)
 
 	UiFontConfig.apply_label_font_size(partner_name_label, UiFontConfig.PARTNER_NAME_FONT_SIZE)

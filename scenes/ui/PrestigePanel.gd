@@ -75,6 +75,7 @@ func _create_prestige_action_row() -> Dictionary:
 	button.name = "PrestigeButton"
 	button.custom_minimum_size = Vector2(180, 64)
 	button.pressed.connect(_on_prestige_button_pressed)
+	ButtonVisualUtils.disable_focus_artifact(button)
 	content.add_child(button)
 
 	return {
@@ -153,6 +154,7 @@ func _create_talent_row(talent_index: int, talent_id: String) -> Dictionary:
 	button.name = "UpgradeButton"
 	button.custom_minimum_size = Vector2(180, 64)
 	button.pressed.connect(func() -> void: prestige_talent_purchase_requested.emit(talent_index))
+	ButtonVisualUtils.disable_focus_artifact(button)
 	content.add_child(button)
 
 	return {

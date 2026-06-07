@@ -113,11 +113,7 @@ func _ready() -> void:
 	shop_sheet.closed.connect(_on_sheet_closed)
 	LocalizationManager.language_changed.connect(_on_language_changed)
 	_apply_ui_font_sizes()
-	_clear_button_visual_styles(upgrades_button)
-	_clear_button_visual_styles(partners_button)
-	_clear_button_visual_styles(settlement_button)
-	_clear_button_visual_styles(prestige_button)
-	_clear_button_visual_styles(shop_button)
+	_apply_button_visual_cleanup()
 	bottom_tabs_backdrop.set_asset_key("ui.bottom_tabs.backdrop", Color.TRANSPARENT)
 	_load_game_on_start()
 	LocalizationManager.set_language(state.language)
@@ -125,6 +121,7 @@ func _ready() -> void:
 		push_warning("No localization translations loaded. UI will display keys. " + LocalizationManager.get_localization_source_status())
 	_is_initialized = true
 	_update_ui()
+	ButtonVisualUtils.disable_focus_artifacts_in_tree(self)
 	_sync_boss_timer()
 	if BuildConfig.IS_DEBUG_BUILD:
 		balance_logger = BalancePlaytestLogger.new()
@@ -354,6 +351,7 @@ func _on_settings_reset_confirmed() -> void:
 
 func _on_tasks_button_pressed() -> void:
 	tasks_window.show_window(state)
+	tasks_button.release_focus()
 
 
 func _on_task_claim_requested(task_id: String) -> void:
@@ -407,22 +405,27 @@ func _on_building_purchase_requested(building_index: int, mode: String) -> void:
 
 func _on_upgrades_button_pressed() -> void:
 	_toggle_bottom_sheet("upgrades")
+	upgrades_button.release_focus()
 
 
 func _on_partners_button_pressed() -> void:
 	_toggle_bottom_sheet("partners")
+	partners_button.release_focus()
 
 
 func _on_settlement_button_pressed() -> void:
 	_toggle_bottom_sheet("settlement")
+	settlement_button.release_focus()
 
 
 func _on_prestige_button_pressed() -> void:
 	_toggle_bottom_sheet("prestige")
+	prestige_button.release_focus()
 
 
 func _on_shop_button_pressed() -> void:
 	_toggle_bottom_sheet("shop")
+	shop_button.release_focus()
 
 
 func _on_prestige_requested() -> void:
@@ -520,15 +523,17 @@ func _apply_ui_font_sizes() -> void:
 		UiFontConfig.apply_button_font_size(button, UiFontConfig.BOTTOM_TAB_FONT_SIZE)
 
 
+func _apply_button_visual_cleanup() -> void:
+	ButtonVisualUtils.clear_image_button_styles(tasks_button)
+	ButtonVisualUtils.clear_image_button_styles(upgrades_button)
+	ButtonVisualUtils.clear_image_button_styles(partners_button)
+	ButtonVisualUtils.clear_image_button_styles(settlement_button)
+	ButtonVisualUtils.clear_image_button_styles(prestige_button)
+	ButtonVisualUtils.clear_image_button_styles(shop_button)
+
+
 func _clear_button_visual_styles(button: Button) -> void:
-	var empty_style := StyleBoxEmpty.new()
-	button.add_theme_stylebox_override("normal", empty_style)
-	button.add_theme_stylebox_override("hover", empty_style)
-	button.add_theme_stylebox_override("pressed", empty_style)
-	button.add_theme_stylebox_override("disabled", empty_style)
-	button.add_theme_stylebox_override("focus", empty_style)
-	button.focus_mode = Control.FOCUS_NONE
-	button.flat = true
+	ButtonVisualUtils.clear_image_button_styles(button)
 
 
 func _set_bottom_tab_image(image_holder, tab_name: String, is_active: bool) -> void:
