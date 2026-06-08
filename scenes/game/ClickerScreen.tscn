@@ -1,6 +1,5 @@
 [gd_scene load_steps=18 format=3 uid="uid://iyfdkc71gxgi"]
 
-[ext_resource type="Theme" path="res://themes/main_theme.tres" id="16_main_theme"]
 [ext_resource type="Script" uid="uid://dnim7mf4hei23" path="res://scenes/game/ClickerScreen.gd" id="1_ymqc8"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PrimaryStatsPanel.tscn" id="2_primary"]
 [ext_resource type="PackedScene" path="res://scenes/ui/GameField.tscn" id="3_uv1kb"]
@@ -15,8 +14,9 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/StageNavigator.tscn" id="13_nav"]
 [ext_resource type="PackedScene" path="res://scenes/ui/AutoTransitionPopup.tscn" id="14_atp"]
 [ext_resource type="PackedScene" path="res://scenes/ui/SettingsWindow.tscn" id="15_settings"]
-[ext_resource type="Script" path="res://scenes/ui/CombatEffectsLayer.gd" id="17_combat"]
-[ext_resource type="Script" path="res://scripts/ui/ImageSlot.gd" id="18_imageslot"]
+[ext_resource type="Theme" uid="uid://wdthdulajagr" path="res://themes/main_theme.tres" id="16_main_theme"]
+[ext_resource type="Script" uid="uid://ce8dj0fpb4kbh" path="res://scenes/ui/CombatEffectsLayer.gd" id="17_combat"]
+[ext_resource type="Script" uid="uid://chiw5g6nystq4" path="res://scripts/ui/ImageSlot.gd" id="18_imageslot"]
 
 [node name="ClickerScreen" type="Control"]
 layout_mode = 3
@@ -38,22 +38,15 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="TopInterfaceImageHolder" type="ColorRect" parent="."]
+custom_minimum_size = Vector2(720, 430)
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.0
-anchor_top = 0.0
 anchor_right = 1.0
-anchor_bottom = 0.0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
 offset_bottom = 430.0
-custom_minimum_size = Vector2(720, 430)
 mouse_filter = 2
 script = ExtResource("18_imageslot")
 asset_key = "ui.top_interface"
 fallback_color = Color(0, 0, 0, 0)
-show_fallback_behind_texture = false
 stretch_mode = 0
 
 [node name="CombatEffectsLayer" type="Control" parent="."]
@@ -68,8 +61,7 @@ script = ExtResource("17_combat")
 
 [node name="PrimaryStatsPanel" parent="." instance=ExtResource("2_primary")]
 layout_mode = 1
-anchors_preset = 0
-anchor_left = 0.0
+anchors_preset = 10
 anchor_right = 1.0
 offset_left = 40.0
 offset_top = 91.0
@@ -99,7 +91,6 @@ theme_override_constants/separation = 12
 layout_mode = 2
 
 [node name="InfoSpacer" type="Control" parent="MainContent/VBoxContainer"]
-custom_minimum_size = Vector2(0, 0)
 layout_mode = 2
 mouse_filter = 2
 
@@ -134,8 +125,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("18_imageslot")
-fallback_color = Color(1, 1, 1, 1)
-show_fallback_behind_texture = false
 
 [node name="UpgradeSheet" parent="." instance=ExtResource("4_vcx67")]
 layout_mode = 1
@@ -160,19 +149,16 @@ anchors_preset = -1
 [node name="BottomTabsBackdrop" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -50.0
 offset_top = -165.0
 offset_right = 50.0
-offset_bottom = 0.0
 mouse_filter = 2
 script = ExtResource("18_imageslot")
 asset_key = "ui.bottom_tabs.backdrop"
 fallback_color = Color(0, 0, 0, 0)
-show_fallback_behind_texture = false
 stretch_mode = 0
 
 [node name="BottomBar" type="Control" parent="."]
@@ -184,7 +170,6 @@ anchor_bottom = 1.0
 offset_top = -165.0
 grow_horizontal = 2
 grow_vertical = 0
-
 
 [node name="MarginContainer" type="MarginContainer" parent="BottomBar"]
 layout_mode = 1
@@ -209,7 +194,6 @@ size_flags_horizontal = 3
 size_flags_vertical = 4
 focus_mode = 0
 flat = true
-text = ""
 
 [node name="ImageHolder" type="ColorRect" parent="BottomBar/MarginContainer/HBoxContainer/UpgradesButton"]
 layout_mode = 1
@@ -220,8 +204,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("18_imageslot")
-fallback_color = Color(1, 1, 1, 1)
-show_fallback_behind_texture = false
 stretch_mode = 0
 
 [node name="PartnersButton" type="Button" parent="BottomBar/MarginContainer/HBoxContainer"]
@@ -231,7 +213,6 @@ size_flags_horizontal = 3
 size_flags_vertical = 4
 focus_mode = 0
 flat = true
-text = ""
 
 [node name="ImageHolder" type="ColorRect" parent="BottomBar/MarginContainer/HBoxContainer/PartnersButton"]
 layout_mode = 1
@@ -242,8 +223,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("18_imageslot")
-fallback_color = Color(1, 1, 1, 1)
-show_fallback_behind_texture = false
 stretch_mode = 0
 
 [node name="SettlementButton" type="Button" parent="BottomBar/MarginContainer/HBoxContainer"]
@@ -253,7 +232,6 @@ size_flags_horizontal = 3
 size_flags_vertical = 4
 focus_mode = 0
 flat = true
-text = ""
 
 [node name="ImageHolder" type="ColorRect" parent="BottomBar/MarginContainer/HBoxContainer/SettlementButton"]
 layout_mode = 1
@@ -264,8 +242,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("18_imageslot")
-fallback_color = Color(1, 1, 1, 1)
-show_fallback_behind_texture = false
 stretch_mode = 0
 
 [node name="PrestigeButton" type="Button" parent="BottomBar/MarginContainer/HBoxContainer"]
@@ -275,7 +251,6 @@ size_flags_horizontal = 3
 size_flags_vertical = 4
 focus_mode = 0
 flat = true
-text = ""
 
 [node name="ImageHolder" type="ColorRect" parent="BottomBar/MarginContainer/HBoxContainer/PrestigeButton"]
 layout_mode = 1
@@ -286,8 +261,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("18_imageslot")
-fallback_color = Color(1, 1, 1, 1)
-show_fallback_behind_texture = false
 stretch_mode = 0
 
 [node name="ShopButton" type="Button" parent="BottomBar/MarginContainer/HBoxContainer"]
@@ -297,7 +270,6 @@ size_flags_horizontal = 3
 size_flags_vertical = 4
 focus_mode = 0
 flat = true
-text = ""
 
 [node name="ImageHolder" type="ColorRect" parent="BottomBar/MarginContainer/HBoxContainer/ShopButton"]
 layout_mode = 1
@@ -308,8 +280,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("18_imageslot")
-fallback_color = Color(1, 1, 1, 1)
-show_fallback_behind_texture = false
 stretch_mode = 0
 
 [node name="AutoTransitionPopup" parent="." instance=ExtResource("14_atp")]
