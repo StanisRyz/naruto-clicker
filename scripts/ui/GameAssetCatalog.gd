@@ -24,6 +24,9 @@ const ASSET_PATHS: Dictionary = {
 	"enemy.default.wounded": "res://assets/images/enemies/default_wounded.png",
 	"enemy.default.defeated": "res://assets/images/enemies/default_defeated.png",
 
+	# Stage navigator backdrop
+	"ui.stage_navigation.backdrop": "res://assets/images/ui/stage_navigation/backdrop.png",
+
 	# Stage navigator
 	"stage.unlocked": "res://assets/images/ui/stage_unlocked.png",
 	"stage.locked": "res://assets/images/ui/stage_locked.png",

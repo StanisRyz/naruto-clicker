@@ -204,6 +204,31 @@ UI folders: `gold`, `gems`, `prestige_points`, `settings`, `close`, `auto_transi
 
 ---
 
+## StageNavigator backdrop
+
+Path: `assets/images/ui/stage_navigation/backdrop.png`
+
+Recommended size: **820×118 px**
+
+A decorative layer placed behind all StageNavigator buttons and labels. It is 820px wide for a 720px viewport, providing 50px of horizontal bleed on each side. Vertical bleed is 10px above and below the logical 98px StageNavigator area (80px buttons + 18px extra bottom space).
+
+Layout reference:
+- Designed for 720×1600 base resolution.
+- 50px horizontal bleed on each side.
+- 10px vertical bleed above and below StageNavigator.
+- StageNavigator logical area: 720×98.
+- Button row content width: 620px (7 × 80px + 6 × 10px gap).
+- 7 button slots, each 80×80.
+- Stage number labels are drawn by Godot, not baked into the texture.
+
+Rules:
+- Rendered by `StageNavigationBackdrop` (`ImageSlot`) created in `StageNavigator._add_backdrop()`.
+- `mouse_filter = IGNORE` — does not block clicks or drag scrolling.
+- Missing file falls back to transparent — no crash.
+- Do not put important detail within ~50px of the left/right edges.
+
+---
+
 ## StageNavigator side button textures
 
 Side buttons no longer draw text labels. All visual state comes from the `ImageSlot` texture or the fallback color.

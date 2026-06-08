@@ -202,6 +202,20 @@ godot --headless --script res://scripts/tools/ValidateStageNavigationAssets.gd
 
 ---
 
+## StageNavigator backdrop
+
+| Asset key | Path |
+|-----------|------|
+| `ui.stage_navigation.backdrop` | `assets/images/ui/stage_navigation/backdrop.png` |
+
+Recommended size: **820×118 px** (50px bleed each side beyond the 720px viewport, 10px vertical bleed above/below the 98px StageNavigator area).
+
+Rendered by `StageNavigationBackdrop` (`ImageSlot`) in `StageNavigator._add_backdrop()` — added as first child of StageNavigator so it renders behind all buttons and labels. `mouse_filter = IGNORE`. Missing file falls back to transparent. Do not put important detail within ~50px of the left/right edges.
+
+Backdrop rect: x −50 to 770, y −10 to 108, size 820×118.
+
+---
+
 ## StageNavigator side button textures
 
 Side buttons no longer render text labels. Visuals come entirely from `ImageSlot` texture or fallback color.

@@ -20,6 +20,7 @@ func _run() -> void:
 	_check_common_overlays()
 	_check_path_logic()
 	_check_auto_transition()
+	_check_backdrop()
 	print("--- Results: %d error(s), %d warning(s) ---" % [_errors, _warnings])
 
 
@@ -161,6 +162,32 @@ func _check_auto_transition() -> void:
 			print("  FOUND   %s" % actual)
 		else:
 			_warn("missing optional PNG: %s" % actual)
+
+
+func _check_backdrop() -> void:
+	print("\n-- StageNavigator backdrop --")
+	const BACKDROP_KEY: String = "ui.stage_navigation.backdrop"
+	const BACKDROP_PATH: String = "res://assets/images/ui/stage_navigation/backdrop.png"
+	const BACKDROP_FOLDER: String = "res://assets/images/ui/stage_navigation"
+
+	if not GameAssetCatalog.ASSET_PATHS.has(BACKDROP_KEY):
+		_error("GameAssetCatalog missing key: %s" % BACKDROP_KEY)
+	else:
+		var actual: String = GameAssetCatalog.ASSET_PATHS[BACKDROP_KEY]
+		if actual != BACKDROP_PATH:
+			_error("key '%s' path mismatch: expected '%s', got '%s'" % [BACKDROP_KEY, BACKDROP_PATH, actual])
+		else:
+			print("  OK      key '%s' -> %s" % [BACKDROP_KEY, actual])
+
+	if DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(BACKDROP_FOLDER)):
+		print("  OK      folder %s/" % BACKDROP_FOLDER)
+	else:
+		_error("missing folder: %s/" % BACKDROP_FOLDER)
+
+	if ResourceLoader.exists(BACKDROP_PATH):
+		print("  FOUND   %s" % BACKDROP_PATH)
+	else:
+		_warn("missing optional PNG (add when ready): %s" % BACKDROP_PATH)
 
 
 func _error(msg: String) -> void:

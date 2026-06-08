@@ -14,6 +14,9 @@ const DRAG_MOVED_THRESHOLD: float = 8.0
 const STAGE_NUMBER_LABEL_HEIGHT: int = 28
 const STAGE_NUMBER_LABEL_OUTSIDE_OFFSET: int = 14
 const STAGE_NAVIGATOR_EXTRA_BOTTOM_SPACE: int = 18
+const BACKDROP_HORIZONTAL_BLEED: int = 50
+const BACKDROP_VERTICAL_BLEED: int = 10
+const BACKDROP_ASSET_KEY: String = "ui.stage_navigation.backdrop"
 
 const COLOR_CURRENT: Color = Color(0.2, 0.4, 0.9, 1.0)
 const COLOR_UNLOCKED: Color = Color(1.0, 1.0, 1.0, 1.0)
@@ -58,6 +61,8 @@ func _ready() -> void:
 
 
 func _build_ui() -> void:
+	_add_backdrop()
+
 	var hbox: HBoxContainer = HBoxContainer.new()
 	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	hbox.add_theme_constant_override("separation", 10)
@@ -142,6 +147,25 @@ func _build_ui() -> void:
 	_clear_button_visual_styles(_latest_button)
 	hbox.add_child(_latest_button)
 	_latest_button.get_child(0).set_asset_key("stage.latest", COLOR_LATEST)
+
+
+func _add_backdrop() -> void:
+	var backdrop := ImageSlotClass.new()
+	backdrop.name = "StageNavigationBackdrop"
+	backdrop.anchor_left = 0.0
+	backdrop.anchor_top = 0.0
+	backdrop.anchor_right = 1.0
+	backdrop.anchor_bottom = 0.0
+	backdrop.offset_left = -BACKDROP_HORIZONTAL_BLEED
+	backdrop.offset_top = -BACKDROP_VERTICAL_BLEED
+	backdrop.offset_right = BACKDROP_HORIZONTAL_BLEED
+	backdrop.offset_bottom = BUTTON_SIZE + STAGE_NAVIGATOR_EXTRA_BOTTOM_SPACE + BACKDROP_VERTICAL_BLEED
+	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	backdrop.fallback_color = Color.TRANSPARENT
+	backdrop.show_fallback_behind_texture = false
+	backdrop.stretch_mode = TextureRect.STRETCH_SCALE
+	add_child(backdrop)
+	backdrop.set_asset_key(BACKDROP_ASSET_KEY, Color.TRANSPARENT)
 
 
 func _make_side_button(bg_color: Color) -> Button:
