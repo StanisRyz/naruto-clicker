@@ -212,7 +212,9 @@ Recommended size: **820×118 px** (50px bleed each side beyond the 720px viewpor
 
 Rendered by `StageNavigationBackdrop` (`ImageSlot`) in `StageNavigator._add_backdrop()` — added as first child of StageNavigator so it renders behind all buttons and labels. `mouse_filter = IGNORE`. Missing file falls back to transparent. Do not put important detail within ~50px of the left/right edges.
 
-Backdrop rect: x −50 to 770, y −10 to 108, size 820×118.
+Backdrop rect: x −50 to 770, y −10 to 108, size 820×118 (on 720px viewport).
+
+Sizing note: StageNavigator sits inside MainContent with ~48px side margins (~624px wide). `_update_backdrop_rect()` computes `horizontal_extra = (viewport_width + 100 − navigator_width) / 2` at runtime so the rect always reaches screen x=−50 and x=770, matching the BottomTabsBackdrop bleed pattern.
 
 ---
 

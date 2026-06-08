@@ -214,12 +214,17 @@ A decorative layer placed behind all StageNavigator buttons and labels. It is 82
 
 Layout reference:
 - Designed for 720×1600 base resolution.
-- 50px horizontal bleed on each side.
+- 50px horizontal bleed on each side beyond the viewport edges.
 - 10px vertical bleed above and below StageNavigator.
 - StageNavigator logical area: 720×98.
 - Button row content width: 620px (7 × 80px + 6 × 10px gap).
 - 7 button slots, each 80×80.
 - Stage number labels are drawn by Godot, not baked into the texture.
+
+Sizing logic:
+- StageNavigator lives inside MainContent with ~48px side margins, so its own width is ~624px.
+- `_update_backdrop_rect()` reads viewport width at runtime and computes `horizontal_extra = (viewport_width + 100 - navigator_width) / 2`, ensuring the backdrop always spans from x=−50 to x=770 in screen space regardless of margin layout.
+- Called once deferred after `_add_backdrop()` and again on `NOTIFICATION_RESIZED`.
 
 Rules:
 - Rendered by `StageNavigationBackdrop` (`ImageSlot`) created in `StageNavigator._add_backdrop()`.

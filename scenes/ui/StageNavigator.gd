@@ -14,7 +14,7 @@ const DRAG_MOVED_THRESHOLD: float = 8.0
 const STAGE_NUMBER_LABEL_HEIGHT: int = 28
 const STAGE_NUMBER_LABEL_OUTSIDE_OFFSET: int = 14
 const STAGE_NAVIGATOR_EXTRA_BOTTOM_SPACE: int = 18
-const BACKDROP_HORIZONTAL_BLEED: int = 50
+const BACKDROP_SCREEN_BLEED: int = 50
 const BACKDROP_VERTICAL_BLEED: int = 10
 const BACKDROP_ASSET_KEY: String = "ui.stage_navigation.backdrop"
 
@@ -45,6 +45,8 @@ var _stage_locked_overlays: Array = []
 var _latest_button: Button
 var _auto_btn: Button
 var _auto_btn_rect = null
+
+var _backdrop = null
 
 var _is_dragging: bool = false
 var _drag_start_x: float = 0.0
@@ -150,22 +152,41 @@ func _build_ui() -> void:
 
 
 func _add_backdrop() -> void:
-	var backdrop := ImageSlotClass.new()
-	backdrop.name = "StageNavigationBackdrop"
-	backdrop.anchor_left = 0.0
-	backdrop.anchor_top = 0.0
-	backdrop.anchor_right = 1.0
-	backdrop.anchor_bottom = 0.0
-	backdrop.offset_left = -BACKDROP_HORIZONTAL_BLEED
-	backdrop.offset_top = -BACKDROP_VERTICAL_BLEED
-	backdrop.offset_right = BACKDROP_HORIZONTAL_BLEED
-	backdrop.offset_bottom = BUTTON_SIZE + STAGE_NAVIGATOR_EXTRA_BOTTOM_SPACE + BACKDROP_VERTICAL_BLEED
-	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	backdrop.fallback_color = Color.TRANSPARENT
-	backdrop.show_fallback_behind_texture = false
-	backdrop.stretch_mode = TextureRect.STRETCH_SCALE
-	add_child(backdrop)
-	backdrop.set_asset_key(BACKDROP_ASSET_KEY, Color.TRANSPARENT)
+	_backdrop = ImageSlotClass.new()
+	_backdrop.name = "StageNavigationBackdrop"
+	_backdrop.anchor_left = 0.0
+	_backdrop.anchor_top = 0.0
+	_backdrop.anchor_right = 1.0
+	_backdrop.anchor_bottom = 0.0
+	_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_backdrop.fallback_color = Color.TRANSPARENT
+	_backdrop.show_fallback_behind_texture = false
+	_backdrop.stretch_mode = TextureRect.STRETCH_SCALE
+	add_child(_backdrop)
+	_backdrop.set_asset_key(BACKDROP_ASSET_KEY, Color.TRANSPARENT)
+	call_deferred("_update_backdrop_rect")
+
+
+func _update_backdrop_rect() -> void:
+	if _backdrop == null:
+		return
+	var viewport_width: float = get_viewport_rect().size.x
+	var desired_width: float = viewport_width + float(BACKDROP_SCREEN_BLEED * 2)
+	var current_width: float = size.x
+	var horizontal_extra: float = maxf((desired_width - current_width) * 0.5, float(BACKDROP_SCREEN_BLEED))
+	_backdrop.anchor_left = 0.0
+	_backdrop.anchor_top = 0.0
+	_backdrop.anchor_right = 1.0
+	_backdrop.anchor_bottom = 0.0
+	_backdrop.offset_left = -horizontal_extra
+	_backdrop.offset_top = -BACKDROP_VERTICAL_BLEED
+	_backdrop.offset_right = horizontal_extra
+	_backdrop.offset_bottom = BUTTON_SIZE + STAGE_NAVIGATOR_EXTRA_BOTTOM_SPACE + BACKDROP_VERTICAL_BLEED
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_RESIZED:
+		_update_backdrop_rect()
 
 
 func _make_side_button(bg_color: Color) -> Button:
