@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://buyd2thp0uwyp"
-path="res://.godot/imported/backdrop.png-c83d06441e27c1e5fb2b03e2b4866652.ctex"
+uid="uid://0l68p1eo34x2"
+path="res://.godot/imported/sheet_card.png-0332be27802e237eb198bef06c190830.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/ui/stage_navigation/backdrop.png"
-dest_files=["res://.godot/imported/backdrop.png-c83d06441e27c1e5fb2b03e2b4866652.ctex"]
+source_file="res://assets/images/ui/cards/sheet_card.png"
+dest_files=["res://.godot/imported/sheet_card.png-0332be27802e237eb198bef06c190830.ctex"]
 
 [params]
 

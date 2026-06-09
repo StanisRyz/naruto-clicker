@@ -7,6 +7,9 @@ const BUY_MODES: Array[String] = ["x1", "x10", "x100", "max"]
 const BUILDING_IMAGE_SIZE: Vector2 = Vector2(136, 136)
 const BUILDING_BUTTON_SIZE: Vector2 = Vector2(210, 136)
 const CARD_ROW_LABEL_COUNT: int = 5
+const CARD_BACKGROUND_ASSET_KEY: String = "ui.card.sheet"
+const CARD_BACKGROUND_FALLBACK_COLOR: Color = Color(0.12, 0.125, 0.145, 1.0)
+const CARD_HEIGHT: int = 156
 
 const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 
@@ -22,7 +25,7 @@ func update_view(state: ClickerState) -> void:
 	_ensure_building_rows(state)
 
 	for building_index in range(building_rows.size()):
-		var panel_row: PanelContainer = building_rows[building_index]["row"]
+		var panel_row: Control = building_rows[building_index]["row"]
 		panel_row.visible = _should_show_building_row(state, building_index)
 		_update_building_row(state, building_index, building_rows[building_index])
 
@@ -33,14 +36,31 @@ func _ensure_building_rows(_state: ClickerState) -> void:
 		building_rows.append(_create_building_row(building_index))
 
 
-func _create_building_row(building_index: int) -> Dictionary:
-	var row := PanelContainer.new()
-	row.name = "Building%dRow" % (building_index + 1)
+func _create_card_row(row_name: String) -> Control:
+	var row := Control.new()
+	row.name = row_name
+	row.custom_minimum_size = Vector2(0, CARD_HEIGHT)
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_theme_stylebox_override("panel", _create_row_stylebox())
+
+	var background := ImageSlotClass.new()
+	background.name = "CardBackgroundImageHolder"
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	background.fallback_color = CARD_BACKGROUND_FALLBACK_COLOR
+	background.show_fallback_behind_texture = false
+	background.stretch_mode = TextureRect.STRETCH_SCALE
+	row.add_child(background)
+	background.set_asset_key(CARD_BACKGROUND_ASSET_KEY, CARD_BACKGROUND_FALLBACK_COLOR)
+
+	return row
+
+
+func _create_building_row(building_index: int) -> Dictionary:
+	var row: Control = _create_card_row("Building%dRow" % (building_index + 1))
 	rows_container.add_child(row)
 
 	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	margin.add_theme_constant_override("margin_left", 12)
 	margin.add_theme_constant_override("margin_top", 10)
 	margin.add_theme_constant_override("margin_right", 12)
@@ -159,18 +179,3 @@ func set_buy_mode(mode: String) -> void:
 
 func _should_show_building_row(_state: ClickerState, building_index: int) -> bool:
 	return building_index >= 0 and building_index < SettlementConfig.BUILDING_NAMES.size()
-
-
-func _create_row_stylebox() -> StyleBoxFlat:
-	var stylebox := StyleBoxFlat.new()
-	stylebox.bg_color = Color(0.12, 0.125, 0.145, 1.0)
-	stylebox.border_width_left = 1
-	stylebox.border_width_top = 1
-	stylebox.border_width_right = 1
-	stylebox.border_width_bottom = 1
-	stylebox.border_color = Color(0.22, 0.23, 0.26, 1.0)
-	stylebox.corner_radius_top_left = 6
-	stylebox.corner_radius_top_right = 6
-	stylebox.corner_radius_bottom_left = 6
-	stylebox.corner_radius_bottom_right = 6
-	return stylebox

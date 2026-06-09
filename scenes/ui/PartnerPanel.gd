@@ -7,6 +7,9 @@ signal skill_popup_requested(skill_id: String, anchor_global_position: Vector2)
 const BUY_MODES: Array[String] = ["x1", "x10", "x100", "max"]
 const PARTNER_IMAGE_SIZE: Vector2 = Vector2(136, 136)
 const SKILL_ICON_SIZE: Vector2 = Vector2(32, 32)
+const CARD_BACKGROUND_ASSET_KEY: String = "ui.card.sheet"
+const CARD_BACKGROUND_FALLBACK_COLOR: Color = Color(0.12, 0.125, 0.145, 1.0)
+const CARD_HEIGHT: int = 156
 const SKILL_COUNT: int = 5
 const SKILL_ICON_COLORS: Dictionary = {
 	"locked": Color(0.32, 0.32, 0.34, 1.0),
@@ -29,7 +32,7 @@ func update_view(state: ClickerState) -> void:
 	_ensure_partner_rows(state)
 
 	for partner_index in range(partner_rows.size()):
-		var panel_row: PanelContainer = partner_rows[partner_index]["row"]
+		var panel_row: Control = partner_rows[partner_index]["row"]
 		panel_row.visible = _should_show_partner_row(state, partner_index)
 		_update_partner_row(state, partner_index, partner_rows[partner_index])
 
@@ -40,14 +43,31 @@ func _ensure_partner_rows(_state: ClickerState) -> void:
 		partner_rows.append(_create_partner_row(partner_index))
 
 
-func _create_partner_row(partner_index: int) -> Dictionary:
-	var row := PanelContainer.new()
-	row.name = "Partner%dRow" % (partner_index + 1)
+func _create_card_row(row_name: String) -> Control:
+	var row := Control.new()
+	row.name = row_name
+	row.custom_minimum_size = Vector2(0, CARD_HEIGHT)
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_theme_stylebox_override("panel", _create_row_stylebox())
+
+	var background := ImageSlotClass.new()
+	background.name = "CardBackgroundImageHolder"
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	background.fallback_color = CARD_BACKGROUND_FALLBACK_COLOR
+	background.show_fallback_behind_texture = false
+	background.stretch_mode = TextureRect.STRETCH_SCALE
+	row.add_child(background)
+	background.set_asset_key(CARD_BACKGROUND_ASSET_KEY, CARD_BACKGROUND_FALLBACK_COLOR)
+
+	return row
+
+
+func _create_partner_row(partner_index: int) -> Dictionary:
+	var row: Control = _create_card_row("Partner%dRow" % (partner_index + 1))
 	rows_container.add_child(row)
 
 	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	margin.add_theme_constant_override("margin_left", 12)
 	margin.add_theme_constant_override("margin_top", 10)
 	margin.add_theme_constant_override("margin_right", 12)
@@ -225,21 +245,6 @@ func set_buy_mode(mode: String) -> void:
 
 func _should_show_partner_row(state: ClickerState, partner_index: int) -> bool:
 	return state.is_partner_visible(partner_index)
-
-
-func _create_row_stylebox() -> StyleBoxFlat:
-	var stylebox := StyleBoxFlat.new()
-	stylebox.bg_color = Color(0.12, 0.125, 0.145, 1.0)
-	stylebox.border_width_left = 1
-	stylebox.border_width_top = 1
-	stylebox.border_width_right = 1
-	stylebox.border_width_bottom = 1
-	stylebox.border_color = Color(0.22, 0.23, 0.26, 1.0)
-	stylebox.corner_radius_top_left = 6
-	stylebox.corner_radius_top_right = 6
-	stylebox.corner_radius_bottom_left = 6
-	stylebox.corner_radius_bottom_right = 6
-	return stylebox
 
 
 func _on_skill_button_pressed(partner_index: int, skill_index: int, skill_button: Button) -> void:

@@ -16,6 +16,9 @@ const ABILITIES: Array[Dictionary] = [
 const BUY_MODES: Array[String] = ["x1", "x10", "x100", "max"]
 const UPGRADE_IMAGE_SIZE: Vector2 = Vector2(136, 136)
 const SKILL_ICON_SIZE: Vector2 = Vector2(32, 32)
+const CARD_BACKGROUND_ASSET_KEY: String = "ui.card.sheet"
+const CARD_BACKGROUND_FALLBACK_COLOR: Color = Color(0.12, 0.125, 0.145, 1.0)
+const CARD_HEIGHT: int = 156
 const SKILL_COUNT: int = 5
 const SKILL_ICON_COLORS: Dictionary = {
 	"locked": Color(0.32, 0.32, 0.34, 1.0),
@@ -52,11 +55,27 @@ func set_buy_mode(mode: String) -> void:
 	selected_buy_mode = mode
 
 
-func _create_hero_level_row() -> Dictionary:
-	var row := PanelContainer.new()
-	row.name = "HeroLevelRow"
+func _create_card_row(row_name: String) -> Control:
+	var row := Control.new()
+	row.name = row_name
+	row.custom_minimum_size = Vector2(0, CARD_HEIGHT)
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_theme_stylebox_override("panel", _create_row_stylebox())
+
+	var background := ImageSlotClass.new()
+	background.name = "CardBackgroundImageHolder"
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	background.fallback_color = CARD_BACKGROUND_FALLBACK_COLOR
+	background.show_fallback_behind_texture = false
+	background.stretch_mode = TextureRect.STRETCH_SCALE
+	row.add_child(background)
+	background.set_asset_key(CARD_BACKGROUND_ASSET_KEY, CARD_BACKGROUND_FALLBACK_COLOR)
+
+	return row
+
+
+func _create_hero_level_row() -> Dictionary:
+	var row: Control = _create_card_row("HeroLevelRow")
 	rows_container.add_child(row)
 
 	var row_content: Dictionary = _add_card_content(row, "UpgradeButton")
@@ -115,10 +134,7 @@ func _update_hero_level_row(state: ClickerState) -> void:
 func _create_ability_row(ability_index: int) -> Dictionary:
 	var ability: Dictionary = ABILITIES[ability_index]
 	var ability_id: String = String(ability["id"])
-	var row := PanelContainer.new()
-	row.name = "%sRow" % String(ability["name"]).replace(" ", "")
-	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_theme_stylebox_override("panel", _create_row_stylebox())
+	var row: Control = _create_card_row("%sRow" % String(ability["name"]).replace(" ", ""))
 	rows_container.add_child(row)
 
 	var row_content: Dictionary = _add_card_content(row, "BuyButton")
@@ -177,8 +193,9 @@ func _on_hero_level_button_pressed() -> void:
 	character_level_upgrade_requested.emit(selected_buy_mode)
 
 
-func _add_card_content(row: PanelContainer, button_name: String) -> Dictionary:
+func _add_card_content(row: Control, button_name: String) -> Dictionary:
 	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	margin.add_theme_constant_override("margin_left", 12)
 	margin.add_theme_constant_override("margin_top", 10)
 	margin.add_theme_constant_override("margin_right", 12)
@@ -339,18 +356,3 @@ func _on_ability_skill_button_pressed(ability_id: String, skill_index: int, skil
 	var skill_id: String = String(skills[skill_index].get("id", ""))
 	if skill_id != "":
 		ability_skill_popup_requested.emit(skill_id, skill_button.global_position)
-
-
-func _create_row_stylebox() -> StyleBoxFlat:
-	var stylebox := StyleBoxFlat.new()
-	stylebox.bg_color = Color(0.12, 0.125, 0.145, 1.0)
-	stylebox.border_width_left = 1
-	stylebox.border_width_top = 1
-	stylebox.border_width_right = 1
-	stylebox.border_width_bottom = 1
-	stylebox.border_color = Color(0.22, 0.23, 0.26, 1.0)
-	stylebox.corner_radius_top_left = 6
-	stylebox.corner_radius_top_right = 6
-	stylebox.corner_radius_bottom_left = 6
-	stylebox.corner_radius_bottom_right = 6
-	return stylebox

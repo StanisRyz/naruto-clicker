@@ -14,9 +14,6 @@ const DRAG_MOVED_THRESHOLD: float = 8.0
 const STAGE_NUMBER_LABEL_HEIGHT: int = 28
 const STAGE_NUMBER_LABEL_OUTSIDE_OFFSET: int = 14
 const STAGE_NAVIGATOR_EXTRA_BOTTOM_SPACE: int = 18
-const BACKDROP_SCREEN_BLEED: int = 50
-const BACKDROP_VERTICAL_BLEED: int = 10
-const BACKDROP_ASSET_KEY: String = "ui.stage_navigation.backdrop"
 
 const COLOR_CURRENT: Color = Color(0.2, 0.4, 0.9, 1.0)
 const COLOR_UNLOCKED: Color = Color(1.0, 1.0, 1.0, 1.0)
@@ -46,7 +43,6 @@ var _latest_button: Button
 var _auto_btn: Button
 var _auto_btn_rect = null
 
-var _backdrop = null
 
 var _is_dragging: bool = false
 var _drag_start_x: float = 0.0
@@ -63,8 +59,6 @@ func _ready() -> void:
 
 
 func _build_ui() -> void:
-	_add_backdrop()
-
 	var hbox: HBoxContainer = HBoxContainer.new()
 	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	hbox.add_theme_constant_override("separation", 10)
@@ -150,43 +144,6 @@ func _build_ui() -> void:
 	hbox.add_child(_latest_button)
 	_latest_button.get_child(0).set_asset_key("stage.latest", COLOR_LATEST)
 
-
-func _add_backdrop() -> void:
-	_backdrop = ImageSlotClass.new()
-	_backdrop.name = "StageNavigationBackdrop"
-	_backdrop.anchor_left = 0.0
-	_backdrop.anchor_top = 0.0
-	_backdrop.anchor_right = 1.0
-	_backdrop.anchor_bottom = 0.0
-	_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_backdrop.fallback_color = Color.TRANSPARENT
-	_backdrop.show_fallback_behind_texture = false
-	_backdrop.stretch_mode = TextureRect.STRETCH_SCALE
-	add_child(_backdrop)
-	_backdrop.set_asset_key(BACKDROP_ASSET_KEY, Color.TRANSPARENT)
-	call_deferred("_update_backdrop_rect")
-
-
-func _update_backdrop_rect() -> void:
-	if _backdrop == null:
-		return
-	var viewport_width: float = get_viewport_rect().size.x
-	var desired_width: float = viewport_width + float(BACKDROP_SCREEN_BLEED * 2)
-	var current_width: float = size.x
-	var horizontal_extra: float = maxf((desired_width - current_width) * 0.5, float(BACKDROP_SCREEN_BLEED))
-	_backdrop.anchor_left = 0.0
-	_backdrop.anchor_top = 0.0
-	_backdrop.anchor_right = 1.0
-	_backdrop.anchor_bottom = 0.0
-	_backdrop.offset_left = -horizontal_extra
-	_backdrop.offset_top = -BACKDROP_VERTICAL_BLEED
-	_backdrop.offset_right = horizontal_extra
-	_backdrop.offset_bottom = BUTTON_SIZE + STAGE_NAVIGATOR_EXTRA_BOTTOM_SPACE + BACKDROP_VERTICAL_BLEED
-
-
-func _notification(what: int) -> void:
-	if what == NOTIFICATION_RESIZED:
-		_update_backdrop_rect()
 
 
 func _make_side_button(bg_color: Color) -> Button:

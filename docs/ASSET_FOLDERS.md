@@ -128,6 +128,37 @@ No image file is used. `active.png` is no longer referenced.
 
 ---
 
+## Standard sheet card background
+
+Path: `assets/images/ui/cards/sheet_card.png`
+
+Recommended size: **656×156 px**
+
+Used by:
+- Upgrade cards (hero level + ability rows)
+- Partner cards
+- Settlement building cards
+- Prestige action card
+- Prestige talent cards
+
+Not used by:
+- Shop cards
+- Bottom tab buttons
+- StageNavigator buttons
+- TasksWindow
+
+Rules:
+- Rendered behind card icon, card text, skill icons, and purchase/reset buttons.
+- Texture must not include button text or dynamic labels.
+- Leave readable areas for icon (136×136), text column, skill row, and right-side button (210×136).
+- If texture is missing: `ImageSlot` shows dark fallback rectangle (`Color(0.12, 0.125, 0.145, 1.0)`). No crash.
+- If texture exists: fallback rectangle is hidden (`show_fallback_behind_texture = false`).
+- Asset key: `ui.card.sheet`
+
+Validation: `godot --headless --script res://scripts/tools/ValidateCardAssets.gd`
+
+---
+
 ## Upgrade tab main cards
 
 Path: `assets/images/upgrades/ability_id.png`
@@ -201,36 +232,6 @@ Rules:
 Path: `assets/images/ui/element_name/icon.png`
 
 UI folders: `gold`, `gems`, `prestige_points`, `settings`, `close`, `auto_transition`, `stage_current`, `stage_open`, `stage_locked`, `skill_locked`, `skill_available`, `skill_purchased`
-
----
-
-## StageNavigator backdrop
-
-Path: `assets/images/ui/stage_navigation/backdrop.png`
-
-Recommended size: **820×118 px**
-
-A decorative layer placed behind all StageNavigator buttons and labels. It is 820px wide for a 720px viewport, providing 50px of horizontal bleed on each side. Vertical bleed is 10px above and below the logical 98px StageNavigator area (80px buttons + 18px extra bottom space).
-
-Layout reference:
-- Designed for 720×1600 base resolution.
-- 50px horizontal bleed on each side beyond the viewport edges.
-- 10px vertical bleed above and below StageNavigator.
-- StageNavigator logical area: 720×98.
-- Button row content width: 620px (7 × 80px + 6 × 10px gap).
-- 7 button slots, each 80×80.
-- Stage number labels are drawn by Godot, not baked into the texture.
-
-Sizing logic:
-- StageNavigator lives inside MainContent with ~48px side margins, so its own width is ~624px.
-- `_update_backdrop_rect()` reads viewport width at runtime and computes `horizontal_extra = (viewport_width + 100 - navigator_width) / 2`, ensuring the backdrop always spans from x=−50 to x=770 in screen space regardless of margin layout.
-- Called once deferred after `_add_backdrop()` and again on `NOTIFICATION_RESIZED`.
-
-Rules:
-- Rendered by `StageNavigationBackdrop` (`ImageSlot`) created in `StageNavigator._add_backdrop()`.
-- `mouse_filter = IGNORE` — does not block clicks or drag scrolling.
-- Missing file falls back to transparent — no crash.
-- Do not put important detail within ~50px of the left/right edges.
 
 ---
 

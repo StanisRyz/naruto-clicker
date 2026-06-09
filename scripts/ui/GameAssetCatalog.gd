@@ -3,6 +3,9 @@ class_name GameAssetCatalog
 const IMAGE_ROOT: String = "res://assets/images/"
 
 const ASSET_PATHS: Dictionary = {
+	# Card backgrounds
+	"ui.card.sheet": "res://assets/images/ui/cards/sheet_card.png",
+
 	# Core UI
 	"ui.top_interface": "res://assets/images/ui/top_interface.png",
 	"ui.gold": "res://assets/images/ui/gold.png",
@@ -23,9 +26,6 @@ const ASSET_PATHS: Dictionary = {
 	"enemy.default.hit": "res://assets/images/enemies/default_hit.png",
 	"enemy.default.wounded": "res://assets/images/enemies/default_wounded.png",
 	"enemy.default.defeated": "res://assets/images/enemies/default_defeated.png",
-
-	# Stage navigator backdrop
-	"ui.stage_navigation.backdrop": "res://assets/images/ui/stage_navigation/backdrop.png",
 
 	# Stage navigator
 	"stage.unlocked": "res://assets/images/ui/stage_unlocked.png",

@@ -202,22 +202,6 @@ godot --headless --script res://scripts/tools/ValidateStageNavigationAssets.gd
 
 ---
 
-## StageNavigator backdrop
-
-| Asset key | Path |
-|-----------|------|
-| `ui.stage_navigation.backdrop` | `assets/images/ui/stage_navigation/backdrop.png` |
-
-Recommended size: **820×118 px** (50px bleed each side beyond the 720px viewport, 10px vertical bleed above/below the 98px StageNavigator area).
-
-Rendered by `StageNavigationBackdrop` (`ImageSlot`) in `StageNavigator._add_backdrop()` — added as first child of StageNavigator so it renders behind all buttons and labels. `mouse_filter = IGNORE`. Missing file falls back to transparent. Do not put important detail within ~50px of the left/right edges.
-
-Backdrop rect: x −50 to 770, y −10 to 108, size 820×118 (on 720px viewport).
-
-Sizing note: StageNavigator sits inside MainContent with ~48px side margins (~624px wide). `_update_backdrop_rect()` computes `horizontal_extra = (viewport_width + 100 − navigator_width) / 2` at runtime so the rect always reaches screen x=−50 and x=770, matching the BottomTabsBackdrop bleed pattern.
-
----
-
 ## StageNavigator side button textures
 
 Side buttons no longer render text labels. Visuals come entirely from `ImageSlot` texture or fallback color.
@@ -269,6 +253,25 @@ Note: Ability rank does **not** change the icon. All rank buttons reuse `abiliti
 Active ability visual: a white radial timer drawn by `AbilityCooldownOverlay` (ACTIVE mode). No image file is used — `active.png` is not referenced.
 
 See `docs/ASSET_FOLDERS.md` for a complete folder listing with full paths.
+
+## Standard sheet card background
+
+| Asset key | Path | Recommended size |
+|-----------|------|-----------------|
+| `ui.card.sheet` | `assets/images/ui/cards/sheet_card.png` | 656×156 px |
+
+Rendered by `CardBackgroundImageHolder` (`ImageSlot`) inside each standard card row in UpgradePanel, PartnerPanel, SettlementPanel, and PrestigePanel. Positioned as the first child of the row `Control` (behind all content). `mouse_filter = IGNORE`.
+
+Rules:
+- Missing file is a **warning** (safe dark fallback shown, no crash).
+- Fallback color: `Color(0.12, 0.125, 0.145, 1.0)`.
+- Fallback is hidden once the texture loads (`show_fallback_behind_texture = false`).
+- Do not put button text or dynamic values in the texture.
+- Not used by Shop cards.
+
+Run `godot --headless --script res://scripts/tools/ValidateCardAssets.gd` to validate.
+
+---
 
 ## Top interface image
 

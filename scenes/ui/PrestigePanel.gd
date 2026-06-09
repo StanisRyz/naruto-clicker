@@ -7,6 +7,9 @@ signal prestige_talent_purchase_requested(talent_index: int, mode: String)
 const BUY_MODES: Array[String] = ["x1", "x10", "x100", "max"]
 const TALENT_IMAGE_SIZE: Vector2 = Vector2(136, 136)
 const TALENT_BUTTON_SIZE: Vector2 = Vector2(210, 136)
+const CARD_BACKGROUND_ASSET_KEY: String = "ui.card.sheet"
+const CARD_BACKGROUND_FALLBACK_COLOR: Color = Color(0.12, 0.125, 0.145, 1.0)
+const CARD_HEIGHT: int = 156
 
 const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 
@@ -38,14 +41,31 @@ func update_view(state: ClickerState) -> void:
 		_update_talent_row(state, talent_index, talent_rows[talent_index])
 
 
-func _create_prestige_action_row() -> Dictionary:
-	var row := PanelContainer.new()
-	row.name = "PrestigeActionRow"
+func _create_card_row(row_name: String) -> Control:
+	var row := Control.new()
+	row.name = row_name
+	row.custom_minimum_size = Vector2(0, CARD_HEIGHT)
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_theme_stylebox_override("panel", _create_row_stylebox())
+
+	var background := ImageSlotClass.new()
+	background.name = "CardBackgroundImageHolder"
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	background.fallback_color = CARD_BACKGROUND_FALLBACK_COLOR
+	background.show_fallback_behind_texture = false
+	background.stretch_mode = TextureRect.STRETCH_SCALE
+	row.add_child(background)
+	background.set_asset_key(CARD_BACKGROUND_ASSET_KEY, CARD_BACKGROUND_FALLBACK_COLOR)
+
+	return row
+
+
+func _create_prestige_action_row() -> Dictionary:
+	var row: Control = _create_card_row("PrestigeActionRow")
 	action_container.add_child(row)
 
 	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	margin.add_theme_constant_override("margin_left", 12)
 	margin.add_theme_constant_override("margin_top", 10)
 	margin.add_theme_constant_override("margin_right", 12)
@@ -141,13 +161,11 @@ func _ensure_talent_rows(_state: ClickerState) -> void:
 
 
 func _create_talent_row(talent_index: int, talent_id: String) -> Dictionary:
-	var row := PanelContainer.new()
-	row.name = "Talent%dRow" % (talent_index + 1)
-	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_theme_stylebox_override("panel", _create_row_stylebox())
+	var row: Control = _create_card_row("Talent%dRow" % (talent_index + 1))
 	talents_container.add_child(row)
 
 	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	margin.add_theme_constant_override("margin_left", 12)
 	margin.add_theme_constant_override("margin_top", 10)
 	margin.add_theme_constant_override("margin_right", 12)
@@ -254,18 +272,3 @@ func _update_talent_row(state: ClickerState, talent_index: int, row: Dictionary)
 		"count": bulk_count,
 		"cost": NumberFormatter.compact(bulk_cost),
 	})
-
-
-func _create_row_stylebox() -> StyleBoxFlat:
-	var stylebox := StyleBoxFlat.new()
-	stylebox.bg_color = Color(0.12, 0.125, 0.145, 1.0)
-	stylebox.border_width_left = 1
-	stylebox.border_width_top = 1
-	stylebox.border_width_right = 1
-	stylebox.border_width_bottom = 1
-	stylebox.border_color = Color(0.22, 0.23, 0.26, 1.0)
-	stylebox.corner_radius_top_left = 6
-	stylebox.corner_radius_top_right = 6
-	stylebox.corner_radius_bottom_left = 6
-	stylebox.corner_radius_bottom_right = 6
-	return stylebox
