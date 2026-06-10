@@ -43,3 +43,7 @@ func _on_buy_mode_changed(mode: String) -> void:
 
 func _on_building_purchase_requested(building_index: int, mode: String) -> void:
 	building_purchase_requested.emit(building_index, mode)
+
+
+func play_building_purchase_feedback(building_index: int) -> void:
+	settlement_panel.play_building_purchase_feedback(building_index)

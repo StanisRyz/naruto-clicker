@@ -60,3 +60,7 @@ func _on_skill_popup_requested(skill_id: String, anchor_global_position: Vector2
 
 func _on_skill_purchase_requested(skill_id: String) -> void:
 	skill_purchase_requested.emit(skill_id)
+
+
+func play_partner_purchase_feedback(partner_index: int) -> void:
+	partner_panel.play_partner_purchase_feedback(partner_index)

@@ -271,6 +271,7 @@ func _on_character_level_upgrade_requested(mode: String) -> void:
 		balance_logger.log_purchase(state, "hero_level", "hero_level_x%s" % mode, gold_before - state.gold, result)
 	_update_ui()
 	if result.get("upgraded", false):
+		upgrade_sheet.play_hero_purchase_feedback()
 		_save_game_now()
 
 
@@ -304,6 +305,7 @@ func _on_ability_unlock_requested(ability_id: String) -> void:
 		balance_logger.log_purchase(state, "ability_unlock", ability_id, gold_before - state.gold, result)
 	_update_ui()
 	if result.get("upgraded", false):
+		upgrade_sheet.play_ability_purchase_feedback(ability_id)
 		_save_game_now()
 
 
@@ -378,6 +380,7 @@ func _on_partner_purchase_requested(partner_index: int, mode: String) -> void:
 		balance_logger.log_purchase(state, "partner", "partner_%d_x%s" % [partner_index, mode], gold_before - state.gold, result)
 	_update_ui()
 	if result.get("upgraded", false):
+		partner_sheet.play_partner_purchase_feedback(partner_index)
 		_save_game_now()
 
 
@@ -400,6 +403,7 @@ func _on_building_purchase_requested(building_index: int, mode: String) -> void:
 		balance_logger.log_purchase(state, "building", "building_%d_x%s" % [building_index, mode], gold_before - state.gold, result)
 	_update_ui()
 	if result.get("upgraded", false):
+		settlement_sheet.play_building_purchase_feedback(building_index)
 		_save_game_now()
 
 
@@ -440,6 +444,7 @@ func _on_prestige_talent_purchase_requested(talent_index: int, mode: String) -> 
 		balance_logger.log_purchase(state, "prestige_talent", "talent_%d_x%s" % [talent_index, mode], pp_before - state.prestige_points_available, result)
 	_update_ui()
 	if result.get("upgraded", false):
+		prestige_sheet.play_prestige_talent_purchase_feedback(talent_index)
 		_save_game_now()
 
 

@@ -8,7 +8,9 @@ const BUILDING_IMAGE_SIZE: Vector2 = Vector2(136, 136)
 const BUILDING_BUTTON_SLOT_SIZE: Vector2 = Vector2(210, 136)
 const BUILDING_BUTTON_SIZE: Vector2 = Vector2(210, 72)
 const CARD_BUTTON_Y: int = 29
-const CARD_BUTTON_ASSET_KEY: String = "ui.card.button"
+const CARD_BUTTON_DEFAULT_ASSET_KEY: String = "ui.card.button.default"
+const CARD_BUTTON_ACTIVE_ASSET_KEY: String = "ui.card.button.active"
+const CARD_BUTTON_ACTIVE_DURATION_SEC: float = 0.3
 const CARD_BUTTON_FALLBACK_COLOR: Color = Color.WHITE
 const CARD_ROW_LABEL_COUNT: int = 5
 const CARD_BACKGROUND_ASSET_KEY: String = "ui.card.sheet"
@@ -69,7 +71,7 @@ func _create_image_card_button(button_name: String) -> Dictionary:
 	background.show_fallback_behind_texture = false
 	background.stretch_mode = TextureRect.STRETCH_SCALE
 	button.add_child(background)
-	background.set_asset_key(CARD_BUTTON_ASSET_KEY, CARD_BUTTON_FALLBACK_COLOR)
+	background.set_asset_key(CARD_BUTTON_DEFAULT_ASSET_KEY, CARD_BUTTON_FALLBACK_COLOR)
 
 	var label := Label.new()
 	label.name = "ButtonTextLabel"
@@ -85,7 +87,26 @@ func _create_image_card_button(button_name: String) -> Dictionary:
 		"button": button,
 		"button_label": label,
 		"button_image_holder": background,
+		"button_feedback_token": 0,
 	}
+
+
+func play_card_button_active_feedback(row: Dictionary) -> void:
+	if not row.has("button_image_holder"):
+		return
+	var button_image_holder = row["button_image_holder"]
+	var token: int = int(row.get("button_feedback_token", 0)) + 1
+	row["button_feedback_token"] = token
+	button_image_holder.set_asset_key(CARD_BUTTON_ACTIVE_ASSET_KEY, CARD_BUTTON_FALLBACK_COLOR)
+	await get_tree().create_timer(CARD_BUTTON_ACTIVE_DURATION_SEC).timeout
+	if int(row.get("button_feedback_token", 0)) != token:
+		return
+	button_image_holder.set_asset_key(CARD_BUTTON_DEFAULT_ASSET_KEY, CARD_BUTTON_FALLBACK_COLOR)
+
+
+func play_building_purchase_feedback(building_index: int) -> void:
+	if building_index < building_rows.size():
+		play_card_button_active_feedback(building_rows[building_index])
 
 
 func _set_card_button_state(row: Dictionary, enabled: bool) -> void:

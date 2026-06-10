@@ -55,3 +55,7 @@ func _on_panel_prestige_requested() -> void:
 
 func _on_panel_prestige_talent_purchase_requested(talent_index: int, mode: String) -> void:
 	prestige_talent_purchase_requested.emit(talent_index, mode)
+
+
+func play_prestige_talent_purchase_feedback(talent_index: int) -> void:
+	prestige_panel.play_prestige_talent_purchase_feedback(talent_index)

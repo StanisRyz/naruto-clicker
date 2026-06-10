@@ -159,28 +159,34 @@ Validation: `godot --headless --script res://scripts/tools/ValidateCardAssets.gd
 
 ---
 
-## Standard card purchase button texture
+## Standard card purchase button textures
 
-Path: `assets/images/ui/cards/button.png`
+Folder: `assets/images/ui/cards/button/`
 
 Recommended size: **210×72 px**
+
+| File | Asset key | When shown |
+|------|-----------|------------|
+| `button/default.png` | `ui.card.button.default` | Normal / idle state |
+| `button/active.png` | `ui.card.button.active` | 0.3 s flash after successful purchase |
 
 Used by:
 - Upgrade card purchase buttons (hero level + ability rows)
 - Partner card hire buttons
 - Settlement building buy buttons
-- Prestige action button
 - Prestige talent upgrade buttons
 
+(Prestige action/reset button uses the same ImageSlot but has no active feedback.)
+
 Fallback behavior:
-- If `button.png` is missing: `ImageSlot` shows a white rectangle (`Color.WHITE`). No crash.
-- If `button.png` exists: texture shown, white fallback hidden (`show_fallback_behind_texture = false`).
+- If the PNG is missing: `ImageSlot` shows a white rectangle (`Color.WHITE`). No crash.
+- If the PNG exists: texture shown, white fallback hidden (`show_fallback_behind_texture = false`).
 
 Rules:
 - Button text is drawn by a `Label` child (`ButtonTextLabel`) placed above the `ImageSlot`.
 - Native Button background styles are cleared (`button.flat = true` + `clear_image_button_styles`).
 - `ImageSlot` and `Label` use `mouse_filter = IGNORE`; all clicks pass to the Button node.
-- Asset key: `ui.card.button`
+- Active flash uses integer token guard to handle rapid re-purchases correctly.
 
 Validation: `godot --headless --script res://scripts/tools/ValidateCardAssets.gd`
 

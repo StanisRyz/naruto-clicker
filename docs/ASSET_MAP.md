@@ -271,11 +271,12 @@ Rules:
 
 Run `godot --headless --script res://scripts/tools/ValidateCardAssets.gd` to validate.
 
-## Standard card purchase button texture
+## Standard card purchase button textures
 
-| Asset key | Path | Recommended size |
-|-----------|------|-----------------|
-| `ui.card.button` | `assets/images/ui/cards/button.png` | 210×72 px |
+| Asset key | Path | Recommended size | When shown |
+|-----------|------|-----------------|------------|
+| `ui.card.button.default` | `assets/images/ui/cards/button/default.png` | 210×72 px | Normal / idle state |
+| `ui.card.button.active` | `assets/images/ui/cards/button/active.png` | 210×72 px | 0.3 s flash after successful purchase |
 
 Rendered by `ButtonImageHolder` (`ImageSlot`) inside each card purchase button. The button occupies rows 2–4 of the card (y=29..101 inside the 210×136 slot). The button is always a child of a `ButtonSlot` Control (210×136) added to the card `HBoxContainer`.
 
@@ -284,7 +285,7 @@ Used by:
 - Upgrade ability unlock/buy buttons (`BuyButton`)
 - Partner hire buttons (`HireButton`)
 - Settlement building buy buttons (`BuyButton`)
-- Prestige reset/action button (`PrestigeButton`)
+- Prestige reset/action button (`PrestigeButton`) — default only, no active feedback
 - Prestige talent upgrade buttons (`UpgradeButton`)
 
 Rules:
@@ -295,6 +296,7 @@ Rules:
 - Native Button background and focus styles are cleared (`button.flat = true`).
 - `ImageSlot` and `Label` both have `mouse_filter = IGNORE` — clicks reach the `Button` node.
 - Disabled state: `button_image_holder.modulate = Color(0.65, 0.65, 0.65)`, `button_label.modulate = Color(0.45, 0.45, 0.45)`.
+- Active flash uses integer token guard; rapid re-purchases cancel the previous timer's reset.
 
 Run `godot --headless --script res://scripts/tools/ValidateCardAssets.gd` to validate.
 

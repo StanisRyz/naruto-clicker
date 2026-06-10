@@ -78,3 +78,11 @@ func _on_ability_skill_purchase_requested(skill_id: String) -> void:
 
 func _on_ability_unlock_requested(ability_id: String) -> void:
 	ability_unlock_requested.emit(ability_id)
+
+
+func play_hero_purchase_feedback() -> void:
+	upgrade_panel.play_hero_purchase_feedback()
+
+
+func play_ability_purchase_feedback(ability_id: String) -> void:
+	upgrade_panel.play_ability_purchase_feedback(ability_id)
