@@ -261,7 +261,7 @@ See `docs/ASSET_FOLDERS.md` for a complete folder listing with full paths.
 | `ui.sheet.standard` | `assets/images/ui/sheets/standard_sheet.png` | 720×645 px |
 | `ui.sheet.close_button` | `assets/images/ui/sheets/close_button.png` | 72×56 px |
 
-Used by UpgradeSheet, PartnerSheet, SettlementSheet, PrestigeSheet (not ShopSheet).
+Used by UpgradeSheet, PartnerSheet, SettlementSheet, PrestigeSheet, and ShopSheet.
 Rendered by `SheetBackgroundImageHolder` (`ImageSlot`) — first child of `PanelContainer` (Control),
 full-rect, `mouse_filter = IGNORE`. Missing file shows dark fallback `Color(0.08, 0.085, 0.1)`.
 Texture hides fallback when present (`show_fallback_behind_texture = false`, `stretch_mode = STRETCH_SCALE`).
@@ -276,14 +276,13 @@ Validation: `godot --headless --script res://scripts/tools/ValidateSheetAssets.g
 |-----------|------|-----------------|
 | `ui.card.sheet` | `assets/images/ui/cards/sheet_card.png` | 656×156 px |
 
-Rendered by `CardBackgroundImageHolder` (`ImageSlot`) inside each standard card row in UpgradePanel, PartnerPanel, SettlementPanel, and PrestigePanel. Positioned as the first child of the row `Control` (behind all content). `mouse_filter = IGNORE`.
+Rendered by `CardBackgroundImageHolder` (`ImageSlot`) inside each standard card row in UpgradePanel, PartnerPanel, SettlementPanel, PrestigePanel, and ShopPanel. Positioned as the first child of the row `Control` (behind all content). `mouse_filter = IGNORE`.
 
 Rules:
 - Missing file is a **warning** (safe dark fallback shown, no crash).
 - Fallback color: `Color(0.12, 0.125, 0.145, 1.0)`.
 - Fallback is hidden once the texture loads (`show_fallback_behind_texture = false`).
 - Do not put button text or dynamic values in the texture.
-- Not used by Shop cards.
 
 Run `godot --headless --script res://scripts/tools/ValidateCardAssets.gd` to validate.
 
@@ -303,6 +302,7 @@ Used by:
 - Settlement building buy buttons (`BuyButton`)
 - Prestige reset/action button (`PrestigeButton`) — default only, no active feedback
 - Prestige talent upgrade buttons (`UpgradeButton`)
+- Shop product buy buttons (`BuyButton`) — active feedback on successful purchase
 
 Rules:
 - Missing file is a **warning** (safe white fallback shown, no crash).

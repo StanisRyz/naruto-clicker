@@ -142,9 +142,7 @@ Used by:
 - PartnerSheet
 - SettlementSheet
 - PrestigeSheet
-
-Not used by:
-- ShopSheet (handled separately)
+- ShopSheet
 
 Texture rules:
 - Strict rectangle covering the full sheet area (720 px wide, 645 px tall at base resolution).
@@ -161,6 +159,12 @@ Sheet header layout (after cleanup):
 - `HeaderResourceContainer` — resource icon + resource value, always visible.
 - `HeaderSpacer` — expands to fill remaining space.
 - `CloseButton` — image-only (`ButtonImageHolder` ImageSlot, no text). Uses `close_button.png`.
+
+Shop-specific layout note:
+- ShopSheet has no buy mode buttons. Instead a `ShopControlPlaceholder` Control node (56px height,
+  `mouse_filter = IGNORE`) sits between the header and the ScrollContainer, reserving the same
+  vertical space that `BuyModeSelector` occupies in other sheets so product cards start at the
+  same y-position across all tabs.
   - Missing `close_button.png`: white 72×56 fallback rectangle.
   - Present `close_button.png`: texture shown, fallback hidden. Texture should include the × icon.
   - The game draws no "Close" text over this button.
@@ -181,9 +185,9 @@ Used by:
 - Settlement building cards
 - Prestige action card
 - Prestige talent cards
+- Shop product cards
 
 Not used by:
-- Shop cards
 - Bottom tab buttons
 - StageNavigator buttons
 - TasksWindow
@@ -216,6 +220,7 @@ Used by:
 - Partner card hire buttons
 - Settlement building buy buttons
 - Prestige talent upgrade buttons
+- Shop product buy buttons (with active feedback on successful purchase)
 
 (Prestige action/reset button uses the same ImageSlot but has no active feedback.)
 

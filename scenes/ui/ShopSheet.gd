@@ -36,5 +36,9 @@ func _on_panel_product_purchase_requested(product_id: String) -> void:
 	product_purchase_requested.emit(product_id)
 
 
+func play_product_purchase_feedback(product_id: String) -> void:
+	shop_panel.play_product_purchase_feedback(product_id)
+
+
 func _on_panel_test_gems_requested() -> void:
 	test_gems_requested.emit()

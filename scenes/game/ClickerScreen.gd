@@ -456,6 +456,7 @@ func _on_shop_product_purchase_requested(product_id: String) -> void:
 		balance_logger.log_purchase(state, "shop", product_id, gems_before - state.gems, result)
 	_update_ui()
 	if result.get("upgraded", false):
+		shop_sheet.play_product_purchase_feedback(product_id)
 		_save_game_now()
 
 
