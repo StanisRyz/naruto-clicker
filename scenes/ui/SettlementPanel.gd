@@ -5,11 +5,25 @@ signal building_purchase_requested(building_index: int, mode: String)
 
 const BUY_MODES: Array[String] = ["x1", "x10", "x100", "max"]
 const BUILDING_IMAGE_SIZE: Vector2 = Vector2(136, 136)
-const BUILDING_BUTTON_SIZE: Vector2 = Vector2(210, 136)
+const BUILDING_BUTTON_SLOT_SIZE: Vector2 = Vector2(210, 136)
+const BUILDING_BUTTON_SIZE: Vector2 = Vector2(210, 72)
+const CARD_BUTTON_Y: int = 29
 const CARD_ROW_LABEL_COUNT: int = 5
 const CARD_BACKGROUND_ASSET_KEY: String = "ui.card.sheet"
 const CARD_BACKGROUND_FALLBACK_COLOR: Color = Color(0.12, 0.125, 0.145, 1.0)
 const CARD_HEIGHT: int = 156
+const CARD_OUTER_HEIGHT: int = 156
+const CARD_INNER_HEIGHT: int = 136
+const CARD_MARGIN_LEFT: int = 12
+const CARD_MARGIN_TOP: int = 10
+const CARD_MARGIN_RIGHT: int = 12
+const CARD_MARGIN_BOTTOM: int = 10
+const CARD_ROW_GAP: int = 3
+const CARD_ROW_1_HEIGHT: int = 26
+const CARD_ROW_2_HEIGHT: int = 22
+const CARD_ROW_3_HEIGHT: int = 22
+const CARD_ROW_4_HEIGHT: int = 22
+const CARD_ROW_5_HEIGHT: int = 32
 
 const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 
@@ -36,11 +50,43 @@ func _ensure_building_rows(_state: ClickerState) -> void:
 		building_rows.append(_create_building_row(building_index))
 
 
+func _create_card_button_slot(button: Button) -> Control:
+	var slot := Control.new()
+	slot.name = "ButtonSlot"
+	slot.custom_minimum_size = BUILDING_BUTTON_SLOT_SIZE
+	slot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+
+	button.custom_minimum_size = BUILDING_BUTTON_SIZE
+	button.anchor_left = 0.0
+	button.anchor_top = 0.0
+	button.anchor_right = 1.0
+	button.anchor_bottom = 0.0
+	button.offset_left = 0.0
+	button.offset_top = CARD_BUTTON_Y
+	button.offset_right = 0.0
+	button.offset_bottom = CARD_BUTTON_Y + int(BUILDING_BUTTON_SIZE.y)
+
+	slot.add_child(button)
+	return slot
+
+
+func _place_card_row(control: Control, y: int, height: int) -> void:
+	control.anchor_left = 0.0
+	control.anchor_top = 0.0
+	control.anchor_right = 1.0
+	control.anchor_bottom = 0.0
+	control.offset_left = 0.0
+	control.offset_top = y
+	control.offset_right = 0.0
+	control.offset_bottom = y + height
+
+
 func _create_card_row(row_name: String) -> Control:
 	var row := Control.new()
 	row.name = row_name
-	row.custom_minimum_size = Vector2(0, CARD_HEIGHT)
+	row.custom_minimum_size = Vector2(0, CARD_OUTER_HEIGHT)
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.clip_contents = true
 
 	var background := ImageSlotClass.new()
 	background.name = "CardBackgroundImageHolder"
@@ -61,10 +107,10 @@ func _create_building_row(building_index: int) -> Dictionary:
 
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	margin.add_theme_constant_override("margin_left", 12)
-	margin.add_theme_constant_override("margin_top", 10)
-	margin.add_theme_constant_override("margin_right", 12)
-	margin.add_theme_constant_override("margin_bottom", 10)
+	margin.add_theme_constant_override("margin_left", CARD_MARGIN_LEFT)
+	margin.add_theme_constant_override("margin_top", CARD_MARGIN_TOP)
+	margin.add_theme_constant_override("margin_right", CARD_MARGIN_RIGHT)
+	margin.add_theme_constant_override("margin_bottom", CARD_MARGIN_BOTTOM)
 	row.add_child(margin)
 
 	var content := HBoxContainer.new()
@@ -80,51 +126,63 @@ func _create_building_row(building_index: int) -> Dictionary:
 	content.add_child(image_holder)
 	image_holder.set_asset_key(GameAssetCatalog.building_icon_key(building_index))
 
-	var right_content := VBoxContainer.new()
+	var right_content := Control.new()
 	right_content.name = "RightContent"
 	right_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	right_content.add_theme_constant_override("separation", 4)
+	right_content.custom_minimum_size = Vector2(0, CARD_INNER_HEIGHT)
+	right_content.clip_contents = true
 	content.add_child(right_content)
 
 	var building_name_label := Label.new()
 	building_name_label.name = "BuildingNameLabel"
-	building_name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	building_name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	building_name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	building_name_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	UiFontConfig.apply_label_font_size(building_name_label, UiFontConfig.SETTLEMENT_NAME_FONT_SIZE)
+	_place_card_row(building_name_label, 0, CARD_ROW_1_HEIGHT)
 	right_content.add_child(building_name_label)
 
 	var building_count_label := Label.new()
 	building_count_label.name = "BuildingCountLabel"
-	building_count_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	building_count_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	building_count_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	UiFontConfig.apply_label_font_size(building_count_label, UiFontConfig.SETTLEMENT_COUNT_FONT_SIZE)
+	_place_card_row(building_count_label, CARD_ROW_1_HEIGHT + CARD_ROW_GAP, CARD_ROW_2_HEIGHT)
 	right_content.add_child(building_count_label)
 
 	var purchase_bonus_gain_label := Label.new()
 	purchase_bonus_gain_label.name = "PurchaseBonusGainLabel"
-	purchase_bonus_gain_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	purchase_bonus_gain_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	purchase_bonus_gain_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	UiFontConfig.apply_label_font_size(purchase_bonus_gain_label, UiFontConfig.SETTLEMENT_PURCHASE_GAIN_FONT_SIZE)
+	_place_card_row(purchase_bonus_gain_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_GAP * 2, CARD_ROW_3_HEIGHT)
 	right_content.add_child(purchase_bonus_gain_label)
 
 	var total_bonus_label := Label.new()
 	total_bonus_label.name = "TotalBonusLabel"
-	total_bonus_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	total_bonus_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	total_bonus_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	UiFontConfig.apply_label_font_size(total_bonus_label, UiFontConfig.SETTLEMENT_TOTAL_BONUS_FONT_SIZE)
+	_place_card_row(total_bonus_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_3_HEIGHT + CARD_ROW_GAP * 3, CARD_ROW_4_HEIGHT)
 	right_content.add_child(total_bonus_label)
 
 	var milestone_label := Label.new()
 	milestone_label.name = "MilestoneLabel"
-	milestone_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	milestone_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	milestone_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	milestone_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	UiFontConfig.apply_label_font_size(milestone_label, UiFontConfig.SETTLEMENT_MILESTONE_FONT_SIZE)
+	_place_card_row(milestone_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_3_HEIGHT + CARD_ROW_4_HEIGHT + CARD_ROW_GAP * 4, CARD_ROW_5_HEIGHT)
 	right_content.add_child(milestone_label)
 
 	var button := Button.new()
 	button.name = "BuyButton"
-	button.custom_minimum_size = BUILDING_BUTTON_SIZE
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	button.pressed.connect(func() -> void: building_purchase_requested.emit(building_index, selected_buy_mode))
 	ButtonVisualUtils.disable_focus_artifact(button)
 	UiFontConfig.apply_button_font_size(button, UiFontConfig.SETTLEMENT_BUTTON_FONT_SIZE)
-	content.add_child(button)
+	var button_slot := _create_card_button_slot(button)
+	content.add_child(button_slot)
 
 	return {
 		"row": row,

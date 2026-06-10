@@ -6,10 +6,24 @@ signal prestige_talent_purchase_requested(talent_index: int, mode: String)
 
 const BUY_MODES: Array[String] = ["x1", "x10", "x100", "max"]
 const TALENT_IMAGE_SIZE: Vector2 = Vector2(136, 136)
-const TALENT_BUTTON_SIZE: Vector2 = Vector2(210, 136)
+const TALENT_BUTTON_SLOT_SIZE: Vector2 = Vector2(210, 136)
+const TALENT_BUTTON_SIZE: Vector2 = Vector2(210, 72)
+const CARD_BUTTON_Y: int = 29
 const CARD_BACKGROUND_ASSET_KEY: String = "ui.card.sheet"
 const CARD_BACKGROUND_FALLBACK_COLOR: Color = Color(0.12, 0.125, 0.145, 1.0)
 const CARD_HEIGHT: int = 156
+const CARD_OUTER_HEIGHT: int = 156
+const CARD_INNER_HEIGHT: int = 136
+const CARD_MARGIN_LEFT: int = 12
+const CARD_MARGIN_TOP: int = 10
+const CARD_MARGIN_RIGHT: int = 12
+const CARD_MARGIN_BOTTOM: int = 10
+const CARD_ROW_GAP: int = 3
+const CARD_ROW_1_HEIGHT: int = 26
+const CARD_ROW_2_HEIGHT: int = 22
+const CARD_ROW_3_HEIGHT: int = 22
+const CARD_ROW_4_HEIGHT: int = 22
+const CARD_ROW_5_HEIGHT: int = 32
 
 const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 
@@ -41,11 +55,43 @@ func update_view(state: ClickerState) -> void:
 		_update_talent_row(state, talent_index, talent_rows[talent_index])
 
 
+func _create_card_button_slot(button: Button) -> Control:
+	var slot := Control.new()
+	slot.name = "ButtonSlot"
+	slot.custom_minimum_size = TALENT_BUTTON_SLOT_SIZE
+	slot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+
+	button.custom_minimum_size = TALENT_BUTTON_SIZE
+	button.anchor_left = 0.0
+	button.anchor_top = 0.0
+	button.anchor_right = 1.0
+	button.anchor_bottom = 0.0
+	button.offset_left = 0.0
+	button.offset_top = CARD_BUTTON_Y
+	button.offset_right = 0.0
+	button.offset_bottom = CARD_BUTTON_Y + int(TALENT_BUTTON_SIZE.y)
+
+	slot.add_child(button)
+	return slot
+
+
+func _place_card_row(control: Control, y: int, height: int) -> void:
+	control.anchor_left = 0.0
+	control.anchor_top = 0.0
+	control.anchor_right = 1.0
+	control.anchor_bottom = 0.0
+	control.offset_left = 0.0
+	control.offset_top = y
+	control.offset_right = 0.0
+	control.offset_bottom = y + height
+
+
 func _create_card_row(row_name: String) -> Control:
 	var row := Control.new()
 	row.name = row_name
-	row.custom_minimum_size = Vector2(0, CARD_HEIGHT)
+	row.custom_minimum_size = Vector2(0, CARD_OUTER_HEIGHT)
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.clip_contents = true
 
 	var background := ImageSlotClass.new()
 	background.name = "CardBackgroundImageHolder"
@@ -66,10 +112,10 @@ func _create_prestige_action_row() -> Dictionary:
 
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	margin.add_theme_constant_override("margin_left", 12)
-	margin.add_theme_constant_override("margin_top", 10)
-	margin.add_theme_constant_override("margin_right", 12)
-	margin.add_theme_constant_override("margin_bottom", 10)
+	margin.add_theme_constant_override("margin_left", CARD_MARGIN_LEFT)
+	margin.add_theme_constant_override("margin_top", CARD_MARGIN_TOP)
+	margin.add_theme_constant_override("margin_right", CARD_MARGIN_RIGHT)
+	margin.add_theme_constant_override("margin_bottom", CARD_MARGIN_BOTTOM)
 	row.add_child(margin)
 
 	var content := HBoxContainer.new()
@@ -85,45 +131,54 @@ func _create_prestige_action_row() -> Dictionary:
 	content.add_child(image_holder)
 	image_holder.set_asset_key("prestige.action")
 
-	var right_content := VBoxContainer.new()
+	var right_content := Control.new()
 	right_content.name = "RightContent"
 	right_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	right_content.add_theme_constant_override("separation", 4)
+	right_content.custom_minimum_size = Vector2(0, CARD_INNER_HEIGHT)
+	right_content.clip_contents = true
 	content.add_child(right_content)
 
 	var prestige_title_label := Label.new()
 	prestige_title_label.name = "PrestigeTitleLabel"
-	prestige_title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	prestige_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	prestige_title_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	prestige_title_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	UiFontConfig.apply_label_font_size(prestige_title_label, UiFontConfig.PRESTIGE_ACTION_TITLE_FONT_SIZE)
+	_place_card_row(prestige_title_label, 0, CARD_ROW_1_HEIGHT)
 	right_content.add_child(prestige_title_label)
 
 	var prestige_reward_label := Label.new()
 	prestige_reward_label.name = "PrestigeRewardLabel"
-	prestige_reward_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	prestige_reward_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	prestige_reward_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	UiFontConfig.apply_label_font_size(prestige_reward_label, UiFontConfig.PRESTIGE_ACTION_REWARD_FONT_SIZE)
+	_place_card_row(prestige_reward_label, CARD_ROW_1_HEIGHT + CARD_ROW_GAP, CARD_ROW_2_HEIGHT)
 	right_content.add_child(prestige_reward_label)
 
 	var reset_progress_label := Label.new()
 	reset_progress_label.name = "ResetProgressLabel"
-	reset_progress_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	reset_progress_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	reset_progress_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	UiFontConfig.apply_label_font_size(reset_progress_label, UiFontConfig.PRESTIGE_ACTION_RESET_FONT_SIZE)
+	_place_card_row(reset_progress_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_GAP * 2, CARD_ROW_3_HEIGHT)
 	right_content.add_child(reset_progress_label)
 
 	var get_points_label := Label.new()
 	get_points_label.name = "GetPointsLabel"
-	get_points_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	get_points_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	get_points_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	UiFontConfig.apply_label_font_size(get_points_label, UiFontConfig.PRESTIGE_ACTION_GET_POINTS_FONT_SIZE)
+	_place_card_row(get_points_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_3_HEIGHT + CARD_ROW_GAP * 3, CARD_ROW_4_HEIGHT)
 	right_content.add_child(get_points_label)
 
 	var button := Button.new()
 	button.name = "PrestigeButton"
-	button.custom_minimum_size = TALENT_BUTTON_SIZE
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	button.pressed.connect(_on_prestige_button_pressed)
 	ButtonVisualUtils.disable_focus_artifact(button)
 	UiFontConfig.apply_button_font_size(button, UiFontConfig.PRESTIGE_ACTION_BUTTON_FONT_SIZE)
-	content.add_child(button)
+	var button_slot := _create_card_button_slot(button)
+	content.add_child(button_slot)
 
 	return {
 		"prestige_title_label": prestige_title_label,
@@ -166,10 +221,10 @@ func _create_talent_row(talent_index: int, talent_id: String) -> Dictionary:
 
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	margin.add_theme_constant_override("margin_left", 12)
-	margin.add_theme_constant_override("margin_top", 10)
-	margin.add_theme_constant_override("margin_right", 12)
-	margin.add_theme_constant_override("margin_bottom", 10)
+	margin.add_theme_constant_override("margin_left", CARD_MARGIN_LEFT)
+	margin.add_theme_constant_override("margin_top", CARD_MARGIN_TOP)
+	margin.add_theme_constant_override("margin_right", CARD_MARGIN_RIGHT)
+	margin.add_theme_constant_override("margin_bottom", CARD_MARGIN_BOTTOM)
 	row.add_child(margin)
 
 	var content := HBoxContainer.new()
@@ -185,52 +240,62 @@ func _create_talent_row(talent_index: int, talent_id: String) -> Dictionary:
 	content.add_child(image_holder)
 	image_holder.set_asset_key(GameAssetCatalog.prestige_talent_icon_key(talent_id))
 
-	var right_content := VBoxContainer.new()
+	var right_content := Control.new()
 	right_content.name = "RightContent"
 	right_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	right_content.add_theme_constant_override("separation", 4)
+	right_content.custom_minimum_size = Vector2(0, CARD_INNER_HEIGHT)
+	right_content.clip_contents = true
 	content.add_child(right_content)
 
 	var talent_name_label := Label.new()
 	talent_name_label.name = "TalentNameLabel"
-	talent_name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	talent_name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	talent_name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	talent_name_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	UiFontConfig.apply_label_font_size(talent_name_label, UiFontConfig.PRESTIGE_NAME_FONT_SIZE)
+	_place_card_row(talent_name_label, 0, CARD_ROW_1_HEIGHT)
 	right_content.add_child(talent_name_label)
 
 	var talent_count_label := Label.new()
 	talent_count_label.name = "TalentCountLabel"
-	talent_count_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	talent_count_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	talent_count_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	UiFontConfig.apply_label_font_size(talent_count_label, UiFontConfig.PRESTIGE_COUNT_FONT_SIZE)
+	_place_card_row(talent_count_label, CARD_ROW_1_HEIGHT + CARD_ROW_GAP, CARD_ROW_2_HEIGHT)
 	right_content.add_child(talent_count_label)
 
 	var purchase_bonus_gain_label := Label.new()
 	purchase_bonus_gain_label.name = "PurchaseBonusGainLabel"
-	purchase_bonus_gain_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	purchase_bonus_gain_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	purchase_bonus_gain_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	UiFontConfig.apply_label_font_size(purchase_bonus_gain_label, UiFontConfig.PRESTIGE_PURCHASE_GAIN_FONT_SIZE)
+	_place_card_row(purchase_bonus_gain_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_GAP * 2, CARD_ROW_3_HEIGHT)
 	right_content.add_child(purchase_bonus_gain_label)
 
 	var total_bonus_label := Label.new()
 	total_bonus_label.name = "TotalBonusLabel"
-	total_bonus_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	total_bonus_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	total_bonus_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	UiFontConfig.apply_label_font_size(total_bonus_label, UiFontConfig.PRESTIGE_TOTAL_BONUS_FONT_SIZE)
+	_place_card_row(total_bonus_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_3_HEIGHT + CARD_ROW_GAP * 3, CARD_ROW_4_HEIGHT)
 	right_content.add_child(total_bonus_label)
 
 	var empty_row_label := Label.new()
 	empty_row_label.name = "EmptyRowLabel"
-	empty_row_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	empty_row_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	empty_row_label.text = " "
 	UiFontConfig.apply_label_font_size(empty_row_label, UiFontConfig.PRESTIGE_EMPTY_ROW_FONT_SIZE)
+	_place_card_row(empty_row_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_3_HEIGHT + CARD_ROW_4_HEIGHT + CARD_ROW_GAP * 4, CARD_ROW_5_HEIGHT)
 	right_content.add_child(empty_row_label)
 
 	var button := Button.new()
 	button.name = "UpgradeButton"
-	button.custom_minimum_size = TALENT_BUTTON_SIZE
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	button.pressed.connect(func() -> void: prestige_talent_purchase_requested.emit(talent_index, selected_buy_mode))
 	ButtonVisualUtils.disable_focus_artifact(button)
 	UiFontConfig.apply_button_font_size(button, UiFontConfig.PRESTIGE_BUTTON_FONT_SIZE)
-	content.add_child(button)
+	var button_slot := _create_card_button_slot(button)
+	content.add_child(button_slot)
 
 	return {
 		"talent_name_label": talent_name_label,
