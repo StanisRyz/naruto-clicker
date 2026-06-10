@@ -128,6 +128,47 @@ No image file is used. `active.png` is no longer referenced.
 
 ---
 
+## Standard bottom sheet background
+
+Folder: `assets/images/ui/sheets/`
+
+| File | Asset key | Recommended size |
+|------|-----------|-----------------|
+| `sheets/standard_sheet.png` | `ui.sheet.standard` | 720×645 px |
+| `sheets/close_button.png` | `ui.sheet.close_button` | 72×56 px |
+
+Used by:
+- UpgradeSheet
+- PartnerSheet
+- SettlementSheet
+- PrestigeSheet
+
+Not used by:
+- ShopSheet (handled separately)
+
+Texture rules:
+- Strict rectangle covering the full sheet area (720 px wide, 645 px tall at base resolution).
+- No dynamic text, buttons, or cards baked in.
+- Leave clean readable zones for header, buy mode selector, and scroll/card list.
+- Missing texture: `SheetBackgroundImageHolder` shows dark fallback `Color(0.08, 0.085, 0.1)`.
+- Loaded texture: fallback hidden (`show_fallback_behind_texture = false`), texture fills entire sheet.
+
+Node: `SheetBackgroundImageHolder` (`ImageSlot` / `ColorRect`) — first child of `PanelContainer` (Control),
+full-rect, `mouse_filter = IGNORE`. `MarginContainer` and all interactive UI layered above it.
+
+Sheet header layout (after cleanup):
+- `TitleLabel` — hidden (`visible = false`, `text = ""`). Node kept for scene stability.
+- `HeaderResourceContainer` — resource icon + resource value, always visible.
+- `HeaderSpacer` — expands to fill remaining space.
+- `CloseButton` — image-only (`ButtonImageHolder` ImageSlot, no text). Uses `close_button.png`.
+  - Missing `close_button.png`: white 72×56 fallback rectangle.
+  - Present `close_button.png`: texture shown, fallback hidden. Texture should include the × icon.
+  - The game draws no "Close" text over this button.
+
+Validation: `godot --headless --script res://scripts/tools/ValidateSheetAssets.gd`
+
+---
+
 ## Standard sheet card background
 
 Path: `assets/images/ui/cards/sheet_card.png`

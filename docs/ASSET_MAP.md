@@ -254,6 +254,22 @@ Active ability visual: a white radial timer drawn by `AbilityCooldownOverlay` (A
 
 See `docs/ASSET_FOLDERS.md` for a complete folder listing with full paths.
 
+## Standard bottom sheet background
+
+| Asset key | Path | Recommended size |
+|-----------|------|-----------------|
+| `ui.sheet.standard` | `assets/images/ui/sheets/standard_sheet.png` | 720×645 px |
+| `ui.sheet.close_button` | `assets/images/ui/sheets/close_button.png` | 72×56 px |
+
+Used by UpgradeSheet, PartnerSheet, SettlementSheet, PrestigeSheet (not ShopSheet).
+Rendered by `SheetBackgroundImageHolder` (`ImageSlot`) — first child of `PanelContainer` (Control),
+full-rect, `mouse_filter = IGNORE`. Missing file shows dark fallback `Color(0.08, 0.085, 0.1)`.
+Texture hides fallback when present (`show_fallback_behind_texture = false`, `stretch_mode = STRETCH_SCALE`).
+
+Validation: `godot --headless --script res://scripts/tools/ValidateSheetAssets.gd`
+
+---
+
 ## Standard sheet card background
 
 | Asset key | Path | Recommended size |

@@ -11,6 +11,7 @@ signal closed
 
 
 func _ready() -> void:
+	ButtonVisualUtils.setup_image_button(close_button, "ui.sheet.close_button", Color.WHITE)
 	close_button.pressed.connect(hide_sheet)
 	shop_panel.product_purchase_requested.connect(_on_panel_product_purchase_requested)
 	shop_panel.test_gems_requested.connect(_on_panel_test_gems_requested)

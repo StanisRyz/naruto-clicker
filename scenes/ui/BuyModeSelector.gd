@@ -21,7 +21,7 @@ func _ready() -> void:
 	buttons[2].pressed.connect(func() -> void: set_selected_mode("x100"))
 	buttons[3].pressed.connect(func() -> void: set_selected_mode("max"))
 	for button in buttons:
-		ButtonVisualUtils.disable_focus_artifact(button)
+		ButtonVisualUtils.clear_text_button_background(button)
 	LocalizationManager.language_changed.connect(_update_buttons)
 	_update_buttons()
 
