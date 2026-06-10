@@ -271,6 +271,33 @@ Rules:
 
 Run `godot --headless --script res://scripts/tools/ValidateCardAssets.gd` to validate.
 
+## Standard card purchase button texture
+
+| Asset key | Path | Recommended size |
+|-----------|------|-----------------|
+| `ui.card.button` | `assets/images/ui/cards/button.png` | 210×72 px |
+
+Rendered by `ButtonImageHolder` (`ImageSlot`) inside each card purchase button. The button occupies rows 2–4 of the card (y=29..101 inside the 210×136 slot). The button is always a child of a `ButtonSlot` Control (210×136) added to the card `HBoxContainer`.
+
+Used by:
+- Upgrade hero level button (`UpgradeButton`)
+- Upgrade ability unlock/buy buttons (`BuyButton`)
+- Partner hire buttons (`HireButton`)
+- Settlement building buy buttons (`BuyButton`)
+- Prestige reset/action button (`PrestigeButton`)
+- Prestige talent upgrade buttons (`UpgradeButton`)
+
+Rules:
+- Missing file is a **warning** (safe white fallback shown, no crash).
+- Fallback color: `Color.WHITE`.
+- Fallback is hidden once the texture loads (`show_fallback_behind_texture = false`).
+- Button text is drawn by `ButtonTextLabel` (`Label`) child placed above the `ImageSlot`, centered, with word-wrap.
+- Native Button background and focus styles are cleared (`button.flat = true`).
+- `ImageSlot` and `Label` both have `mouse_filter = IGNORE` — clicks reach the `Button` node.
+- Disabled state: `button_image_holder.modulate = Color(0.65, 0.65, 0.65)`, `button_label.modulate = Color(0.45, 0.45, 0.45)`.
+
+Run `godot --headless --script res://scripts/tools/ValidateCardAssets.gd` to validate.
+
 ---
 
 ## Top interface image

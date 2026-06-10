@@ -10,6 +10,8 @@ const SKILL_ICON_SIZE: Vector2 = Vector2(32, 32)
 const CARD_BUTTON_SLOT_SIZE: Vector2 = Vector2(210, 136)
 const CARD_BUTTON_SIZE: Vector2 = Vector2(210, 72)
 const CARD_BUTTON_Y: int = 29
+const CARD_BUTTON_ASSET_KEY: String = "ui.card.button"
+const CARD_BUTTON_FALLBACK_COLOR: Color = Color.WHITE
 const CARD_BACKGROUND_ASSET_KEY: String = "ui.card.sheet"
 const CARD_BACKGROUND_FALLBACK_COLOR: Color = Color(0.12, 0.125, 0.145, 1.0)
 const CARD_HEIGHT: int = 156
@@ -56,6 +58,51 @@ func _ensure_partner_rows(_state: ClickerState) -> void:
 	while partner_rows.size() < PartnerConfig.PARTNER_NAMES.size():
 		var partner_index: int = partner_rows.size()
 		partner_rows.append(_create_partner_row(partner_index))
+
+
+func _create_image_card_button(button_name: String) -> Dictionary:
+	var button := Button.new()
+	button.name = button_name
+	button.custom_minimum_size = CARD_BUTTON_SIZE
+	button.focus_mode = Control.FOCUS_NONE
+	button.text = ""
+	button.flat = true
+	ButtonVisualUtils.clear_image_button_styles(button)
+
+	var background = ImageSlotClass.new()
+	background.name = "ButtonImageHolder"
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	background.fallback_color = CARD_BUTTON_FALLBACK_COLOR
+	background.show_fallback_behind_texture = false
+	background.stretch_mode = TextureRect.STRETCH_SCALE
+	button.add_child(background)
+	background.set_asset_key(CARD_BUTTON_ASSET_KEY, CARD_BUTTON_FALLBACK_COLOR)
+
+	var label := Label.new()
+	label.name = "ButtonTextLabel"
+	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	button.add_child(label)
+
+	return {
+		"button": button,
+		"button_label": label,
+		"button_image_holder": background,
+	}
+
+
+func _set_card_button_state(row: Dictionary, enabled: bool) -> void:
+	var button: Button = row["button"]
+	var button_label: Label = row["button_label"]
+	var button_image_holder = row["button_image_holder"]
+	button.disabled = not enabled
+	button_image_holder.modulate = Color.WHITE if enabled else Color(0.65, 0.65, 0.65, 1.0)
+	button_label.modulate = Color.WHITE if enabled else Color(0.45, 0.45, 0.45, 1.0)
 
 
 func _create_card_button_slot(button: Button) -> Control:
@@ -214,10 +261,11 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 	skill_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	skill_row.add_child(skill_spacer)
 
-	var button := Button.new()
-	button.name = "HireButton"
+	var btn_dict := _create_image_card_button("HireButton")
+	var button: Button = btn_dict["button"]
+	var button_label: Label = btn_dict["button_label"]
+	var button_image_holder = btn_dict["button_image_holder"]
 	button.pressed.connect(func() -> void: partner_purchase_requested.emit(partner_index, selected_buy_mode))
-	ButtonVisualUtils.disable_focus_artifact(button)
 	var button_slot := _create_card_button_slot(button)
 	content.add_child(button_slot)
 
@@ -225,7 +273,7 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 	UiFontConfig.apply_label_font_size(purchase_gain_label, UiFontConfig.PARTNER_COUNT_GAIN_FONT_SIZE)
 	UiFontConfig.apply_label_font_size(total_dps_label, UiFontConfig.PARTNER_TOTAL_DPS_FONT_SIZE)
 	UiFontConfig.apply_label_font_size(milestone_label, UiFontConfig.PARTNER_MILESTONE_FONT_SIZE)
-	UiFontConfig.apply_button_font_size(button, UiFontConfig.PARTNER_BUTTON_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(button_label, UiFontConfig.PARTNER_BUTTON_FONT_SIZE)
 
 	return {
 		"row": row,
@@ -236,6 +284,8 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 		"skill_buttons": skill_buttons,
 		"skill_image_holders": skill_image_holders,
 		"button": button,
+		"button_label": button_label,
+		"button_image_holder": button_image_holder,
 	}
 
 
@@ -246,7 +296,6 @@ func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionar
 	var milestone_label: Label = row["milestone_label"]
 	var skill_buttons: Array = row["skill_buttons"]
 	var skill_image_holders: Array = row["skill_image_holders"]
-	var button: Button = row["button"]
 	var partner_name: String = LocalizationManager.tr_key(PartnerConfig.get_name_key(partner_index))
 	var partner_count: int = state.partner_counts[partner_index]
 	var tier_total_dps: int = state.get_partner_tier_total_dps(partner_index)
@@ -285,11 +334,11 @@ func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionar
 	var bulk_count: int = state.get_partner_bulk_display_count(partner_index, selected_buy_mode)
 	var bulk_cost: int = state.get_partner_bulk_display_cost(partner_index, selected_buy_mode)
 	var can_afford: bool = state.can_afford_partner_bulk(partner_index, selected_buy_mode)
-	button.disabled = not can_afford
-	button.text = LocalizationManager.format_key("partner.hire_button", {
+	row["button_label"].text = LocalizationManager.format_key("partner.hire_button", {
 		"count": bulk_count,
 		"cost": NumberFormatter.compact(bulk_cost),
 	})
+	_set_card_button_state(row, can_afford)
 
 
 func set_buy_mode(mode: String) -> void:

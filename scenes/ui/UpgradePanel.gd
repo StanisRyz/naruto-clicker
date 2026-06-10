@@ -19,6 +19,8 @@ const SKILL_ICON_SIZE: Vector2 = Vector2(32, 32)
 const CARD_BUTTON_SLOT_SIZE: Vector2 = Vector2(210, 136)
 const CARD_BUTTON_SIZE: Vector2 = Vector2(210, 72)
 const CARD_BUTTON_Y: int = 29
+const CARD_BUTTON_ASSET_KEY: String = "ui.card.button"
+const CARD_BUTTON_FALLBACK_COLOR: Color = Color.WHITE
 const CARD_BACKGROUND_ASSET_KEY: String = "ui.card.sheet"
 const CARD_BACKGROUND_FALLBACK_COLOR: Color = Color(0.12, 0.125, 0.145, 1.0)
 const CARD_HEIGHT: int = 156
@@ -68,6 +70,51 @@ func set_buy_mode(mode: String) -> void:
 	if not BUY_MODES.has(mode):
 		return
 	selected_buy_mode = mode
+
+
+func _create_image_card_button(button_name: String) -> Dictionary:
+	var button := Button.new()
+	button.name = button_name
+	button.custom_minimum_size = CARD_BUTTON_SIZE
+	button.focus_mode = Control.FOCUS_NONE
+	button.text = ""
+	button.flat = true
+	ButtonVisualUtils.clear_image_button_styles(button)
+
+	var background = ImageSlotClass.new()
+	background.name = "ButtonImageHolder"
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	background.fallback_color = CARD_BUTTON_FALLBACK_COLOR
+	background.show_fallback_behind_texture = false
+	background.stretch_mode = TextureRect.STRETCH_SCALE
+	button.add_child(background)
+	background.set_asset_key(CARD_BUTTON_ASSET_KEY, CARD_BUTTON_FALLBACK_COLOR)
+
+	var label := Label.new()
+	label.name = "ButtonTextLabel"
+	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	button.add_child(label)
+
+	return {
+		"button": button,
+		"button_label": label,
+		"button_image_holder": background,
+	}
+
+
+func _set_card_button_state(row: Dictionary, enabled: bool) -> void:
+	var button: Button = row["button"]
+	var button_label: Label = row["button_label"]
+	var button_image_holder = row["button_image_holder"]
+	button.disabled = not enabled
+	button_image_holder.modulate = Color.WHITE if enabled else Color(0.65, 0.65, 0.65, 1.0)
+	button_label.modulate = Color.WHITE if enabled else Color(0.45, 0.45, 0.45, 1.0)
 
 
 func _create_card_button_slot(button: Button) -> Control:
@@ -136,7 +183,7 @@ func _update_hero_level_row(state: ClickerState) -> void:
 	var purchase_gain_label: Label = hero_level_row["purchase_gain_label"]
 	var effect_label: Label = hero_level_row["effect_label"]
 	var milestone_label: Label = hero_level_row["milestone_label"]
-	var button: Button = hero_level_row["button"]
+	var button_label: Label = hero_level_row["button_label"]
 	var skill_buttons: Array = hero_level_row["skill_buttons"]
 	var skill_image_holders: Array = hero_level_row["skill_image_holders"]
 	var bulk_count: int = state.get_character_level_bulk_display_count(selected_buy_mode)
@@ -158,11 +205,11 @@ func _update_hero_level_row(state: ClickerState) -> void:
 		})
 	else:
 		milestone_label.text = LocalizationManager.tr_key("upgrade.hero.card.milestone_max")
-	button.disabled = false
-	button.text = LocalizationManager.format_key("upgrade.hero.button", {
+	button_label.text = LocalizationManager.format_key("upgrade.hero.button", {
 		"count": bulk_count,
 		"cost": NumberFormatter.compact(bulk_cost),
 	})
+	_set_card_button_state(hero_level_row, true)
 	var skills: Array[Dictionary] = state.get_hero_skills()
 	_update_skill_icon_row(skills, skill_buttons, skill_image_holders, state, true)
 
@@ -199,7 +246,6 @@ func _update_ability_row(state: ClickerState, ability_index: int, row: Dictionar
 	var purchase_gain_label: Label = row["purchase_gain_label"]
 	var effect_label: Label = row["effect_label"]
 	var milestone_label: Label = row["milestone_label"]
-	var button: Button = row["button"]
 	var skill_buttons: Array = row["skill_buttons"]
 	var skill_image_holders: Array = row["skill_image_holders"]
 
@@ -220,7 +266,7 @@ func _update_ability_row(state: ClickerState, ability_index: int, row: Dictionar
 		})
 	else:
 		milestone_label.text = dur_text
-	_update_ability_unlock_button(state, ability_id, button)
+	_update_ability_unlock_button(state, ability_id, row)
 	var skills: Array[Dictionary] = state.get_ability_skills(ability_id)
 	_update_skill_icon_row(skills, skill_buttons, skill_image_holders, state, false)
 
@@ -335,9 +381,10 @@ func _add_card_content(row: Control, button_name: String) -> Dictionary:
 	skill_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	skill_row.add_child(skill_spacer)
 
-	var button := Button.new()
-	button.name = button_name
-	ButtonVisualUtils.disable_focus_artifact(button)
+	var btn_dict := _create_image_card_button(button_name)
+	var button: Button = btn_dict["button"]
+	var button_label: Label = btn_dict["button_label"]
+	var button_image_holder = btn_dict["button_image_holder"]
 	var button_slot := _create_card_button_slot(button)
 	content.add_child(button_slot)
 
@@ -345,7 +392,7 @@ func _add_card_content(row: Control, button_name: String) -> Dictionary:
 	UiFontConfig.apply_label_font_size(purchase_gain_label, UiFontConfig.UPGRADE_GAIN_FONT_SIZE)
 	UiFontConfig.apply_label_font_size(effect_label, UiFontConfig.UPGRADE_VALUE_FONT_SIZE)
 	UiFontConfig.apply_label_font_size(milestone_label, UiFontConfig.UPGRADE_MILESTONE_FONT_SIZE)
-	UiFontConfig.apply_button_font_size(button, UiFontConfig.UPGRADE_BUTTON_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(button_label, UiFontConfig.UPGRADE_BUTTON_FONT_SIZE)
 
 	return {
 		"name_status_label": name_status_label,
@@ -355,25 +402,28 @@ func _add_card_content(row: Control, button_name: String) -> Dictionary:
 		"skill_buttons": skill_buttons,
 		"skill_image_holders": skill_image_holders,
 		"button": button,
+		"button_label": button_label,
+		"button_image_holder": button_image_holder,
 		"image_holder": image_holder,
 	}
 
 
-func _update_ability_unlock_button(state: ClickerState, ability_id: String, button: Button) -> void:
+func _update_ability_unlock_button(state: ClickerState, ability_id: String, row: Dictionary) -> void:
+	var button_label: Label = row["button_label"]
 	var cost: int = state.get_ability_unlock_cost(ability_id)
 	if state.is_ability_purchased(ability_id):
-		button.disabled = true
-		button.text = LocalizationManager.tr_key("upgrade.ability.purchased")
+		button_label.text = LocalizationManager.tr_key("upgrade.ability.purchased")
+		_set_card_button_state(row, false)
 	elif not state.is_ability_unlocked(ability_id):
-		button.disabled = true
-		button.text = LocalizationManager.format_key("upgrade.ability.requires_level", {
+		button_label.text = LocalizationManager.format_key("upgrade.ability.requires_level", {
 			"level": state.get_ability_unlock_level(ability_id),
 		})
+		_set_card_button_state(row, false)
 	else:
-		button.text = LocalizationManager.format_key("upgrade.ability.buy", {
+		button_label.text = LocalizationManager.format_key("upgrade.ability.buy", {
 			"cost": NumberFormatter.compact(cost),
 		})
-		button.disabled = not state.can_buy_ability_unlock(ability_id)
+		_set_card_button_state(row, state.can_buy_ability_unlock(ability_id))
 
 
 func _update_skill_icon_row(skills: Array[Dictionary], skill_buttons: Array, skill_image_holders: Array, state: ClickerState, is_hero: bool) -> void:

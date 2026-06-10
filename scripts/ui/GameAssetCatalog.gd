@@ -5,6 +5,7 @@ const IMAGE_ROOT: String = "res://assets/images/"
 const ASSET_PATHS: Dictionary = {
 	# Card backgrounds
 	"ui.card.sheet": "res://assets/images/ui/cards/sheet_card.png",
+	"ui.card.button": "res://assets/images/ui/cards/button.png",
 
 	# Core UI
 	"ui.top_interface": "res://assets/images/ui/top_interface.png",

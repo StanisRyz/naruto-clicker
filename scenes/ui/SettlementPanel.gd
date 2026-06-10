@@ -8,6 +8,8 @@ const BUILDING_IMAGE_SIZE: Vector2 = Vector2(136, 136)
 const BUILDING_BUTTON_SLOT_SIZE: Vector2 = Vector2(210, 136)
 const BUILDING_BUTTON_SIZE: Vector2 = Vector2(210, 72)
 const CARD_BUTTON_Y: int = 29
+const CARD_BUTTON_ASSET_KEY: String = "ui.card.button"
+const CARD_BUTTON_FALLBACK_COLOR: Color = Color.WHITE
 const CARD_ROW_LABEL_COUNT: int = 5
 const CARD_BACKGROUND_ASSET_KEY: String = "ui.card.sheet"
 const CARD_BACKGROUND_FALLBACK_COLOR: Color = Color(0.12, 0.125, 0.145, 1.0)
@@ -48,6 +50,51 @@ func _ensure_building_rows(_state: ClickerState) -> void:
 	while building_rows.size() < SettlementConfig.BUILDING_NAMES.size():
 		var building_index: int = building_rows.size()
 		building_rows.append(_create_building_row(building_index))
+
+
+func _create_image_card_button(button_name: String) -> Dictionary:
+	var button := Button.new()
+	button.name = button_name
+	button.custom_minimum_size = BUILDING_BUTTON_SIZE
+	button.focus_mode = Control.FOCUS_NONE
+	button.text = ""
+	button.flat = true
+	ButtonVisualUtils.clear_image_button_styles(button)
+
+	var background = ImageSlotClass.new()
+	background.name = "ButtonImageHolder"
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	background.fallback_color = CARD_BUTTON_FALLBACK_COLOR
+	background.show_fallback_behind_texture = false
+	background.stretch_mode = TextureRect.STRETCH_SCALE
+	button.add_child(background)
+	background.set_asset_key(CARD_BUTTON_ASSET_KEY, CARD_BUTTON_FALLBACK_COLOR)
+
+	var label := Label.new()
+	label.name = "ButtonTextLabel"
+	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	button.add_child(label)
+
+	return {
+		"button": button,
+		"button_label": label,
+		"button_image_holder": background,
+	}
+
+
+func _set_card_button_state(row: Dictionary, enabled: bool) -> void:
+	var button: Button = row["button"]
+	var button_label: Label = row["button_label"]
+	var button_image_holder = row["button_image_holder"]
+	button.disabled = not enabled
+	button_image_holder.modulate = Color.WHITE if enabled else Color(0.65, 0.65, 0.65, 1.0)
+	button_label.modulate = Color.WHITE if enabled else Color(0.45, 0.45, 0.45, 1.0)
 
 
 func _create_card_button_slot(button: Button) -> Control:
@@ -175,12 +222,12 @@ func _create_building_row(building_index: int) -> Dictionary:
 	_place_card_row(milestone_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_3_HEIGHT + CARD_ROW_4_HEIGHT + CARD_ROW_GAP * 4, CARD_ROW_5_HEIGHT)
 	right_content.add_child(milestone_label)
 
-	var button := Button.new()
-	button.name = "BuyButton"
-	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var btn_dict := _create_image_card_button("BuyButton")
+	var button: Button = btn_dict["button"]
+	var button_label: Label = btn_dict["button_label"]
+	var button_image_holder = btn_dict["button_image_holder"]
 	button.pressed.connect(func() -> void: building_purchase_requested.emit(building_index, selected_buy_mode))
-	ButtonVisualUtils.disable_focus_artifact(button)
-	UiFontConfig.apply_button_font_size(button, UiFontConfig.SETTLEMENT_BUTTON_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(button_label, UiFontConfig.SETTLEMENT_BUTTON_FONT_SIZE)
 	var button_slot := _create_card_button_slot(button)
 	content.add_child(button_slot)
 
@@ -192,6 +239,8 @@ func _create_building_row(building_index: int) -> Dictionary:
 		"total_bonus_label": total_bonus_label,
 		"milestone_label": milestone_label,
 		"button": button,
+		"button_label": button_label,
+		"button_image_holder": button_image_holder,
 	}
 
 
@@ -201,7 +250,6 @@ func _update_building_row(state: ClickerState, building_index: int, row: Diction
 	var purchase_bonus_gain_label: Label = row["purchase_bonus_gain_label"]
 	var total_bonus_label: Label = row["total_bonus_label"]
 	var milestone_label: Label = row["milestone_label"]
-	var button: Button = row["button"]
 
 	var building_name: String = LocalizationManager.tr_key(SettlementConfig.get_name_key(building_index))
 	var owned_count: int = state.building_counts[building_index]
@@ -222,11 +270,12 @@ func _update_building_row(state: ClickerState, building_index: int, row: Diction
 
 	var bulk_count: int = state.get_building_bulk_display_count(building_index, selected_buy_mode)
 	var bulk_cost: int = state.get_building_bulk_display_cost(building_index, selected_buy_mode)
-	button.disabled = not state.can_afford_building_bulk(building_index, selected_buy_mode)
-	button.text = LocalizationManager.format_key("settlement.build_button", {
+	var can_afford: bool = state.can_afford_building_bulk(building_index, selected_buy_mode)
+	row["button_label"].text = LocalizationManager.format_key("settlement.build_button", {
 		"count": bulk_count,
 		"cost": NumberFormatter.compact(bulk_cost),
 	})
+	_set_card_button_state(row, can_afford)
 
 
 func set_buy_mode(mode: String) -> void:

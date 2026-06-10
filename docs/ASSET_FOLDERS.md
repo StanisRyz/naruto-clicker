@@ -159,6 +159,33 @@ Validation: `godot --headless --script res://scripts/tools/ValidateCardAssets.gd
 
 ---
 
+## Standard card purchase button texture
+
+Path: `assets/images/ui/cards/button.png`
+
+Recommended size: **210×72 px**
+
+Used by:
+- Upgrade card purchase buttons (hero level + ability rows)
+- Partner card hire buttons
+- Settlement building buy buttons
+- Prestige action button
+- Prestige talent upgrade buttons
+
+Fallback behavior:
+- If `button.png` is missing: `ImageSlot` shows a white rectangle (`Color.WHITE`). No crash.
+- If `button.png` exists: texture shown, white fallback hidden (`show_fallback_behind_texture = false`).
+
+Rules:
+- Button text is drawn by a `Label` child (`ButtonTextLabel`) placed above the `ImageSlot`.
+- Native Button background styles are cleared (`button.flat = true` + `clear_image_button_styles`).
+- `ImageSlot` and `Label` use `mouse_filter = IGNORE`; all clicks pass to the Button node.
+- Asset key: `ui.card.button`
+
+Validation: `godot --headless --script res://scripts/tools/ValidateCardAssets.gd`
+
+---
+
 ## Upgrade tab main cards
 
 Path: `assets/images/upgrades/ability_id.png`

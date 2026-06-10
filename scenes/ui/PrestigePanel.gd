@@ -9,6 +9,8 @@ const TALENT_IMAGE_SIZE: Vector2 = Vector2(136, 136)
 const TALENT_BUTTON_SLOT_SIZE: Vector2 = Vector2(210, 136)
 const TALENT_BUTTON_SIZE: Vector2 = Vector2(210, 72)
 const CARD_BUTTON_Y: int = 29
+const CARD_BUTTON_ASSET_KEY: String = "ui.card.button"
+const CARD_BUTTON_FALLBACK_COLOR: Color = Color.WHITE
 const CARD_BACKGROUND_ASSET_KEY: String = "ui.card.sheet"
 const CARD_BACKGROUND_FALLBACK_COLOR: Color = Color(0.12, 0.125, 0.145, 1.0)
 const CARD_HEIGHT: int = 156
@@ -53,6 +55,51 @@ func update_view(state: ClickerState) -> void:
 
 	for talent_index in range(talent_rows.size()):
 		_update_talent_row(state, talent_index, talent_rows[talent_index])
+
+
+func _create_image_card_button(button_name: String) -> Dictionary:
+	var button := Button.new()
+	button.name = button_name
+	button.custom_minimum_size = TALENT_BUTTON_SIZE
+	button.focus_mode = Control.FOCUS_NONE
+	button.text = ""
+	button.flat = true
+	ButtonVisualUtils.clear_image_button_styles(button)
+
+	var background = ImageSlotClass.new()
+	background.name = "ButtonImageHolder"
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	background.fallback_color = CARD_BUTTON_FALLBACK_COLOR
+	background.show_fallback_behind_texture = false
+	background.stretch_mode = TextureRect.STRETCH_SCALE
+	button.add_child(background)
+	background.set_asset_key(CARD_BUTTON_ASSET_KEY, CARD_BUTTON_FALLBACK_COLOR)
+
+	var label := Label.new()
+	label.name = "ButtonTextLabel"
+	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	button.add_child(label)
+
+	return {
+		"button": button,
+		"button_label": label,
+		"button_image_holder": background,
+	}
+
+
+func _set_card_button_state(row: Dictionary, enabled: bool) -> void:
+	var button: Button = row["button"]
+	var button_label: Label = row["button_label"]
+	var button_image_holder = row["button_image_holder"]
+	button.disabled = not enabled
+	button_image_holder.modulate = Color.WHITE if enabled else Color(0.65, 0.65, 0.65, 1.0)
+	button_label.modulate = Color.WHITE if enabled else Color(0.45, 0.45, 0.45, 1.0)
 
 
 func _create_card_button_slot(button: Button) -> Control:
@@ -171,12 +218,12 @@ func _create_prestige_action_row() -> Dictionary:
 	_place_card_row(get_points_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_3_HEIGHT + CARD_ROW_GAP * 3, CARD_ROW_4_HEIGHT)
 	right_content.add_child(get_points_label)
 
-	var button := Button.new()
-	button.name = "PrestigeButton"
-	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var btn_dict := _create_image_card_button("PrestigeButton")
+	var button: Button = btn_dict["button"]
+	var button_label: Label = btn_dict["button_label"]
+	var button_image_holder = btn_dict["button_image_holder"]
 	button.pressed.connect(_on_prestige_button_pressed)
-	ButtonVisualUtils.disable_focus_artifact(button)
-	UiFontConfig.apply_button_font_size(button, UiFontConfig.PRESTIGE_ACTION_BUTTON_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(button_label, UiFontConfig.PRESTIGE_ACTION_BUTTON_FONT_SIZE)
 	var button_slot := _create_card_button_slot(button)
 	content.add_child(button_slot)
 
@@ -186,6 +233,8 @@ func _create_prestige_action_row() -> Dictionary:
 		"reset_progress_label": reset_progress_label,
 		"get_points_label": get_points_label,
 		"button": button,
+		"button_label": button_label,
+		"button_image_holder": button_image_holder,
 	}
 
 
@@ -194,7 +243,7 @@ func _update_prestige_action_row(total_reward: int) -> void:
 	var prestige_reward_label: Label = prestige_action_row["prestige_reward_label"]
 	var reset_progress_label: Label = prestige_action_row["reset_progress_label"]
 	var get_points_label: Label = prestige_action_row["get_points_label"]
-	var button: Button = prestige_action_row["button"]
+	var button_label: Label = prestige_action_row["button_label"]
 
 	prestige_title_label.text = LocalizationManager.tr_key("prestige.action_card.title")
 	prestige_reward_label.text = LocalizationManager.format_key("prestige.action_card.reward", {
@@ -203,8 +252,8 @@ func _update_prestige_action_row(total_reward: int) -> void:
 	reset_progress_label.text = LocalizationManager.tr_key("prestige.action_card.reset_progress")
 	get_points_label.text = LocalizationManager.tr_key("prestige.action_card.get_points")
 
-	button.disabled = total_reward <= 0
-	button.text = LocalizationManager.tr_key("prestige.action")
+	button_label.text = LocalizationManager.tr_key("prestige.action")
+	_set_card_button_state(prestige_action_row, total_reward > 0)
 
 
 func _ensure_talent_rows(_state: ClickerState) -> void:
@@ -288,12 +337,12 @@ func _create_talent_row(talent_index: int, talent_id: String) -> Dictionary:
 	_place_card_row(empty_row_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_3_HEIGHT + CARD_ROW_4_HEIGHT + CARD_ROW_GAP * 4, CARD_ROW_5_HEIGHT)
 	right_content.add_child(empty_row_label)
 
-	var button := Button.new()
-	button.name = "UpgradeButton"
-	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var btn_dict := _create_image_card_button("UpgradeButton")
+	var button: Button = btn_dict["button"]
+	var button_label: Label = btn_dict["button_label"]
+	var button_image_holder = btn_dict["button_image_holder"]
 	button.pressed.connect(func() -> void: prestige_talent_purchase_requested.emit(talent_index, selected_buy_mode))
-	ButtonVisualUtils.disable_focus_artifact(button)
-	UiFontConfig.apply_button_font_size(button, UiFontConfig.PRESTIGE_BUTTON_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(button_label, UiFontConfig.PRESTIGE_BUTTON_FONT_SIZE)
 	var button_slot := _create_card_button_slot(button)
 	content.add_child(button_slot)
 
@@ -304,6 +353,8 @@ func _create_talent_row(talent_index: int, talent_id: String) -> Dictionary:
 		"total_bonus_label": total_bonus_label,
 		"empty_row_label": empty_row_label,
 		"button": button,
+		"button_label": button_label,
+		"button_image_holder": button_image_holder,
 	}
 
 
@@ -316,7 +367,6 @@ func _update_talent_row(state: ClickerState, talent_index: int, row: Dictionary)
 	var talent_count_label: Label = row["talent_count_label"]
 	var purchase_bonus_gain_label: Label = row["purchase_bonus_gain_label"]
 	var total_bonus_label: Label = row["total_bonus_label"]
-	var button: Button = row["button"]
 
 	var level: int = state.prestige_talent_levels[talent_index]
 	var talent_name: String = LocalizationManager.tr_key(PrestigeConfig.get_name_key(talent_index))
@@ -332,8 +382,8 @@ func _update_talent_row(state: ClickerState, talent_index: int, row: Dictionary)
 	var bulk_count: int = state.get_prestige_talent_bulk_display_count(talent_index, selected_buy_mode)
 	var bulk_cost: int = state.get_prestige_talent_bulk_display_cost(talent_index, selected_buy_mode)
 	var can_afford: bool = state.get_prestige_talent_bulk_count(talent_index, selected_buy_mode) > 0
-	button.disabled = not can_afford
-	button.text = LocalizationManager.format_key("prestige.talent_upgrade_bulk", {
+	row["button_label"].text = LocalizationManager.format_key("prestige.talent_upgrade_bulk", {
 		"count": bulk_count,
 		"cost": NumberFormatter.compact(bulk_cost),
 	})
+	_set_card_button_state(row, can_afford)
