@@ -145,6 +145,8 @@ func _create_task_row(task_data: Dictionary) -> Control:
 	background.set_asset_key(TASK_CARD_BACKGROUND_ASSET_KEY, TASK_CARD_BACKGROUND_FALLBACK_COLOR)
 
 	var margin := MarginContainer.new()
+	margin.name = "ContentMargin"
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	margin.add_theme_constant_override("margin_left", 12)
 	margin.add_theme_constant_override("margin_top", 0)
@@ -153,7 +155,9 @@ func _create_task_row(task_data: Dictionary) -> Control:
 	row.add_child(margin)
 
 	var content := HBoxContainer.new()
+	content.name = "Content"
 	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.add_theme_constant_override("separation", 12)
 	margin.add_child(content)
