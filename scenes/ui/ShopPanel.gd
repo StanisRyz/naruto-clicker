@@ -1,8 +1,7 @@
 class_name ShopPanel
 extends VBoxContainer
 
-signal product_purchase_requested(product_id: String)
-signal test_gems_requested
+signal product_purchase_requested(product_id: String, mode: String)
 
 const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 
@@ -33,20 +32,28 @@ const CARD_BUTTON_FALLBACK_COLOR: Color = Color.WHITE
 const CARD_BUTTON_ACTIVE_DURATION_SEC: float = 0.3
 
 var product_rows: Dictionary = {}
+var selected_buy_mode: String = "x1"
+var latest_state: ClickerState = null
 
-@onready var test_gems_button: Button = $TestGemsButton
 @onready var products_container: VBoxContainer = $ProductsContainer
 
 
-func _ready() -> void:
-	test_gems_button.pressed.connect(func() -> void: test_gems_requested.emit())
-	test_gems_button.visible = BuildConfig.IS_DEBUG_BUILD
+func set_selected_buy_mode(mode: String) -> void:
+	selected_buy_mode = mode
+	if latest_state != null:
+		_refresh_view()
 
 
 func update_view(state: ClickerState) -> void:
+	latest_state = state
 	_ensure_product_rows(state)
+	_refresh_view()
 
-	for product_data: Dictionary in state.get_shop_product_view_data():
+
+func _refresh_view() -> void:
+	if latest_state == null:
+		return
+	for product_data: Dictionary in latest_state.get_shop_product_view_data(selected_buy_mode):
 		var product_id: String = String(product_data.get("id", ""))
 		if product_rows.has(product_id):
 			_update_product_row(product_data, product_rows[product_id])
@@ -158,7 +165,7 @@ func _create_product_row(product_id: String) -> Dictionary:
 	button.text = ""
 	button.flat = true
 	ButtonVisualUtils.clear_image_button_styles(button)
-	button.pressed.connect(func() -> void: product_purchase_requested.emit(product_id))
+	button.pressed.connect(func() -> void: product_purchase_requested.emit(product_id, selected_buy_mode))
 
 	var button_image_holder := ImageSlotClass.new()
 	button_image_holder.name = "ButtonImageHolder"
@@ -215,21 +222,40 @@ func _update_product_row(product_data: Dictionary, row: Dictionary) -> void:
 	var name_label: Label = row["name_label"]
 	var price_label: Label = row["price_label"]
 	var desc_label: Label = row["desc_label"]
+	var extra_label: Label = row["extra_label"]
 	var button: Button = row["button"]
 	var button_label: Label = row["button_label"]
 	var button_image_holder = row["button_image_holder"]
-	var cost_gems: int = int(product_data.get("cost_gems", 0))
 
 	var name_key: String = String(product_data.get("name_key", ""))
 	var display_name: String = LocalizationManager.tr_key(name_key) if name_key != "" else String(product_data.get("name", ""))
 	var desc_key: String = String(product_data.get("description_key", ""))
 	var display_desc: String = LocalizationManager.tr_key(desc_key) if desc_key != "" else String(product_data.get("description", ""))
 
+	var cost_gems: int = int(product_data.get("cost_gems", 0))
+	var buy_count: int = int(product_data.get("buy_count", 1))
+	var owned_count: int = int(product_data.get("owned_count", -1))
+	var total_multiplier: int = int(product_data.get("total_multiplier", -1))
+	var product_type: String = String(product_data.get("product_type", "consumable"))
+
 	name_label.text = display_name
-	price_label.text = "%s Gems" % NumberFormatter.compact(cost_gems)
 	desc_label.text = display_desc
 
 	var can_buy: bool = bool(product_data.get("can_buy", false))
+
+	if product_type == "permanent_multiplier":
+		price_label.text = LocalizationManager.format_key(
+			"shop.buy_button_count",
+			{"count": str(buy_count), "cost": NumberFormatter.compact(cost_gems)}
+		)
+		extra_label.text = "Owned: %d  |  Current: x%d" % [owned_count, total_multiplier]
+	else:
+		price_label.text = LocalizationManager.format_key(
+			"shop.buy_button_count",
+			{"count": str(buy_count), "cost": NumberFormatter.compact(cost_gems)}
+		)
+		extra_label.text = ""
+
 	button.disabled = not can_buy
 	button_label.text = LocalizationManager.tr_key("shop.buy_button")
 	button_image_holder.modulate = Color.WHITE if can_buy else Color(0.65, 0.65, 0.65, 1.0)

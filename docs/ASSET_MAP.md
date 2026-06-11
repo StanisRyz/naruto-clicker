@@ -162,6 +162,24 @@ Missing files fall back to the default game asset catalog placeholder (no crash)
 
 Validation: `godot --headless --script res://scripts/tools/ValidateTaskAssets.gd`
 
+### Shop product icons
+
+Recommended size: **136×136 px**
+
+| Product ID | Asset key | Path |
+|------------|-----------|------|
+| `gold_pack_small` | `shop.gold_pack_small` | `assets/images/shop/gold_pack_small.png` |
+| `gold_pack_large` | `shop.gold_pack_large` | `assets/images/shop/gold_pack_large.png` |
+| `permanent_partner_dps_x2` | `shop.permanent_partner_dps_x2` | `assets/images/shop/permanent_partner_dps_x2.png` |
+| `permanent_click_damage_x2` | `shop.permanent_click_damage_x2` | `assets/images/shop/permanent_click_damage_x2.png` |
+| `permanent_gold_x2` | `shop.permanent_gold_x2` | `assets/images/shop/permanent_gold_x2.png` |
+
+Fallback: missing → white 136×136 square. Present → texture shown, fallback hidden (`show_fallback_behind_texture = false`).
+
+Asset key lookup: `GameAssetCatalog.shop_product_icon_key(product_id)` → `"shop.<product_id>"`.
+
+---
+
 ### TasksWindow open button
 
 Path: `assets/images/tasks/tasks_button/`

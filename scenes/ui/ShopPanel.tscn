@@ -6,11 +6,6 @@
 theme_override_constants/separation = 12
 script = ExtResource("1_shop_panel")
 
-[node name="TestGemsButton" type="Button" parent="."]
-custom_minimum_size = Vector2(0, 52)
-layout_mode = 2
-text = "Prototype: Get 50 Gems"
-
 [node name="ProductsContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
 theme_override_constants/separation = 10

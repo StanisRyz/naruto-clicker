@@ -1,13 +1,13 @@
 class_name ShopSheet
 extends Control
 
-signal product_purchase_requested(product_id: String)
-signal test_gems_requested
+signal product_purchase_requested(product_id: String, mode: String)
 signal closed
 
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
 @onready var header_resource_value_label: Label = $PanelContainer/MarginContainer/VBoxContainer/Header/HeaderResourceContainer/ResourceValueLabel
 @onready var shop_panel: ShopPanel = $PanelContainer/MarginContainer/VBoxContainer/ScrollContainer/ShopPanel
+@onready var buy_mode_selector: ShopBuyModeSelector = $PanelContainer/MarginContainer/VBoxContainer/ShopBuyModeSelector
 
 
 func _ready() -> void:
@@ -15,7 +15,7 @@ func _ready() -> void:
 	UiFontConfig.apply_label_font_size(header_resource_value_label, UiFontConfig.SHEET_RESOURCE_VALUE_FONT_SIZE)
 	close_button.pressed.connect(hide_sheet)
 	shop_panel.product_purchase_requested.connect(_on_panel_product_purchase_requested)
-	shop_panel.test_gems_requested.connect(_on_panel_test_gems_requested)
+	buy_mode_selector.buy_mode_changed.connect(shop_panel.set_selected_buy_mode)
 	hide()
 
 
@@ -33,13 +33,9 @@ func update_view(state: ClickerState) -> void:
 	shop_panel.update_view(state)
 
 
-func _on_panel_product_purchase_requested(product_id: String) -> void:
-	product_purchase_requested.emit(product_id)
+func _on_panel_product_purchase_requested(product_id: String, mode: String) -> void:
+	product_purchase_requested.emit(product_id, mode)
 
 
 func play_product_purchase_feedback(product_id: String) -> void:
 	shop_panel.play_product_purchase_feedback(product_id)
-
-
-func _on_panel_test_gems_requested() -> void:
-	test_gems_requested.emit()

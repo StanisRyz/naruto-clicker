@@ -4,8 +4,8 @@ extends RefCounted
 # AUTO-GENERATED — do not edit by hand.
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
-# Generated key count: 273
-# Generated at: 1781197245
+# Generated key count: 279
+# Generated at: 1781200159
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -51,8 +51,7 @@ const TRANSLATIONS: Dictionary = {
 		"task.in_progress": "In Progress",
 		"task.claim": "Claim",
 		"task.claimed": "Claimed",
-		"task.progress": "{current} / {target}",
-		"task.reward": "Reward: {reward} Gold",
+		"task.progress": "{current} / {target} | Reward: {reward}",
 		"upgrade.hero.button": "x{count} - {cost}",
 		"upgrade.hero.card.name": "Hero",
 		"upgrade.hero.card.level_gain": "{level} Lv | +{gain} Damage",
@@ -209,6 +208,13 @@ const TRANSLATIONS: Dictionary = {
 		"shop.boss_retry_token.description": "Return to the failed boss level",
 		"shop.task_boost.name": "Task Reward Boost",
 		"shop.task_boost.description": "Next claimed task gives x2 gold",
+		"shop.permanent_partner_dps_x2.name": "Permanent Partner DPS x2",
+		"shop.permanent_partner_dps_x2.description": "Permanently doubles Partner DPS",
+		"shop.permanent_click_damage_x2.name": "Permanent Click Damage x2",
+		"shop.permanent_click_damage_x2.description": "Permanently doubles click damage",
+		"shop.permanent_gold_x2.name": "Permanent Gold x2",
+		"shop.permanent_gold_x2.description": "Permanently doubles gold from enemies",
+		"shop.buy_button_count": "Buy x{count}\n{cost} Gems",
 		"task.manual_damage_500.title": "Deal 500 manual damage",
 		"task.defeat_25_enemies.title": "Defeat 25 enemies",
 		"task.defeat_2_elites.title": "Defeat 2 elite enemies",
@@ -326,8 +332,7 @@ const TRANSLATIONS: Dictionary = {
 		"task.in_progress": "В Процессе",
 		"task.claim": "Получить",
 		"task.claimed": "Получено",
-		"task.progress": "{current} / {target}",
-		"task.reward": "Награда: {reward} золота",
+		"task.progress": "{current} / {target} | Награда: {reward}",
 		"upgrade.hero.button": "x{count} - {cost}",
 		"upgrade.hero.card.name": "Герой",
 		"upgrade.hero.card.level_gain": "{level} Ур | +{gain} Урон",
@@ -484,6 +489,13 @@ const TRANSLATIONS: Dictionary = {
 		"shop.boss_retry_token.description": "",
 		"shop.task_boost.name": "",
 		"shop.task_boost.description": "",
+		"shop.permanent_partner_dps_x2.name": "Вечный x2 ДПС партнёров",
+		"shop.permanent_partner_dps_x2.description": "Навсегда удваивает ДПС партнёров",
+		"shop.permanent_click_damage_x2.name": "Вечный x2 урон клика",
+		"shop.permanent_click_damage_x2.description": "Навсегда удваивает урон клика",
+		"shop.permanent_gold_x2.name": "Вечный x2 золото",
+		"shop.permanent_gold_x2.description": "Навсегда удваивает золото с врагов",
+		"shop.buy_button_count": "Купить x{count}\n{cost} гемов",
 		"task.manual_damage_500.title": "",
 		"task.defeat_25_enemies.title": "",
 		"task.defeat_2_elites.title": "",

@@ -1,0 +1,41 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/ShopBuyModeSelector.gd" id="1_shop_buy_mode"]
+
+[node name="ShopBuyModeSelector" type="Control"]
+custom_minimum_size = Vector2(0, 56)
+script = ExtResource("1_shop_buy_mode")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="X1Button" type="Button" parent="HBoxContainer"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+size_flags_horizontal = 3
+disabled = true
+text = "[x1]"
+
+[node name="X2Button" type="Button" parent="HBoxContainer"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "x2"
+
+[node name="X3Button" type="Button" parent="HBoxContainer"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "x3"
+
+[node name="X4Button" type="Button" parent="HBoxContainer"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "x4"

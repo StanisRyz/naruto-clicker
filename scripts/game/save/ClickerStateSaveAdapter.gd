@@ -42,6 +42,9 @@ static func build_save_data(state: ClickerState) -> Dictionary:
 		"prestige_talent_levels": Array(state.prestige_talent_levels),
 		"boss_retry_tokens": state.boss_retry_tokens,
 		"task_reward_boost_multiplier": state.task_reward_boost_multiplier,
+		"shop_permanent_partner_dps_x2_count": state.shop_permanent_partner_dps_x2_count,
+		"shop_permanent_click_damage_x2_count": state.shop_permanent_click_damage_x2_count,
+		"shop_permanent_gold_x2_count": state.shop_permanent_gold_x2_count,
 		"active_task_ids": Array(state.active_task_ids),
 		"inactive_task_ids": Array(state.inactive_task_ids),
 		"active_task_states": state.active_task_states.duplicate(true),
@@ -158,6 +161,9 @@ static func apply_save_data(state: ClickerState, data: Dictionary) -> bool:
 
 	state.boss_retry_tokens = maxi(0, int(data.get("boss_retry_tokens", 0)))
 	state.task_reward_boost_multiplier = maxf(1.0, float(data.get("task_reward_boost_multiplier", 1.0)))
+	state.shop_permanent_partner_dps_x2_count = maxi(0, int(data.get("shop_permanent_partner_dps_x2_count", 0)))
+	state.shop_permanent_click_damage_x2_count = maxi(0, int(data.get("shop_permanent_click_damage_x2_count", 0)))
+	state.shop_permanent_gold_x2_count = maxi(0, int(data.get("shop_permanent_gold_x2_count", 0)))
 
 	state.total_manual_click_damage_dealt = maxi(0, int(data.get("total_manual_click_damage_dealt", 0)))
 	state.total_enemies_defeated = maxi(0, int(data.get("total_enemies_defeated", 0)))

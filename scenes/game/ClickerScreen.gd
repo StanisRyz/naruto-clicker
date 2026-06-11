@@ -2,6 +2,7 @@ extends Control
 
 const TASK_BUTTON_DEFAULT_ASSET_KEY: String = "task.window_button.default"
 const TASK_BUTTON_COMPLETED_ASSET_KEY: String = "task.window_button.completed"
+const DEBUG_VISUAL_TEST_GEMS: int = 999
 
 var state: ClickerState = ClickerState.new()
 var boss_time_left: float = 0.0
@@ -39,6 +40,7 @@ var _autosave_timer: float = 0.0
 const _AUTOSAVE_INTERVAL: float = 10.0
 var balance_logger: BalancePlaytestLogger = null
 var _is_initialized: bool = false
+var _debug_visual_test_previous_gems: int = 0
 
 @onready var top_interface_image_holder = $TopInterfaceImageHolder
 @onready var combat_effects_layer: CombatEffectsLayer = $CombatEffectsLayer
@@ -103,7 +105,6 @@ func _ready() -> void:
 	prestige_sheet.prestige_requested.connect(_on_prestige_requested)
 	prestige_sheet.prestige_talent_purchase_requested.connect(_on_prestige_talent_purchase_requested)
 	shop_sheet.product_purchase_requested.connect(_on_shop_product_purchase_requested)
-	shop_sheet.test_gems_requested.connect(_on_test_gems_requested)
 	prestige_confirm_dialog.confirmed.connect(_on_prestige_confirmed)
 	prestige_confirm_dialog.cancelled.connect(_on_prestige_cancelled)
 	upgrade_sheet.closed.connect(_on_sheet_closed)
@@ -167,6 +168,7 @@ func _process(delta: float) -> void:
 
 
 func _update_ui() -> void:
+	_sync_debug_visual_test_gems()
 	_update_bottom_bar_view()
 	_update_main_hud()
 	_update_stage_ui()
@@ -448,9 +450,9 @@ func _on_prestige_talent_purchase_requested(talent_index: int, mode: String) -> 
 		_save_game_now()
 
 
-func _on_shop_product_purchase_requested(product_id: String) -> void:
+func _on_shop_product_purchase_requested(product_id: String, mode: String) -> void:
 	var gems_before: int = state.gems
-	var result: Dictionary = state.buy_shop_product(product_id)
+	var result: Dictionary = state.buy_shop_products(product_id, mode)
 	_handle_status_text(result.get("status_text", ""))
 	if balance_logger:
 		balance_logger.log_purchase(state, "shop", product_id, gems_before - state.gems, result)
@@ -458,13 +460,6 @@ func _on_shop_product_purchase_requested(product_id: String) -> void:
 	if result.get("upgraded", false):
 		shop_sheet.play_product_purchase_feedback(product_id)
 		_save_game_now()
-
-
-func _on_test_gems_requested() -> void:
-	var result: Dictionary = state.grant_test_gems(50)
-	_handle_status_text(result.get("status_text", ""))
-	_update_ui()
-	_save_game_now()
 
 
 func _on_prestige_confirmed() -> void:
@@ -952,9 +947,26 @@ func _load_game_on_start() -> void:
 	state.apply_save_data(data)
 
 
+func _sync_debug_visual_test_gems() -> void:
+	if not BuildConfig.IS_DEBUG_BUILD:
+		return
+	if state.is_debug_visual_test_mode_enabled():
+		state.gems = DEBUG_VISUAL_TEST_GEMS
+
+
 func _toggle_debug_visual_test_mode() -> void:
 	var enabled: bool = not state.is_debug_visual_test_mode_enabled()
+
+	if enabled:
+		_debug_visual_test_previous_gems = state.gems
+
 	state.set_debug_visual_test_mode_enabled(enabled)
+
+	if enabled:
+		state.gems = DEBUG_VISUAL_TEST_GEMS
+	else:
+		state.gems = _debug_visual_test_previous_gems
+
 	enemy_transition_locked = false
 	enemy_transition_token += 1
 	game_field.set_enemy_transition_locked(false)
@@ -964,7 +976,7 @@ func _toggle_debug_visual_test_mode() -> void:
 	_update_ui()
 	if balance_logger:
 		balance_logger.mark_enemy_spawned(state)
-	print("Debug visual test mode: %s" % ("ON (HP=100000, purchases=1 gold, unlock restrictions bypassed)" if enabled else "OFF"))
+	print("Debug visual test mode: %s" % ("ON (HP=100000, purchases=1 gold, gems=999, unlock restrictions bypassed)" if enabled else "OFF"))
 
 
 func _debug_visual_damage_51_percent() -> void:

@@ -11,9 +11,25 @@ static func add_gems(state: ClickerState, amount: int) -> void:
 	state.gems = maxi(0, state.gems + amount)
 
 
-static func grant_test_gems(state: ClickerState, amount: int = 50) -> Dictionary:
-	add_gems(state, amount)
-	return state._make_purchase_result("Prototype test grant: +%d Gems" % amount, false, true)
+static func get_shop_buy_count(mode: String) -> int:
+	match mode:
+		"x1": return 1
+		"x2": return 2
+		"x3": return 3
+		"x4": return 4
+	return 1
+
+
+static func get_permanent_upgrade_cost_for_level(level: int) -> int:
+	return ceili(float(ShopConfig.PERMANENT_UPGRADE_BASE_COST_GEMS) * pow(ShopConfig.PERMANENT_UPGRADE_COST_GROWTH, float(maxi(0, level))))
+
+
+static func get_permanent_upgrade_bulk_cost(state: ClickerState, product_id: String, count: int) -> int:
+	var owned: int = state.get_shop_permanent_upgrade_count(product_id)
+	var total_cost: int = 0
+	for i in range(count):
+		total_cost += get_permanent_upgrade_cost_for_level(owned + i)
+	return total_cost
 
 
 static func get_shop_product(product_id: String) -> Dictionary:
@@ -23,46 +39,65 @@ static func get_shop_product(product_id: String) -> Dictionary:
 	return {}
 
 
-static func buy_shop_product(state: ClickerState, product_id: String) -> Dictionary:
+static func buy_shop_products(state: ClickerState, product_id: String, mode: String) -> Dictionary:
 	var product: Dictionary = get_shop_product(product_id)
 	if product.is_empty():
 		return state._make_purchase_result("Invalid shop product")
 
+	var product_type: String = String(product.get("product_type", "consumable"))
+	var count: int = get_shop_buy_count(mode)
+	var product_name: String = String(product.get("name", "Shop product"))
+
+	if product_type == "permanent_multiplier":
+		var total_cost: int = get_permanent_upgrade_bulk_cost(state, product_id, count)
+		if total_cost <= 0 or state.gems < total_cost:
+			return state._make_purchase_result("Not enough Gems")
+
+		state.gems -= total_cost
+		var owned_before: int = state.get_shop_permanent_upgrade_count(product_id)
+		state._set_shop_permanent_upgrade_count(product_id, owned_before + count)
+		state._update_character_state()
+
+		var owned_after: int = state.get_shop_permanent_upgrade_count(product_id)
+		var total_multiplier: int = int(pow(ShopConfig.PERMANENT_UPGRADE_MULTIPLIER_PER_LEVEL, float(owned_after)))
+		var result: Dictionary = state._make_purchase_result(
+			"%s x%d! Total multiplier: x%d" % [product_name, count, total_multiplier],
+			false, true
+		)
+		result["status_text"] = "%s purchased x%d! Total: x%d" % [product_name, count, total_multiplier]
+		return result
+
+	# consumable
 	var cost_gems: int = int(product.get("cost_gems", 0))
-	if state.gems < cost_gems:
+	var total_cost_consumable: int = cost_gems * count
+	if total_cost_consumable <= 0 or state.gems < total_cost_consumable:
 		return state._make_purchase_result("Not enough Gems")
 
-	state.gems -= cost_gems
-	var product_name: String = String(product.get("name", "Shop product"))
+	state.gems -= total_cost_consumable
 	var reward_type: String = String(product.get("reward_type", ""))
 	var result: Dictionary = state._make_purchase_result("%s purchased!" % product_name, false, true)
 
 	match reward_type:
 		"gold":
-			# ETV formula: gold = (enemy_reward / TTK_seconds) * etv_seconds
-			# etv_seconds comes from BalanceConfig per product id; fallback uses reward_scale.
 			var base_reward_unit: int = state.get_current_task_reward_unit()
-			var shop_gold: int
+			var gold_per_pack: int
 			match product_id:
 				"gold_pack_small":
-					shop_gold = maxi(1, ceili(float(base_reward_unit) / BalanceConfig.TASK_BASELINE_TTK_SECONDS * BalanceConfig.SHOP_SMALL_GOLD_ETV_SECONDS))
+					gold_per_pack = maxi(1, ceili(float(base_reward_unit) / BalanceConfig.TASK_BASELINE_TTK_SECONDS * BalanceConfig.SHOP_SMALL_GOLD_ETV_SECONDS))
 				"gold_pack_large":
-					shop_gold = maxi(1, ceili(float(base_reward_unit) / BalanceConfig.TASK_BASELINE_TTK_SECONDS * BalanceConfig.SHOP_LARGE_GOLD_ETV_SECONDS))
+					gold_per_pack = maxi(1, ceili(float(base_reward_unit) / BalanceConfig.TASK_BASELINE_TTK_SECONDS * BalanceConfig.SHOP_LARGE_GOLD_ETV_SECONDS))
 				_:
 					var reward_scale: int = int(product.get("reward_scale", 0))
-					shop_gold = maxi(1, base_reward_unit * reward_scale)
+					gold_per_pack = maxi(1, base_reward_unit * reward_scale)
+			var shop_gold: int = gold_per_pack * count
 			state.gold += shop_gold
 			result["reward_gold"] = shop_gold
-			result["status_text"] = "%s purchased! +%d gold" % [product_name, shop_gold]
-		"boss_retry_token":
-			var boss_retry_reward_amount: int = int(product.get("reward_amount", 1))
-			state.boss_retry_tokens += boss_retry_reward_amount
-			result["status_text"] = "%s purchased! +%d Boss Retry" % [product_name, boss_retry_reward_amount]
-		"task_reward_boost":
-			var reward_multiplier: float = float(product.get("reward_multiplier", 1.0))
-			state.task_reward_boost_multiplier = maxf(state.task_reward_boost_multiplier, reward_multiplier)
-			result["status_text"] = "%s purchased! Next task reward x%.1f" % [product_name, state.task_reward_boost_multiplier]
+			result["status_text"] = "%s x%d purchased! +%d gold" % [product_name, count, shop_gold]
 		_:
 			result["status_text"] = "Unknown shop reward"
 
 	return result
+
+
+static func buy_shop_product(state: ClickerState, product_id: String) -> Dictionary:
+	return buy_shop_products(state, product_id, "x1")

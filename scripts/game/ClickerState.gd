@@ -74,6 +74,10 @@ var building_purchase_costs: Array[int] = []
 var boss_retry_tokens: int = 0
 var task_reward_boost_multiplier: float = 1.0
 
+var shop_permanent_partner_dps_x2_count: int = 0
+var shop_permanent_click_damage_x2_count: int = 0
+var shop_permanent_gold_x2_count: int = 0
+
 var current_zone_index: int = 0
 var current_enemy_zone_index: int = 0
 var current_enemy_slot: String = "enemy_01"
@@ -397,20 +401,54 @@ func add_gems(amount: int) -> void:
 	ShopRT.add_gems(self, amount)
 
 
-func grant_test_gems(amount: int = 50) -> Dictionary:
-	return ShopRT.grant_test_gems(self, amount)
-
-
 func get_shop_product(product_id: String) -> Dictionary:
 	return ShopRT.get_shop_product(product_id)
 
 
-func get_shop_product_view_data() -> Array[Dictionary]:
-	return Presentation.get_shop_product_view_data(self)
+func get_shop_permanent_upgrade_count(product_id: String) -> int:
+	match product_id:
+		"permanent_partner_dps_x2":
+			return shop_permanent_partner_dps_x2_count
+		"permanent_click_damage_x2":
+			return shop_permanent_click_damage_x2_count
+		"permanent_gold_x2":
+			return shop_permanent_gold_x2_count
+	return 0
+
+
+func _set_shop_permanent_upgrade_count(product_id: String, value: int) -> void:
+	var safe_value: int = maxi(0, value)
+	match product_id:
+		"permanent_partner_dps_x2":
+			shop_permanent_partner_dps_x2_count = safe_value
+		"permanent_click_damage_x2":
+			shop_permanent_click_damage_x2_count = safe_value
+		"permanent_gold_x2":
+			shop_permanent_gold_x2_count = safe_value
+
+
+func get_shop_partner_dps_multiplier() -> float:
+	return pow(ShopConfig.PERMANENT_UPGRADE_MULTIPLIER_PER_LEVEL, float(shop_permanent_partner_dps_x2_count))
+
+
+func get_shop_click_damage_multiplier() -> float:
+	return pow(ShopConfig.PERMANENT_UPGRADE_MULTIPLIER_PER_LEVEL, float(shop_permanent_click_damage_x2_count))
+
+
+func get_shop_gold_multiplier() -> float:
+	return pow(ShopConfig.PERMANENT_UPGRADE_MULTIPLIER_PER_LEVEL, float(shop_permanent_gold_x2_count))
+
+
+func get_shop_product_view_data(mode: String = "x1") -> Array[Dictionary]:
+	return Presentation.get_shop_product_view_data(self, mode)
+
+
+func buy_shop_products(product_id: String, mode: String = "x1") -> Dictionary:
+	return ShopRT.buy_shop_products(self, product_id, mode)
 
 
 func buy_shop_product(product_id: String) -> Dictionary:
-	return ShopRT.buy_shop_product(self, product_id)
+	return buy_shop_products(product_id, "x1")
 
 
 func perform_prestige() -> Dictionary:
@@ -512,7 +550,8 @@ func get_current_target_reward_gold_preview() -> int:
 		* get_hero_skill_bonus_multiplier("gold")
 	)
 	var settlement_gold: int = int(talent_gold * get_settlement_gold_multiplier())
-	return int(settlement_gold * get_gold_bonus_multiplier()) if gold_bonus_active else settlement_gold
+	var pre_shop_gold: int = int(settlement_gold * get_gold_bonus_multiplier()) if gold_bonus_active else settlement_gold
+	return int(pre_shop_gold * get_shop_gold_multiplier())
 
 
 func resolve_defeated_target() -> Dictionary:
@@ -697,6 +736,7 @@ func get_click_damage_for_character_level(level: int) -> int:
 			* get_partner_skill_bonus_multiplier("all_damage")
 			* get_focus_burst_multiplier()
 			* get_settlement_click_damage_multiplier()
+			* get_shop_click_damage_multiplier()
 		)
 	)
 
@@ -751,6 +791,7 @@ func get_final_partner_dps(include_contextual_boss_multiplier: bool = false) -> 
 		* get_hero_skill_bonus_multiplier("partner_dps")
 		* get_partner_skill_bonus_multiplier("all_damage")
 		* get_rally_multiplier()
+		* get_shop_partner_dps_multiplier()
 	)
 
 	if include_contextual_boss_multiplier:
@@ -2110,6 +2151,7 @@ func _update_character_state() -> void:
 			* get_partner_skill_bonus_multiplier("all_damage")
 			* get_focus_burst_multiplier()
 			* get_settlement_click_damage_multiplier()
+			* get_shop_click_damage_multiplier()
 		)
 	)
 	update_ability_unlocks()

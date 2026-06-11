@@ -1,6 +1,11 @@
 class_name ShopConfig
 extends RefCounted
 
+const SHOP_BUY_MODES: Array[String] = ["x1", "x2", "x3", "x4"]
+const PERMANENT_UPGRADE_BASE_COST_GEMS: int = 500
+const PERMANENT_UPGRADE_COST_GROWTH: float = 2.0
+const PERMANENT_UPGRADE_MULTIPLIER_PER_LEVEL: float = 2.0
+
 const SHOP_PRODUCTS: Array = [
 	{
 		"id": "gold_pack_small",
@@ -8,6 +13,7 @@ const SHOP_PRODUCTS: Array = [
 		"name_key": "shop.gold_pack_small.name",
 		"description": "Gain stage-scaled gold",
 		"description_key": "shop.gold_pack_small.description",
+		"product_type": "consumable",
 		"cost_gems": 10,
 		"reward_type": "gold",
 		"reward_scale": 120,
@@ -18,29 +24,40 @@ const SHOP_PRODUCTS: Array = [
 		"name_key": "shop.gold_pack_large.name",
 		"description": "Gain a large stage-scaled gold reward",
 		"description_key": "shop.gold_pack_large.description",
+		"product_type": "consumable",
 		"cost_gems": 25,
 		"reward_type": "gold",
 		"reward_scale": 350,
 	},
 	{
-		"id": "boss_retry_token",
-		"name": "Boss Retry",
-		"name_key": "shop.boss_retry_token.name",
-		"description": "Return to the failed boss level",
-		"description_key": "shop.boss_retry_token.description",
-		"cost_gems": 20,
-		"reward_type": "boss_retry_token",
-		"reward_amount": 1,
+		"id": "permanent_partner_dps_x2",
+		"name": "Permanent Partner DPS x2",
+		"name_key": "shop.permanent_partner_dps_x2.name",
+		"description": "Permanently doubles Partner DPS",
+		"description_key": "shop.permanent_partner_dps_x2.description",
+		"product_type": "permanent_multiplier",
+		"bonus_type": "partner_dps",
+		"base_cost_gems": 500,
 	},
 	{
-		"id": "task_boost",
-		"name": "Task Reward Boost",
-		"name_key": "shop.task_boost.name",
-		"description": "Next claimed task gives x2 gold",
-		"description_key": "shop.task_boost.description",
-		"cost_gems": 30,
-		"reward_type": "task_reward_boost",
-		"reward_multiplier": 2.0,
+		"id": "permanent_click_damage_x2",
+		"name": "Permanent Click Damage x2",
+		"name_key": "shop.permanent_click_damage_x2.name",
+		"description": "Permanently doubles click damage",
+		"description_key": "shop.permanent_click_damage_x2.description",
+		"product_type": "permanent_multiplier",
+		"bonus_type": "click_damage",
+		"base_cost_gems": 500,
+	},
+	{
+		"id": "permanent_gold_x2",
+		"name": "Permanent Gold x2",
+		"name_key": "shop.permanent_gold_x2.name",
+		"description": "Permanently doubles gold from enemies",
+		"description_key": "shop.permanent_gold_x2.description",
+		"product_type": "permanent_multiplier",
+		"bonus_type": "gold",
+		"base_cost_gems": 500,
 	},
 ]
 

@@ -244,15 +244,36 @@ static func get_active_task_view_data(state: ClickerState) -> Array[Dictionary]:
 	return result
 
 
-static func get_shop_product_view_data(state: ClickerState) -> Array[Dictionary]:
+static func get_shop_product_view_data(state: ClickerState, mode: String = "x1") -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
+	var buy_count: int = ShopRuntime.get_shop_buy_count(mode)
 	for product: Dictionary in ShopConfig.SHOP_PRODUCTS:
-		var cost_gems: int = int(product.get("cost_gems", 0))
+		var product_id: String = String(product.get("id", ""))
+		var product_type: String = String(product.get("product_type", "consumable"))
+		var cost_gems: int
+		var owned_count: int
+		var total_multiplier: int
+
+		if product_type == "permanent_multiplier":
+			cost_gems = ShopRuntime.get_permanent_upgrade_bulk_cost(state, product_id, buy_count)
+			owned_count = state.get_shop_permanent_upgrade_count(product_id)
+			total_multiplier = int(pow(ShopConfig.PERMANENT_UPGRADE_MULTIPLIER_PER_LEVEL, float(owned_count)))
+		else:
+			cost_gems = int(product.get("cost_gems", 0)) * buy_count
+			owned_count = -1
+			total_multiplier = -1
+
 		result.append({
-			"id": String(product.get("id", "")),
+			"id": product_id,
 			"name": String(product.get("name", "")),
+			"name_key": String(product.get("name_key", "")),
 			"description": String(product.get("description", "")),
+			"description_key": String(product.get("description_key", "")),
+			"product_type": product_type,
 			"cost_gems": cost_gems,
-			"can_buy": state.gems >= cost_gems,
+			"buy_count": buy_count,
+			"can_buy": state.gems >= cost_gems and cost_gems > 0,
+			"owned_count": owned_count,
+			"total_multiplier": total_multiplier,
 		})
 	return result

@@ -96,6 +96,11 @@ const ASSET_PATHS: Dictionary = {
 	"task.window.close": "res://assets/images/tasks/window/close.png",
 	"task.window.claim_button": "res://assets/images/tasks/window/claim_button.png",
 
+	# Shop permanent upgrade icons
+	"shop.permanent_partner_dps_x2": "res://assets/images/shop/permanent_partner_dps_x2.png",
+	"shop.permanent_click_damage_x2": "res://assets/images/shop/permanent_click_damage_x2.png",
+	"shop.permanent_gold_x2": "res://assets/images/shop/permanent_gold_x2.png",
+
 	# TasksWindow open button states
 	"task.window_button.default": "res://assets/images/tasks/tasks_button/default.png",
 	"task.window_button.completed": "res://assets/images/tasks/tasks_button/completed.png",

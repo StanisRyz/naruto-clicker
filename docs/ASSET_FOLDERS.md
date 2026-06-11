@@ -161,10 +161,8 @@ Sheet header layout (after cleanup):
 - `CloseButton` — image-only (`ButtonImageHolder` ImageSlot, no text). Uses `close_button.png`.
 
 Shop-specific layout note:
-- ShopSheet has no buy mode buttons. Instead a `ShopControlPlaceholder` Control node (56px height,
-  `mouse_filter = IGNORE`) sits between the header and the ScrollContainer, reserving the same
-  vertical space that `BuyModeSelector` occupies in other sheets so product cards start at the
-  same y-position across all tabs.
+- ShopSheet uses `ShopBuyModeSelector` (x1/x2/x3/x4, 56px height) between the header and
+  the ScrollContainer — same height as `BuyModeSelector` in other sheets.
   - Missing `close_button.png`: white 72×56 fallback rectangle.
   - Present `close_button.png`: texture shown, fallback hidden. Texture should include the × icon.
   - The game draws no "Close" text over this button.
@@ -258,9 +256,25 @@ Building folders: `training_camp`, `market`, `knight_hut`, `war_banner`, `clock_
 
 ## Shop icons
 
-Path: `assets/images/shop/product_id/icon.png`
+Recommended size: **136×136 px** (matches `SHOP_IMAGE_SIZE` in `ShopPanel.gd`)
 
-Product folders: `gems`, `gold_pack_small`, `gold_pack_large`, `boss_retry_token`, `task_reward_boost`
+| Product ID | Asset key | File path | Type |
+|------------|-----------|-----------|------|
+| `gold_pack_small` | `shop.gold_pack_small` | `assets/images/shop/gold_pack_small.png` | consumable |
+| `gold_pack_large` | `shop.gold_pack_large` | `assets/images/shop/gold_pack_large.png` | consumable |
+| `permanent_partner_dps_x2` | `shop.permanent_partner_dps_x2` | `assets/images/shop/permanent_partner_dps_x2.png` | permanent |
+| `permanent_click_damage_x2` | `shop.permanent_click_damage_x2` | `assets/images/shop/permanent_click_damage_x2.png` | permanent |
+| `permanent_gold_x2` | `shop.permanent_gold_x2` | `assets/images/shop/permanent_gold_x2.png` | permanent |
+
+Permanent upgrade cost formula: `ceil(500 * 2^level)` where `level` = current owned count.
+Permanent upgrade multiplier: `2^owned_count` (doubles with each purchase).
+Buy modes: x1, x2, x3, x4 — bulk cost is the sum of per-level costs for the purchased count.
+
+Fallback behavior:
+- Missing texture → white 136×136 square (`ImageSlot`, `show_fallback_behind_texture = false`).
+- Texture exists → texture shown, white fallback hidden.
+
+Note: all shop icons live directly in `assets/images/shop/` with flat filenames as shown above.
 
 ---
 
