@@ -15,9 +15,16 @@ const TASK_CLAIM_BUTTON_SLOT_SIZE: Vector2 = Vector2(120, 100)
 const TASK_CLAIM_BUTTON_SIZE: Vector2 = Vector2(120, 80)
 const TASK_CARD_BACKGROUND_ASSET_KEY: String = "task.card.background"
 const TASK_CARD_BACKGROUND_FALLBACK_COLOR: Color = Color.WHITE
+const TASK_CLAIM_BUTTON_ASSET_KEY: String = "task.window.claim_button"
+const TASK_CLAIM_BUTTON_FALLBACK_COLOR: Color = Color.WHITE
+const TASK_WINDOW_BACKGROUND_ASSET_KEY: String = "task.window.background"
+const TASK_WINDOW_CLOSE_ASSET_KEY: String = "task.window.close"
+const TASK_WINDOW_FALLBACK_COLOR: Color = Color.WHITE
+const TASK_WINDOW_CLOSE_BUTTON_SIZE: Vector2 = Vector2(72, 72)
 
 @onready var outside_click_area: Control = $OutsideClickArea
-@onready var panel_container: PanelContainer = $PanelContainer
+@onready var panel_container: Control = $PanelContainer
+@onready var window_background: Control = $PanelContainer/TaskWindowBackgroundImageHolder
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
 @onready var tasks_container: VBoxContainer = $PanelContainer/MarginContainer/VBoxContainer/ScrollContainer/TasksContainer
 
@@ -30,7 +37,37 @@ func _ready() -> void:
 	outside_click_area.gui_input.connect(_on_outside_click_area_gui_input)
 	panel_container.gui_input.connect(_on_panel_container_gui_input)
 	close_button.pressed.connect(hide_window)
+	_setup_window_background()
+	_setup_close_button()
 	hide()
+
+
+func _setup_window_background() -> void:
+	window_background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	window_background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	window_background.fallback_color = TASK_WINDOW_FALLBACK_COLOR
+	window_background.show_fallback_behind_texture = false
+	window_background.stretch_mode = TextureRect.STRETCH_SCALE
+	window_background.set_asset_key(TASK_WINDOW_BACKGROUND_ASSET_KEY, TASK_WINDOW_FALLBACK_COLOR)
+
+
+func _setup_close_button() -> void:
+	ButtonVisualUtils.clear_image_button_styles(close_button)
+	close_button.text = ""
+	close_button.custom_minimum_size = TASK_WINDOW_CLOSE_BUTTON_SIZE
+
+	var image_holder = close_button.get_node_or_null("ButtonImageHolder")
+	if image_holder == null:
+		image_holder = ImageSlotClass.new()
+		image_holder.name = "ButtonImageHolder"
+		close_button.add_child(image_holder)
+
+	image_holder.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	image_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	image_holder.fallback_color = TASK_WINDOW_FALLBACK_COLOR
+	image_holder.show_fallback_behind_texture = false
+	image_holder.stretch_mode = TextureRect.STRETCH_SCALE
+	image_holder.set_asset_key(TASK_WINDOW_CLOSE_ASSET_KEY, TASK_WINDOW_FALLBACK_COLOR)
 
 
 func show_window(state: ClickerState) -> void:
@@ -68,13 +105,14 @@ func refresh_progress_only(state: ClickerState) -> void:
 		var progress_label: Label = row_data["progress_label"]
 		var reward_label: Label = row_data["reward_label"]
 		var claim_button: Button = row_data["claim_button"]
+		var claim_button_label: Label = row_data["claim_button_label"]
 		var completed: bool = bool(task_data.get("completed", false))
 
 		condition_label.text = _get_task_title(task_data)
 		progress_label.text = _format_progress_text(task_data)
 		reward_label.text = _format_reward_text(task_data)
 
-		if claim_button.text == LocalizationManager.tr_key("task.claimed"):
+		if claim_button_label.text == LocalizationManager.tr_key("task.claimed"):
 			continue
 
 		if completed == bool(row_data.get("completed", false)):
@@ -82,11 +120,9 @@ func refresh_progress_only(state: ClickerState) -> void:
 
 		row_data["completed"] = completed
 		if completed:
-			claim_button.disabled = false
-			claim_button.text = LocalizationManager.tr_key("task.claim")
+			_set_claim_button_state(row_data, true, LocalizationManager.tr_key("task.claim"))
 		else:
-			claim_button.disabled = true
-			claim_button.text = LocalizationManager.tr_key("task.in_progress")
+			_set_claim_button_state(row_data, false, LocalizationManager.tr_key("task.in_progress"))
 
 
 func update_view(state: ClickerState) -> void:
@@ -213,18 +249,24 @@ func _create_task_row(task_data: Dictionary) -> Control:
 	_place_task_row(reward_label, 2)
 	info_container.add_child(reward_label)
 
+	var completed: bool = bool(task_data.get("completed", false))
 	var claim_button := Button.new()
 	ButtonVisualUtils.disable_focus_artifact(claim_button)
-	UiFontConfig.apply_button_font_size(claim_button, UiFontConfig.TASK_BUTTON_FONT_SIZE)
-	if bool(task_data.get("completed", false)):
-		claim_button.disabled = false
-		claim_button.text = LocalizationManager.tr_key("task.claim")
-	else:
-		claim_button.disabled = true
-		claim_button.text = LocalizationManager.tr_key("task.in_progress")
+	var initial_claim_text := LocalizationManager.tr_key("task.claim") if completed else LocalizationManager.tr_key("task.in_progress")
+	var claim_setup := _setup_task_claim_button(claim_button, initial_claim_text)
+	var claim_button_label: Label = claim_setup["button_label"]
+	var claim_button_image_holder = claim_setup["button_image_holder"]
+
+	claim_button.disabled = not completed
+	if not completed:
+		claim_button_image_holder.modulate = Color(0.65, 0.65, 0.65, 1.0)
+		claim_button_label.modulate = Color(0.45, 0.45, 0.45, 1.0)
+
 	claim_button.pressed.connect(func() -> void:
 		claim_button.disabled = true
-		claim_button.text = LocalizationManager.tr_key("task.claimed")
+		claim_button_label.text = LocalizationManager.tr_key("task.claimed")
+		claim_button_image_holder.modulate = Color(0.65, 0.65, 0.65, 1.0)
+		claim_button_label.modulate = Color(0.45, 0.45, 0.45, 1.0)
 		task_claim_requested.emit(task_id)
 	)
 	content.add_child(_create_claim_button_slot(claim_button))
@@ -235,7 +277,9 @@ func _create_task_row(task_data: Dictionary) -> Control:
 		"progress_label": progress_label,
 		"reward_label": reward_label,
 		"claim_button": claim_button,
-		"completed": bool(task_data.get("completed", false)),
+		"claim_button_label": claim_button_label,
+		"claim_button_image_holder": claim_button_image_holder,
+		"completed": completed,
 	}
 
 	return row
@@ -259,6 +303,52 @@ func _create_claim_button_slot(button: Button) -> Control:
 
 	slot.add_child(button)
 	return slot
+
+
+func _setup_task_claim_button(button: Button, initial_text: String) -> Dictionary:
+	ButtonVisualUtils.clear_image_button_styles(button)
+	button.text = ""
+	button.custom_minimum_size = TASK_CLAIM_BUTTON_SIZE
+
+	var image_holder = ImageSlotClass.new()
+	image_holder.name = "ButtonImageHolder"
+	image_holder.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	image_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	image_holder.fallback_color = TASK_CLAIM_BUTTON_FALLBACK_COLOR
+	image_holder.show_fallback_behind_texture = false
+	image_holder.stretch_mode = TextureRect.STRETCH_SCALE
+	button.add_child(image_holder)
+	image_holder.set_asset_key(TASK_CLAIM_BUTTON_ASSET_KEY, TASK_CLAIM_BUTTON_FALLBACK_COLOR)
+
+	var text_label := Label.new()
+	text_label.name = "ButtonTextLabel"
+	text_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	text_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	text_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	text_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	text_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	text_label.text = initial_text
+	button.add_child(text_label)
+
+	UiFontConfig.apply_label_font_size(text_label, UiFontConfig.TASK_BUTTON_FONT_SIZE)
+
+	return {
+		"button": button,
+		"button_label": text_label,
+		"button_image_holder": image_holder,
+	}
+
+
+func _set_claim_button_state(row_data: Dictionary, enabled: bool, text_value: String) -> void:
+	var button: Button = row_data["claim_button"]
+	var label: Label = row_data["claim_button_label"]
+	var image_holder = row_data["claim_button_image_holder"]
+
+	button.disabled = not enabled
+	label.text = text_value
+	image_holder.modulate = Color.WHITE if enabled else Color(0.65, 0.65, 0.65, 1.0)
+	label.modulate = Color.WHITE if enabled else Color(0.45, 0.45, 0.45, 1.0)
 
 
 func _place_task_row(control: Control, row_index: int) -> void:

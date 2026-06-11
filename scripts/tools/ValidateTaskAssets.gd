@@ -14,6 +14,9 @@ func _init() -> void:
 		"task.window_button.default": "res://assets/images/tasks/tasks_button/default.png",
 		"task.window_button.completed": "res://assets/images/tasks/tasks_button/completed.png",
 		"task.card.background": "res://assets/images/tasks/task_card.png",
+		"task.window.background": "res://assets/images/tasks/window/background.png",
+		"task.window.close": "res://assets/images/tasks/window/close.png",
+		"task.window.claim_button": "res://assets/images/tasks/window/claim_button.png",
 	}
 
 	for key in required_keys:

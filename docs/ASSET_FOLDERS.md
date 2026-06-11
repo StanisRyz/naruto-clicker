@@ -296,6 +296,59 @@ Behavior:
 - Used by all 5 visible task cards; each card creates its own ImageSlot instance.
 - Task icon, condition/progress/reward labels, and claim button are drawn above this background by Godot.
 
+## TasksWindow claim button
+
+Path: `assets/images/tasks/window/claim_button.png`
+
+Recommended size: **120×80 px**
+
+| Asset key | Path |
+|-----------|------|
+| `task.window.claim_button` | `res://assets/images/tasks/window/claim_button.png` |
+
+Behavior:
+- Missing texture → white 120×80 rectangle fallback shown.
+- Texture exists → texture shown, white fallback hidden (`show_fallback_behind_texture = false`).
+- Button text (Claim / In Progress / Claimed) is drawn by `ButtonTextLabel` (`Label`) layered above the `ImageSlot`.
+- Disabled state: image and label are dimmed (modulate `0.65` / `0.45`). Native Button background is cleared.
+
+---
+
+## TasksWindow window background
+
+Path: `assets/images/tasks/window/background.png`
+
+Recommended size: **620×670 px**
+
+| Asset key | Path |
+|-----------|------|
+| `task.window.background` | `res://assets/images/tasks/window/background.png` |
+
+Behavior:
+- Missing texture → white rectangle fallback shown.
+- Texture exists → texture shown, white fallback hidden (`show_fallback_behind_texture = false`).
+- Rendered by `TaskWindowBackgroundImageHolder` (`ImageSlot`) — first child of `PanelContainer` (Control), full-rect, `mouse_filter = IGNORE`. All task cards, header, and scroll area are layered above it.
+
+## TasksWindow close button
+
+Path: `assets/images/tasks/window/close.png`
+
+Recommended size: **72×72 px**
+
+| Asset key | Path |
+|-----------|------|
+| `task.window.close` | `res://assets/images/tasks/window/close.png` |
+
+Behavior:
+- Missing texture → white 72×72 square fallback shown.
+- Texture exists → texture shown, white fallback hidden.
+- Rendered by `ButtonImageHolder` (`ImageSlot`) inside `CloseButton`, full-rect, `mouse_filter = IGNORE`.
+- No text is drawn over this button. Native Button background is cleared.
+
+Validation: `godot --headless --script res://scripts/tools/ValidateTaskAssets.gd`
+
+---
+
 ## TasksWindow open button
 
 Path: `assets/images/tasks/tasks_button/`

@@ -148,6 +148,20 @@ Only these zone folders need a `background.png`:
 
 Missing files fall back to the default game asset catalog placeholder (no crash).
 
+### TasksWindow window background, close button, and claim button
+
+| Asset key | Path | Recommended size |
+|-----------|------|-----------------|
+| `task.window.background` | `assets/images/tasks/window/background.png` | 620×670 px |
+| `task.window.close` | `assets/images/tasks/window/close.png` | 72×72 px |
+| `task.window.claim_button` | `assets/images/tasks/window/claim_button.png` | 120×80 px |
+
+- `task.window.background`: missing → white 620×670 fallback. Present → texture shown, fallback hidden.
+- `task.window.close`: missing → white 72×72 fallback. Present → texture shown, fallback hidden. No text drawn over close button.
+- `task.window.claim_button`: missing → white 120×80 fallback. Present → texture shown, fallback hidden. Button text (Claim / In Progress / Claimed) drawn above texture by `ButtonTextLabel`. Disabled state dims image and label.
+
+Validation: `godot --headless --script res://scripts/tools/ValidateTaskAssets.gd`
+
 ### TasksWindow open button
 
 Path: `assets/images/tasks/tasks_button/`
