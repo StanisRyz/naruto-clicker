@@ -38,15 +38,16 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="TopInterfaceImageHolder" type="ColorRect" parent="."]
-custom_minimum_size = Vector2(720, 430)
+custom_minimum_size = Vector2(720, 320)
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 1.0
-offset_bottom = 430.0
+offset_bottom = 320.0
 mouse_filter = 2
 script = ExtResource("18_imageslot")
 asset_key = "ui.top_interface"
-fallback_color = Color(0, 0, 0, 0)
+fallback_color = Color(1, 1, 1, 1)
+show_fallback_behind_texture = false
 stretch_mode = 0
 
 [node name="CombatEffectsLayer" type="Control" parent="."]

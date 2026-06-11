@@ -322,14 +322,21 @@ Run `godot --headless --script res://scripts/tools/ValidateCardAssets.gd` to val
 
 Asset key: `ui.top_interface`
 Path: `assets/images/ui/top_interface.png`
-Recommended size: **720×430**
+Recommended size: **720×320 px**
 
-Purpose: Decorative unified background/frame placed behind the upper HUD (resource HUD, StageNavigator, ProgressInfoPanel, HP bar). The image is rendered by `TopInterfaceImageHolder` (a `ColorRect` + `ImageSlot` in `ClickerScreen.tscn`), positioned above `GameField` and below all dynamic UI elements.
+Purpose: Shared decorative backdrop for the top HUD + StageNavigator area. Rendered by `TopInterfaceImageHolder` (`ColorRect` + `ImageSlot`, `anchors_preset = -1`, `offset_bottom = 320`) in `ClickerScreen.tscn`, positioned above `GameField` and below all dynamic UI elements.
+
+Covers: y = 0..320 — resource HUD (y = 91..179), settings button, StageNavigator (y = 210..308).
+
+Does **not** cover: ProgressInfoPanel, enemy sprite area, active abilities, bottom tabs.
 
 Rules:
-- Missing file falls back to transparent — no crash.
+- Missing file falls back to a white rectangle (`Color(1, 1, 1, 1)`) — no crash.
+- Texture exists: texture is shown, white fallback is hidden (`show_fallback_behind_texture = false`).
 - `mouse_filter = IGNORE` — does not block any input.
-- Do not include real text, numbers, or dynamic values.
+- No text, stage numbers, or dynamic values baked into the texture.
+
+Validation: `godot --headless --script res://scripts/tools/ValidateTopInterfaceAssets.gd`
 
 ---
 

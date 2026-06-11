@@ -294,15 +294,20 @@ Both files should be designed for an 80×80 button. Missing files fall back safe
 
 Path: `assets/images/ui/top_interface.png`
 
-Recommended size: **720×430**
+Recommended size: **720×320 px**
 
-Purpose: Decorative unified background/frame for the upper HUD area (resource HUD, StageNavigator, ProgressInfoPanel, HP bar). Existing labels, icons, stage buttons, and HP bar are rendered by Godot above it.
+Covers: y = 0..320 — top HUD (resource icons, settings button) and StageNavigator (y = 210..308). Stage number labels end around y = 304; backdrop ends at y = 320.
+
+Does **not** cover: ProgressInfoPanel, enemy sprite area, active abilities, bottom tabs.
 
 Rules:
-- Missing file falls back to transparent — no crash.
-- Keep transparent background where possible.
-- Do not include real text, numbers, or dynamic values.
-- Do not include the boss timer area unless the design intentionally leaves room for it.
+- Missing file falls back to a white rectangle (`Color(1, 1, 1, 1)`) — no crash.
+- Texture exists: texture is shown, white fallback is hidden (`show_fallback_behind_texture = false`).
+- No text, numbers, stage numbers, or dynamic values baked into the texture.
+- No icons baked in unless intentionally decorative (actual UI icons/labels/buttons are drawn by Godot above it).
+- `mouse_filter = IGNORE` — does not block any input.
+
+Validation: `godot --headless --script res://scripts/tools/ValidateTopInterfaceAssets.gd`
 
 ---
 
@@ -555,7 +560,8 @@ Fallback color policy by slot type:
 | Card icons (partner, upgrade, building, prestige, shop, task) | White |
 | Ability bar icons | Colored (locked / available / purchased state) |
 | Bottom tab button images | White |
-| Decorative backgrounds (top interface, bottom tabs backdrop) | Transparent |
+| Top HUD + StageNavigator backdrop (top interface) | White |
+| Decorative backgrounds (bottom tabs backdrop) | Transparent |
 | Stage navigation buttons | Color communicates lock state (grey / white / blue) |
 | Enemy / field images | Transparent (always driven by `set_direct_texture`) |
 
