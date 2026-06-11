@@ -13,7 +13,7 @@ static func initialize_tasks(state: ClickerState) -> void:
 	state.active_task_states.clear()
 
 	var task_ids: Array[String] = []
-	for task: Dictionary in TaskConfig.TASK_DEFINITIONS:
+	for task: Dictionary in TaskConfig.get_all():
 		var task_id: String = String(task.get("id", ""))
 		if task_id != "":
 			task_ids.append(task_id)
@@ -21,7 +21,7 @@ static func initialize_tasks(state: ClickerState) -> void:
 	_shuffle_task_ids(state, task_ids)
 	for i in range(task_ids.size()):
 		var id: String = task_ids[i]
-		if i < 5:
+		if i < TaskConfig.ACTIVE_TASK_COUNT:
 			state.active_task_ids.append(id)
 			_initialize_active_task_state(state, id)
 		else:
@@ -39,7 +39,7 @@ static func _shuffle_task_ids(state: ClickerState, task_ids: Array[String]) -> v
 
 
 static func _initialize_active_task_state(state: ClickerState, task_id: String) -> void:
-	var task: Dictionary = get_task_definition(task_id)
+	var task: Dictionary = TaskConfig.get_by_id(task_id)
 	if task.is_empty():
 		return
 	var start_value: int = _get_task_current_value(state, task_id)
@@ -51,19 +51,10 @@ static func _initialize_active_task_state(state: ClickerState, task_id: String) 
 	}
 
 
-# --- Task definitions ---
-
-static func get_task_definition(task_id: String) -> Dictionary:
-	for task: Dictionary in TaskConfig.TASK_DEFINITIONS:
-		if String(task.get("id", "")) == task_id:
-			return task
-	return {}
-
-
 # --- Progress helpers ---
 
 static func _get_task_current_value(state: ClickerState, task_id: String) -> int:
-	var task: Dictionary = get_task_definition(task_id)
+	var task: Dictionary = TaskConfig.get_by_id(task_id)
 	var goal_type: String = String(task.get("goal_type", ""))
 	match goal_type:
 		"manual_damage_delta":
@@ -125,7 +116,7 @@ static func get_current_task_reward_unit(state: ClickerState) -> int:
 
 
 static func get_task_reward_gold(state: ClickerState, task_id: String) -> int:
-	var task: Dictionary = get_task_definition(task_id)
+	var task: Dictionary = TaskConfig.get_by_id(task_id)
 	if task.is_empty():
 		return 0
 	var reward_scale: int = int(task.get("reward_scale", 0))
@@ -169,11 +160,7 @@ static func claim_task_reward(state: ClickerState, task_id: String) -> Dictionar
 # --- Validation ---
 
 static func validate_task_runtime_state(state: ClickerState) -> void:
-	var all_valid_ids: Array[String] = []
-	for task: Dictionary in TaskConfig.TASK_DEFINITIONS:
-		var tid: String = String(task.get("id", ""))
-		if tid != "":
-			all_valid_ids.append(tid)
+	var all_valid_ids: Array[String] = TaskConfig.get_ids()
 
 	# Strip unknown ids
 	var i: int = state.active_task_ids.size() - 1
@@ -221,5 +208,5 @@ static func validate_task_runtime_state(state: ClickerState) -> void:
 
 	# If active pool is too small and we have valid ids available, reinitialize
 	var total_assigned: int = state.active_task_ids.size() + state.inactive_task_ids.size()
-	if state.active_task_ids.size() < 5 and total_assigned < all_valid_ids.size():
+	if state.active_task_ids.size() < TaskConfig.ACTIVE_TASK_COUNT and total_assigned < all_valid_ids.size():
 		initialize_tasks(state)

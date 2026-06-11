@@ -284,6 +284,18 @@ Task card text structure (3 rows):
 2. **Progress** — `{current} / {target}` (`task.progress`)
 3. **Reward** — `Reward: {reward} Gold` (`task.reward`)
 
+## TasksWindow task card background
+
+Path: `assets/images/tasks/task_card.png`
+
+Recommended size: **580×100 px** (TasksWindow width 620 − 20px left − 20px right margins = 580; card height = 100).
+
+Behavior:
+- Missing texture → white rectangle fallback shown behind icon/text/button.
+- Texture exists → texture shown, white fallback hidden.
+- Used by all 5 visible task cards; each card creates its own ImageSlot instance.
+- Task icon, condition/progress/reward labels, and claim button are drawn above this background by Godot.
+
 ## TasksWindow open button
 
 Path: `assets/images/tasks/tasks_button/`

@@ -13,6 +13,8 @@ const TASK_CARD_INNER_HEIGHT: int = 80
 const TASK_CARD_OUTER_HEIGHT: int = 100
 const TASK_CLAIM_BUTTON_SLOT_SIZE: Vector2 = Vector2(120, 100)
 const TASK_CLAIM_BUTTON_SIZE: Vector2 = Vector2(120, 80)
+const TASK_CARD_BACKGROUND_ASSET_KEY: String = "task.card.background"
+const TASK_CARD_BACKGROUND_FALLBACK_COLOR: Color = Color.WHITE
 
 @onready var outside_click_area: Control = $OutsideClickArea
 @onready var panel_container: PanelContainer = $PanelContainer
@@ -123,14 +125,24 @@ func _get_task_title(task_data: Dictionary) -> String:
 	return String(task_data.get("title", ""))
 
 
-func _create_task_row(task_data: Dictionary) -> PanelContainer:
-	var row := PanelContainer.new()
+func _create_task_row(task_data: Dictionary) -> Control:
+	var row := Control.new()
 	row.custom_minimum_size = Vector2(0, TASK_CARD_OUTER_HEIGHT)
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	row.clip_contents = true
 	row.mouse_filter = Control.MOUSE_FILTER_STOP
 	row.gui_input.connect(_on_panel_container_gui_input)
-	row.add_theme_stylebox_override("panel", _create_row_stylebox())
+
+	var background = ImageSlotClass.new()
+	background.name = "TaskCardBackgroundImageHolder"
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	background.fallback_color = TASK_CARD_BACKGROUND_FALLBACK_COLOR
+	background.show_fallback_behind_texture = false
+	background.stretch_mode = TextureRect.STRETCH_SCALE
+	row.add_child(background)
+	background.set_asset_key(TASK_CARD_BACKGROUND_ASSET_KEY, TASK_CARD_BACKGROUND_FALLBACK_COLOR)
 
 	var margin := MarginContainer.new()
 	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -288,18 +300,3 @@ func _on_panel_container_gui_input(event: InputEvent) -> void:
 		accept_event()
 	elif event is InputEventScreenTouch:
 		accept_event()
-
-
-func _create_row_stylebox() -> StyleBoxFlat:
-	var stylebox := StyleBoxFlat.new()
-	stylebox.bg_color = Color(0.12, 0.125, 0.145, 1.0)
-	stylebox.border_width_left = 1
-	stylebox.border_width_top = 1
-	stylebox.border_width_right = 1
-	stylebox.border_width_bottom = 1
-	stylebox.border_color = Color(0.22, 0.23, 0.26, 1.0)
-	stylebox.corner_radius_top_left = 6
-	stylebox.corner_radius_top_right = 6
-	stylebox.corner_radius_bottom_left = 6
-	stylebox.corner_radius_bottom_right = 6
-	return stylebox

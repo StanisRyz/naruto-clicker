@@ -159,6 +159,16 @@ Path: `assets/images/tasks/tasks_button/`
 
 Both files are optional during development. Missing files fall back to a white placeholder — no crash.
 
+### Task card background
+
+Path: `assets/images/tasks/task_card.png`
+
+| Asset key | Path |
+|---|---|
+| `task.card.background` | `res://assets/images/tasks/task_card.png` |
+
+Recommended size: **580×100 px**. Missing → white fallback. Present → texture shown, fallback hidden. Used by all 5 task cards via `ImageSlot` as the first (bottom-most) child of each task row.
+
 ### Task card icons
 
 Path: `assets/images/tasks/task_type/icon.png`

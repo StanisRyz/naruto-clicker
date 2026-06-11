@@ -88,6 +88,9 @@ const ASSET_PATHS: Dictionary = {
 	"task.activate_autoclick_1": "res://assets/images/tasks/autoclick.png",
 	"task.gain_10_game_levels": "res://assets/images/tasks/game_levels.png",
 
+	# TasksWindow task card background
+	"task.card.background": "res://assets/images/tasks/task_card.png",
+
 	# TasksWindow open button states
 	"task.window_button.default": "res://assets/images/tasks/tasks_button/default.png",
 	"task.window_button.completed": "res://assets/images/tasks/tasks_button/completed.png",

@@ -146,7 +146,7 @@ func initialize_tasks() -> void:
 
 
 func get_task_definition(task_id: String) -> Dictionary:
-	return TaskRT.get_task_definition(task_id)
+	return TaskConfig.get_by_id(task_id)
 
 
 func get_task_progress(task_id: String) -> int:
