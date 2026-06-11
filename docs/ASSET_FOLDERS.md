@@ -277,6 +277,13 @@ Path: `assets/images/tasks/task_type/icon.png`
 
 Task folders: `tasks_button`, `manual_damage`, `defeat_enemies`, `defeat_elites`, `defeat_boss`, `hero_levels`, `hire_partners`, `buildings`, `autoclick`, `game_levels`
 
+Task card image size: **80×80 px** (square, matches 3-row text content height).
+
+Task card text structure (3 rows):
+1. **Condition** — task requirement text (`task.condition_key`)
+2. **Progress** — `{current} / {target}` (`task.progress`)
+3. **Reward** — `Reward: {reward} Gold` (`task.reward`)
+
 ## TasksWindow open button
 
 Path: `assets/images/tasks/tasks_button/`

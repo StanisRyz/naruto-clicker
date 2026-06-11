@@ -159,6 +159,17 @@ Path: `assets/images/tasks/tasks_button/`
 
 Both files are optional during development. Missing files fall back to a white placeholder — no crash.
 
+### Task card icons
+
+Path: `assets/images/tasks/task_type/icon.png`
+
+Task card image size: **80×80 px** (square). Displayed beside the 3-row text layout:
+1. **Condition** (row 0) — task requirement text, font size `TASK_CONDITION_FONT_SIZE`
+2. **Progress** (row 1) — `{current} / {target}`, font size `TASK_PROGRESS_FONT_SIZE`
+3. **Reward** (row 2) — `Reward: {reward} Gold`, font size `TASK_REWARD_FONT_SIZE`
+
+Font sizes are controlled via `UiFontConfig`. Claim button is **160×80 px**, vertically centered.
+
 ## Stage navigation asset reuse
 
 StageNavigator images live in `assets/images/stage_navigation/zone_##/stage.png`. The folder set mirrors the background asset distribution exactly — only 11 folders exist, one per unique `background_asset_zone` value.

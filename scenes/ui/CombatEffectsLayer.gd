@@ -36,7 +36,7 @@ func _spawn_gold_text(origin_global: Vector2, amount: int) -> void:
 	var amount_str: String = NumberFormatter.compact(amount)
 	label.text = LocalizationManager.format_key("ui.combat.gold_reward", {"amount": amount_str})
 	label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2, 1.0))
-	label.add_theme_font_size_override("font_size", 22)
+	UiFontConfig.apply_label_font_size(label, UiFontConfig.COMBAT_GOLD_REWARD_FONT_SIZE)
 	label.modulate.a = 0.0
 	add_child(label)
 

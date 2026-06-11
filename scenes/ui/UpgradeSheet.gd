@@ -18,6 +18,7 @@ var current_state: ClickerState = null
 
 func _ready() -> void:
 	ButtonVisualUtils.setup_image_button(close_button, "ui.sheet.close_button", Color.WHITE)
+	UiFontConfig.apply_label_font_size(header_resource_value_label, UiFontConfig.SHEET_RESOURCE_VALUE_FONT_SIZE)
 	close_button.pressed.connect(hide_sheet)
 	buy_mode_selector.buy_mode_changed.connect(_on_buy_mode_changed)
 	upgrade_panel.set_buy_mode(buy_mode_selector.get_selected_mode())
