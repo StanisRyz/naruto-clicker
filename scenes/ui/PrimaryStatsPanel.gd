@@ -3,7 +3,9 @@ extends Control
 
 signal settings_requested
 
-const HUD_ICON_SIZE: float = 80.0
+const HUD_CELL_SIZE: float = 80.0
+const HUD_ICON_SIZE: float = 72.0
+const HUD_ICON_OFFSET: float = (HUD_CELL_SIZE - HUD_ICON_SIZE) * 0.5
 const HUD_ICON_COUNT: int = 4
 const HUD_LABEL_GAP: float = 6.0
 const HUD_LABEL_MAX_WIDTH: float = 100.0
@@ -56,7 +58,7 @@ func _layout_hud_items() -> void:
 
 	var gap: float = 0.0
 	if HUD_ICON_COUNT > 1:
-		gap = (available_width - HUD_ICON_SIZE * float(HUD_ICON_COUNT)) / float(HUD_ICON_COUNT - 1)
+		gap = (available_width - HUD_CELL_SIZE * float(HUD_ICON_COUNT)) / float(HUD_ICON_COUNT - 1)
 	gap = maxf(gap, 0.0)
 
 	_place_stat_item(gold_item, gold_icon, gold_value_label, 0, gap)
@@ -66,17 +68,17 @@ func _layout_hud_items() -> void:
 
 
 func _place_stat_item(item: Control, icon: ColorRect, label: Label, index: int, gap: float) -> void:
-	var icon_x: float = float(index) * (HUD_ICON_SIZE + gap)
+	var cell_x: float = float(index) * (HUD_CELL_SIZE + gap)
 
-	item.position = Vector2(icon_x, 0.0)
-	item.size = Vector2(HUD_ICON_SIZE + gap, HUD_HEIGHT)
+	item.position = Vector2(cell_x, 0.0)
+	item.size = Vector2(HUD_CELL_SIZE + gap, HUD_HEIGHT)
 
-	icon.position = Vector2.ZERO
+	icon.position = Vector2(HUD_ICON_OFFSET, HUD_ICON_OFFSET)
 	icon.size = Vector2(HUD_ICON_SIZE, HUD_ICON_SIZE)
 	icon.custom_minimum_size = Vector2(HUD_ICON_SIZE, HUD_ICON_SIZE)
 
 	var label_width: float = minf(HUD_LABEL_MAX_WIDTH, maxf(0.0, gap - HUD_LABEL_GAP - 4.0))
-	label.position = Vector2(HUD_ICON_SIZE + HUD_LABEL_GAP, 0.0)
+	label.position = Vector2(HUD_CELL_SIZE + HUD_LABEL_GAP, 0.0)
 	label.size = Vector2(label_width, HUD_HEIGHT)
 	label.custom_minimum_size = Vector2(label_width, HUD_HEIGHT)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -88,12 +90,12 @@ func get_gold_icon_global_center() -> Vector2:
 
 
 func _place_settings_button(index: int, gap: float) -> void:
-	var icon_x: float = float(index) * (HUD_ICON_SIZE + gap)
+	var cell_x: float = float(index) * (HUD_CELL_SIZE + gap)
 
-	settings_button.position = Vector2(icon_x, 0.0)
-	settings_button.size = Vector2(HUD_ICON_SIZE, HUD_ICON_SIZE)
-	settings_button.custom_minimum_size = Vector2(HUD_ICON_SIZE, HUD_ICON_SIZE)
+	settings_button.position = Vector2(cell_x, 0.0)
+	settings_button.size = Vector2(HUD_CELL_SIZE, HUD_CELL_SIZE)
+	settings_button.custom_minimum_size = Vector2(HUD_CELL_SIZE, HUD_CELL_SIZE)
 
-	settings_icon.position = Vector2.ZERO
+	settings_icon.position = Vector2(HUD_ICON_OFFSET, HUD_ICON_OFFSET)
 	settings_icon.size = Vector2(HUD_ICON_SIZE, HUD_ICON_SIZE)
 	settings_icon.custom_minimum_size = Vector2(HUD_ICON_SIZE, HUD_ICON_SIZE)

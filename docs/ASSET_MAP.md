@@ -385,7 +385,9 @@ Gold | Click Damage | Partner DPS | Settings
 
 Gems are intentionally hidden from the top HUD but remain in the game economy and Shop.
 
-Each stat icon is displayed at **80×80 px**. Recommended source image size: 128×128 or 256×256 for sharper scaling. The panel spans the full screen width. All 4 elements are evenly distributed across available width so spacing is equal on all sides. ImageSlot `show_fallback_behind_texture = false` is set on all HUD icons so that loaded PNG icons appear without a white square background; the fallback color is still shown when an image file is missing.
+Each stat icon is displayed at **72×72 px**, centered inside an 80×80 px layout cell (4 px inset on all sides). Recommended source image size: 128×128 or 256×256 for sharper scaling. The panel spans the full screen width. All 4 elements are evenly distributed across available width so spacing is equal on all sides. ImageSlot `show_fallback_behind_texture = false` is set on all HUD icons so that loaded PNG icons appear without a white square background; the fallback color is still shown when an image file is missing.
+
+The Settings button retains an 80×80 px clickable area while its icon texture is 72×72 px.
 
 ## Sheet header icons
 

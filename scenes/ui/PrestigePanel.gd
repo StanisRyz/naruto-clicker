@@ -402,7 +402,7 @@ func _update_talent_row(state: ClickerState, talent_index: int, row: Dictionary)
 
 	var bulk_count: int = state.get_prestige_talent_bulk_display_count(talent_index, selected_buy_mode)
 	var bulk_cost: int = state.get_prestige_talent_bulk_display_cost(talent_index, selected_buy_mode)
-	var can_afford: bool = state.get_prestige_talent_bulk_count(talent_index, selected_buy_mode) > 0
+	var can_afford: bool = state.can_afford_prestige_talent_bulk(talent_index, selected_buy_mode)
 	row["button_label"].text = LocalizationManager.format_key("prestige.talent_upgrade_bulk", {
 		"count": bulk_count,
 		"cost": NumberFormatter.compact(bulk_cost),

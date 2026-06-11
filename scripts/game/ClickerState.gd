@@ -324,6 +324,10 @@ func get_prestige_talent_bulk_cost(talent_index: int, mode: String) -> int:
 	return get_prestige_talent_bulk_cost_for_count(talent_index, count)
 
 
+func can_afford_prestige_talent_bulk(talent_index: int, mode: String) -> bool:
+	return get_prestige_talent_bulk_count(talent_index, mode) > 0
+
+
 func get_prestige_talent_bulk_display_count(talent_index: int, mode: String) -> int:
 	if talent_index < 0 or talent_index >= prestige_talent_levels.size():
 		return 0
@@ -623,12 +627,16 @@ func buy_character_level_upgrades(mode: String) -> Dictionary:
 
 
 func get_character_level_bulk_count(mode: String) -> int:
+	if is_debug_purchase_override_enabled():
+		if mode == "max":
+			return DEBUG_PURCHASE_MAX_BULK if gold >= DEBUG_PURCHASE_COST else 0
+		var dbg_fixed: int = _get_fixed_buy_count(mode)
+		return dbg_fixed if gold >= DEBUG_PURCHASE_COST else 0
+
 	var fixed_count: int = _get_fixed_buy_count(mode)
 	if fixed_count > 0:
-		return fixed_count
-
-	if is_debug_purchase_override_enabled():
-		return DEBUG_PURCHASE_MAX_BULK if gold >= DEBUG_PURCHASE_COST else 0
+		var fixed_cost: int = _get_character_level_bulk_cost_for_count(fixed_count)
+		return fixed_count if gold >= fixed_cost else 0
 
 	var simulated_gold: int = gold
 	var simulated_level: int = character_level
@@ -653,6 +661,10 @@ func get_character_level_bulk_cost(mode: String) -> int:
 		return DEBUG_PURCHASE_COST
 
 	return _get_character_level_bulk_cost_for_count(count)
+
+
+func can_afford_character_level_bulk(mode: String) -> bool:
+	return get_character_level_bulk_count(mode) > 0
 
 
 func get_character_level_bulk_display_count(mode: String) -> int:
@@ -1538,11 +1550,7 @@ func get_building_display_bulk_bonus_gain(building_index: int, mode: String) -> 
 
 
 func can_afford_building_bulk(building_index: int, mode: String) -> bool:
-	var display_count: int = get_building_bulk_display_count(building_index, mode)
-	if display_count <= 0:
-		return false
-	var cost: int = get_building_bulk_display_cost(building_index, mode)
-	return cost > 0 and gold >= cost
+	return get_building_bulk_count(building_index, mode) > 0
 
 
 func get_diminishing_reduction_multiplier(raw_bonus_percent: int) -> float:
@@ -1632,13 +1640,7 @@ func refresh_partner_visibility_unlocks() -> void:
 
 
 func can_afford_partner_bulk(partner_index: int, mode: String) -> bool:
-	if not is_partner_index_valid(partner_index):
-		return false
-	var display_count: int = get_partner_bulk_display_count(partner_index, mode)
-	if display_count <= 0:
-		return false
-	var cost: int = get_partner_bulk_display_cost(partner_index, mode)
-	return cost > 0 and gold >= cost
+	return get_partner_bulk_count(partner_index, mode) > 0
 
 
 func _get_fixed_buy_count(mode: String) -> int:

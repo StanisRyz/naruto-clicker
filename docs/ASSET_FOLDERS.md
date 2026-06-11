@@ -317,6 +317,8 @@ Path: `assets/images/ui/element_name/icon.png`
 
 UI folders: `gold`, `gems`, `prestige_points`, `settings`, `close`, `auto_transition`, `stage_current`, `stage_open`, `stage_locked`, `skill_locked`, `skill_available`, `skill_purchased`
 
+Top HUD stat icons (`gold`, `click_damage`, `partner_dps`, `settings`) are displayed at **72×72 px**, centered inside an 80×80 px layout cell (4 px inset on all sides). Recommended source image size: 128×128 or 256×256. The Settings button retains an 80×80 px clickable area.
+
 ---
 
 ## StageNavigator side button textures

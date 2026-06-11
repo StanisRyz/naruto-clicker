@@ -236,7 +236,7 @@ func _update_hero_level_row(state: ClickerState) -> void:
 		"count": bulk_count,
 		"cost": NumberFormatter.compact(bulk_cost),
 	})
-	_set_card_button_state(hero_level_row, true)
+	_set_card_button_state(hero_level_row, state.can_afford_character_level_bulk(selected_buy_mode))
 	var skills: Array[Dictionary] = state.get_hero_skills()
 	_update_skill_icon_row(skills, skill_buttons, skill_image_holders, state, true)
 
