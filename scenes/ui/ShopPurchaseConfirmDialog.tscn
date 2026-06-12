@@ -72,16 +72,17 @@ horizontal_alignment = 1
 
 [node name="ButtonRow" type="HBoxContainer" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 16
+alignment = 1
 
 [node name="ConfirmButton" type="Button" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ButtonRow"]
-custom_minimum_size = Vector2(210, 72)
+custom_minimum_size = Vector2(168, 58)
 layout_mode = 2
 size_flags_horizontal = 0
 text = ""
 
 [node name="CancelButton" type="Button" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ButtonRow"]
-custom_minimum_size = Vector2(210, 72)
+custom_minimum_size = Vector2(168, 58)
 layout_mode = 2
 size_flags_horizontal = 0
 text = ""

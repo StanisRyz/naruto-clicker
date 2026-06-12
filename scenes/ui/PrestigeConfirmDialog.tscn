@@ -51,9 +51,9 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_dialog_inner")
 [node name="MarginContainer" type="MarginContainer" parent="CenterContainer/InnerPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 28
-theme_override_constants/margin_top = 24
+theme_override_constants/margin_top = 29
 theme_override_constants/margin_right = 28
-theme_override_constants/margin_bottom = 24
+theme_override_constants/margin_bottom = 29
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/InnerPanel/MarginContainer"]
 layout_mode = 2
@@ -92,16 +92,17 @@ horizontal_alignment = 1
 
 [node name="ButtonRow" type="HBoxContainer" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 16
+alignment = 1
 
 [node name="YesButton" type="Button" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ButtonRow"]
-custom_minimum_size = Vector2(210, 72)
+custom_minimum_size = Vector2(147, 50)
 layout_mode = 2
 size_flags_horizontal = 0
 text = "Yes"
 
 [node name="NoButton" type="Button" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ButtonRow"]
-custom_minimum_size = Vector2(210, 72)
+custom_minimum_size = Vector2(147, 50)
 layout_mode = 2
 size_flags_horizontal = 0
 text = "No"

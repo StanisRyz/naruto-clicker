@@ -10,10 +10,10 @@ const POPUP_SIZE: Vector2 = Vector2(POPUP_WIDTH, POPUP_HEIGHT)
 const POPUP_MARGIN: float = 8.0
 const BOTTOM_SAFE_MARGIN: float = 112.0
 
-const MARGIN_LEFT: int = 14
-const MARGIN_TOP: int = 12
-const MARGIN_RIGHT: int = 14
-const CONTENT_WIDTH: int = 322
+const MARGIN_LEFT: int = 17
+const MARGIN_TOP: int = 15
+const MARGIN_RIGHT: int = 17
+const CONTENT_WIDTH: int = 316
 
 const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 
@@ -138,10 +138,10 @@ func _apply_fixed_panel_size() -> void:
 func _apply_fixed_row_layout() -> void:
 	var header: HBoxContainer = $PanelContainer/ContentRoot/Header
 	_place_control(header, MARGIN_LEFT, MARGIN_TOP, CONTENT_WIDTH, 36)
-	_place_control(effect_label, MARGIN_LEFT, 60, CONTENT_WIDTH, 34)
-	_place_control(requirement_label, MARGIN_LEFT, 106, CONTENT_WIDTH, 34)
-	_place_control(current_state_label, MARGIN_LEFT, 152, CONTENT_WIDTH, 34)
-	_place_control(buy_button, MARGIN_LEFT, 198, CONTENT_WIDTH, 56)
+	_place_control(effect_label, MARGIN_LEFT, 57, CONTENT_WIDTH, 34)
+	_place_control(requirement_label, MARGIN_LEFT, 97, CONTENT_WIDTH, 34)
+	_place_control(current_state_label, MARGIN_LEFT, 137, CONTENT_WIDTH, 34)
+	_place_control(buy_button, 93, 177, 163, 56)
 
 
 func _place_control(control: Control, x: int, y: int, w: int, h: int) -> void:
