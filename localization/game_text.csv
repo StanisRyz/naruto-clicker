@@ -102,10 +102,13 @@ prestige.confirm.title,Prestige,Престиж,PrestigeConfirmDialog window titl
 prestige.confirm.stage,Stage: {stage},Этап: {stage},PrestigeConfirmDialog stage row,{stage} is integer level
 prestige.confirm.level,Level: {level},Уровень: {level},PrestigeConfirmDialog character level row,{level} is integer
 prestige.confirm.reset_warning,All progress will be reset,Весь прогресс будет сброшен,PrestigeConfirmDialog reset warning,
-prestige.confirm.talents_kept,Purchased prestige talents are kept,Купленные таланты престижа сохраняются,PrestigeConfirmDialog talents note,
+prestige.confirm.talents_kept,Prestige talents are kept,Таланты престижа сохраняются,PrestigeConfirmDialog talents note,
 prestige.confirm.yes,Yes,Да,PrestigeConfirmDialog yes button,
 prestige.confirm.no,No,Нет,PrestigeConfirmDialog no button,
 shop.buy_button,Buy,Купить,ShopPanel buy button,
+shop.confirm.title,Confirm purchase,Подтвердите покупку,ShopPurchaseConfirmDialog title,
+shop.confirm.confirm,Confirm,Подтвердить,ShopPurchaseConfirmDialog confirm button,
+shop.confirm.cancel,Cancel,Отмена,ShopPurchaseConfirmDialog cancel button,
 zone.01.name,Hidden Leaf Forest,Лес Скрытого Листа,ZoneConfig zone 01,
 zone.02.name,Training Camp,Тренировочная Площадка,ZoneConfig zone 02,
 zone.03.name,Fog Forest,Лес Тумана,ZoneConfig zone 03,

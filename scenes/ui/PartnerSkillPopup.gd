@@ -133,10 +133,10 @@ func _apply_fixed_panel_size() -> void:
 func _apply_fixed_row_layout() -> void:
 	var header: HBoxContainer = $PanelContainer/ContentRoot/Header
 	_place_control(header, MARGIN_LEFT, MARGIN_TOP, CONTENT_WIDTH, 36)
-	_place_control(effect_label, MARGIN_LEFT, 56, CONTENT_WIDTH, 54)
-	_place_control(requirement_label, MARGIN_LEFT, 118, CONTENT_WIDTH, 34)
-	_place_control(current_state_label, MARGIN_LEFT, 160, CONTENT_WIDTH, 34)
-	_place_control(buy_button, MARGIN_LEFT, 202, CONTENT_WIDTH, 56)
+	_place_control(effect_label, MARGIN_LEFT, 60, CONTENT_WIDTH, 34)
+	_place_control(requirement_label, MARGIN_LEFT, 106, CONTENT_WIDTH, 34)
+	_place_control(current_state_label, MARGIN_LEFT, 152, CONTENT_WIDTH, 34)
+	_place_control(buy_button, MARGIN_LEFT, 198, CONTENT_WIDTH, 56)
 
 
 func _place_control(control: Control, x: int, y: int, w: int, h: int) -> void:

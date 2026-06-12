@@ -131,6 +131,7 @@ const ASSET_PATHS: Dictionary = {
 	"ui.window.settings.reset_confirm_background": "res://assets/images/ui/windows/settings/reset_confirm_background.png",
 	"ui.dialog.prestige.background": "res://assets/images/ui/dialogs/prestige/background.png",
 	"ui.dialog.prestige.inner_background": "res://assets/images/ui/dialogs/prestige/inner_background.png",
+	"ui.popup.shop_confirm.background": "res://assets/images/ui/popups/shop_confirm/background.png",
 
 	# Popup action buttons
 	"ui.popup.button.default": "res://assets/images/ui/popups/buttons/default.png",

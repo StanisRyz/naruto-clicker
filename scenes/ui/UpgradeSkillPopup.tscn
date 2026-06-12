@@ -78,35 +78,36 @@ text = "X"
 [node name="EffectLabel" type="Label" parent="PanelContainer/ContentRoot"]
 layout_mode = 0
 offset_left = 14.0
-offset_top = 56.0
+offset_top = 60.0
 offset_right = 336.0
-offset_bottom = 110.0
+offset_bottom = 94.0
 text = ""
-autowrap_mode = 3
+autowrap_mode = 0
 text_overrun_behavior = 3
+vertical_alignment = 1
 
 [node name="RequirementLabel" type="Label" parent="PanelContainer/ContentRoot"]
 layout_mode = 0
 offset_left = 14.0
-offset_top = 118.0
+offset_top = 106.0
 offset_right = 336.0
-offset_bottom = 152.0
+offset_bottom = 140.0
 text = ""
 text_overrun_behavior = 3
 
 [node name="CurrentStateLabel" type="Label" parent="PanelContainer/ContentRoot"]
 layout_mode = 0
 offset_left = 14.0
-offset_top = 160.0
+offset_top = 152.0
 offset_right = 336.0
-offset_bottom = 194.0
+offset_bottom = 186.0
 text = ""
 text_overrun_behavior = 3
 
 [node name="BuyButton" type="Button" parent="PanelContainer/ContentRoot"]
 layout_mode = 0
 offset_left = 14.0
-offset_top = 202.0
+offset_top = 198.0
 offset_right = 336.0
-offset_bottom = 258.0
+offset_bottom = 254.0
 text = "Buy: 0"

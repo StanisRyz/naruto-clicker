@@ -65,6 +65,7 @@ var _debug_visual_test_previous_gems: int = 0
 @onready var prestige_sheet: PrestigeSheet = $PrestigeSheet
 @onready var shop_sheet: ShopSheet = $ShopSheet
 @onready var prestige_confirm_dialog: PrestigeConfirmDialog = $PrestigeConfirmDialog
+@onready var shop_purchase_confirm_dialog: ShopPurchaseConfirmDialog = $ShopPurchaseConfirmDialog
 @onready var upgrades_button_image = $BottomBar/MarginContainer/HBoxContainer/UpgradesButton/ImageHolder
 @onready var partners_button_image = $BottomBar/MarginContainer/HBoxContainer/PartnersButton/ImageHolder
 @onready var settlement_button_image = $BottomBar/MarginContainer/HBoxContainer/SettlementButton/ImageHolder
@@ -105,6 +106,8 @@ func _ready() -> void:
 	prestige_sheet.prestige_requested.connect(_on_prestige_requested)
 	prestige_sheet.prestige_talent_purchase_requested.connect(_on_prestige_talent_purchase_requested)
 	shop_sheet.product_purchase_requested.connect(_on_shop_product_purchase_requested)
+	shop_purchase_confirm_dialog.confirmed.connect(_on_shop_purchase_confirmed)
+	shop_purchase_confirm_dialog.cancelled.connect(_on_shop_purchase_cancelled)
 	prestige_confirm_dialog.confirmed.connect(_on_prestige_confirmed)
 	prestige_confirm_dialog.cancelled.connect(_on_prestige_cancelled)
 	upgrade_sheet.closed.connect(_on_sheet_closed)
@@ -451,6 +454,20 @@ func _on_prestige_talent_purchase_requested(talent_index: int, mode: String) -> 
 
 
 func _on_shop_product_purchase_requested(product_id: String, mode: String) -> void:
+	var product_name: String = _get_shop_product_display_name(product_id)
+	shop_purchase_confirm_dialog.show_dialog(product_id, mode, product_name)
+
+
+func _get_shop_product_display_name(product_id: String) -> String:
+	var product: Dictionary = state.get_shop_product(product_id)
+	var name_key: String = String(product.get("name_key", ""))
+	if name_key != "":
+		return LocalizationManager.tr_key(name_key)
+	var fallback_name: String = String(product.get("name", ""))
+	return fallback_name if fallback_name != "" else product_id
+
+
+func _execute_shop_product_purchase(product_id: String, mode: String) -> void:
 	var gems_before: int = state.gems
 	var result: Dictionary = state.buy_shop_products(product_id, mode)
 	_handle_status_text(result.get("status_text", ""))
@@ -460,6 +477,14 @@ func _on_shop_product_purchase_requested(product_id: String, mode: String) -> vo
 	if result.get("upgraded", false):
 		shop_sheet.play_product_purchase_feedback(product_id)
 		_save_game_now()
+
+
+func _on_shop_purchase_confirmed(product_id: String, mode: String) -> void:
+	_execute_shop_product_purchase(product_id, mode)
+
+
+func _on_shop_purchase_cancelled() -> void:
+	pass
 
 
 func _on_prestige_confirmed() -> void:

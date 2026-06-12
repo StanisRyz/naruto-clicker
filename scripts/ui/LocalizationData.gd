@@ -4,8 +4,8 @@ extends RefCounted
 # AUTO-GENERATED — do not edit by hand.
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
-# Generated key count: 307
-# Generated at: 1781248525
+# Generated key count: 310
+# Generated at: 1781251183
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -112,10 +112,13 @@ const TRANSLATIONS: Dictionary = {
 		"prestige.confirm.stage": "Stage: {stage}",
 		"prestige.confirm.level": "Level: {level}",
 		"prestige.confirm.reset_warning": "All progress will be reset",
-		"prestige.confirm.talents_kept": "Purchased prestige talents are kept",
+		"prestige.confirm.talents_kept": "Prestige talents are kept",
 		"prestige.confirm.yes": "Yes",
 		"prestige.confirm.no": "No",
 		"shop.buy_button": "Buy",
+		"shop.confirm.title": "Confirm purchase",
+		"shop.confirm.confirm": "Confirm",
+		"shop.confirm.cancel": "Cancel",
 		"zone.01.name": "Hidden Leaf Forest",
 		"zone.02.name": "Training Camp",
 		"zone.03.name": "Fog Forest",
@@ -421,10 +424,13 @@ const TRANSLATIONS: Dictionary = {
 		"prestige.confirm.stage": "Этап: {stage}",
 		"prestige.confirm.level": "Уровень: {level}",
 		"prestige.confirm.reset_warning": "Весь прогресс будет сброшен",
-		"prestige.confirm.talents_kept": "Купленные таланты престижа сохраняются",
+		"prestige.confirm.talents_kept": "Таланты престижа сохраняются",
 		"prestige.confirm.yes": "Да",
 		"prestige.confirm.no": "Нет",
 		"shop.buy_button": "Купить",
+		"shop.confirm.title": "Подтвердите покупку",
+		"shop.confirm.confirm": "Подтвердить",
+		"shop.confirm.cancel": "Отмена",
 		"zone.01.name": "Лес Скрытого Листа",
 		"zone.02.name": "Тренировочная Площадка",
 		"zone.03.name": "Лес Тумана",

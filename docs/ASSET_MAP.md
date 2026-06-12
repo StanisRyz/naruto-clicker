@@ -345,13 +345,15 @@ These sizes are authoritative for texture authoring. Popups and windows use expl
 | SettingsWindow | `assets/images/ui/windows/settings/background.png` | 360×350 px | `SettingsBackgroundImageHolder` (added at runtime) |
 | SettingsWindow ResetConfirmDialog | `assets/images/ui/windows/settings/reset_confirm_background.png` | 340×224 px | `ResetConfirmBackgroundImageHolder` (added at runtime) |
 | PrestigeConfirmDialog fullscreen | `assets/images/ui/dialogs/prestige/background.png` | 720×1280 px | `PrestigeDialogBackgroundImageHolder` (added at runtime) |
-| PrestigeConfirmDialog inner panel | `assets/images/ui/dialogs/prestige/inner_background.png` | 656×350 px | `PrestigeDialogInnerBackgroundImageHolder` (added at runtime) |
+| PrestigeConfirmDialog inner panel | `assets/images/ui/dialogs/prestige/inner_background.png` | 500×350 px | `PrestigeDialogInnerBackgroundImageHolder` (added at runtime) |
+| ShopPurchaseConfirmDialog inner panel | `assets/images/ui/popups/shop_confirm/background.png` | 500×230 px | `ShopPurchaseConfirmBackgroundImageHolder` (added at runtime) |
 
 Asset folder structure (folders exist with `.gitkeep`; no PNG files yet):
 
 ```
 assets/images/ui/popups/skill/
 assets/images/ui/popups/auto_transition/
+assets/images/ui/popups/shop_confirm/
 assets/images/ui/windows/settings/
 assets/images/ui/dialogs/prestige/
 ```
@@ -359,7 +361,7 @@ assets/images/ui/dialogs/prestige/
 Scene size summary:
 - `PanelContainer.custom_minimum_size` and offsets are both set to the exact pixel dimensions above.
 - ImageHolder nodes are full-rect (`PRESET_FULL_RECT`) inside their respective `PanelContainer`, so texture fills the panel exactly.
-- PrestigeConfirmDialog: outer `PanelContainer` is full-screen (darkened backdrop, 720×1280 design target); `InnerPanel` is fixed 656×350 and centered via `CenterContainer`.
+- PrestigeConfirmDialog: outer `PanelContainer` is full-screen (darkened backdrop, 720×1280 design target); `InnerPanel` is fixed 500×350 and centered via `CenterContainer`.
 
 ---
 
@@ -386,7 +388,8 @@ Close buttons reuse the existing sheet close button: `ui.sheet.close_button` / `
 | `ui.window.settings.background` | `assets/images/ui/windows/settings/background.png` | 360×350 px | SettingsWindow main panel |
 | `ui.window.settings.reset_confirm_background` | `assets/images/ui/windows/settings/reset_confirm_background.png` | 340×224 px | SettingsWindow reset confirm dialog |
 | `ui.dialog.prestige.background` | `assets/images/ui/dialogs/prestige/background.png` | 720×1280 px | PrestigeConfirmDialog full-screen panel |
-| `ui.dialog.prestige.inner_background` | `assets/images/ui/dialogs/prestige/inner_background.png` | 656×350 px | PrestigeConfirmDialog inner panel |
+| `ui.dialog.prestige.inner_background` | `assets/images/ui/dialogs/prestige/inner_background.png` | 500×350 px | PrestigeConfirmDialog inner panel |
+| `ui.popup.shop_confirm.background` | `assets/images/ui/popups/shop_confirm/background.png` | 500×230 px | ShopPurchaseConfirmDialog inner panel |
 
 ### Popup action buttons
 

@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://scenes/ui/PrestigeConfirmDialog.gd" id="1_pcd"]
+[ext_resource type="Script" path="res://scenes/ui/ShopPurchaseConfirmDialog.gd" id="1_spcd"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dialog_inner"]
 bg_color = Color(0.08, 0.085, 0.1, 1)
@@ -10,7 +10,7 @@ border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0.24, 0.25, 0.3, 1)
 
-[node name="PrestigeConfirmDialog" type="Control"]
+[node name="ShopPurchaseConfirmDialog" type="Control"]
 visible = false
 layout_mode = 3
 anchors_preset = 15
@@ -19,7 +19,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 0
-script = ExtResource("1_pcd")
+script = ExtResource("1_spcd")
 
 [node name="DimOverlay" type="ColorRect" parent="."]
 layout_mode = 1
@@ -41,7 +41,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="InnerPanel" type="PanelContainer" parent="CenterContainer"]
-custom_minimum_size = Vector2(500, 350)
+custom_minimum_size = Vector2(500, 230)
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
@@ -65,27 +65,7 @@ layout_mode = 2
 text = ""
 horizontal_alignment = 1
 
-[node name="StageLabel" type="Label" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-text = ""
-horizontal_alignment = 1
-
-[node name="LevelLabel" type="Label" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-text = ""
-horizontal_alignment = 1
-
-[node name="PointsToGainLabel" type="Label" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-text = ""
-horizontal_alignment = 1
-
-[node name="ResetWarningLabel" type="Label" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-text = ""
-horizontal_alignment = 1
-
-[node name="TalentsKeptLabel" type="Label" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer"]
+[node name="ProductNameLabel" type="Label" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = ""
 horizontal_alignment = 1
@@ -94,14 +74,14 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="YesButton" type="Button" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ButtonRow"]
+[node name="ConfirmButton" type="Button" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ButtonRow"]
 custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Yes"
+text = ""
 
-[node name="NoButton" type="Button" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ButtonRow"]
+[node name="CancelButton" type="Button" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ButtonRow"]
 custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "No"
+text = ""
