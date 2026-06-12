@@ -38,6 +38,21 @@ settings.save_failed,Save failed,Ошибка Сохранения,SettingsWindo
 settings.progress_reset,Progress Reset,Сброс Прогресса,SettingsWindow reset status message,
 auto_transition.status_on,ON,Вкл,AutoTransitionPopup status label,
 auto_transition.status_off,OFF,Выкл,AutoTransitionPopup status label,
+auto_transition.description.line_1,When enabled cleared,Когда включено,AutoTransitionPopup description line 1,
+auto_transition.description.line_2,stages automatically,пройденные этапы,AutoTransitionPopup description line 2,
+auto_transition.description.line_3,move to the next,автоматически переходят,AutoTransitionPopup description line 3,
+auto_transition.description.line_4,unlocked level,на следующий уровень,AutoTransitionPopup description line 4,
+skill_popup.hero.title,Skill,Навык,UpgradeSkillPopup header title fallback,
+skill_popup.partner.title,Partner Skill,Навык партнёра,PartnerSkillPopup header title fallback,
+skill_popup.requirement.hero_level,Requires Hero Level {level},Требуется уровень героя {level},Skill popup requirement row,{level} is integer
+skill_popup.requirement.ability_purchase,Requires buying {ability},Требуется купить {ability},Skill popup requirement row for ability-gated skill,{ability} is ability display name
+skill_popup.requirement.partner_count,Requires {count} {partner},Требуется {count} {partner},Skill popup requirement row,{count} integer; {partner} name
+skill_popup.current.hero_level,Current: {current} / {required},Сейчас: {current} / {required},Skill popup current state row,{current} and {required} are integers
+skill_popup.current.partner_count,Current: {current} / {required},Сейчас: {current} / {required},Skill popup current state row,{current} and {required} are integers
+skill_popup.current.unlocked,Unlocked,Открыто,Skill popup current state when requirement met,
+skill_popup.button.buy,Buy: {cost},Купить: {cost},Skill popup buy button,{cost} is compact number
+skill_popup.button.locked,Locked,Закрыто,Skill popup buy button locked state,
+skill_popup.button.purchased,Purchased,Куплено,Skill popup buy button purchased state,
 task.in_progress,In Progress,В Процессе,TasksWindow task button,
 task.claim,Claim,Получить,TasksWindow task button,
 task.claimed,Claimed,Получено,TasksWindow task button after clicking,
@@ -78,11 +93,18 @@ prestige.confirm.stage_level,Stage level,Этап,PrestigeConfirmDialog label,fo
 prestige.confirm.character_level,Character level,Уровень,PrestigeConfirmDialog label,
 prestige.confirm.stage_points,Stage points,Очки этапа,PrestigeConfirmDialog label,
 prestige.confirm.character_points,Character points,Очки уровня,PrestigeConfirmDialog label,
-prestige.confirm.points_to_gain,Points to gain,Очки к получению,PrestigeConfirmDialog label,
+prestige.confirm.points_to_gain,Points to gain: {points},Очки к получению: {points},PrestigeConfirmDialog label,{points} is compact number
 prestige.confirm.available_after,Available after,Доступно после,PrestigeConfirmDialog label,
 prestige.confirm.total_earned_after,Total earned after,Все заработано,PrestigeConfirmDialog label,
 prestige.confirm.warning,All normal progress will reset,Весь прогресс будет сброшен,PrestigeConfirmDialog warning text,
 prestige.confirm.talents_note,Purchased prestige talents remain,Купленные таланты престижа сохраняются,PrestigeConfirmDialog note,
+prestige.confirm.title,Prestige,Престиж,PrestigeConfirmDialog window title,
+prestige.confirm.stage,Stage: {stage},Этап: {stage},PrestigeConfirmDialog stage row,{stage} is integer level
+prestige.confirm.level,Level: {level},Уровень: {level},PrestigeConfirmDialog character level row,{level} is integer
+prestige.confirm.reset_warning,All progress will be reset,Весь прогресс будет сброшен,PrestigeConfirmDialog reset warning,
+prestige.confirm.talents_kept,Purchased prestige talents are kept,Купленные таланты престижа сохраняются,PrestigeConfirmDialog talents note,
+prestige.confirm.yes,Yes,Да,PrestigeConfirmDialog yes button,
+prestige.confirm.no,No,Нет,PrestigeConfirmDialog no button,
 shop.buy_button,Buy,Купить,ShopPanel buy button,
 zone.01.name,Hidden Leaf Forest,Лес Скрытого Листа,ZoneConfig zone 01,
 zone.02.name,Training Camp,Тренировочная Площадка,ZoneConfig zone 02,

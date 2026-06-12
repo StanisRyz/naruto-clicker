@@ -50,14 +50,33 @@ alignment = 1
 
 [node name="TitleLabel" type="Label" parent="PanelContainer/CenterContainer/InnerPanel/VBoxContainer"]
 layout_mode = 2
-text = "Prestige?"
+text = ""
 horizontal_alignment = 1
 
-[node name="InfoLabel" type="Label" parent="PanelContainer/CenterContainer/InnerPanel/VBoxContainer"]
+[node name="StageLabel" type="Label" parent="PanelContainer/CenterContainer/InnerPanel/VBoxContainer"]
 layout_mode = 2
 text = ""
 horizontal_alignment = 1
-autowrap_mode = 3
+
+[node name="LevelLabel" type="Label" parent="PanelContainer/CenterContainer/InnerPanel/VBoxContainer"]
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
+
+[node name="PointsToGainLabel" type="Label" parent="PanelContainer/CenterContainer/InnerPanel/VBoxContainer"]
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
+
+[node name="ResetWarningLabel" type="Label" parent="PanelContainer/CenterContainer/InnerPanel/VBoxContainer"]
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
+
+[node name="TalentsKeptLabel" type="Label" parent="PanelContainer/CenterContainer/InnerPanel/VBoxContainer"]
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
 
 [node name="ButtonRow" type="HBoxContainer" parent="PanelContainer/CenterContainer/InnerPanel/VBoxContainer"]
 layout_mode = 2

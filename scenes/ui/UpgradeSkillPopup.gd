@@ -6,6 +6,7 @@ signal ability_skill_purchase_requested(skill_id: String)
 
 const POPUP_WIDTH: float = 300.0
 const POPUP_HEIGHT: float = 260.0
+const POPUP_SIZE: Vector2 = Vector2(POPUP_WIDTH, POPUP_HEIGHT)
 const POPUP_MARGIN: float = 8.0
 const BOTTOM_SAFE_MARGIN: float = 112.0
 
@@ -14,10 +15,9 @@ const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 @onready var panel_container: PanelContainer = $PanelContainer
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
 @onready var name_label: Label = $PanelContainer/MarginContainer/VBoxContainer/Header/NameLabel
-@onready var description_label: Label = $PanelContainer/MarginContainer/VBoxContainer/DescriptionLabel
+@onready var effect_label: Label = $PanelContainer/MarginContainer/VBoxContainer/EffectLabel
 @onready var requirement_label: Label = $PanelContainer/MarginContainer/VBoxContainer/RequirementLabel
-@onready var current_label: Label = $PanelContainer/MarginContainer/VBoxContainer/CurrentLabel
-@onready var cost_label: Label = $PanelContainer/MarginContainer/VBoxContainer/CostLabel
+@onready var current_state_label: Label = $PanelContainer/MarginContainer/VBoxContainer/CurrentStateLabel
 @onready var buy_button: Button = $PanelContainer/MarginContainer/VBoxContainer/BuyButton
 
 var current_skill_id: String = ""
@@ -34,6 +34,7 @@ func _ready() -> void:
 	_add_background_image_holder(panel_container, "PopupBackgroundImageHolder", "ui.popup.skill.background")
 	_make_image_icon_button(close_button, "ui.sheet.close_button")
 	_buy_button_label = _make_image_button_label(buy_button, "ui.popup.button.default", "")
+	_apply_fixed_panel_size()
 	hide()
 
 
@@ -41,7 +42,10 @@ func show_skill(state: ClickerState, owner_type: String, skill_id: String, ancho
 	current_owner_type = owner_type
 	current_skill_id = skill_id
 	current_anchor_global_position = anchor_global_position
+	_apply_fixed_panel_size()
 	_update_view(state)
+	_apply_fixed_panel_size()
+	_position_panel(POPUP_SIZE)
 	show()
 	call_deferred("_deferred_resize_and_position_panel")
 
@@ -62,25 +66,32 @@ func _update_view(state: ClickerState) -> void:
 	var cost: int = state.get_hero_skill_cost(current_skill_id) if current_owner_type == "hero" else state.get_ability_skill_cost(current_skill_id)
 	var skill_state: String = state.get_hero_skill_state(current_skill_id) if current_owner_type == "hero" else state.get_ability_skill_state(current_skill_id)
 	var ability_id: String = String(skill.get("ability_id", ""))
+	var L := LocalizationManager
 
-	name_label.text = String(skill.get("name", "Upgrade Skill"))
-	description_label.text = String(skill.get("description", ""))
+	name_label.text = String(skill.get("name", L.tr_key("skill_popup.hero.title")))
+	effect_label.text = String(skill.get("description", ""))
+
 	if current_owner_type == "ability" and not state.is_ability_purchased(ability_id):
-		requirement_label.text = "Requires: Buy %s first" % _get_ability_display_name(ability_id)
+		requirement_label.text = L.format_key("skill_popup.requirement.ability_purchase", {"ability": _get_ability_display_name(ability_id)})
 	else:
-		requirement_label.text = "Requires: Hero Level %d" % unlock_level
-	current_label.text = "Current: %d / %d" % [state.character_level, unlock_level]
-	cost_label.text = "Cost: %s gold" % NumberFormatter.compact(cost)
+		requirement_label.text = L.format_key("skill_popup.requirement.hero_level", {"level": unlock_level})
+
+	if current_owner_type == "ability" and not state.is_ability_purchased(ability_id):
+		current_state_label.text = L.format_key("skill_popup.current.hero_level", {"current": state.character_level, "required": unlock_level})
+	elif state.character_level >= unlock_level:
+		current_state_label.text = L.tr_key("skill_popup.current.unlocked")
+	else:
+		current_state_label.text = L.format_key("skill_popup.current.hero_level", {"current": state.character_level, "required": unlock_level})
 
 	match skill_state:
 		"purchased":
 			buy_button.disabled = true
-			_buy_button_label.text = "Purchased"
+			_buy_button_label.text = L.tr_key("skill_popup.button.purchased")
 		"locked":
 			buy_button.disabled = true
-			_buy_button_label.text = "Locked"
+			_buy_button_label.text = L.tr_key("skill_popup.button.locked")
 		_:
-			_buy_button_label.text = "Buy: %s" % NumberFormatter.compact(cost)
+			_buy_button_label.text = L.format_key("skill_popup.button.buy", {"cost": NumberFormatter.compact(cost)})
 			buy_button.disabled = not _can_buy_current_skill(state)
 
 
@@ -103,9 +114,17 @@ func _input(event: InputEvent) -> void:
 	hide()
 
 
+func _apply_fixed_panel_size() -> void:
+	panel_container.custom_minimum_size = POPUP_SIZE
+	panel_container.size = POPUP_SIZE
+	panel_container.offset_right = panel_container.offset_left + POPUP_SIZE.x
+	panel_container.offset_bottom = panel_container.offset_top + POPUP_SIZE.y
+	panel_container.clip_contents = true
+
+
 func _deferred_resize_and_position_panel() -> void:
-	panel_container.size = Vector2(POPUP_WIDTH, POPUP_HEIGHT)
-	_position_panel(Vector2(POPUP_WIDTH, POPUP_HEIGHT))
+	_apply_fixed_panel_size()
+	_position_panel(POPUP_SIZE)
 
 
 func _position_panel(panel_size: Vector2) -> void:
@@ -122,12 +141,7 @@ func _can_buy_current_skill(state: ClickerState) -> bool:
 
 
 func _get_ability_display_name(ability_id: String) -> String:
-	match ability_id:
-		"autoclick": return "Autoclick"
-		"gold_bonus": return "Gold Bonus"
-		"focus_burst": return "Focus Burst"
-		"rally": return "Rally"
-	return "Ability"
+	return LocalizationManager.tr_key("ability.%s.name" % ability_id)
 
 
 func _on_buy_button_pressed() -> void:

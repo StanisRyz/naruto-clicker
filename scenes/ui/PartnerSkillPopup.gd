@@ -5,6 +5,7 @@ signal skill_purchase_requested(skill_id: String)
 
 const POPUP_WIDTH: float = 300.0
 const POPUP_HEIGHT: float = 260.0
+const POPUP_SIZE: Vector2 = Vector2(POPUP_WIDTH, POPUP_HEIGHT)
 const POPUP_MARGIN: float = 8.0
 const BOTTOM_SAFE_MARGIN: float = 112.0
 
@@ -13,10 +14,9 @@ const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 @onready var panel_container: PanelContainer = $PanelContainer
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
 @onready var name_label: Label = $PanelContainer/MarginContainer/VBoxContainer/Header/NameLabel
-@onready var description_label: Label = $PanelContainer/MarginContainer/VBoxContainer/DescriptionLabel
+@onready var effect_label: Label = $PanelContainer/MarginContainer/VBoxContainer/EffectLabel
 @onready var requirement_label: Label = $PanelContainer/MarginContainer/VBoxContainer/RequirementLabel
-@onready var current_label: Label = $PanelContainer/MarginContainer/VBoxContainer/CurrentLabel
-@onready var cost_label: Label = $PanelContainer/MarginContainer/VBoxContainer/CostLabel
+@onready var current_state_label: Label = $PanelContainer/MarginContainer/VBoxContainer/CurrentStateLabel
 @onready var buy_button: Button = $PanelContainer/MarginContainer/VBoxContainer/BuyButton
 
 var current_skill_id: String = ""
@@ -32,13 +32,17 @@ func _ready() -> void:
 	_add_background_image_holder(panel_container, "PopupBackgroundImageHolder", "ui.popup.skill.background")
 	_make_image_icon_button(close_button, "ui.sheet.close_button")
 	_buy_button_label = _make_image_button_label(buy_button, "ui.popup.button.default", "")
+	_apply_fixed_panel_size()
 	hide()
 
 
 func show_skill(state: ClickerState, skill_id: String, anchor_global_position: Vector2) -> void:
 	current_skill_id = skill_id
 	current_anchor_global_position = anchor_global_position
+	_apply_fixed_panel_size()
 	_update_view(state)
+	_apply_fixed_panel_size()
+	_position_panel(POPUP_SIZE)
 	show()
 	call_deferred("_deferred_resize_and_position_panel")
 
@@ -67,21 +71,25 @@ func _update_view(state: ClickerState) -> void:
 	var cost: int = state.get_partner_skill_cost(current_skill_id)
 	var skill_state: String = state.get_partner_skill_state(current_skill_id)
 
-	name_label.text = String(skill.get("name", "Partner Skill"))
-	description_label.text = String(skill.get("description", ""))
-	requirement_label.text = "Requires: %d %s" % [unlock_count, partner_name]
-	current_label.text = "Current: %d / %d" % [current_count, unlock_count]
-	cost_label.text = "Cost: %s gold" % NumberFormatter.compact(cost)
+	var L := LocalizationManager
+	name_label.text = String(skill.get("name", L.tr_key("skill_popup.partner.title")))
+	effect_label.text = String(skill.get("description", ""))
+	requirement_label.text = L.format_key("skill_popup.requirement.partner_count", {"count": unlock_count, "partner": partner_name})
+
+	if current_count >= unlock_count:
+		current_state_label.text = L.tr_key("skill_popup.current.unlocked")
+	else:
+		current_state_label.text = L.format_key("skill_popup.current.partner_count", {"current": current_count, "required": unlock_count})
 
 	match skill_state:
 		"purchased":
 			buy_button.disabled = true
-			_buy_button_label.text = "Purchased"
+			_buy_button_label.text = L.tr_key("skill_popup.button.purchased")
 		"locked":
 			buy_button.disabled = true
-			_buy_button_label.text = "Locked"
+			_buy_button_label.text = L.tr_key("skill_popup.button.locked")
 		_:
-			_buy_button_label.text = "Buy: %s" % NumberFormatter.compact(cost)
+			_buy_button_label.text = L.format_key("skill_popup.button.buy", {"cost": NumberFormatter.compact(cost)})
 			buy_button.disabled = not state.can_buy_partner_skill(current_skill_id)
 
 
@@ -106,9 +114,17 @@ func _input(event: InputEvent) -> void:
 	hide()
 
 
+func _apply_fixed_panel_size() -> void:
+	panel_container.custom_minimum_size = POPUP_SIZE
+	panel_container.size = POPUP_SIZE
+	panel_container.offset_right = panel_container.offset_left + POPUP_SIZE.x
+	panel_container.offset_bottom = panel_container.offset_top + POPUP_SIZE.y
+	panel_container.clip_contents = true
+
+
 func _deferred_resize_and_position_panel() -> void:
-	panel_container.size = Vector2(POPUP_WIDTH, POPUP_HEIGHT)
-	_position_panel(Vector2(POPUP_WIDTH, POPUP_HEIGHT))
+	_apply_fixed_panel_size()
+	_position_panel(POPUP_SIZE)
 
 
 func _position_panel(panel_size: Vector2) -> void:

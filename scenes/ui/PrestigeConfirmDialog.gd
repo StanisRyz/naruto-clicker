@@ -6,7 +6,12 @@ signal cancelled
 
 const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 
-@onready var info_label: Label = $PanelContainer/CenterContainer/InnerPanel/VBoxContainer/InfoLabel
+@onready var _title_label: Label = $PanelContainer/CenterContainer/InnerPanel/VBoxContainer/TitleLabel
+@onready var _stage_label: Label = $PanelContainer/CenterContainer/InnerPanel/VBoxContainer/StageLabel
+@onready var _level_label: Label = $PanelContainer/CenterContainer/InnerPanel/VBoxContainer/LevelLabel
+@onready var _points_label: Label = $PanelContainer/CenterContainer/InnerPanel/VBoxContainer/PointsToGainLabel
+@onready var _reset_warning_label: Label = $PanelContainer/CenterContainer/InnerPanel/VBoxContainer/ResetWarningLabel
+@onready var _talents_kept_label: Label = $PanelContainer/CenterContainer/InnerPanel/VBoxContainer/TalentsKeptLabel
 @onready var yes_button: Button = $PanelContainer/CenterContainer/InnerPanel/VBoxContainer/ButtonRow/YesButton
 @onready var no_button: Button = $PanelContainer/CenterContainer/InnerPanel/VBoxContainer/ButtonRow/NoButton
 
@@ -18,30 +23,20 @@ func _ready() -> void:
 	var inner_panel: PanelContainer = $PanelContainer/CenterContainer/InnerPanel
 	_add_background_image_holder(outer_panel, "PrestigeDialogBackgroundImageHolder", "ui.dialog.prestige.background")
 	_add_background_image_holder(inner_panel, "PrestigeDialogInnerBackgroundImageHolder", "ui.dialog.prestige.inner_background")
-	_make_image_button_label(yes_button, "ui.popup.button.default", "Yes")
-	_make_image_button_label(no_button, "ui.popup.button.default", "No")
+	_make_image_button_label(yes_button, "ui.popup.button.default", LocalizationManager.tr_key("prestige.confirm.yes"))
+	_make_image_button_label(no_button, "ui.popup.button.default", LocalizationManager.tr_key("prestige.confirm.no"))
 	hide()
 
 
 func show_dialog(state: ClickerState) -> void:
-	var stage_points: int = state.get_prestige_stage_points()
-	var character_points: int = state.get_prestige_character_points()
 	var reward: int = state.get_prestige_reward()
-	var available_after: int = state.prestige_points_available + reward
-	var total_earned_after: int = state.prestige_points_total_earned + reward
 	var L := LocalizationManager
-	var lines: PackedStringArray = []
-	lines.append("%s: %d" % [L.tr_key("prestige.confirm.stage_level"), state.current_level])
-	lines.append("%s: %d" % [L.tr_key("prestige.confirm.character_level"), state.character_level])
-	lines.append("%s: +%s" % [L.tr_key("prestige.confirm.stage_points"), NumberFormatter.compact(stage_points)])
-	lines.append("%s: +%s" % [L.tr_key("prestige.confirm.character_points"), NumberFormatter.compact(character_points)])
-	lines.append("%s: +%s" % [L.tr_key("prestige.confirm.points_to_gain"), NumberFormatter.compact(reward)])
-	lines.append("%s: %s" % [L.tr_key("prestige.confirm.available_after"), NumberFormatter.compact(available_after)])
-	lines.append("%s: %s" % [L.tr_key("prestige.confirm.total_earned_after"), NumberFormatter.compact(total_earned_after)])
-	lines.append("")
-	lines.append(L.tr_key("prestige.confirm.warning"))
-	lines.append(L.tr_key("prestige.confirm.talents_note"))
-	info_label.text = "\n".join(lines)
+	_title_label.text = L.tr_key("prestige.confirm.title")
+	_stage_label.text = L.format_key("prestige.confirm.stage", {"stage": state.current_level})
+	_level_label.text = L.format_key("prestige.confirm.level", {"level": state.character_level})
+	_points_label.text = L.format_key("prestige.confirm.points_to_gain", {"points": NumberFormatter.compact(reward)})
+	_reset_warning_label.text = L.tr_key("prestige.confirm.reset_warning")
+	_talents_kept_label.text = L.tr_key("prestige.confirm.talents_kept")
 	show()
 
 

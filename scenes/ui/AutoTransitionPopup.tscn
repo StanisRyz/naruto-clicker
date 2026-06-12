@@ -32,6 +32,9 @@ offset_top = 0.0
 offset_right = 340.0
 offset_bottom = 220.0
 custom_minimum_size = Vector2(340, 220)
+size_flags_horizontal = 0
+size_flags_vertical = 0
+clip_contents = true
 mouse_filter = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
@@ -59,17 +62,22 @@ layout_mode = 2
 custom_minimum_size = Vector2(28, 28)
 text = "X"
 
-[node name="DescLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+[node name="DescriptionLine1Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
-autowrap_mode = 3
-text = "When enabled, cleared stages automatically move to the next unlocked level."
+text = ""
+
+[node name="DescriptionLine2Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = ""
+
+[node name="DescriptionLine3Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = ""
+
+[node name="DescriptionLine4Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = ""
 
 [node name="StatusLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
-text = "Status: ON"
-
-[node name="HintLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
-layout_mode = 2
-modulate = Color(0.7, 0.7, 0.7, 1)
-autowrap_mode = 3
-text = "Tap the auto button to switch this setting."
+text = ""

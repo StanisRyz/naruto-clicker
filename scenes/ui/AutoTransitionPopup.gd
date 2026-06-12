@@ -5,6 +5,7 @@ signal auto_button_pressed_through(anchor_global_position: Vector2, button_globa
 
 const POPUP_WIDTH: float = 340.0
 const POPUP_HEIGHT: float = 220.0
+const POPUP_SIZE: Vector2 = Vector2(POPUP_WIDTH, POPUP_HEIGHT)
 const POPUP_MARGIN: float = 6.0
 
 const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
@@ -14,8 +15,12 @@ var _pending_anchor: Vector2 = Vector2.ZERO
 var _auto_button_global_rect: Rect2 = Rect2()
 
 @onready var _panel: PanelContainer = $PanelContainer
-@onready var _status_label: Label = $PanelContainer/MarginContainer/VBoxContainer/StatusLabel
 @onready var _close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/TitleRow/CloseButton
+@onready var _desc_line1: Label = $PanelContainer/MarginContainer/VBoxContainer/DescriptionLine1Label
+@onready var _desc_line2: Label = $PanelContainer/MarginContainer/VBoxContainer/DescriptionLine2Label
+@onready var _desc_line3: Label = $PanelContainer/MarginContainer/VBoxContainer/DescriptionLine3Label
+@onready var _desc_line4: Label = $PanelContainer/MarginContainer/VBoxContainer/DescriptionLine4Label
+@onready var _status_label: Label = $PanelContainer/MarginContainer/VBoxContainer/StatusLabel
 
 
 func _ready() -> void:
@@ -24,13 +29,22 @@ func _ready() -> void:
 	_close_button.pressed.connect(hide_popup)
 	_add_background_image_holder(_panel, "PopupBackgroundImageHolder", "ui.popup.auto_transition.background")
 	_make_image_icon_button(_close_button, "ui.sheet.close_button")
+	_apply_fixed_panel_size()
+	var L := LocalizationManager
+	_desc_line1.text = L.tr_key("auto_transition.description.line_1")
+	_desc_line2.text = L.tr_key("auto_transition.description.line_2")
+	_desc_line3.text = L.tr_key("auto_transition.description.line_3")
+	_desc_line4.text = L.tr_key("auto_transition.description.line_4")
 
 
 func show_popup(state: ClickerState, anchor: Vector2, button_global_rect: Rect2 = Rect2()) -> void:
 	_state = state
 	_pending_anchor = anchor
 	_auto_button_global_rect = button_global_rect
+	_apply_fixed_panel_size()
 	refresh_view(state)
+	_apply_fixed_panel_size()
+	_position_popup(anchor)
 	mouse_filter = MOUSE_FILTER_STOP
 	visible = true
 	call_deferred("_deferred_resize_and_position_popup")
@@ -59,10 +73,18 @@ func _gui_input(event: InputEvent) -> void:
 				hide_popup()
 
 
+func _apply_fixed_panel_size() -> void:
+	_panel.custom_minimum_size = POPUP_SIZE
+	_panel.size = POPUP_SIZE
+	_panel.offset_right = _panel.offset_left + POPUP_SIZE.x
+	_panel.offset_bottom = _panel.offset_top + POPUP_SIZE.y
+	_panel.clip_contents = true
+
+
 func _deferred_resize_and_position_popup() -> void:
 	if not visible:
 		return
-	_panel.size = Vector2(POPUP_WIDTH, POPUP_HEIGHT)
+	_apply_fixed_panel_size()
 	_position_popup(_pending_anchor)
 
 
