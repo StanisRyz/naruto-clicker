@@ -46,7 +46,7 @@ func _init() -> void:
 	for i in range(1, HERO_SKILL_COUNT + 1):
 		var key: String = GameAssetCatalog.hero_skill_key(i)
 		var path: String = GameAssetCatalog.get_path(key)
-		var expected: String = "res://assets/images/hero_skills/skill_%02d.png" % i
+		var expected: String = "res://assets/images/skills/skill_%02d.png" % i
 		if path != expected:
 			errors.append("WRONG hero skill path for level %d: got '%s', expected '%s'" % [i, path, expected])
 		if not ResourceLoader.exists(path):

@@ -107,7 +107,7 @@ TODO: old per-partner files in `assets/images/partners/skills/` can be removed a
 
 ## Hero skill icons
 
-Path: `assets/images/hero_skills/skill_01.png` … `skill_05.png`
+Path: `assets/images/skills/skill_01.png` … `skill_05.png`
 
 ---
 
@@ -248,9 +248,9 @@ These are large card images used in the Upgrades tab. Separate from the active a
 
 ## Settlement building icons
 
-Path: `assets/images/settlement/building_name/icon.png`
+Path: `assets/images/buildings/building_name.png`
 
-Building folders: `training_camp`, `market`, `knight_hut`, `war_banner`, `clock_tower`, `boss_shrine`
+Files: `training_camp.png`, `market.png`, `knight_hut.png`, `war_banner.png`, `clock_tower.png`, `boss_shrine.png`
 
 ---
 
@@ -398,10 +398,6 @@ Validation: `godot --headless --script res://scripts/tools/ValidateTopInterfaceA
 ---
 
 ## UI icons
-
-Path: `assets/images/ui/element_name/icon.png`
-
-UI folders: `gold`, `gems`, `prestige_points`, `settings`, `close`, `auto_transition`, `stage_current`, `stage_open`, `stage_locked`, `skill_locked`, `skill_available`, `skill_purchased`
 
 Top HUD stat icons (`gold`, `click_damage`, `partner_dps`, `settings`) are displayed at **72×72 px**, centered inside an 80×80 px layout cell (4 px inset on all sides). Recommended source image size: 128×128 or 256×256. The Settings button retains an 80×80 px clickable area.
 

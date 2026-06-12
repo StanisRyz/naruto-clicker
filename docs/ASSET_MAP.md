@@ -1,5 +1,14 @@
 # Asset Map
 
+## Asset folder convention
+
+- Use flat PNG files for single-image assets (e.g. `ui/settings.png`, `ui/gold.png`).
+- Use folders only for multi-state, multi-file, or dynamically loaded asset groups (e.g. `ui/bottom_bar/tabs/upgrades/`, `abilities/autoclick/`, `backgrounds/zone_01/`).
+- Do not keep placeholder folders if the active asset is a flat PNG with the same purpose.
+- `.gitkeep` files are allowed in folders that will receive real PNG assets; remove them once real assets land.
+
+---
+
 ## Debug visual testing controls (debug builds only)
 
 These keys work only when `BuildConfig.IS_DEBUG_BUILD = true`. Nothing is saved after using them.
