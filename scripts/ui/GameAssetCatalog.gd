@@ -131,6 +131,7 @@ const ASSET_PATHS: Dictionary = {
 	# Popup action buttons
 	"ui.popup.button.default": "res://assets/images/ui/popups/buttons/default.png",
 	"ui.popup.button.danger": "res://assets/images/ui/popups/buttons/danger.png",
+	"ui.popup.button.pressed": "res://assets/images/ui/popups/buttons/pressed.png",
 }
 
 

@@ -13,10 +13,22 @@ signal closed
 func _ready() -> void:
 	ButtonVisualUtils.setup_image_button(close_button, "ui.sheet.close_button", Color.WHITE)
 	UiFontConfig.apply_label_font_size(header_resource_value_label, UiFontConfig.SHEET_RESOURCE_VALUE_FONT_SIZE)
-	close_button.pressed.connect(hide_sheet)
+	close_button.pressed.connect(_on_close_pressed)
 	shop_panel.product_purchase_requested.connect(_on_panel_product_purchase_requested)
 	buy_mode_selector.buy_mode_changed.connect(shop_panel.set_selected_buy_mode)
 	hide()
+
+
+func _on_close_pressed() -> void:
+	ButtonVisualUtils.flash_button_image_holder(
+		close_button.find_child("ButtonImageHolder", false, false),
+		"ui.sheet.close_button"
+	)
+	hide_sheet()
+
+
+func set_product_buy_button_modal_pressed(product_id: String, pressed: bool) -> void:
+	shop_panel.set_product_buy_button_modal_pressed(product_id, pressed)
 
 
 func show_sheet() -> void:

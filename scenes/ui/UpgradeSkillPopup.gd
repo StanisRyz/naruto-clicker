@@ -11,7 +11,7 @@ const POPUP_MARGIN: float = 8.0
 const BOTTOM_SAFE_MARGIN: float = 112.0
 
 const MARGIN_LEFT: int = 17
-const MARGIN_TOP: int = 15
+const MARGIN_TOP: int = 25
 const MARGIN_RIGHT: int = 17
 const CONTENT_WIDTH: int = 316
 
@@ -29,6 +29,7 @@ var current_owner_type: String = ""
 var current_anchor_global_position: Vector2 = Vector2.ZERO
 
 var _buy_button_label: Label = null
+var _buy_button_disabled_overlay: ColorRect = null
 
 
 func _ready() -> void:
@@ -36,6 +37,7 @@ func _ready() -> void:
 	buy_button.pressed.connect(_on_buy_button_pressed)
 	_add_background_image_holder(panel_container, "PopupBackgroundImageHolder", "ui.popup.skill.background")
 	_buy_button_label = _make_image_button_label(buy_button, "ui.popup.button.default", "")
+	_buy_button_disabled_overlay = _ensure_disabled_button_overlay(buy_button)
 	_apply_fixed_panel_size()
 	_apply_fixed_row_layout()
 	hide()
@@ -106,6 +108,7 @@ func _update_view(state: ClickerState) -> void:
 		_:
 			_buy_button_label.text = L.format_key("skill_popup.button.buy", {"cost": NumberFormatter.compact(cost)})
 			buy_button.disabled = not _can_buy_current_skill(state)
+	_update_buy_button_disabled_overlay()
 
 
 func _input(event: InputEvent) -> void:
@@ -138,10 +141,10 @@ func _apply_fixed_panel_size() -> void:
 func _apply_fixed_row_layout() -> void:
 	var header: HBoxContainer = $PanelContainer/ContentRoot/Header
 	_place_control(header, MARGIN_LEFT, MARGIN_TOP, CONTENT_WIDTH, 36)
-	_place_control(effect_label, MARGIN_LEFT, 57, CONTENT_WIDTH, 34)
-	_place_control(requirement_label, MARGIN_LEFT, 97, CONTENT_WIDTH, 34)
-	_place_control(current_state_label, MARGIN_LEFT, 137, CONTENT_WIDTH, 34)
-	_place_control(buy_button, 93, 177, 163, 56)
+	_place_control(effect_label, MARGIN_LEFT, 67, CONTENT_WIDTH, 34)
+	_place_control(requirement_label, MARGIN_LEFT, 107, CONTENT_WIDTH, 34)
+	_place_control(current_state_label, MARGIN_LEFT, 147, CONTENT_WIDTH, 34)
+	_place_control(buy_button, 93, 187, 163, 56)
 
 
 func _place_control(control: Control, x: int, y: int, w: int, h: int) -> void:
@@ -180,9 +183,36 @@ func _get_ability_display_name(ability_id: String) -> String:
 	return LocalizationManager.tr_key("ability.%s.name" % ability_id)
 
 
+func _ensure_disabled_button_overlay(button: Button) -> ColorRect:
+	var existing := button.find_child("DisabledOverlay", false, false)
+	if existing != null and existing is ColorRect:
+		return existing as ColorRect
+	var overlay := ColorRect.new()
+	overlay.name = "DisabledOverlay"
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	overlay.color = Color(0, 0, 0, 0.45)
+	overlay.visible = false
+	button.add_child(overlay)
+	var label := button.find_child("ButtonTextLabel", false, false)
+	if label != null:
+		button.move_child(label, button.get_child_count() - 1)
+	return overlay
+
+
+func _update_buy_button_disabled_overlay() -> void:
+	if _buy_button_disabled_overlay == null:
+		return
+	_buy_button_disabled_overlay.visible = buy_button.disabled
+
+
 func _on_buy_button_pressed() -> void:
 	if current_skill_id == "":
 		return
+	ButtonVisualUtils.flash_button_image_holder(
+		buy_button.find_child("ButtonImageHolder", false, false),
+		"ui.popup.button.default"
+	)
 	if current_owner_type == "hero":
 		hero_skill_purchase_requested.emit(current_skill_id)
 	else:

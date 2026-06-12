@@ -16,12 +16,24 @@ var current_state: ClickerState = null
 func _ready() -> void:
 	ButtonVisualUtils.setup_image_button(close_button, "ui.sheet.close_button", Color.WHITE)
 	UiFontConfig.apply_label_font_size(header_resource_value_label, UiFontConfig.SHEET_RESOURCE_VALUE_FONT_SIZE)
-	close_button.pressed.connect(hide_sheet)
+	close_button.pressed.connect(_on_close_pressed)
 	buy_mode_selector.buy_mode_changed.connect(_on_buy_mode_changed)
 	prestige_panel.set_buy_mode(buy_mode_selector.get_selected_mode())
 	prestige_panel.prestige_requested.connect(_on_panel_prestige_requested)
 	prestige_panel.prestige_talent_purchase_requested.connect(_on_panel_prestige_talent_purchase_requested)
 	hide()
+
+
+func _on_close_pressed() -> void:
+	ButtonVisualUtils.flash_button_image_holder(
+		close_button.find_child("ButtonImageHolder", false, false),
+		"ui.sheet.close_button"
+	)
+	hide_sheet()
+
+
+func set_prestige_button_modal_pressed(pressed: bool) -> void:
+	prestige_panel.set_prestige_button_modal_pressed(pressed)
 
 
 func show_sheet() -> void:

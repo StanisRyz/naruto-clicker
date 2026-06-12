@@ -59,9 +59,9 @@ mouse_filter = 2
 [node name="Header" type="HBoxContainer" parent="PanelContainer/ContentRoot"]
 layout_mode = 0
 offset_left = 17.0
-offset_top = 15.0
+offset_top = 25.0
 offset_right = 333.0
-offset_bottom = 51.0
+offset_bottom = 61.0
 theme_override_constants/separation = 8
 
 [node name="NameLabel" type="Label" parent="PanelContainer/ContentRoot/Header"]
@@ -73,9 +73,9 @@ text_overrun_behavior = 3
 [node name="EffectLabel" type="Label" parent="PanelContainer/ContentRoot"]
 layout_mode = 0
 offset_left = 17.0
-offset_top = 57.0
+offset_top = 67.0
 offset_right = 333.0
-offset_bottom = 91.0
+offset_bottom = 101.0
 text = ""
 autowrap_mode = 0
 text_overrun_behavior = 3
@@ -84,25 +84,25 @@ vertical_alignment = 1
 [node name="RequirementLabel" type="Label" parent="PanelContainer/ContentRoot"]
 layout_mode = 0
 offset_left = 17.0
-offset_top = 97.0
+offset_top = 107.0
 offset_right = 333.0
-offset_bottom = 131.0
+offset_bottom = 141.0
 text = ""
 text_overrun_behavior = 3
 
 [node name="CurrentStateLabel" type="Label" parent="PanelContainer/ContentRoot"]
 layout_mode = 0
 offset_left = 17.0
-offset_top = 137.0
+offset_top = 147.0
 offset_right = 333.0
-offset_bottom = 171.0
+offset_bottom = 181.0
 text = ""
 text_overrun_behavior = 3
 
 [node name="BuyButton" type="Button" parent="PanelContainer/ContentRoot"]
 layout_mode = 0
 offset_left = 93.0
-offset_top = 177.0
+offset_top = 187.0
 offset_right = 256.0
-offset_bottom = 233.0
+offset_bottom = 243.0
 text = "Buy: 0"

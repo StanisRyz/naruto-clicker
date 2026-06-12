@@ -10,6 +10,9 @@ var _pending_product_id: String = ""
 var _pending_mode: String = ""
 var _confirm_label: Label = null
 var _cancel_label: Label = null
+var _action_pending: bool = false
+var _confirm_holder = null
+var _cancel_holder = null
 
 @onready var _title_label: Label = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/TitleLabel
 @onready var _product_name_label: Label = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ProductNameLabel
@@ -24,12 +27,21 @@ func _ready() -> void:
 	_add_background_image_holder(inner_panel, "ShopPurchaseConfirmBackgroundImageHolder", "ui.popup.shop_confirm.background")
 	_confirm_label = _make_image_button_label(_confirm_button, "ui.popup.button.default", LocalizationManager.tr_key("shop.confirm.confirm"))
 	_cancel_label = _make_image_button_label(_cancel_button, "ui.popup.button.default", LocalizationManager.tr_key("shop.confirm.cancel"))
+	_confirm_holder = _confirm_button.find_child("ButtonImageHolder", false, false)
+	_cancel_holder = _cancel_button.find_child("ButtonImageHolder", false, false)
 	hide()
+
+
+func _reset_button_visuals() -> void:
+	ButtonVisualUtils.set_button_pressed_visual(_confirm_holder, false, "ui.popup.button.default")
+	ButtonVisualUtils.set_button_pressed_visual(_cancel_holder, false, "ui.popup.button.default")
 
 
 func show_dialog(product_id: String, mode: String, product_name: String) -> void:
 	_pending_product_id = product_id
 	_pending_mode = mode
+	_action_pending = false
+	_reset_button_visuals()
 	_title_label.text = LocalizationManager.tr_key("shop.confirm.title")
 	_product_name_label.text = product_name
 	if _confirm_label:
@@ -41,15 +53,31 @@ func show_dialog(product_id: String, mode: String, product_name: String) -> void
 
 
 func hide_dialog() -> void:
+	_reset_button_visuals()
+	_action_pending = false
 	hide()
 
 
 func _on_confirm_pressed() -> void:
+	if _action_pending:
+		return
+	_action_pending = true
+	ButtonVisualUtils.set_button_pressed_visual(_confirm_holder, true, "ui.popup.button.default")
+	await _confirm_button.get_tree().create_timer(0.2).timeout
+	_reset_button_visuals()
+	_action_pending = false
 	hide()
 	confirmed.emit(_pending_product_id, _pending_mode)
 
 
 func _on_cancel_pressed() -> void:
+	if _action_pending:
+		return
+	_action_pending = true
+	ButtonVisualUtils.set_button_pressed_visual(_cancel_holder, true, "ui.popup.button.default")
+	await _cancel_button.get_tree().create_timer(0.2).timeout
+	_reset_button_visuals()
+	_action_pending = false
 	hide()
 	cancelled.emit()
 

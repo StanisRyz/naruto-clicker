@@ -11,9 +11,9 @@ const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 
 @onready var overlay: ColorRect = $Overlay
 @onready var panel_container: PanelContainer = $PanelContainer
-@onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
-@onready var sound_button: Button = $PanelContainer/MarginContainer/VBoxContainer/SoundRow/SoundToggleButton
-@onready var music_button: Button = $PanelContainer/MarginContainer/VBoxContainer/MusicRow/MusicToggleButton
+@onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/HeaderMargin/Header/CloseButton
+@onready var sound_button: Button = $PanelContainer/MarginContainer/VBoxContainer/SoundMargin/SoundRow/SoundToggleButton
+@onready var music_button: Button = $PanelContainer/MarginContainer/VBoxContainer/MusicMargin/MusicRow/MusicToggleButton
 @onready var save_button: Button = $PanelContainer/MarginContainer/VBoxContainer/SaveButton
 @onready var reset_button: Button = $PanelContainer/MarginContainer/VBoxContainer/ResetButton
 @onready var status_label: Label = $PanelContainer/MarginContainer/VBoxContainer/StatusLabel
@@ -27,9 +27,12 @@ const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 var sound_enabled: bool = true
 var music_enabled: bool = true
 var _language_button: Button = null
+var _language_button_label: Label = null
 
 var _sound_button_label: Label = null
 var _music_button_label: Label = null
+
+var _reset_action_pending: bool = false
 
 
 func _ready() -> void:
@@ -37,12 +40,12 @@ func _ready() -> void:
 	panel_container.gui_input.connect(_on_panel_container_gui_input)
 	reset_confirm_overlay.gui_input.connect(_on_reset_confirm_overlay_gui_input)
 	reset_dialog_panel.gui_input.connect(_on_panel_container_gui_input)
-	close_button.pressed.connect(hide_window)
+	close_button.pressed.connect(_on_close_button_pressed)
 	sound_button.pressed.connect(_on_sound_button_pressed)
 	music_button.pressed.connect(_on_music_button_pressed)
 	save_button.pressed.connect(_on_save_button_pressed)
 	reset_button.pressed.connect(_on_reset_button_pressed)
-	reset_cancel_button.pressed.connect(_hide_reset_confirm)
+	reset_cancel_button.pressed.connect(_on_reset_cancel_pressed)
 	reset_confirm_button.pressed.connect(_on_reset_confirm_button_pressed)
 	version_label.text = "Version %s%s" % [BuildConfig.APP_VERSION, "-dev" if BuildConfig.IS_DEBUG_BUILD else ""]
 	_create_language_row()
@@ -70,12 +73,21 @@ func _create_language_row() -> void:
 	lang_row.add_child(lang_label)
 
 	_language_button = Button.new()
+	_language_button.custom_minimum_size = Vector2(175, 60)
+	_language_button.size_flags_horizontal = Control.SIZE_SHRINK_END
 	_language_button.pressed.connect(_on_language_button_pressed)
 	lang_row.add_child(_language_button)
 
-	vbox.add_child(lang_row)
-	vbox.move_child(lang_row, save_button.get_index())
+	var lang_margin := MarginContainer.new()
+	lang_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lang_margin.add_theme_constant_override("margin_left", 15)
+	lang_margin.add_theme_constant_override("margin_right", 15)
+	lang_margin.add_child(lang_row)
 
+	vbox.add_child(lang_margin)
+	vbox.move_child(lang_margin, save_button.get_index())
+
+	_language_button_label = _make_image_button_label(_language_button, "ui.popup.button.default", "")
 	_update_language_button()
 
 
@@ -103,7 +115,11 @@ func _update_language_button() -> void:
 	if _language_button == null:
 		return
 	var lang_code: String = LocalizationManager.get_language()
-	_language_button.text = LocalizationManager.tr_key("settings.language." + lang_code)
+	var text: String = LocalizationManager.tr_key("settings.language." + lang_code)
+	if _language_button_label != null:
+		_language_button_label.text = text
+	else:
+		_language_button.text = text
 
 
 func show_window(state: ClickerState) -> void:
@@ -132,7 +148,19 @@ func show_status(text: String) -> void:
 	status_label.text = text
 
 
+func _on_close_button_pressed() -> void:
+	ButtonVisualUtils.flash_button_image_holder(
+		close_button.find_child("ButtonImageHolder", false, false),
+		"ui.sheet.close_button"
+	)
+	hide_window()
+
+
 func _on_sound_button_pressed() -> void:
+	ButtonVisualUtils.flash_button_image_holder(
+		sound_button.find_child("ButtonImageHolder", false, false),
+		"ui.popup.button.default"
+	)
 	sound_enabled = not sound_enabled
 	if _sound_button_label != null:
 		_sound_button_label.text = LocalizationManager.tr_key("ui.common.on") if sound_enabled else LocalizationManager.tr_key("ui.common.off")
@@ -141,6 +169,10 @@ func _on_sound_button_pressed() -> void:
 
 
 func _on_music_button_pressed() -> void:
+	ButtonVisualUtils.flash_button_image_holder(
+		music_button.find_child("ButtonImageHolder", false, false),
+		"ui.popup.button.default"
+	)
 	music_enabled = not music_enabled
 	if _music_button_label != null:
 		_music_button_label.text = LocalizationManager.tr_key("ui.common.on") if music_enabled else LocalizationManager.tr_key("ui.common.off")
@@ -149,29 +181,61 @@ func _on_music_button_pressed() -> void:
 
 
 func _on_save_button_pressed() -> void:
+	ButtonVisualUtils.flash_button_image_holder(
+		save_button.find_child("ButtonImageHolder", false, false),
+		"ui.popup.button.default"
+	)
 	save_requested.emit()
 
 
 func _on_reset_button_pressed() -> void:
+	ButtonVisualUtils.flash_button_image_holder(
+		reset_button.find_child("ButtonImageHolder", false, false),
+		"ui.popup.button.danger"
+	)
 	reset_confirm_dialog.show()
+
+
+func _on_language_button_pressed() -> void:
+	ButtonVisualUtils.flash_button_image_holder(
+		_language_button.find_child("ButtonImageHolder", false, false),
+		"ui.popup.button.default"
+	)
+	var current: String = LocalizationManager.get_language()
+	var langs: Array[String] = LocalizationManager.get_available_languages()
+	var idx: int = langs.find(current)
+	var next_idx: int = (idx + 1) % langs.size()
+	LocalizationManager.set_language(langs[next_idx])
 
 
 func _hide_reset_confirm() -> void:
 	reset_confirm_dialog.hide()
 
 
+func _on_reset_cancel_pressed() -> void:
+	if _reset_action_pending:
+		return
+	_reset_action_pending = true
+	var holder = reset_cancel_button.find_child("ButtonImageHolder", false, false)
+	ButtonVisualUtils.set_button_pressed_visual(holder, true, "ui.popup.button.default")
+	await reset_cancel_button.get_tree().create_timer(0.2).timeout
+	_reset_action_pending = false
+	if is_instance_valid(holder):
+		ButtonVisualUtils.set_button_pressed_visual(holder, false, "ui.popup.button.default")
+	_hide_reset_confirm()
+
+
 func _on_reset_confirm_button_pressed() -> void:
+	if _reset_action_pending:
+		return
+	_reset_action_pending = true
+	var holder = reset_confirm_button.find_child("ButtonImageHolder", false, false)
+	ButtonVisualUtils.set_button_pressed_visual(holder, true, "ui.popup.button.danger")
+	await reset_confirm_button.get_tree().create_timer(0.2).timeout
+	_reset_action_pending = false
 	reset_confirm_dialog.hide()
 	reset_confirmed.emit()
 	reset_requested.emit()
-
-
-func _on_language_button_pressed() -> void:
-	var current: String = LocalizationManager.get_language()
-	var langs: Array[String] = LocalizationManager.get_available_languages()
-	var idx: int = langs.find(current)
-	var next_idx: int = (idx + 1) % langs.size()
-	LocalizationManager.set_language(langs[next_idx])
 
 
 func _on_overlay_gui_input(event: InputEvent) -> void:

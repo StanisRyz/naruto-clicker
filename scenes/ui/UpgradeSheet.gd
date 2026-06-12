@@ -19,7 +19,7 @@ var current_state: ClickerState = null
 func _ready() -> void:
 	ButtonVisualUtils.setup_image_button(close_button, "ui.sheet.close_button", Color.WHITE)
 	UiFontConfig.apply_label_font_size(header_resource_value_label, UiFontConfig.SHEET_RESOURCE_VALUE_FONT_SIZE)
-	close_button.pressed.connect(hide_sheet)
+	close_button.pressed.connect(_on_close_pressed)
 	buy_mode_selector.buy_mode_changed.connect(_on_buy_mode_changed)
 	upgrade_panel.set_buy_mode(buy_mode_selector.get_selected_mode())
 	upgrade_panel.character_level_upgrade_requested.connect(_on_character_level_upgrade_requested)
@@ -29,6 +29,14 @@ func _ready() -> void:
 	upgrade_skill_popup.hero_skill_purchase_requested.connect(_on_hero_skill_purchase_requested)
 	upgrade_skill_popup.ability_skill_purchase_requested.connect(_on_ability_skill_purchase_requested)
 	hide()
+
+
+func _on_close_pressed() -> void:
+	ButtonVisualUtils.flash_button_image_holder(
+		close_button.find_child("ButtonImageHolder", false, false),
+		"ui.sheet.close_button"
+	)
+	hide_sheet()
 
 
 func show_sheet() -> void:

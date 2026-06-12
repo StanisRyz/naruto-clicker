@@ -162,12 +162,21 @@ Missing files fall back to the default game asset catalog placeholder (no crash)
 | Asset key | Path | Recommended size |
 |-----------|------|-----------------|
 | `task.window.background` | `assets/images/tasks/window/background.png` | 620×670 px |
-| `task.window.close` | `assets/images/tasks/window/close.png` | 72×72 px |
-| `task.window.claim_button` | `assets/images/tasks/window/claim_button.png` | 120×80 px |
+| `task.window.close` | `assets/images/tasks/window/close.png` | 56×56 px |
 
 - `task.window.background`: missing → white 620×670 fallback. Present → texture shown, fallback hidden.
-- `task.window.close`: missing → white 72×72 fallback. Present → texture shown, fallback hidden. No text drawn over close button.
-- `task.window.claim_button`: missing → white 120×80 fallback. Present → texture shown, fallback hidden. Button text (Claim / In Progress / Claimed) drawn above texture by `ButtonTextLabel`. Disabled state dims image and label.
+- `task.window.close`: missing → white 56×56 fallback. Present → texture shown, fallback hidden. No text drawn over close button. Positioned as an overlay on `PanelContainer` with 15 px gap from top and right edges (offset_left=−71, offset_top=15, offset_right=−15, offset_bottom=71).
+
+Task claim buttons now use the shared popup button textures (35:12 ratio, 140×48 px UI size):
+
+| State | Asset key | Path |
+|-------|-----------|------|
+| Normal / in-progress (disabled dark) | `ui.popup.button.default` | `assets/images/ui/popups/buttons/default.png` |
+| Pressed flash (0.2 s) | `ui.popup.button.pressed` | `assets/images/ui/popups/buttons/pressed.png` |
+
+Button text (Claim / In Progress / Claimed) is drawn above the texture by `ButtonTextLabel`. Disabled state dims image modulate to `Color(0.65, 0.65, 0.65)` and label to `Color(0.45, 0.45, 0.45)`.
+
+> **Obsolete:** `task.window.claim_button` (`assets/images/tasks/window/claim_button.png`, was 120×80 px) is no longer used by TasksWindow. Keep the file until all validators confirm it is unreferenced.
 
 Validation: `godot --headless --script res://scripts/tools/ValidateTaskAssets.gd`
 
@@ -208,7 +217,7 @@ Path: `assets/images/tasks/task_card.png`
 |---|---|
 | `task.card.background` | `res://assets/images/tasks/task_card.png` |
 
-Recommended size: **580×100 px**. Missing → white fallback. Present → texture shown, fallback hidden. Used by all 5 task cards via `ImageSlot` as the first (bottom-most) child of each task row.
+Recommended size: **493×100 px** (visual card width 493, height 100). Missing → white fallback. Present → texture shown, fallback hidden. Used by all task cards via `ImageSlot` as the first (bottom-most) child of each task row. Cards are centered inside the 580 px content area via a `CenterContainer` wrapper.
 
 ### Task card icons
 
@@ -406,6 +415,7 @@ Close buttons reuse the existing sheet close button: `ui.sheet.close_button` / `
 |-----------|------|-----------|-------------|-------------|---------|
 | `ui.popup.button.default` | `assets/images/ui/popups/buttons/default.png` | 210×72 px | 35:12 | Copied from `assets/images/ui/cards/button/default.png` | Buy, Save, Cancel, Yes/No buttons |
 | `ui.popup.button.danger` | `assets/images/ui/popups/buttons/danger.png` | 210×72 px | 35:12 | Same ratio as default | Reset and destructive action buttons |
+| `ui.popup.button.pressed` | `assets/images/ui/popups/buttons/pressed.png` | 210×72 px | 35:12 | Copied from `assets/images/ui/cards/button/active.png` | Pressed state flash (0.2 s) for all popup buttons; set via `ButtonVisualUtils.flash_button_image_holder` / `set_button_pressed_visual` |
 
 **Shared button aspect ratio rule:** All popup action buttons (default and danger) must keep a **35:12** ratio (same as card buy buttons) so textures are never stretched or distorted. Do not scale either texture to arbitrary widths. If using a ×2 source: `420×144 px`, aspect ratio 35:12.
 

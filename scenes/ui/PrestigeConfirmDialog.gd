@@ -15,6 +15,10 @@ const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 @onready var yes_button: Button = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ButtonRow/YesButton
 @onready var no_button: Button = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ButtonRow/NoButton
 
+var _action_pending: bool = false
+var _yes_holder = null
+var _no_holder = null
+
 
 func _ready() -> void:
 	yes_button.pressed.connect(_on_yes_pressed)
@@ -23,10 +27,19 @@ func _ready() -> void:
 	_add_background_image_holder(inner_panel, "PrestigeDialogInnerBackgroundImageHolder", "ui.dialog.prestige.inner_background")
 	_make_image_button_label(yes_button, "ui.popup.button.default", LocalizationManager.tr_key("prestige.confirm.yes"))
 	_make_image_button_label(no_button, "ui.popup.button.default", LocalizationManager.tr_key("prestige.confirm.no"))
+	_yes_holder = yes_button.find_child("ButtonImageHolder", false, false)
+	_no_holder = no_button.find_child("ButtonImageHolder", false, false)
 	hide()
 
 
+func _reset_button_visuals() -> void:
+	ButtonVisualUtils.set_button_pressed_visual(_yes_holder, false, "ui.popup.button.default")
+	ButtonVisualUtils.set_button_pressed_visual(_no_holder, false, "ui.popup.button.default")
+
+
 func show_dialog(state: ClickerState) -> void:
+	_action_pending = false
+	_reset_button_visuals()
 	var reward: int = state.get_prestige_reward()
 	var L := LocalizationManager
 	_title_label.text = L.tr_key("prestige.confirm.title")
@@ -40,11 +53,25 @@ func show_dialog(state: ClickerState) -> void:
 
 
 func _on_yes_pressed() -> void:
+	if _action_pending:
+		return
+	_action_pending = true
+	ButtonVisualUtils.set_button_pressed_visual(_yes_holder, true, "ui.popup.button.default")
+	await yes_button.get_tree().create_timer(0.2).timeout
+	_reset_button_visuals()
+	_action_pending = false
 	hide()
 	confirmed.emit()
 
 
 func _on_no_pressed() -> void:
+	if _action_pending:
+		return
+	_action_pending = true
+	ButtonVisualUtils.set_button_pressed_visual(_no_holder, true, "ui.popup.button.default")
+	await no_button.get_tree().create_timer(0.2).timeout
+	_reset_button_visuals()
+	_action_pending = false
 	hide()
 	cancelled.emit()
 

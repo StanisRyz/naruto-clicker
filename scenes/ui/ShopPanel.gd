@@ -263,6 +263,16 @@ func _update_product_row(product_data: Dictionary, row: Dictionary) -> void:
 	button_label.modulate = Color.WHITE if can_buy else Color(0.45, 0.45, 0.45, 1.0)
 
 
+func set_product_buy_button_modal_pressed(product_id: String, pressed: bool) -> void:
+	if not product_rows.has(product_id):
+		return
+	var row: Dictionary = product_rows[product_id]
+	if not row.has("button_image_holder"):
+		return
+	var key: String = CARD_BUTTON_ACTIVE_ASSET_KEY if pressed else CARD_BUTTON_DEFAULT_ASSET_KEY
+	row["button_image_holder"].set_asset_key(key, CARD_BUTTON_FALLBACK_COLOR)
+
+
 func play_product_purchase_feedback(product_id: String) -> void:
 	if not product_rows.has(product_id):
 		return

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://l0jiiv54t6ib"
-path="res://.godot/imported/claim_button.png-7b202e62cdec4f44844779c5dbd86eff.ctex"
+uid="uid://uwy576qbucys"
+path="res://.godot/imported/pressed.png-972c28aa05d737d805b46037e5eb9026.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/tasks/window/claim_button.png"
-dest_files=["res://.godot/imported/claim_button.png-7b202e62cdec4f44844779c5dbd86eff.ctex"]
+source_file="res://assets/images/ui/popups/buttons/pressed.png"
+dest_files=["res://.godot/imported/pressed.png-972c28aa05d737d805b46037e5eb9026.ctex"]
 
 [params]
 

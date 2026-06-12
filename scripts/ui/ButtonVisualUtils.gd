@@ -112,6 +112,36 @@ static func release_button_focus(button: Button) -> void:
 		button.release_focus()
 
 
+static func flash_button_image_holder(
+		image_holder,
+		normal_asset_key: String,
+		pressed_asset_key: String = "ui.popup.button.pressed",
+		duration_sec: float = 0.2) -> void:
+	if image_holder == null:
+		return
+	image_holder.set_asset_key(pressed_asset_key, Color.WHITE)
+	await image_holder.get_tree().create_timer(duration_sec).timeout
+	if is_instance_valid(image_holder):
+		image_holder.set_asset_key(normal_asset_key, Color.WHITE)
+
+
+static func set_button_pressed_visual(image_holder, pressed: bool, normal_asset_key: String) -> void:
+	if image_holder == null:
+		return
+	var key: String = "ui.popup.button.pressed" if pressed else normal_asset_key
+	image_holder.set_asset_key(key, Color.WHITE)
+
+
+static func set_image_button_asset(button: Button, asset_key: String, fallback_color: Color = Color.WHITE) -> void:
+	if button == null:
+		return
+	var holder = button.find_child("ButtonImageHolder", false, false)
+	if holder == null:
+		return
+	if holder.has_method("set_asset_key"):
+		holder.set_asset_key(asset_key, fallback_color)
+
+
 static func disable_focus_artifacts_in_tree(root: Node) -> void:
 	if root == null:
 		return

@@ -96,6 +96,14 @@ func _create_image_card_button(button_name: String) -> Dictionary:
 	}
 
 
+func set_prestige_button_modal_pressed(pressed: bool) -> void:
+	if not prestige_action_row.has("button_image_holder"):
+		return
+	var holder = prestige_action_row["button_image_holder"]
+	var key: String = CARD_BUTTON_ACTIVE_ASSET_KEY if pressed else CARD_BUTTON_DEFAULT_ASSET_KEY
+	holder.set_asset_key(key, CARD_BUTTON_FALLBACK_COLOR)
+
+
 func play_card_button_active_feedback(row: Dictionary) -> void:
 	if not row.has("button_image_holder"):
 		return

@@ -41,6 +41,7 @@ const _AUTOSAVE_INTERVAL: float = 10.0
 var balance_logger: BalancePlaytestLogger = null
 var _is_initialized: bool = false
 var _debug_visual_test_previous_gems: int = 0
+var _pending_shop_product_id: String = ""
 
 @onready var top_interface_image_holder = $TopInterfaceImageHolder
 @onready var combat_effects_layer: CombatEffectsLayer = $CombatEffectsLayer
@@ -438,6 +439,7 @@ func _on_shop_button_pressed() -> void:
 
 
 func _on_prestige_requested() -> void:
+	prestige_sheet.set_prestige_button_modal_pressed(true)
 	prestige_confirm_dialog.show_dialog(state)
 
 
@@ -454,6 +456,8 @@ func _on_prestige_talent_purchase_requested(talent_index: int, mode: String) -> 
 
 
 func _on_shop_product_purchase_requested(product_id: String, mode: String) -> void:
+	_pending_shop_product_id = product_id
+	shop_sheet.set_product_buy_button_modal_pressed(product_id, true)
 	var product_name: String = _get_shop_product_display_name(product_id)
 	shop_purchase_confirm_dialog.show_dialog(product_id, mode, product_name)
 
@@ -480,14 +484,18 @@ func _execute_shop_product_purchase(product_id: String, mode: String) -> void:
 
 
 func _on_shop_purchase_confirmed(product_id: String, mode: String) -> void:
+	shop_sheet.set_product_buy_button_modal_pressed(_pending_shop_product_id, false)
+	_pending_shop_product_id = ""
 	_execute_shop_product_purchase(product_id, mode)
 
 
 func _on_shop_purchase_cancelled() -> void:
-	pass
+	shop_sheet.set_product_buy_button_modal_pressed(_pending_shop_product_id, false)
+	_pending_shop_product_id = ""
 
 
 func _on_prestige_confirmed() -> void:
+	prestige_sheet.set_prestige_button_modal_pressed(false)
 	var result: Dictionary = state.perform_prestige()
 	enemy_transition_locked = false
 	enemy_transition_token += 1
@@ -515,6 +523,7 @@ func _on_prestige_confirmed() -> void:
 
 
 func _on_prestige_cancelled() -> void:
+	prestige_sheet.set_prestige_button_modal_pressed(false)
 	prestige_confirm_dialog.hide()
 
 

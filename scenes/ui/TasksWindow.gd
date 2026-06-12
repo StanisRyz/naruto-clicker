@@ -11,21 +11,23 @@ const TASK_CARD_TEXT_ROWS: int = 3
 const TASK_CARD_IMAGE_SIZE: Vector2 = Vector2(80, 80)
 const TASK_CARD_INNER_HEIGHT: int = 80
 const TASK_CARD_OUTER_HEIGHT: int = 100
-const TASK_CLAIM_BUTTON_SLOT_SIZE: Vector2 = Vector2(120, 100)
-const TASK_CLAIM_BUTTON_SIZE: Vector2 = Vector2(120, 80)
+const TASK_CARD_WIDTH: int = 493
+const TASK_CLAIM_BUTTON_SLOT_SIZE: Vector2 = Vector2(140, 100)
+const TASK_CLAIM_BUTTON_SIZE: Vector2 = Vector2(140, 48)
 const TASK_CARD_BACKGROUND_ASSET_KEY: String = "task.card.background"
 const TASK_CARD_BACKGROUND_FALLBACK_COLOR: Color = Color.WHITE
-const TASK_CLAIM_BUTTON_ASSET_KEY: String = "task.window.claim_button"
+const TASK_CLAIM_BUTTON_ASSET_KEY: String = "ui.popup.button.default"
+const TASK_CLAIM_BUTTON_PRESSED_ASSET_KEY: String = "ui.popup.button.pressed"
 const TASK_CLAIM_BUTTON_FALLBACK_COLOR: Color = Color.WHITE
 const TASK_WINDOW_BACKGROUND_ASSET_KEY: String = "task.window.background"
 const TASK_WINDOW_CLOSE_ASSET_KEY: String = "task.window.close"
 const TASK_WINDOW_FALLBACK_COLOR: Color = Color.WHITE
-const TASK_WINDOW_CLOSE_BUTTON_SIZE: Vector2 = Vector2(72, 72)
+const TASK_WINDOW_CLOSE_BUTTON_SIZE: Vector2 = Vector2(56, 56)
 
 @onready var outside_click_area: Control = $OutsideClickArea
 @onready var panel_container: Control = $PanelContainer
 @onready var window_background: Control = $PanelContainer/TaskWindowBackgroundImageHolder
-@onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
+@onready var close_button: Button = $PanelContainer/CloseButton
 @onready var tasks_container: VBoxContainer = $PanelContainer/MarginContainer/VBoxContainer/ScrollContainer/TasksContainer
 
 var pending_state: ClickerState = null
@@ -162,9 +164,15 @@ func _get_task_title(task_data: Dictionary) -> String:
 
 
 func _create_task_row(task_data: Dictionary) -> Control:
+	var wrapper := CenterContainer.new()
+	wrapper.custom_minimum_size = Vector2(0, TASK_CARD_OUTER_HEIGHT)
+	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	wrapper.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	wrapper.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
 	var row := Control.new()
-	row.custom_minimum_size = Vector2(0, TASK_CARD_OUTER_HEIGHT)
-	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.custom_minimum_size = Vector2(TASK_CARD_WIDTH, TASK_CARD_OUTER_HEIGHT)
+	row.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	row.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	row.clip_contents = true
 	row.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -264,10 +272,13 @@ func _create_task_row(task_data: Dictionary) -> Control:
 
 	claim_button.pressed.connect(func() -> void:
 		claim_button.disabled = true
+		claim_button_image_holder.set_asset_key(TASK_CLAIM_BUTTON_PRESSED_ASSET_KEY, TASK_CLAIM_BUTTON_FALLBACK_COLOR)
+		task_claim_requested.emit(task_id)
+		await claim_button.get_tree().create_timer(0.2).timeout
+		claim_button_image_holder.set_asset_key(TASK_CLAIM_BUTTON_ASSET_KEY, TASK_CLAIM_BUTTON_FALLBACK_COLOR)
 		claim_button_label.text = LocalizationManager.tr_key("task.claimed")
 		claim_button_image_holder.modulate = Color(0.65, 0.65, 0.65, 1.0)
 		claim_button_label.modulate = Color(0.45, 0.45, 0.45, 1.0)
-		task_claim_requested.emit(task_id)
 	)
 	content.add_child(_create_claim_button_slot(claim_button))
 
@@ -282,7 +293,8 @@ func _create_task_row(task_data: Dictionary) -> Control:
 		"completed": completed,
 	}
 
-	return row
+	wrapper.add_child(row)
+	return wrapper
 
 
 func _create_claim_button_slot(button: Button) -> Control:
@@ -294,12 +306,12 @@ func _create_claim_button_slot(button: Button) -> Control:
 	button.custom_minimum_size = TASK_CLAIM_BUTTON_SIZE
 	button.anchor_left = 0.0
 	button.anchor_top = 0.0
-	button.anchor_right = 1.0
+	button.anchor_right = 0.0
 	button.anchor_bottom = 0.0
 	button.offset_left = 0.0
-	button.offset_top = 10.0
-	button.offset_right = 0.0
-	button.offset_bottom = 90.0
+	button.offset_top = 26.0
+	button.offset_right = 140.0
+	button.offset_bottom = 74.0
 
 	slot.add_child(button)
 	return slot
@@ -347,6 +359,7 @@ func _set_claim_button_state(row_data: Dictionary, enabled: bool, text_value: St
 
 	button.disabled = not enabled
 	label.text = text_value
+	image_holder.set_asset_key(TASK_CLAIM_BUTTON_ASSET_KEY, TASK_CLAIM_BUTTON_FALLBACK_COLOR)
 	image_holder.modulate = Color.WHITE if enabled else Color(0.65, 0.65, 0.65, 1.0)
 	label.modulate = Color.WHITE if enabled else Color(0.45, 0.45, 0.45, 1.0)
 
