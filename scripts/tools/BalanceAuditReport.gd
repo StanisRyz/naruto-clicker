@@ -1,7 +1,7 @@
 extends SceneTree
 
 # Balance audit tool — headless probe of economy curves.
-# Reads BalanceConfig, calculators, and config files only.
+# Reads BalanceConfig, calculators, config files, and simulates ClickerState.
 # No save files read or written. No gameplay values changed.
 #
 # Run: godot --headless --script res://scripts/tools/BalanceAuditReport.gd
@@ -12,10 +12,18 @@ const _CC = preload("res://scripts/game/calculators/CostCalculator.gd")
 const _EC = preload("res://scripts/game/calculators/EnemyScalingCalculator.gd")
 const _ZC = preload("res://scripts/game/config/ZoneConfig.gd")
 const _PC = preload("res://scripts/game/config/PartnerConfig.gd")
+const _CS = preload("res://scripts/game/ClickerState.gd")
 
 const CLICKS_PER_SEC: float = 4.0
 # Partners 14–28 (index 13+) are marked placeholder in BalanceConfig.
 const PLACEHOLDER_PARTNER_START_IDX: int = 13
+
+# --- Simulation constants ---
+const SIM_MAX_SECONDS: float = 7200.0
+const SIM_MAX_LEVEL: int = 150
+const SIM_CLICKS_PER_SEC: float = 4.0
+const SIM_PURCHASE_INTERVAL_SEC: float = 1.0
+const SIM_REPORT_LEVELS: Array = [1, 5, 10, 15, 20, 25, 30, 40, 50, 75, 100, 150]
 
 var _warnings: Array[String] = []
 var _csv_rows: Array[Dictionary] = []
@@ -36,6 +44,7 @@ func _init() -> void:
 	_section_partner()
 	_section_combat()
 	_section_prestige()
+	_section_progression_simulation()
 	_section_warnings()
 	_write_csv()
 
@@ -354,11 +363,312 @@ func _section_prestige() -> void:
 
 
 # ==========================================================================
-#  SECTION 6 — Warnings Summary
+#  SECTION 6 — Progression Simulation
+# ==========================================================================
+#
+#  Assumptions:
+#    - Fresh ClickerState, no save loaded, no save written.
+#    - Manual clicking at SIM_CLICKS_PER_SEC (4) clicks/sec, continuous.
+#    - Partner DPS is continuous (tick-based DPS folded into total DPS).
+#    - Elites disabled (elite_spawn_chance=0) for deterministic output.
+#    - Autoclick/abilities ignored (not purchased).
+#    - Shop/gems ignored.
+#    - Prestige talents ignored (no prestige loop).
+#    - Auto-stage-advance ON (player advances immediately after clearing each level).
+#    - Greedy balanced purchase strategy: best DPS-per-gold between hero and partners;
+#      buildings bought opportunistically when cheap relative to gold held.
+#    - Bosses must die within BalanceConfig.BOSS_TIME_LIMIT or simulation stops.
+
+func _section_progression_simulation() -> void:
+	_header("SECTION 6 — Progression Simulation  (balanced greedy, no elites/abilities)")
+	_ln("  Assumptions: 4 clicks/sec, partner DPS continuous, no elites, no abilities,")
+	_ln("  no shop, no prestige talents. Purchases every %.0fs sim-time." % SIM_PURCHASE_INTERVAL_SEC)
+	_ln("")
+	_ln(_row([
+		_rj("Time",   8), _rj("Lvl",  5), _rj("Hero",    6),
+		_rj("Gold",   9), _rj("ClickDmg", 10), _rj("PartDPS", 10),
+		_rj("TotDPS", 10), _rj("HP",  10), _rj("Reward",  8),
+		_rj("TTK",    7), "Note",
+	]))
+	_div("-", 113)
+
+	# --- State setup ---
+	var state: _CS = _CS.new()
+	state.elite_spawn_chance = 0.0
+
+	# --- Tracking variables ---
+	var sim_time: float = 0.0
+	var last_purchase_time: float = -SIM_PURCHASE_INTERVAL_SEC
+	var total_hero_buys: int = 0
+	var total_partner_buys: int = 0
+	var total_building_buys: int = 0
+	var last_purchase_cost: int = 0
+
+	var level_times: Dictionary = {}
+	var reported_set: Dictionary = {}
+
+	var boss_wall_level: int = -1
+	var boss_wall_dps_needed: float = 0.0
+	var boss_wall_dps_actual: float = 0.0
+
+	var first_prestige_time: float = -1.0
+	var first_prestige_reward: int = 0
+	var hero_level_at_prestige: int = 0
+	var partner_dps_at_prestige: int = 0
+
+	var reached_level: int = 1
+
+	# One-shot warning flags
+	var warned_ttk_early: bool = false
+	var warned_ttk_mid: bool = false
+	var warned_ttk_late: bool = false
+	var warned_no_partner: bool = false
+	var warned_hero_dom: bool = false
+	var warned_partner_early: bool = false
+
+	# --- Main simulation loop ---
+	while sim_time < SIM_MAX_SECONDS and state.current_level <= SIM_MAX_LEVEL:
+		var lv: int = state.current_level
+		reached_level = lv
+
+		if not level_times.has(lv):
+			level_times[lv] = sim_time
+
+		# Purchase tick
+		if sim_time - last_purchase_time >= SIM_PURCHASE_INTERVAL_SEC:
+			last_purchase_time = sim_time
+			var pr: Dictionary = _sim_do_purchases(state)
+			total_hero_buys    += int(pr.hero_buys)
+			total_partner_buys += int(pr.partner_buys)
+			total_building_buys += int(pr.building_buys)
+			if int(pr.last_cost) > 0:
+				last_purchase_cost = int(pr.last_cost)
+
+		# Prestige check (first occurrence only)
+		if first_prestige_time < 0.0 and state.can_prestige():
+			first_prestige_time   = sim_time
+			first_prestige_reward = state.get_prestige_reward()
+			hero_level_at_prestige  = state.character_level
+			partner_dps_at_prestige = state.get_final_partner_dps(false)
+
+		# Compute combat stats for this enemy
+		var manual_dps:  float = float(state.get_current_click_damage()) * SIM_CLICKS_PER_SEC
+		var partner_dps: float = float(state.get_final_partner_dps(true))
+		var total_dps:   float = manual_dps + partner_dps
+		var enemy_hp:    int   = state.target_max_hp
+
+		if total_dps <= 0.0:
+			_warn("Simulation: total DPS is 0 at level %d — infinite loop guard triggered" % lv)
+			break
+
+		var kill_time: float = float(enemy_hp) / total_dps
+
+		# Boss wall check
+		if state.is_boss_level and kill_time > state.boss_time_limit:
+			boss_wall_level    = lv
+			boss_wall_dps_needed = float(enemy_hp) / state.boss_time_limit
+			boss_wall_dps_actual = total_dps
+			_ln("")
+			_ln("  *** BOSS WALL at level %d ***" % lv)
+			_ln("    Required DPS  : %s  (%.0fs limit)" % [_fn(int(boss_wall_dps_needed)), state.boss_time_limit])
+			_ln("    Actual DPS    : %s  (click %s + partner %s)" % [
+				_fn(int(total_dps)), _fn(int(manual_dps)), _fn(int(partner_dps))])
+			_ln("    Hero level    : %d" % state.character_level)
+			_ln("    Gold held     : %s" % _fn(state.gold))
+			break
+
+		# One-shot warnings — TTK thresholds
+		if not state.is_boss_level:
+			if lv < 20 and kill_time > 10.0 and not warned_ttk_early:
+				_warn("Simulation: normal TTK %.1fs > 10s before level 20 (at level %d)" % [kill_time, lv])
+				warned_ttk_early = true
+			if lv < 50 and kill_time > 30.0 and not warned_ttk_mid:
+				_warn("Simulation: normal TTK %.1fs > 30s before level 50 (at level %d)" % [kill_time, lv])
+				warned_ttk_mid = true
+			if lv < 100 and kill_time > 60.0 and not warned_ttk_late:
+				_warn("Simulation: normal TTK %.1fs > 60s before level 100 (at level %d)" % [kill_time, lv])
+				warned_ttk_late = true
+
+		# DPS composition warnings
+		if lv >= 15 and partner_dps <= 0.0 and not warned_no_partner:
+			_warn("Simulation: partner DPS is 0 after level 15 — greedy strategy never purchased partners")
+			warned_no_partner = true
+		if total_dps > 0.0:
+			var hero_ratio: float = manual_dps / total_dps
+			if lv > 25 and hero_ratio > 0.95 and not warned_hero_dom:
+				_warn("Simulation: hero-only click DPS >95%% of total DPS past level 25 — partner investment too low")
+				warned_hero_dom = true
+			if lv < 10 and hero_ratio < 0.10 and partner_dps > 0.0 and not warned_partner_early:
+				_warn("Simulation: partner DPS >90%% of total DPS before level 10 — partners may be too cheap early")
+				warned_partner_early = true
+
+		# Report row on first visit to each milestone level
+		if SIM_REPORT_LEVELS.has(lv) and not reported_set.has(lv):
+			reported_set[lv] = true
+			var note: String = "BOSS" if state.is_boss_level else ""
+			if first_prestige_time >= 0.0 and first_prestige_time == sim_time:
+				note = note + (" " if note != "" else "") + "PRESTIGE_UNLOCKED"
+			_ln(_row([
+				_rj(_fmt_time(sim_time), 8),
+				_rj(str(lv), 5),
+				_rj(str(state.character_level), 6),
+				_rj(_fn(state.gold), 9),
+				_rj(_fn(state.get_current_click_damage()), 10),
+				_rj(_fn(int(partner_dps)), 10),
+				_rj(_fn(int(total_dps)), 10),
+				_rj(_fn(enemy_hp), 10),
+				_rj(_fn(state.reward_gold), 8),
+				_rj("%.1fs" % kill_time, 7),
+				note,
+			]))
+			_csv_append(
+				"simulation", lv, enemy_hp, state.reward_gold,
+				last_purchase_cost,
+				state.get_current_click_damage(),
+				int(total_dps), kill_time,
+				"sim_time=%.0f hero=%d gold=%d pdps=%d boss_wall=%s prestige_rwd=%d" % [
+					sim_time, state.character_level, state.gold, int(partner_dps),
+					("true" if boss_wall_level > 0 else "false"),
+					first_prestige_reward,
+				]
+			)
+
+		# Advance sim time, kill enemy, let state handle gold + level advancement
+		sim_time += kill_time
+		state.attack_with_damage(state.target_hp)
+		state.resolve_defeated_target()
+
+	# --- Simulation summary ---
+	_ln("")
+	_ln("  === SIMULATION SUMMARY ===")
+	_ln("  Strategy           : balanced greedy (best DPS/gold between hero & partners)")
+	_ln("  Reached level      : %d" % reached_level)
+	_ln("  Total sim time     : %s (%.0f s)" % [_fmt_time(sim_time), sim_time])
+
+	if boss_wall_level > 0:
+		_ln("  First boss wall    : level %d  (need %s DPS, had %s DPS)" % [
+			boss_wall_level, _fn(int(boss_wall_dps_needed)), _fn(int(boss_wall_dps_actual))])
+	else:
+		_ln("  First boss wall    : none within simulation range")
+
+	for ml: int in [10, 20, 50, 100]:
+		if level_times.has(ml):
+			_ln("  Time to level %-5d: %s" % [ml, _fmt_time(float(level_times[ml]))])
+		else:
+			_ln("  Time to level %-5d: not reached" % ml)
+
+	if first_prestige_time >= 0.0:
+		_ln("  First prestige     : %s  (reward=%d, hero=%d, partner_dps=%s)" % [
+			_fmt_time(first_prestige_time), first_prestige_reward,
+			hero_level_at_prestige, _fn(partner_dps_at_prestige)])
+	else:
+		_ln("  First prestige     : not reached within simulation")
+
+	_ln("  Total purchases    : hero=%d  partners=%d  buildings=%d" % [
+		total_hero_buys, total_partner_buys, total_building_buys])
+
+	# Simulation-derived warnings
+	if boss_wall_level > 0 and boss_wall_level < 20:
+		_warn("Simulation: boss wall at level %d (before level 20) — DPS ramp-up is too slow in early game" % boss_wall_level)
+
+	if level_times.has(50) and float(level_times[50]) > 7200.0:
+		_warn("Simulation: level 50 takes %.0f min (> 2 hours) — early-game progression too slow" % (float(level_times[50]) / 60.0))
+
+	if first_prestige_time < 0.0:
+		_warn("Simulation: first prestige not reached within %.0f min — check PRESTIGE_REQUIRED_LEVEL or DPS scaling" % (SIM_MAX_SECONDS / 60.0))
+
+
+# --- Greedy purchase helper ---
+# Returns counts of each purchase type and the last unit cost paid.
+# Balanced: evaluates hero and each visible partner by DPS-per-gold;
+# buildings are bought opportunistically when cheap (< 15% of gold held).
+
+func _sim_do_purchases(state: _CS) -> Dictionary:
+	var hero_buys:     int = 0
+	var partner_buys:  int = 0
+	var building_buys: int = 0
+	var last_cost:     int = 0
+
+	for _safety in range(50):
+		var best_value: float = 0.0
+		var best_type:  String = ""
+		var best_idx:   int = -1
+		var best_cost:  int = 0
+
+		# Hero upgrade: value = click_dps_gain / cost
+		if state.can_afford_character_level_bulk("x1"):
+			var cost: int = state.get_character_level_bulk_display_cost("x1")
+			if cost > 0:
+				var cur_cdps: float = float(state.get_current_click_damage()) * SIM_CLICKS_PER_SEC
+				var nxt_cdps: float = float(state.get_click_damage_for_character_level(state.character_level + 1)) * SIM_CLICKS_PER_SEC
+				var gain: float = maxf(nxt_cdps - cur_cdps, 0.5)
+				var v: float = gain / float(cost)
+				if v > best_value:
+					best_value = v
+					best_type  = "hero"
+					best_cost  = cost
+
+		# Partner upgrades: value = base_dps_gain / cost
+		for i: int in range(state.visible_partner_count):
+			if state.can_afford_partner_bulk(i, "x1"):
+				var cost: int = state.get_partner_bulk_display_cost(i, "x1")
+				if cost > 0:
+					var gain: float = maxf(float(state.get_partner_bulk_dps_gain(i, "x1")), 0.5)
+					var v: float = gain / float(cost)
+					if v > best_value:
+						best_value = v
+						best_type  = "partner"
+						best_idx   = i
+						best_cost  = cost
+
+		# Buildings: buy cheapest if it costs < 15% of current gold
+		# (opportunistic — only when DPS buys are too expensive)
+		if state.gold > 0:
+			var cur_tdps: float = float(state.get_current_click_damage()) * SIM_CLICKS_PER_SEC + float(state.get_final_partner_dps(false))
+			for b: int in range(state.building_counts.size()):
+				if state.can_afford_building_bulk(b, "x1"):
+					var cost: int = state.get_building_bulk_display_cost(b, "x1")
+					if cost > 0 and float(cost) <= float(state.gold) * 0.15:
+						# Estimated DPS-equivalent: 1% of total DPS per building
+						var dps_equiv: float = maxf(cur_tdps * 0.01, 0.5)
+						var v: float = dps_equiv / float(cost)
+						if v > best_value:
+							best_value = v
+							best_type  = "building"
+							best_idx   = b
+							best_cost  = cost
+
+		if best_type.is_empty():
+			break
+
+		match best_type:
+			"hero":
+				state.buy_character_level_upgrades("x1")
+				hero_buys += 1
+				last_cost = best_cost
+			"partner":
+				state.buy_partners(best_idx, "x1")
+				partner_buys += 1
+				last_cost = best_cost
+			"building":
+				state.buy_buildings(best_idx, "x1")
+				building_buys += 1
+				last_cost = best_cost
+
+	return {
+		"hero_buys":     hero_buys,
+		"partner_buys":  partner_buys,
+		"building_buys": building_buys,
+		"last_cost":     last_cost,
+	}
+
+
+# ==========================================================================
+#  SECTION 7 — Warnings Summary
 # ==========================================================================
 
 func _section_warnings() -> void:
-	_header("SECTION 6 — Warnings Summary  (%d total)" % _warnings.size())
+	_header("SECTION 7 — Warnings Summary  (%d total)" % _warnings.size())
 	if _warnings.is_empty():
 		_ln("  No warnings generated.")
 	else:
@@ -460,6 +770,17 @@ func _fn(n: int) -> String:
 	if n < 1_000_000_000:
 		return "%.2fM" % (float(n) / 1_000_000.0)
 	return "%.2fB" % (float(n) / 1_000_000_000.0)
+
+
+func _fmt_time(seconds: float) -> String:
+	var s: int = int(seconds)
+	var m: int = s / 60
+	s = s % 60
+	if m >= 60:
+		var h: int = m / 60
+		m = m % 60
+		return "%dh%02dm" % [h, m]
+	return "%dm%02ds" % [m, s]
 
 
 func _lj(s: String, w: int) -> String:

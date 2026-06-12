@@ -108,3 +108,9 @@ prestige_char,50,0,0,0,0,0,0.00,char_pts=0
 prestige_char,100,0,1,0,0,0,0.00,char_pts=1
 prestige_char,200,0,2,0,0,0,0.00,char_pts=2
 prestige_char,500,0,5,0,0,0,0.00,char_pts=5
+simulation,1,18,4,0,2,8,2.25,sim_time=0 hero=1 gold=0 pdps=0 boss_wall=false prestige_rwd=0
+simulation,5,680,105,18,38,152,4.47,sim_time=23 hero=18 gold=5 pdps=0 boss_wall=false prestige_rwd=0
+simulation,10,2020,225,70,50,228,8.86,sim_time=41 hero=24 gold=74 pdps=28 boss_wall=false prestige_rwd=0
+simulation,15,5820,495,101,168,708,8.22,sim_time=63 hero=41 gold=75 pdps=36 boss_wall=false prestige_rwd=0
+simulation,20,16400,1065,174,200,972,16.87,sim_time=97 hero=49 gold=95 pdps=172 boss_wall=false prestige_rwd=0
+simulation,25,45060,2310,302,472,2216,20.33,sim_time=144 hero=58 gold=31 pdps=328 boss_wall=false prestige_rwd=0
