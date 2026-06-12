@@ -11,7 +11,7 @@ const TASK_CARD_TEXT_ROWS: int = 3
 const TASK_CARD_IMAGE_SIZE: Vector2 = Vector2(80, 80)
 const TASK_CARD_INNER_HEIGHT: int = 80
 const TASK_CARD_OUTER_HEIGHT: int = 100
-const TASK_CARD_WIDTH: int = 493
+const TASK_CARD_WIDTH: int = 523
 const TASK_CLAIM_BUTTON_SLOT_SIZE: Vector2 = Vector2(140, 100)
 const TASK_CLAIM_BUTTON_SIZE: Vector2 = Vector2(140, 48)
 const TASK_CARD_BACKGROUND_ASSET_KEY: String = "task.card.background"
@@ -20,7 +20,8 @@ const TASK_CLAIM_BUTTON_ASSET_KEY: String = "ui.popup.button.default"
 const TASK_CLAIM_BUTTON_PRESSED_ASSET_KEY: String = "ui.popup.button.pressed"
 const TASK_CLAIM_BUTTON_FALLBACK_COLOR: Color = Color.WHITE
 const TASK_WINDOW_BACKGROUND_ASSET_KEY: String = "task.window.background"
-const TASK_WINDOW_CLOSE_ASSET_KEY: String = "task.window.close"
+const TASK_WINDOW_CLOSE_ASSET_KEY: String = "ui.sheet.close_button"
+const TASK_WINDOW_CLOSE_PRESSED_ASSET_KEY: String = "ui.sheet.close_button.pressed"
 const TASK_WINDOW_FALLBACK_COLOR: Color = Color.WHITE
 const TASK_WINDOW_CLOSE_BUTTON_SIZE: Vector2 = Vector2(56, 56)
 
@@ -38,7 +39,7 @@ var task_rows_by_id: Dictionary = {}
 func _ready() -> void:
 	outside_click_area.gui_input.connect(_on_outside_click_area_gui_input)
 	panel_container.gui_input.connect(_on_panel_container_gui_input)
-	close_button.pressed.connect(hide_window)
+	close_button.pressed.connect(_on_close_button_pressed)
 	_setup_window_background()
 	_setup_close_button()
 	hide()
@@ -72,7 +73,19 @@ func _setup_close_button() -> void:
 	image_holder.set_asset_key(TASK_WINDOW_CLOSE_ASSET_KEY, TASK_WINDOW_FALLBACK_COLOR)
 
 
+func _on_close_button_pressed() -> void:
+	ButtonVisualUtils.play_pressed_then_call(
+		close_button,
+		Callable(self, "hide_window"),
+		TASK_WINDOW_CLOSE_ASSET_KEY,
+		TASK_WINDOW_CLOSE_PRESSED_ASSET_KEY,
+		0.2,
+		TASK_WINDOW_FALLBACK_COLOR
+	)
+
+
 func show_window(state: ClickerState) -> void:
+	ButtonVisualUtils.set_image_button_asset(close_button, TASK_WINDOW_CLOSE_ASSET_KEY, TASK_WINDOW_FALLBACK_COLOR)
 	_rebuild_rows(state)
 	show()
 
@@ -163,8 +176,10 @@ func _get_task_title(task_data: Dictionary) -> String:
 	return String(task_data.get("title", ""))
 
 
+const TASK_CARD_HORIZONTAL_SHIFT: int = 0
+
 func _create_task_row(task_data: Dictionary) -> Control:
-	var wrapper := CenterContainer.new()
+	var wrapper := Control.new()
 	wrapper.custom_minimum_size = Vector2(0, TASK_CARD_OUTER_HEIGHT)
 	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	wrapper.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
@@ -172,8 +187,14 @@ func _create_task_row(task_data: Dictionary) -> Control:
 
 	var row := Control.new()
 	row.custom_minimum_size = Vector2(TASK_CARD_WIDTH, TASK_CARD_OUTER_HEIGHT)
-	row.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	row.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	row.anchor_left = 0.5
+	row.anchor_top = 0.0
+	row.anchor_right = 0.5
+	row.anchor_bottom = 0.0
+	row.offset_left = -TASK_CARD_WIDTH / 2.0 + TASK_CARD_HORIZONTAL_SHIFT
+	row.offset_top = 0.0
+	row.offset_right = TASK_CARD_WIDTH / 2.0 + TASK_CARD_HORIZONTAL_SHIFT
+	row.offset_bottom = TASK_CARD_OUTER_HEIGHT
 	row.clip_contents = true
 	row.mouse_filter = Control.MOUSE_FILTER_STOP
 	row.gui_input.connect(_on_panel_container_gui_input)

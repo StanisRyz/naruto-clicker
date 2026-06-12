@@ -135,7 +135,10 @@ Folder: `assets/images/ui/sheets/`
 | File | Asset key | Recommended size |
 |------|-----------|-----------------|
 | `sheets/standard_sheet.png` | `ui.sheet.standard` | 720×645 px |
-| `sheets/close_button.png` | `ui.sheet.close_button` | 64×64 px (1:1) |
+| `sheets/close_button.png` | `ui.sheet.close_button` | 56×56 px (1:1) |
+| `sheets/close_button_pressed.png` | `ui.sheet.close_button.pressed` | 56×56 px (1:1) |
+
+All close buttons across all sheets and windows must use `ui.sheet.close_button` (normal) and `ui.sheet.close_button.pressed` (pressed). Do not add per-window close textures. On close press: pressed texture shown for 0.2 s, then normal restored, then window/sheet closes.
 
 Used by:
 - UpgradeSheet
@@ -345,19 +348,7 @@ Behavior:
 
 ## TasksWindow close button
 
-Path: `assets/images/tasks/window/close.png`
-
-Recommended size: **72×72 px**
-
-| Asset key | Path |
-|-----------|------|
-| `task.window.close` | `res://assets/images/tasks/window/close.png` |
-
-Behavior:
-- Missing texture → white 72×72 square fallback shown.
-- Texture exists → texture shown, white fallback hidden.
-- Rendered by `ButtonImageHolder` (`ImageSlot`) inside `CloseButton`, full-rect, `mouse_filter = IGNORE`.
-- No text is drawn over this button. Native Button background is cleared.
+> **Obsolete:** `task.window.close` (`assets/images/tasks/window/close.png`) is no longer used. TasksWindow now uses the shared `ui.sheet.close_button` and `ui.sheet.close_button.pressed` keys from `assets/images/ui/sheets/`. The PNG file is kept until cleanup is confirmed.
 
 Validation: `godot --headless --script res://scripts/tools/ValidateTaskAssets.gd`
 

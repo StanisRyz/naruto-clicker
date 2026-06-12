@@ -149,3 +149,43 @@ static func disable_focus_artifacts_in_tree(root: Node) -> void:
 		disable_focus_artifact(root as Button)
 	for child in root.get_children():
 		disable_focus_artifacts_in_tree(child)
+
+
+static func setup_close_button(
+		button: Button,
+		normal_asset_key: String = "ui.sheet.close_button",
+		fallback_color: Color = Color.WHITE) -> Dictionary:
+	return setup_image_button(button, normal_asset_key, fallback_color)
+
+
+static func play_pressed_then_call(
+		button: Button,
+		callback: Callable,
+		normal_asset_key: String,
+		pressed_asset_key: String,
+		duration_sec: float = 0.2,
+		fallback_color: Color = Color.WHITE) -> void:
+	if button == null:
+		if callback.is_valid():
+			callback.call()
+		return
+
+	if button.has_meta("close_action_pending") and bool(button.get_meta("close_action_pending")):
+		return
+
+	button.set_meta("close_action_pending", true)
+
+	var holder = button.find_child("ButtonImageHolder", false, false)
+	if holder != null and holder.has_method("set_asset_key"):
+		holder.set_asset_key(pressed_asset_key, fallback_color)
+
+	await button.get_tree().create_timer(duration_sec).timeout
+
+	if is_instance_valid(button):
+		button.set_meta("close_action_pending", false)
+		var h = button.find_child("ButtonImageHolder", false, false)
+		if h != null and h.has_method("set_asset_key"):
+			h.set_asset_key(normal_asset_key, fallback_color)
+
+	if callback.is_valid():
+		callback.call()

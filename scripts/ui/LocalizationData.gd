@@ -4,8 +4,8 @@ extends RefCounted
 # AUTO-GENERATED — do not edit by hand.
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
-# Generated key count: 310
-# Generated at: 1781257491
+# Generated key count: 311
+# Generated at: 1781281923
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -66,7 +66,8 @@ const TRANSLATIONS: Dictionary = {
 		"task.in_progress": "In Progress",
 		"task.claim": "Claim",
 		"task.claimed": "Claimed",
-		"task.progress": "{current} / {target} | Reward: {reward}",
+		"task.progress": "{current} / {target}",
+		"task.reward": "Reward: {reward} Gold",
 		"upgrade.hero.button": "x{count} - {cost}",
 		"upgrade.hero.card.name": "Hero",
 		"upgrade.hero.card.level_gain": "{level} Lv | +{gain} Damage",
@@ -378,7 +379,8 @@ const TRANSLATIONS: Dictionary = {
 		"task.in_progress": "В Процессе",
 		"task.claim": "Получить",
 		"task.claimed": "Получено",
-		"task.progress": "{current} / {target} | Награда: {reward}",
+		"task.progress": "{current} / {target}",
+		"task.reward": "Награда: {reward} Золота",
 		"upgrade.hero.button": "x{count} - {cost}",
 		"upgrade.hero.card.name": "Герой",
 		"upgrade.hero.card.level_gain": "{level} Ур | +{gain} Урон",

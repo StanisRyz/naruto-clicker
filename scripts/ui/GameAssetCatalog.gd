@@ -6,6 +6,7 @@ const ASSET_PATHS: Dictionary = {
 	# Sheet backgrounds
 	"ui.sheet.standard": "res://assets/images/ui/sheets/standard_sheet.png",
 	"ui.sheet.close_button": "res://assets/images/ui/sheets/close_button.png",
+	"ui.sheet.close_button.pressed": "res://assets/images/ui/sheets/close_button_pressed.png",
 
 	# Card backgrounds
 	"ui.card.sheet": "res://assets/images/ui/cards/sheet_card.png",

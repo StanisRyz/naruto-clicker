@@ -250,7 +250,7 @@ func _update_settings_if_visible() -> void:
 		settings_window.refresh_view(state)
 
 
-func _on_attack_requested() -> void:
+func _on_attack_requested(click_global_position: Vector2) -> void:
 	if tasks_window.visible:
 		return
 
@@ -265,8 +265,11 @@ func _on_attack_requested() -> void:
 		manual_damage *= 2
 	var was_boss_level: bool = state.is_boss_level
 	var result: Dictionary = state.attack_with_damage(manual_damage)
-	state.total_manual_click_damage_dealt += int(result.get("damage_dealt", 0))
+	var damage_dealt: int = int(result.get("damage_dealt", 0))
+	state.total_manual_click_damage_dealt += damage_dealt
 	_apply_attack_result(result, true, was_boss_level)
+	if damage_dealt > 0:
+		game_field.spawn_damage_number(damage_dealt, click_global_position)
 
 
 func _on_character_level_upgrade_requested(mode: String) -> void:

@@ -25,11 +25,14 @@ func _ready() -> void:
 
 
 func _on_close_pressed() -> void:
-	ButtonVisualUtils.flash_button_image_holder(
-		close_button.find_child("ButtonImageHolder", false, false),
-		"ui.sheet.close_button"
+	ButtonVisualUtils.play_pressed_then_call(
+		close_button,
+		Callable(self, "hide_sheet"),
+		"ui.sheet.close_button",
+		"ui.sheet.close_button.pressed",
+		0.2,
+		Color.WHITE
 	)
-	hide_sheet()
 
 
 func set_prestige_button_modal_pressed(pressed: bool) -> void:
@@ -37,6 +40,7 @@ func set_prestige_button_modal_pressed(pressed: bool) -> void:
 
 
 func show_sheet() -> void:
+	ButtonVisualUtils.set_image_button_asset(close_button, "ui.sheet.close_button")
 	show()
 
 

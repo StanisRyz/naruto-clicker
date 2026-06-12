@@ -1,7 +1,7 @@
 class_name GameField
 extends Control
 
-signal attack_requested
+signal attack_requested(global_position: Vector2)
 
 const HEALTHY_COLOR: Color = Color.WHITE
 const HIT_COLOR: Color = Color(0.15, 0.45, 1.0, 1.0)
@@ -25,9 +25,15 @@ var _tex_wounded: Texture2D = null
 var _tex_defeated: Texture2D = null
 var _current_tex: Texture2D = null
 
+const DAMAGE_NUMBER_DURATION: float = 0.55
+const DAMAGE_NUMBER_RISE_DISTANCE: float = 44.0
+const DAMAGE_NUMBER_RANDOM_X: float = 14.0
+const MAX_FLOATING_DAMAGE_LABELS: int = 20
+
 @onready var background_image_holder = $BackgroundImageHolder  # ImageSlot (ColorRect subclass)
 @onready var enemy_image_holder = $EnemyImageHolder  # ImageSlot (ColorRect subclass)
 @onready var defeat_feedback_label: Label = $FeedbackLayer/DefeatFeedbackLabel
+@onready var floating_damage_layer: Control = $FeedbackLayer/FloatingDamageLayer
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -35,12 +41,12 @@ func _gui_input(event: InputEvent) -> void:
 		var mouse_event: InputEventMouseButton = event as InputEventMouseButton
 		if mouse_event.button_index == MOUSE_BUTTON_LEFT and mouse_event.pressed:
 			accept_event()
-			attack_requested.emit()
+			attack_requested.emit(mouse_event.global_position)
 	elif event is InputEventScreenTouch:
 		var touch_event: InputEventScreenTouch = event as InputEventScreenTouch
 		if touch_event.pressed:
 			accept_event()
-			attack_requested.emit()
+			attack_requested.emit(touch_event.position)
 
 
 func update_view(state: ClickerState) -> void:
@@ -179,3 +185,43 @@ func _get_health_asset_key(state: ClickerState) -> String:
 
 	var hp_ratio: float = float(state.target_hp) / maxf(float(state.target_max_hp), 1.0)
 	return "enemy.default.wounded" if hp_ratio <= 0.5 else "enemy.default.healthy"
+
+
+func spawn_damage_number(damage: int, click_global_position: Vector2) -> void:
+	if damage <= 0:
+		return
+
+	if floating_damage_layer.get_child_count() >= MAX_FLOATING_DAMAGE_LABELS:
+		floating_damage_layer.get_child(0).queue_free()
+
+	var label := Label.new()
+	label.text = NumberFormatter.compact(damage)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.z_index = 100
+
+	UiFontConfig.apply_damage_number_theme(label)
+	floating_damage_layer.add_child(label)
+
+	var local_pos: Vector2 = floating_damage_layer.get_global_transform().affine_inverse() * click_global_position
+	var start_offset := Vector2(randf_range(-DAMAGE_NUMBER_RANDOM_X, DAMAGE_NUMBER_RANDOM_X), -12.0)
+	var start_pos := local_pos + start_offset
+
+	label.position = start_pos
+	label.modulate.a = 1.0
+	label.scale = Vector2.ONE
+
+	await get_tree().process_frame
+	if not is_instance_valid(label):
+		return
+	label.pivot_offset = label.size * 0.5
+	label.position = start_pos - label.size * 0.5
+
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(label, "position:y", label.position.y - DAMAGE_NUMBER_RISE_DISTANCE, DAMAGE_NUMBER_DURATION)
+	tween.tween_property(label, "modulate:a", 0.0, DAMAGE_NUMBER_DURATION)
+	tween.tween_property(label, "scale", Vector2(1.12, 1.12), 0.12)
+	tween.set_parallel(false)
+	tween.tween_callback(label.queue_free)

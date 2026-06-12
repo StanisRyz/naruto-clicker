@@ -71,6 +71,14 @@ const PROGRESS_BOSS_TIMER_FONT_COLOR: Color = Color(1.0, 0.18, 0.12, 1.0)
 const PROGRESS_BOSS_TIMER_OUTLINE_COLOR: Color = Color(0.0, 0.0, 0.0, 1.0)
 const PROGRESS_BOSS_TIMER_OUTLINE_SIZE: int = 8
 
+# Combat damage numbers
+const COMBAT_DAMAGE_NUMBER_FONT_SIZE: int = 34
+const COMBAT_DAMAGE_NUMBER_FONT_PATH: String = PROGRESS_BOSS_TIMER_FONT_PATH
+const COMBAT_DAMAGE_NUMBER_FONT_FALLBACK_PATH: String = PROGRESS_BOSS_TIMER_FONT_FALLBACK_PATH
+const COMBAT_DAMAGE_NUMBER_FONT_COLOR: Color = PROGRESS_BOSS_TIMER_FONT_COLOR
+const COMBAT_DAMAGE_NUMBER_OUTLINE_COLOR: Color = PROGRESS_BOSS_TIMER_OUTLINE_COLOR
+const COMBAT_DAMAGE_NUMBER_OUTLINE_SIZE: int = PROGRESS_BOSS_TIMER_OUTLINE_SIZE
+
 # Tasks window
 const TASK_CONDITION_FONT_SIZE: int = 18
 const TASK_PROGRESS_FONT_SIZE: int = 16
@@ -96,6 +104,24 @@ static func apply_boss_timer_theme(label: Label) -> void:
 		font_path = PROGRESS_BOSS_TIMER_FONT_PATH
 	elif ResourceLoader.exists(PROGRESS_BOSS_TIMER_FONT_FALLBACK_PATH):
 		font_path = PROGRESS_BOSS_TIMER_FONT_FALLBACK_PATH
+	if font_path != "":
+		var font_resource: Resource = ResourceLoader.load(font_path)
+		if font_resource is Font:
+			label.add_theme_font_override("font", font_resource)
+
+
+static func apply_damage_number_theme(label: Label) -> void:
+	if label == null:
+		return
+	apply_label_font_size(label, COMBAT_DAMAGE_NUMBER_FONT_SIZE)
+	label.add_theme_color_override("font_color", COMBAT_DAMAGE_NUMBER_FONT_COLOR)
+	label.add_theme_color_override("font_outline_color", COMBAT_DAMAGE_NUMBER_OUTLINE_COLOR)
+	label.add_theme_constant_override("outline_size", COMBAT_DAMAGE_NUMBER_OUTLINE_SIZE)
+	var font_path: String = ""
+	if ResourceLoader.exists(COMBAT_DAMAGE_NUMBER_FONT_PATH):
+		font_path = COMBAT_DAMAGE_NUMBER_FONT_PATH
+	elif ResourceLoader.exists(COMBAT_DAMAGE_NUMBER_FONT_FALLBACK_PATH):
+		font_path = COMBAT_DAMAGE_NUMBER_FONT_FALLBACK_PATH
 	if font_path != "":
 		var font_resource: Resource = ResourceLoader.load(font_path)
 		if font_resource is Font:

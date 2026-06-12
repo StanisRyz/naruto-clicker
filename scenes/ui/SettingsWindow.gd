@@ -123,6 +123,7 @@ func _update_language_button() -> void:
 
 
 func show_window(state: ClickerState) -> void:
+	ButtonVisualUtils.set_image_button_asset(close_button, "ui.sheet.close_button")
 	refresh_view(state)
 	status_label.text = ""
 	reset_confirm_dialog.hide()
@@ -149,11 +150,14 @@ func show_status(text: String) -> void:
 
 
 func _on_close_button_pressed() -> void:
-	ButtonVisualUtils.flash_button_image_holder(
-		close_button.find_child("ButtonImageHolder", false, false),
-		"ui.sheet.close_button"
+	ButtonVisualUtils.play_pressed_then_call(
+		close_button,
+		Callable(self, "hide_window"),
+		"ui.sheet.close_button",
+		"ui.sheet.close_button.pressed",
+		0.2,
+		Color.WHITE
 	)
-	hide_window()
 
 
 func _on_sound_button_pressed() -> void:

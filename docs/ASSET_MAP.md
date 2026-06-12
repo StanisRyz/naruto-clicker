@@ -162,10 +162,10 @@ Missing files fall back to the default game asset catalog placeholder (no crash)
 | Asset key | Path | Recommended size |
 |-----------|------|-----------------|
 | `task.window.background` | `assets/images/tasks/window/background.png` | 620×670 px |
-| `task.window.close` | `assets/images/tasks/window/close.png` | 56×56 px |
 
 - `task.window.background`: missing → white 620×670 fallback. Present → texture shown, fallback hidden.
-- `task.window.close`: missing → white 56×56 fallback. Present → texture shown, fallback hidden. No text drawn over close button. Positioned as an overlay on `PanelContainer` with 15 px gap from top and right edges (offset_left=−71, offset_top=15, offset_right=−15, offset_bottom=71).
+- Close button uses the shared `ui.sheet.close_button` / `ui.sheet.close_button.pressed` keys (see Standard bottom sheet background section). No per-window close texture.
+- **Obsolete:** `task.window.close` (`assets/images/tasks/window/close.png`) is no longer referenced by active code. The PNG file is kept until cleanup is confirmed.
 
 Task claim buttons now use the shared popup button textures (35:12 ratio, 140×48 px UI size):
 
@@ -217,7 +217,7 @@ Path: `assets/images/tasks/task_card.png`
 |---|---|
 | `task.card.background` | `res://assets/images/tasks/task_card.png` |
 
-Recommended size: **493×100 px** (visual card width 493, height 100). Missing → white fallback. Present → texture shown, fallback hidden. Used by all task cards via `ImageSlot` as the first (bottom-most) child of each task row. Cards are centered inside the 580 px content area via a `CenterContainer` wrapper.
+Recommended size: **523×100 px** (visual card width 523, height 100). Missing → white fallback. Present → texture shown, fallback hidden. Used by all task cards via `ImageSlot` as the first (bottom-most) child of each task row. Cards are centered inside the 580 px content area (equal ~28.5 px insets each side). First card top: approximately 96 px from panel top (MarginContainer top 20 + TopSpacer 76).
 
 ### Task card icons
 
@@ -390,7 +390,7 @@ All popup/window backgrounds and action buttons use `ImageSlot` nodes added at r
 - **Texture exists** → texture shown, fallback hidden (`show_fallback_behind_texture = false`).
 - **Texture missing** → white rectangle fallback shown, no crash.
 
-Close buttons reuse the existing sheet close button: `ui.sheet.close_button` / `assets/images/ui/sheets/close_button.png` (64×64 px, 1:1). x2 source option: 128×128 px.
+All close buttons use shared textures: `ui.sheet.close_button` / `assets/images/ui/sheets/close_button.png` (normal) and `ui.sheet.close_button.pressed` / `assets/images/ui/sheets/close_button_pressed.png` (pressed). Recommended size 56×56 px; x2 source: 112×112 px. On press: button switches to pressed texture for 0.2 s, then restores normal and closes. Do not add per-window close textures.
 
 ### Popup backgrounds
 
@@ -436,7 +436,8 @@ Button text is drawn by a child `Label` (`ButtonTextLabel`) placed above the `Im
 | Asset key | Path | Recommended size |
 |-----------|------|-----------------|
 | `ui.sheet.standard` | `assets/images/ui/sheets/standard_sheet.png` | 720×645 px |
-| `ui.sheet.close_button` | `assets/images/ui/sheets/close_button.png` | 64×64 px (1:1) |
+| `ui.sheet.close_button` | `assets/images/ui/sheets/close_button.png` | 56×56 px (1:1) |
+| `ui.sheet.close_button.pressed` | `assets/images/ui/sheets/close_button_pressed.png` | 56×56 px (1:1) |
 
 Used by UpgradeSheet, PartnerSheet, SettlementSheet, PrestigeSheet, and ShopSheet.
 Rendered by `SheetBackgroundImageHolder` (`ImageSlot`) — first child of `PanelContainer` (Control),
