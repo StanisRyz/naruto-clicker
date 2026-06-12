@@ -75,12 +75,12 @@ static func buy_shop_products(state: ClickerState, product_id: String, mode: Str
 
 		var owned_after: int = state.get_shop_permanent_upgrade_count(product_id)
 		var total_multiplier: int = int(pow(ShopConfig.PERMANENT_UPGRADE_MULTIPLIER_PER_LEVEL, float(owned_after)))
-		var result: Dictionary = state._make_purchase_result(
+		var perm_result: Dictionary = state._make_purchase_result(
 			"%s x%d! Total multiplier: x%d" % [product_name, count, total_multiplier],
 			false, true
 		)
-		result["status_text"] = "%s purchased x%d! Total: x%d" % [product_name, count, total_multiplier]
-		return result
+		perm_result["status_text"] = "%s purchased x%d! Total: x%d" % [product_name, count, total_multiplier]
+		return perm_result
 
 	# consumable
 	var cost_gems: int = int(product.get("cost_gems", 0))

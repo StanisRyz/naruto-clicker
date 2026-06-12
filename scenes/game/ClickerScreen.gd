@@ -837,6 +837,16 @@ func _handle_defeat_result(result: Dictionary, was_boss_level: bool) -> void:
 	_finish_enemy_transition_after_delay(transition_token)
 
 
+func _begin_level_change_transition() -> int:
+	enemy_transition_token += 1
+	var current_token: int = enemy_transition_token
+	enemy_transition_locked = true
+	game_field.set_enemy_transition_locked(false)
+	partner_damage_accumulator = 0.0
+	autoclick_accumulator = 0.0
+	return current_token
+
+
 func _on_stage_selected(level: int) -> void:
 	if enemy_transition_locked:
 		return
@@ -845,12 +855,7 @@ func _on_stage_selected(level: int) -> void:
 	var result: Dictionary = state.travel_to_level(level)
 	if not result.get("travelled", false):
 		return
-	partner_damage_accumulator = 0.0
-	autoclick_accumulator = 0.0
-	enemy_transition_token += 1
-	var current_token: int = enemy_transition_token
-	enemy_transition_locked = true
-	game_field.set_enemy_transition_locked(false)
+	var current_token: int = _begin_level_change_transition()
 	if balance_logger:
 		balance_logger.mark_level_started(state)
 		balance_logger.mark_enemy_spawned(state)
@@ -874,15 +879,18 @@ func _toggle_auto_transition_and_show_popup(anchor: Vector2, button_global_rect:
 	else:
 		var jump_result: Dictionary = state.enable_auto_stage_advance_and_jump_if_needed()
 		if jump_result.get("moved_to_latest", false):
-			enemy_transition_token += 1
-			game_field.set_enemy_transition_locked(false)
-			partner_damage_accumulator = 0.0
-			autoclick_accumulator = 0.0
+			var current_token: int = _begin_level_change_transition()
 			if balance_logger:
 				balance_logger.mark_level_started(state)
 				balance_logger.mark_enemy_spawned(state)
 			_sync_boss_timer()
 			stage_navigator.center_on_level(state.current_level)
+			stage_navigator.set_auto_transition_enabled(state.auto_stage_advance_enabled)
+			_update_ui()
+			auto_transition_popup.show_popup(state, anchor, button_global_rect)
+			_save_game_now()
+			await _play_spawn_smoke_and_unlock_after_invulnerability(current_token)
+			return
 	stage_navigator.set_auto_transition_enabled(state.auto_stage_advance_enabled)
 	_update_ui()
 	auto_transition_popup.show_popup(state, anchor, button_global_rect)

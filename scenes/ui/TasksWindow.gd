@@ -104,7 +104,7 @@ func refresh_progress_only(state: ClickerState) -> void:
 		var condition_label: Label = row_data["condition_label"]
 		var progress_label: Label = row_data["progress_label"]
 		var reward_label: Label = row_data["reward_label"]
-		var claim_button: Button = row_data["claim_button"]
+		var _claim_button: Button = row_data["claim_button"]
 		var claim_button_label: Label = row_data["claim_button_label"]
 		var completed: bool = bool(task_data.get("completed", false))
 

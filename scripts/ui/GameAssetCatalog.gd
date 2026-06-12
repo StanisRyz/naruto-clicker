@@ -123,6 +123,18 @@ const ASSET_PATHS: Dictionary = {
 
 	# Bottom tabs decorative backdrop (820px wide, bleeds 50px each side beyond 720px viewport)
 	"ui.bottom_tabs.backdrop": "res://assets/images/ui/bottom_bar/tabs_backdrop.png",
+
+	# Popup and window backgrounds
+	"ui.popup.skill.background": "res://assets/images/ui/popups/skill/background.png",
+	"ui.popup.auto_transition.background": "res://assets/images/ui/popups/auto_transition/background.png",
+	"ui.window.settings.background": "res://assets/images/ui/windows/settings/background.png",
+	"ui.window.settings.reset_confirm_background": "res://assets/images/ui/windows/settings/reset_confirm_background.png",
+	"ui.dialog.prestige.background": "res://assets/images/ui/dialogs/prestige/background.png",
+	"ui.dialog.prestige.inner_background": "res://assets/images/ui/dialogs/prestige/inner_background.png",
+
+	# Popup action buttons
+	"ui.popup.button.default": "res://assets/images/ui/popups/buttons/default.png",
+	"ui.popup.button.danger": "res://assets/images/ui/popups/buttons/danger.png",
 }
 
 

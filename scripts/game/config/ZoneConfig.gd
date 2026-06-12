@@ -276,6 +276,7 @@ static func get_cycle_level_for_level(level: int) -> int:
 
 static func get_cycle_index_for_level(level: int) -> int:
 	var cycle_level: int = get_cycle_level_for_level(level)
+	@warning_ignore("integer_division")
 	return (cycle_level - 1) / LEVELS_PER_ZONE
 
 

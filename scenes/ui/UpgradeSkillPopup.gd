@@ -8,6 +8,8 @@ const POPUP_WIDTH: float = 260.0
 const POPUP_MARGIN: float = 8.0
 const BOTTOM_SAFE_MARGIN: float = 112.0
 
+const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
+
 @onready var panel_container: PanelContainer = $PanelContainer
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
 @onready var name_label: Label = $PanelContainer/MarginContainer/VBoxContainer/Header/NameLabel
@@ -21,11 +23,16 @@ var current_skill_id: String = ""
 var current_owner_type: String = ""
 var current_anchor_global_position: Vector2 = Vector2.ZERO
 
+var _buy_button_label: Label = null
+
 
 func _ready() -> void:
 	panel_container.gui_input.connect(_on_panel_container_gui_input)
 	close_button.pressed.connect(func() -> void: hide())
 	buy_button.pressed.connect(_on_buy_button_pressed)
+	_add_background_image_holder(panel_container, "PopupBackgroundImageHolder", "ui.popup.skill.background")
+	_make_image_icon_button(close_button, "ui.sheet.close_button")
+	_buy_button_label = _make_image_button_label(buy_button, "ui.popup.button.default", "")
 	hide()
 
 
@@ -67,12 +74,12 @@ func _update_view(state: ClickerState) -> void:
 	match skill_state:
 		"purchased":
 			buy_button.disabled = true
-			buy_button.text = "Purchased"
+			_buy_button_label.text = "Purchased"
 		"locked":
 			buy_button.disabled = true
-			buy_button.text = "Locked"
+			_buy_button_label.text = "Locked"
 		_:
-			buy_button.text = "Buy: %s" % NumberFormatter.compact(cost)
+			_buy_button_label.text = "Buy: %s" % NumberFormatter.compact(cost)
 			buy_button.disabled = not _can_buy_current_skill(state)
 
 
@@ -138,3 +145,45 @@ func _on_buy_button_pressed() -> void:
 func _on_panel_container_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton or event is InputEventScreenTouch:
 		accept_event()
+
+
+func _add_background_image_holder(container: Control, holder_name: String, asset_key: String) -> void:
+	var holder = ImageSlotClass.new()
+	holder.name = holder_name
+	holder.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.fallback_color = Color.WHITE
+	holder.show_fallback_behind_texture = false
+	holder.stretch_mode = TextureRect.STRETCH_SCALE
+	container.add_child(holder)
+	container.move_child(holder, 0)
+	holder.set_asset_key(asset_key, Color.WHITE)
+
+
+func _make_image_icon_button(button: Button, asset_key: String) -> void:
+	ButtonVisualUtils.clear_image_button_styles(button)
+	button.text = ""
+	var holder = ImageSlotClass.new()
+	holder.name = "ButtonImageHolder"
+	holder.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.fallback_color = Color.WHITE
+	holder.show_fallback_behind_texture = false
+	holder.stretch_mode = TextureRect.STRETCH_SCALE
+	button.add_child(holder)
+	holder.set_asset_key(asset_key, Color.WHITE)
+
+
+func _make_image_button_label(button: Button, asset_key: String, initial_text: String) -> Label:
+	_make_image_icon_button(button, asset_key)
+	var label := Label.new()
+	label.name = "ButtonTextLabel"
+	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	label.text = initial_text
+	button.add_child(label)
+	return label

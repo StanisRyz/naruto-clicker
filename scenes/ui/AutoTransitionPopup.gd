@@ -6,6 +6,8 @@ signal auto_button_pressed_through(anchor_global_position: Vector2, button_globa
 const POPUP_WIDTH: float = 300.0
 const POPUP_MARGIN: float = 6.0
 
+const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
+
 var _state: ClickerState = null
 var _pending_anchor: Vector2 = Vector2.ZERO
 var _auto_button_global_rect: Rect2 = Rect2()
@@ -19,6 +21,8 @@ func _ready() -> void:
 	visible = false
 	mouse_filter = MOUSE_FILTER_PASS
 	_close_button.pressed.connect(hide_popup)
+	_add_background_image_holder(_panel, "PopupBackgroundImageHolder", "ui.popup.auto_transition.background")
+	_make_image_icon_button(_close_button, "ui.sheet.close_button")
 
 
 func show_popup(state: ClickerState, anchor: Vector2, button_global_rect: Rect2 = Rect2()) -> void:
@@ -72,3 +76,30 @@ func _position_popup(anchor: Vector2) -> void:
 		y = anchor.y - panel_size.y - POPUP_MARGIN
 	y = maxf(POPUP_MARGIN, y)
 	_panel.position = Vector2(x, y)
+
+
+func _add_background_image_holder(container: Control, holder_name: String, asset_key: String) -> void:
+	var holder = ImageSlotClass.new()
+	holder.name = holder_name
+	holder.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.fallback_color = Color.WHITE
+	holder.show_fallback_behind_texture = false
+	holder.stretch_mode = TextureRect.STRETCH_SCALE
+	container.add_child(holder)
+	container.move_child(holder, 0)
+	holder.set_asset_key(asset_key, Color.WHITE)
+
+
+func _make_image_icon_button(button: Button, asset_key: String) -> void:
+	ButtonVisualUtils.clear_image_button_styles(button)
+	button.text = ""
+	var holder = ImageSlotClass.new()
+	holder.name = "ButtonImageHolder"
+	holder.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.fallback_color = Color.WHITE
+	holder.show_fallback_behind_texture = false
+	holder.stretch_mode = TextureRect.STRETCH_SCALE
+	button.add_child(holder)
+	holder.set_asset_key(asset_key, Color.WHITE)

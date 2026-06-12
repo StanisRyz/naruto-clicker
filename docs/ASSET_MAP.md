@@ -333,6 +333,42 @@ Active ability visual: a white radial timer drawn by `AbilityCooldownOverlay` (A
 
 See `docs/ASSET_FOLDERS.md` for a complete folder listing with full paths.
 
+## Popup and window textures
+
+All popup/window backgrounds and action buttons use `ImageSlot` nodes added at runtime in `_ready()`.
+
+- **Texture exists** → texture shown, fallback hidden (`show_fallback_behind_texture = false`).
+- **Texture missing** → white rectangle fallback shown, no crash.
+
+Close buttons reuse the existing sheet close button: `ui.sheet.close_button` / `assets/images/ui/sheets/close_button.png` (72×56 px).
+
+### Popup backgrounds
+
+| Asset key | Path | Recommended size | Used by |
+|-----------|------|-----------------|---------|
+| `ui.popup.skill.background` | `assets/images/ui/popups/skill/background.png` | 260×220 px | UpgradeSkillPopup, PartnerSkillPopup |
+| `ui.popup.auto_transition.background` | `assets/images/ui/popups/auto_transition/background.png` | 300×180 px | AutoTransitionPopup |
+
+### Window and dialog backgrounds
+
+| Asset key | Path | Recommended size | Used by |
+|-----------|------|-----------------|---------|
+| `ui.window.settings.background` | `assets/images/ui/windows/settings/background.png` | 360×420 px | SettingsWindow main panel |
+| `ui.window.settings.reset_confirm_background` | `assets/images/ui/windows/settings/reset_confirm_background.png` | 340×224 px | SettingsWindow reset confirm dialog |
+| `ui.dialog.prestige.background` | `assets/images/ui/dialogs/prestige/background.png` | 720×1280 px | PrestigeConfirmDialog full-screen panel |
+| `ui.dialog.prestige.inner_background` | `assets/images/ui/dialogs/prestige/inner_background.png` | 656×420 px | PrestigeConfirmDialog inner panel |
+
+### Popup action buttons
+
+| Asset key | Path | Recommended size | Used for |
+|-----------|------|-----------------|---------|
+| `ui.popup.button.default` | `assets/images/ui/popups/buttons/default.png` | 210×72 px | Buy, Save, Cancel, Yes/No buttons |
+| `ui.popup.button.danger` | `assets/images/ui/popups/buttons/danger.png` | 210×72 px | Reset and destructive action buttons |
+
+Button text is drawn by a child `Label` (`ButtonTextLabel`) placed above the `ImageSlot` (`ButtonImageHolder`). Native button text is cleared. Both children have `mouse_filter = IGNORE` so clicks reach the `Button` node.
+
+---
+
 ## Standard bottom sheet background
 
 | Asset key | Path | Recommended size |
