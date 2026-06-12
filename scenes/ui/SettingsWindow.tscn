@@ -112,7 +112,7 @@ text = "Sound"
 vertical_alignment = 1
 
 [node name="SoundToggleButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/SoundRow"]
-custom_minimum_size = Vector2(216, 48)
+custom_minimum_size = Vector2(175, 60)
 layout_mode = 2
 size_flags_horizontal = 8
 text = "ON"
@@ -128,13 +128,13 @@ text = "Music"
 vertical_alignment = 1
 
 [node name="MusicToggleButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/MusicRow"]
-custom_minimum_size = Vector2(216, 48)
+custom_minimum_size = Vector2(175, 60)
 layout_mode = 2
 size_flags_horizontal = 8
 text = "ON"
 
 [node name="SaveButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(324, 72)
+custom_minimum_size = Vector2(210, 72)
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Save Now"
@@ -218,10 +218,10 @@ horizontal_alignment = 1
 
 [node name="ButtonRow" type="HBoxContainer" parent="ResetConfirmDialog/PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 20
 
 [node name="CancelButton" type="Button" parent="ResetConfirmDialog/PanelContainer/MarginContainer/VBoxContainer/ButtonRow"]
-custom_minimum_size = Vector2(216, 48)
+custom_minimum_size = Vector2(210, 72)
 layout_mode = 2
 size_flags_horizontal = 0
 text = "Cancel"

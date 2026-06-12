@@ -60,8 +60,8 @@ naruto-clicker/
 │       ├── abilities/    # Ability button icons
 │       ├── upgrades/     # Upgrade card icons
 │       ├── partners/
-│       │   ├── partner_01/ … partner_28/  # Per-partner icon: partner.png
-│       │   └── Skills/   # Shared skill icons: skill1.png – skill5.png
+│       │   └── partner_01/ … partner_28/  # Per-partner icon: partner.png
+│       ├── skills/       # Shared rank icons: skill_01.png – skill_05.png (hero/partner/ability skill buttons)
 │       ├── buildings/    # Settlement building icons
 │       ├── prestige/     # Prestige action + talent icons
 │       ├── shop/         # Shop product icons

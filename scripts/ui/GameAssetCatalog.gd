@@ -34,9 +34,6 @@ const ASSET_PATHS: Dictionary = {
 	"enemy.default.defeated": "res://assets/images/enemies/default_defeated.png",
 
 	# Stage navigator
-	"stage.unlocked": "res://assets/images/ui/stage_unlocked.png",
-	"stage.locked": "res://assets/images/ui/stage_locked.png",
-	"stage.current": "res://assets/images/ui/stage_current.png",
 	"stage.latest": "res://assets/images/ui/stage_navigation/latest_stage/default.png",
 	"stage.auto_on": "res://assets/images/ui/stage_navigation/auto_transition/enabled.png",
 	"stage.auto_off": "res://assets/images/ui/stage_navigation/auto_transition/disabled.png",
@@ -74,8 +71,6 @@ const ASSET_PATHS: Dictionary = {
 	# Shop
 	"shop.gold_pack_small": "res://assets/images/shop/gold_pack_small.png",
 	"shop.gold_pack_large": "res://assets/images/shop/gold_pack_large.png",
-	"shop.boss_retry_token": "res://assets/images/shop/boss_retry.png",
-	"shop.task_boost": "res://assets/images/shop/task_boost.png",
 
 	# Tasks
 	"task.manual_damage_500": "res://assets/images/tasks/manual_damage.png",

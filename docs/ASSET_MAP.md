@@ -393,22 +393,19 @@ Close buttons reuse the existing sheet close button: `ui.sheet.close_button` / `
 
 ### Popup action buttons
 
-| Asset key | Path | Base size | Aspect ratio | Used for |
-|-----------|------|-----------|-------------|---------|
-| `ui.popup.button.default` | `assets/images/ui/popups/buttons/default.png` | 324×72 px | 4.5:1 | Buy, Save, Cancel, Yes/No buttons |
-| `ui.popup.button.danger` | `assets/images/ui/popups/buttons/danger.png` | 324×72 px | 4.5:1 | Reset and destructive action buttons |
+| Asset key | Path | Base size | Aspect ratio | Source style | Used for |
+|-----------|------|-----------|-------------|-------------|---------|
+| `ui.popup.button.default` | `assets/images/ui/popups/buttons/default.png` | 210×72 px | 35:12 | Copied from `assets/images/ui/cards/button/default.png` | Buy, Save, Cancel, Yes/No buttons |
+| `ui.popup.button.danger` | `assets/images/ui/popups/buttons/danger.png` | 324×72 px | 4.5:1 | — | Reset and destructive action buttons |
 
-**Aspect ratio rule:** All UI buttons using these textures must keep a **4.5:1** width-to-height ratio so textures are never stretched or distorted.
+**Default button aspect ratio rule:** All buttons using `ui.popup.button.default` must keep a **35:12** ratio (same as card buy buttons) so the texture is never stretched or distorted. Do not scale this texture to arbitrary widths.
 
-Valid scaled sizes currently in use:
+Valid scaled sizes for `ui.popup.button.default`:
 
 | Size | Used in |
 |------|---------|
-| 324×72 px | SettingsWindow SaveButton, ResetButton |
-| 288×64 px | UpgradeSkillPopup BuyButton, PartnerSkillPopup BuyButton |
-| 216×48 px | SettingsWindow toggle buttons, ResetConfirmDialog CancelButton/ResetButton, ShopPurchaseConfirmDialog ConfirmButton/CancelButton, PrestigeConfirmDialog YesButton/NoButton |
-
-Recommended source texture size: **324×72 px** (or **648×144 px** for ×2 source).
+| 210×72 px | UpgradeSkillPopup BuyButton, PartnerSkillPopup BuyButton, SettingsWindow SaveButton, ResetConfirmDialog CancelButton, ShopPurchaseConfirmDialog ConfirmButton/CancelButton, PrestigeConfirmDialog YesButton/NoButton |
+| 175×60 px | SettingsWindow SoundToggleButton, MusicToggleButton |
 
 Button text is drawn by a child `Label` (`ButtonTextLabel`) placed above the `ImageSlot` (`ButtonImageHolder`). Native button text is cleared. Both children have `mouse_filter = IGNORE` so clicks reach the `Button` node.
 
