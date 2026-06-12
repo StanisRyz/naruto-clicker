@@ -57,11 +57,6 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Auto-transition"
 
-[node name="CloseButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/TitleRow"]
-layout_mode = 2
-custom_minimum_size = Vector2(28, 28)
-text = "X"
-
 [node name="DescriptionLine1Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = ""

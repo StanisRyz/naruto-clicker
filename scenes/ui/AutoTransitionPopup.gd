@@ -15,7 +15,6 @@ var _pending_anchor: Vector2 = Vector2.ZERO
 var _auto_button_global_rect: Rect2 = Rect2()
 
 @onready var _panel: PanelContainer = $PanelContainer
-@onready var _close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/TitleRow/CloseButton
 @onready var _desc_line1: Label = $PanelContainer/MarginContainer/VBoxContainer/DescriptionLine1Label
 @onready var _desc_line2: Label = $PanelContainer/MarginContainer/VBoxContainer/DescriptionLine2Label
 @onready var _desc_line3: Label = $PanelContainer/MarginContainer/VBoxContainer/DescriptionLine3Label
@@ -26,9 +25,7 @@ var _auto_button_global_rect: Rect2 = Rect2()
 func _ready() -> void:
 	visible = false
 	mouse_filter = MOUSE_FILTER_PASS
-	_close_button.pressed.connect(hide_popup)
 	_add_background_image_holder(_panel, "PopupBackgroundImageHolder", "ui.popup.auto_transition.background")
-	_make_image_icon_button(_close_button, "ui.sheet.close_button")
 	_apply_fixed_panel_size()
 	var L := LocalizationManager
 	_desc_line1.text = L.tr_key("auto_transition.description.line_1")
@@ -55,6 +52,10 @@ func refresh_view(state: ClickerState) -> void:
 		_status_label.text = LocalizationManager.tr_key("auto_transition.status_on")
 	else:
 		_status_label.text = LocalizationManager.tr_key("auto_transition.status_off")
+
+
+func is_open() -> bool:
+	return visible
 
 
 func hide_popup() -> void:
@@ -109,18 +110,4 @@ func _add_background_image_holder(container: Control, holder_name: String, asset
 	holder.stretch_mode = TextureRect.STRETCH_SCALE
 	container.add_child(holder)
 	container.move_child(holder, 0)
-	holder.set_asset_key(asset_key, Color.WHITE)
-
-
-func _make_image_icon_button(button: Button, asset_key: String) -> void:
-	ButtonVisualUtils.clear_image_button_styles(button)
-	button.text = ""
-	var holder = ImageSlotClass.new()
-	holder.name = "ButtonImageHolder"
-	holder.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	holder.fallback_color = Color.WHITE
-	holder.show_fallback_behind_texture = false
-	holder.stretch_mode = TextureRect.STRETCH_SCALE
-	button.add_child(holder)
 	holder.set_asset_key(asset_key, Color.WHITE)

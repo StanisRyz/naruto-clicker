@@ -56,7 +56,9 @@ func _on_partner_purchase_requested(partner_index: int, mode: String) -> void:
 func _on_skill_popup_requested(skill_id: String, anchor_global_position: Vector2) -> void:
 	if current_state == null:
 		return
-
+	if partner_skill_popup.is_showing_skill(skill_id):
+		partner_skill_popup.hide()
+		return
 	partner_skill_popup.show_skill(current_state, skill_id, anchor_global_position)
 
 

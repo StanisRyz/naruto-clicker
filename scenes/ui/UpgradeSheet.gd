@@ -61,11 +61,17 @@ func _on_character_level_upgrade_requested(mode: String) -> void:
 func _on_hero_skill_popup_requested(skill_id: String, anchor_global_position: Vector2) -> void:
 	if current_state == null:
 		return
+	if upgrade_skill_popup.is_showing_skill("hero", skill_id):
+		upgrade_skill_popup.hide()
+		return
 	upgrade_skill_popup.show_skill(current_state, "hero", skill_id, anchor_global_position)
 
 
 func _on_ability_skill_popup_requested(skill_id: String, anchor_global_position: Vector2) -> void:
 	if current_state == null:
+		return
+	if upgrade_skill_popup.is_showing_skill("ability", skill_id):
+		upgrade_skill_popup.hide()
 		return
 	upgrade_skill_popup.show_skill(current_state, "ability", skill_id, anchor_global_position)
 

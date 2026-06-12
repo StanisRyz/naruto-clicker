@@ -60,17 +60,17 @@ mouse_filter = 0
 color = Color(0, 0, 0, 0.55)
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
-custom_minimum_size = Vector2(360, 350)
+custom_minimum_size = Vector2(540, 525)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -180.0
-offset_top = -175.0
-offset_right = 180.0
-offset_bottom = 175.0
+offset_left = -270.0
+offset_top = -262.5
+offset_right = 270.0
+offset_bottom = 262.5
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 0
@@ -78,18 +78,18 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_settings_panel")
 
 [node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
 layout_mode = 2
-theme_override_constants/margin_left = 28
-theme_override_constants/margin_top = 26
-theme_override_constants/margin_right = 28
-theme_override_constants/margin_bottom = 28
+theme_override_constants/margin_left = 42
+theme_override_constants/margin_top = 39
+theme_override_constants/margin_right = 42
+theme_override_constants/margin_bottom = 42
 
 [node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 12
 
 [node name="Header" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 12
 
 [node name="TitleLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/Header"]
 layout_mode = 2
@@ -97,13 +97,13 @@ size_flags_horizontal = 3
 text = "Settings"
 
 [node name="CloseButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/Header"]
-custom_minimum_size = Vector2(44, 36)
+custom_minimum_size = Vector2(66, 54)
 layout_mode = 2
 text = "X"
 
 [node name="SoundRow" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 18
 
 [node name="SoundLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/SoundRow"]
 layout_mode = 2
@@ -112,13 +112,13 @@ text = "Sound"
 vertical_alignment = 1
 
 [node name="SoundToggleButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/SoundRow"]
-custom_minimum_size = Vector2(96, 44)
+custom_minimum_size = Vector2(144, 66)
 layout_mode = 2
 text = "ON"
 
 [node name="MusicRow" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 18
 
 [node name="MusicLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/MusicRow"]
 layout_mode = 2
@@ -127,17 +127,17 @@ text = "Music"
 vertical_alignment = 1
 
 [node name="MusicToggleButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/MusicRow"]
-custom_minimum_size = Vector2(96, 44)
+custom_minimum_size = Vector2(144, 66)
 layout_mode = 2
 text = "ON"
 
 [node name="SaveButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 48)
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 text = "Save Now"
 
 [node name="ResetButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 48)
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_reset_button")
 text = "Reset Progress"
@@ -174,17 +174,17 @@ mouse_filter = 0
 color = Color(0, 0, 0, 0.45)
 
 [node name="PanelContainer" type="PanelContainer" parent="ResetConfirmDialog"]
-custom_minimum_size = Vector2(340, 224)
+custom_minimum_size = Vector2(510, 336)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -170.0
-offset_top = -112.0
-offset_right = 170.0
-offset_bottom = 112.0
+offset_left = -255.0
+offset_top = -168.0
+offset_right = 255.0
+offset_bottom = 168.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 0
@@ -192,14 +192,14 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_reset_panel")
 
 [node name="MarginContainer" type="MarginContainer" parent="ResetConfirmDialog/PanelContainer"]
 layout_mode = 2
-theme_override_constants/margin_left = 21
-theme_override_constants/margin_top = 21
-theme_override_constants/margin_right = 21
-theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 24
 
 [node name="VBoxContainer" type="VBoxContainer" parent="ResetConfirmDialog/PanelContainer/MarginContainer"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 18
 
 [node name="TitleLabel" type="Label" parent="ResetConfirmDialog/PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -214,16 +214,16 @@ horizontal_alignment = 1
 
 [node name="ButtonRow" type="HBoxContainer" parent="ResetConfirmDialog/PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 15
 
 [node name="CancelButton" type="Button" parent="ResetConfirmDialog/PanelContainer/MarginContainer/VBoxContainer/ButtonRow"]
-custom_minimum_size = Vector2(0, 48)
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Cancel"
 
 [node name="ResetButton" type="Button" parent="ResetConfirmDialog/PanelContainer/MarginContainer/VBoxContainer/ButtonRow"]
-custom_minimum_size = Vector2(0, 48)
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/normal = SubResource("StyleBoxFlat_reset_button")

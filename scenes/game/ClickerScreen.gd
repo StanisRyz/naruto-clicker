@@ -899,6 +899,7 @@ func _on_auto_transition_popup_requested(anchor_global_position: Vector2, button
 
 
 func _toggle_auto_transition_and_show_popup(anchor: Vector2, button_global_rect: Rect2) -> void:
+	var was_open: bool = auto_transition_popup.is_open()
 	if state.auto_stage_advance_enabled:
 		state.set_auto_stage_advance_enabled(false)
 	else:
@@ -912,13 +913,19 @@ func _toggle_auto_transition_and_show_popup(anchor: Vector2, button_global_rect:
 			stage_navigator.center_on_level(state.current_level)
 			stage_navigator.set_auto_transition_enabled(state.auto_stage_advance_enabled)
 			_update_ui()
-			auto_transition_popup.show_popup(state, anchor, button_global_rect)
+			if was_open:
+				auto_transition_popup.hide_popup()
+			else:
+				auto_transition_popup.show_popup(state, anchor, button_global_rect)
 			_save_game_now()
 			await _play_spawn_smoke_and_unlock_after_invulnerability(current_token)
 			return
 	stage_navigator.set_auto_transition_enabled(state.auto_stage_advance_enabled)
 	_update_ui()
-	auto_transition_popup.show_popup(state, anchor, button_global_rect)
+	if was_open:
+		auto_transition_popup.hide_popup()
+	else:
+		auto_transition_popup.show_popup(state, anchor, button_global_rect)
 	_save_game_now()
 
 

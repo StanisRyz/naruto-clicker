@@ -18,7 +18,6 @@ const CONTENT_WIDTH: int = 322
 const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 
 @onready var panel_container: PanelContainer = $PanelContainer
-@onready var close_button: Button = $PanelContainer/ContentRoot/Header/CloseButton
 @onready var name_label: Label = $PanelContainer/ContentRoot/Header/NameLabel
 @onready var effect_label: Label = $PanelContainer/ContentRoot/EffectLabel
 @onready var requirement_label: Label = $PanelContainer/ContentRoot/RequirementLabel
@@ -34,13 +33,19 @@ var _buy_button_label: Label = null
 
 func _ready() -> void:
 	panel_container.gui_input.connect(_on_panel_container_gui_input)
-	close_button.pressed.connect(func() -> void: hide())
 	buy_button.pressed.connect(_on_buy_button_pressed)
 	_add_background_image_holder(panel_container, "PopupBackgroundImageHolder", "ui.popup.skill.background")
-	_make_image_icon_button(close_button, "ui.sheet.close_button")
 	_buy_button_label = _make_image_button_label(buy_button, "ui.popup.button.default", "")
 	_apply_fixed_panel_size()
 	_apply_fixed_row_layout()
+	hide()
+
+
+func is_showing_skill(owner_type: String, skill_id: String) -> bool:
+	return visible and current_owner_type == owner_type and current_skill_id == skill_id
+
+
+func hide_popup() -> void:
 	hide()
 
 

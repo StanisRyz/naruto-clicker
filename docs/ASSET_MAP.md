@@ -342,8 +342,8 @@ These sizes are authoritative for texture authoring. Popups and windows use expl
 | UpgradeSkillPopup | `assets/images/ui/popups/skill/background.png` | 350×270 px | `PopupBackgroundImageHolder` (added at runtime) |
 | PartnerSkillPopup | `assets/images/ui/popups/skill/background.png` | 350×270 px | `PopupBackgroundImageHolder` (added at runtime) |
 | AutoTransitionPopup | `assets/images/ui/popups/auto_transition/background.png` | 340×220 px | `PopupBackgroundImageHolder` (added at runtime) |
-| SettingsWindow | `assets/images/ui/windows/settings/background.png` | 360×350 px | `SettingsBackgroundImageHolder` (added at runtime) |
-| SettingsWindow ResetConfirmDialog | `assets/images/ui/windows/settings/reset_confirm_background.png` | 340×224 px | `ResetConfirmBackgroundImageHolder` (added at runtime) |
+| SettingsWindow | `assets/images/ui/windows/settings/background.png` | 540×525 px | `SettingsBackgroundImageHolder` (added at runtime) |
+| SettingsWindow ResetConfirmDialog | `assets/images/ui/windows/settings/reset_confirm_background.png` | 510×336 px | `ResetConfirmBackgroundImageHolder` (added at runtime) |
 | PrestigeConfirmDialog fullscreen | `assets/images/ui/dialogs/prestige/background.png` | 720×1280 px | `PrestigeDialogBackgroundImageHolder` (added at runtime) |
 | PrestigeConfirmDialog inner panel | `assets/images/ui/dialogs/prestige/inner_background.png` | 500×350 px | `PrestigeDialogInnerBackgroundImageHolder` (added at runtime) |
 | ShopPurchaseConfirmDialog inner panel | `assets/images/ui/popups/shop_confirm/background.png` | 500×230 px | `ShopPurchaseConfirmBackgroundImageHolder` (added at runtime) |
@@ -385,8 +385,8 @@ Close buttons reuse the existing sheet close button: `ui.sheet.close_button` / `
 
 | Asset key | Path | Recommended size | Used by |
 |-----------|------|-----------------|---------|
-| `ui.window.settings.background` | `assets/images/ui/windows/settings/background.png` | 360×350 px | SettingsWindow main panel |
-| `ui.window.settings.reset_confirm_background` | `assets/images/ui/windows/settings/reset_confirm_background.png` | 340×224 px | SettingsWindow reset confirm dialog |
+| `ui.window.settings.background` | `assets/images/ui/windows/settings/background.png` | 540×525 px | SettingsWindow main panel |
+| `ui.window.settings.reset_confirm_background` | `assets/images/ui/windows/settings/reset_confirm_background.png` | 510×336 px | SettingsWindow reset confirm dialog |
 | `ui.dialog.prestige.background` | `assets/images/ui/dialogs/prestige/background.png` | 720×1280 px | PrestigeConfirmDialog full-screen panel |
 | `ui.dialog.prestige.inner_background` | `assets/images/ui/dialogs/prestige/inner_background.png` | 500×350 px | PrestigeConfirmDialog inner panel |
 | `ui.popup.shop_confirm.background` | `assets/images/ui/popups/shop_confirm/background.png` | 500×230 px | ShopPurchaseConfirmDialog inner panel |
