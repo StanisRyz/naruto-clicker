@@ -253,15 +253,37 @@ static func get_shop_product_view_data(state: ClickerState, mode: String = "x1")
 		var cost_gems: int
 		var owned_count: int
 		var total_multiplier: int
+		var effect_key: String
+		var effect_params: Dictionary
 
 		if product_type == "permanent_multiplier":
 			cost_gems = ShopRuntime.get_permanent_upgrade_bulk_cost(state, product_id, buy_count)
 			owned_count = state.get_shop_permanent_upgrade_count(product_id)
 			total_multiplier = int(pow(ShopConfig.PERMANENT_UPGRADE_MULTIPLIER_PER_LEVEL, float(owned_count)))
+			var purchase_multiplier: int = int(pow(ShopConfig.PERMANENT_UPGRADE_MULTIPLIER_PER_LEVEL, float(buy_count)))
+			var bonus_type: String = String(product.get("bonus_type", ""))
+			match bonus_type:
+				"partner_dps":
+					effect_key = "shop.card.partner_dps_multiplier"
+				"click_damage":
+					effect_key = "shop.card.click_damage_multiplier"
+				"gold":
+					effect_key = "shop.card.gold_multiplier"
+				_:
+					effect_key = ""
+			effect_params = {"multiplier": str(purchase_multiplier)}
 		else:
 			cost_gems = int(product.get("cost_gems", 0)) * buy_count
 			owned_count = -1
 			total_multiplier = -1
+			var reward_type: String = String(product.get("reward_type", ""))
+			if reward_type == "gold":
+				var gold_amount: int = ShopRuntime.get_gold_pack_reward_for_count(state, product_id, buy_count)
+				effect_key = "shop.card.gold_reward"
+				effect_params = {"amount": NumberFormatter.compact(gold_amount)}
+			else:
+				effect_key = ""
+				effect_params = {}
 
 		result.append({
 			"id": product_id,
@@ -275,5 +297,7 @@ static func get_shop_product_view_data(state: ClickerState, mode: String = "x1")
 			"can_buy": state.gems >= cost_gems and cost_gems > 0,
 			"owned_count": owned_count,
 			"total_multiplier": total_multiplier,
+			"effect_key": effect_key,
+			"effect_params": effect_params,
 		})
 	return result

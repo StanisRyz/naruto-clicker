@@ -190,10 +190,10 @@ prestige.talent.05.purchase_gain,+{bonus}% Settlement,+{bonus}% Поселени
 prestige.talent.05.total_bonus,Settlement +{bonus}%,Поселение +{bonus}%,PrestigePanel talent 05 card row 4,{bonus} is integer current total bonus
 prestige.talent.06.purchase_gain,+{bonus}% Boss Damage,+{bonus}% Урон Боссу,PrestigePanel talent 06 card row 3,{bonus} is integer percent gain
 prestige.talent.06.total_bonus,Boss Damage +{bonus}%,Урон Боссу +{bonus}%,PrestigePanel talent 06 card row 4,{bonus} is integer current total bonus
-shop.gold_pack_small.name,Small Gold Pack,,ShopConfig product name,
-shop.gold_pack_small.description,Gain stage-scaled gold,,ShopConfig product description,
-shop.gold_pack_large.name,Large Gold Pack,,ShopConfig product name,
-shop.gold_pack_large.description,Gain a large stage-scaled gold reward,,ShopConfig product description,
+shop.gold_pack_small.name,Small Gold Pack,Малый пакет золота,ShopConfig product name,
+shop.gold_pack_small.description,Gain stage-scaled gold,Даёт золото с текущего этапа,ShopConfig product description,
+shop.gold_pack_large.name,Large Gold Pack,Большой пакет золота,ShopConfig product name,
+shop.gold_pack_large.description,Gain a large stage-scaled gold reward,Даёт крупное количество золота с текущего этапа,ShopConfig product description,
 shop.boss_retry_token.name,Boss Retry,,ShopConfig product name,
 shop.boss_retry_token.description,Return to the failed boss level,,ShopConfig product description,
 shop.task_boost.name,Task Reward Boost,,ShopConfig product name,
@@ -204,7 +204,13 @@ shop.permanent_click_damage_x2.name,Permanent Click Damage x2,Вечный x2 у
 shop.permanent_click_damage_x2.description,Permanently doubles click damage,Навсегда удваивает урон клика,Shop product description,
 shop.permanent_gold_x2.name,Permanent Gold x2,Вечный x2 золото,Shop product name,
 shop.permanent_gold_x2.description,Permanently doubles gold from enemies,Навсегда удваивает золото с врагов,Shop product description,
-shop.buy_button_count,Buy x{count}\n{cost} Gems,Купить x{count}\n{cost} гемов,Shop buy button text,"{count}=purchase count; {cost}=total gems cost"
+shop.buy_button_count,x{count} - {cost},x{count} - {cost},ShopPanel buy button,{count} is integer; {cost} is compact number
+shop.card.gold_reward,Gives +{amount} Gold,Даёт +{amount} золота,ShopPanel card effect row for gold packs,{amount} is compact number
+shop.card.partner_dps_multiplier,Gives Partner DPS x{multiplier},Даёт DPS партнёров x{multiplier},ShopPanel card effect row for partner DPS product,{multiplier} is integer
+shop.card.click_damage_multiplier,Gives Click Damage x{multiplier},Даёт урон клика x{multiplier},ShopPanel card effect row for click damage product,{multiplier} is integer
+shop.card.gold_multiplier,Gives Gold x{multiplier},Даёт золото x{multiplier},ShopPanel card effect row for gold multiplier product,{multiplier} is integer
+shop.card.owned,Owned: {count},Копий: {count},ShopPanel card row 4 owned count,{count} is integer
+shop.card.total_multiplier,Total bonus: x{multiplier},Суммарный бонус: x{multiplier},ShopPanel card row 5 total bonus,{multiplier} is integer
 task.manual_damage_500.title,Deal 500 manual damage,,TaskConfig task title,
 task.defeat_25_enemies.title,Defeat 25 enemies,,TaskConfig task title,
 task.defeat_2_elites.title,Defeat 2 elite enemies,,TaskConfig task title,

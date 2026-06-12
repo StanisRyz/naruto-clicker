@@ -39,6 +39,21 @@ static func get_shop_product(product_id: String) -> Dictionary:
 	return {}
 
 
+static func get_gold_pack_reward_for_count(state: ClickerState, product_id: String, count: int) -> int:
+	var base_reward_unit: int = state.get_current_task_reward_unit()
+	var gold_per_pack: int
+	match product_id:
+		"gold_pack_small":
+			gold_per_pack = maxi(1, ceili(float(base_reward_unit) / BalanceConfig.TASK_BASELINE_TTK_SECONDS * BalanceConfig.SHOP_SMALL_GOLD_ETV_SECONDS))
+		"gold_pack_large":
+			gold_per_pack = maxi(1, ceili(float(base_reward_unit) / BalanceConfig.TASK_BASELINE_TTK_SECONDS * BalanceConfig.SHOP_LARGE_GOLD_ETV_SECONDS))
+		_:
+			var product: Dictionary = get_shop_product(product_id)
+			var reward_scale: int = int(product.get("reward_scale", 0))
+			gold_per_pack = maxi(1, base_reward_unit * reward_scale)
+	return gold_per_pack * count
+
+
 static func buy_shop_products(state: ClickerState, product_id: String, mode: String) -> Dictionary:
 	var product: Dictionary = get_shop_product(product_id)
 	if product.is_empty():
@@ -79,17 +94,7 @@ static func buy_shop_products(state: ClickerState, product_id: String, mode: Str
 
 	match reward_type:
 		"gold":
-			var base_reward_unit: int = state.get_current_task_reward_unit()
-			var gold_per_pack: int
-			match product_id:
-				"gold_pack_small":
-					gold_per_pack = maxi(1, ceili(float(base_reward_unit) / BalanceConfig.TASK_BASELINE_TTK_SECONDS * BalanceConfig.SHOP_SMALL_GOLD_ETV_SECONDS))
-				"gold_pack_large":
-					gold_per_pack = maxi(1, ceili(float(base_reward_unit) / BalanceConfig.TASK_BASELINE_TTK_SECONDS * BalanceConfig.SHOP_LARGE_GOLD_ETV_SECONDS))
-				_:
-					var reward_scale: int = int(product.get("reward_scale", 0))
-					gold_per_pack = maxi(1, base_reward_unit * reward_scale)
-			var shop_gold: int = gold_per_pack * count
+			var shop_gold: int = get_gold_pack_reward_for_count(state, product_id, count)
 			state.gold += shop_gold
 			result["reward_gold"] = shop_gold
 			result["status_text"] = "%s x%d purchased! +%d gold" % [product_name, count, shop_gold]

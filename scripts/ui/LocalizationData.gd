@@ -4,8 +4,8 @@ extends RefCounted
 # AUTO-GENERATED — do not edit by hand.
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
-# Generated key count: 279
-# Generated at: 1781200159
+# Generated key count: 285
+# Generated at: 1781237629
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -214,7 +214,13 @@ const TRANSLATIONS: Dictionary = {
 		"shop.permanent_click_damage_x2.description": "Permanently doubles click damage",
 		"shop.permanent_gold_x2.name": "Permanent Gold x2",
 		"shop.permanent_gold_x2.description": "Permanently doubles gold from enemies",
-		"shop.buy_button_count": "Buy x{count}\n{cost} Gems",
+		"shop.buy_button_count": "x{count} - {cost}",
+		"shop.card.gold_reward": "Gives +{amount} Gold",
+		"shop.card.partner_dps_multiplier": "Gives Partner DPS x{multiplier}",
+		"shop.card.click_damage_multiplier": "Gives Click Damage x{multiplier}",
+		"shop.card.gold_multiplier": "Gives Gold x{multiplier}",
+		"shop.card.owned": "Owned: {count}",
+		"shop.card.total_multiplier": "Total bonus: x{multiplier}",
 		"task.manual_damage_500.title": "Deal 500 manual damage",
 		"task.defeat_25_enemies.title": "Defeat 25 enemies",
 		"task.defeat_2_elites.title": "Defeat 2 elite enemies",
@@ -481,10 +487,10 @@ const TRANSLATIONS: Dictionary = {
 		"prestige.talent.05.total_bonus": "Поселение +{bonus}%",
 		"prestige.talent.06.purchase_gain": "+{bonus}% Урон Боссу",
 		"prestige.talent.06.total_bonus": "Урон Боссу +{bonus}%",
-		"shop.gold_pack_small.name": "",
-		"shop.gold_pack_small.description": "",
-		"shop.gold_pack_large.name": "",
-		"shop.gold_pack_large.description": "",
+		"shop.gold_pack_small.name": "Малый пакет золота",
+		"shop.gold_pack_small.description": "Даёт золото с текущего этапа",
+		"shop.gold_pack_large.name": "Большой пакет золота",
+		"shop.gold_pack_large.description": "Даёт крупное количество золота с текущего этапа",
 		"shop.boss_retry_token.name": "",
 		"shop.boss_retry_token.description": "",
 		"shop.task_boost.name": "",
@@ -495,7 +501,13 @@ const TRANSLATIONS: Dictionary = {
 		"shop.permanent_click_damage_x2.description": "Навсегда удваивает урон клика",
 		"shop.permanent_gold_x2.name": "Вечный x2 золото",
 		"shop.permanent_gold_x2.description": "Навсегда удваивает золото с врагов",
-		"shop.buy_button_count": "Купить x{count}\n{cost} гемов",
+		"shop.buy_button_count": "x{count} - {cost}",
+		"shop.card.gold_reward": "Даёт +{amount} золота",
+		"shop.card.partner_dps_multiplier": "Даёт DPS партнёров x{multiplier}",
+		"shop.card.click_damage_multiplier": "Даёт урон клика x{multiplier}",
+		"shop.card.gold_multiplier": "Даёт золото x{multiplier}",
+		"shop.card.owned": "Копий: {count}",
+		"shop.card.total_multiplier": "Суммарный бонус: x{multiplier}",
 		"task.manual_damage_500.title": "",
 		"task.defeat_25_enemies.title": "",
 		"task.defeat_2_elites.title": "",

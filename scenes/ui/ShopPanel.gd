@@ -122,41 +122,41 @@ func _create_product_row(product_id: String) -> Dictionary:
 	right_content.add_child(name_label)
 	UiFontConfig.apply_label_font_size(name_label, UiFontConfig.UPGRADE_NAME_FONT_SIZE)
 
-	var price_label := Label.new()
-	price_label.name = "ProductPriceLabel"
-	price_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	price_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	price_label.autowrap_mode = TextServer.AUTOWRAP_OFF
-	_place_card_row(price_label, CARD_ROW_1_HEIGHT + CARD_ROW_GAP, CARD_ROW_2_HEIGHT)
-	right_content.add_child(price_label)
-	UiFontConfig.apply_label_font_size(price_label, UiFontConfig.UPGRADE_GAIN_FONT_SIZE)
+	var description_label := Label.new()
+	description_label.name = "ProductDescriptionLabel"
+	description_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	description_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	description_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_place_card_row(description_label, CARD_ROW_1_HEIGHT + CARD_ROW_GAP, CARD_ROW_2_HEIGHT)
+	right_content.add_child(description_label)
+	UiFontConfig.apply_label_font_size(description_label, UiFontConfig.UPGRADE_GAIN_FONT_SIZE)
 
-	var desc_label := Label.new()
-	desc_label.name = "ProductDescriptionLabel"
-	desc_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	desc_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	desc_label.autowrap_mode = TextServer.AUTOWRAP_OFF
-	_place_card_row(desc_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_GAP * 2, CARD_ROW_3_HEIGHT)
-	right_content.add_child(desc_label)
-	UiFontConfig.apply_label_font_size(desc_label, UiFontConfig.UPGRADE_VALUE_FONT_SIZE)
+	var effect_label := Label.new()
+	effect_label.name = "ProductEffectLabel"
+	effect_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	effect_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	effect_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_place_card_row(effect_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_GAP * 2, CARD_ROW_3_HEIGHT)
+	right_content.add_child(effect_label)
+	UiFontConfig.apply_label_font_size(effect_label, UiFontConfig.UPGRADE_VALUE_FONT_SIZE)
 
-	var extra_label := Label.new()
-	extra_label.name = "ProductExtraLabel"
-	extra_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	extra_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	extra_label.autowrap_mode = TextServer.AUTOWRAP_OFF
-	_place_card_row(extra_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_3_HEIGHT + CARD_ROW_GAP * 3, CARD_ROW_4_HEIGHT)
-	right_content.add_child(extra_label)
-	UiFontConfig.apply_label_font_size(extra_label, UiFontConfig.UPGRADE_VALUE_FONT_SIZE)
+	var owned_label := Label.new()
+	owned_label.name = "ProductOwnedLabel"
+	owned_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	owned_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	owned_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_place_card_row(owned_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_3_HEIGHT + CARD_ROW_GAP * 3, CARD_ROW_4_HEIGHT)
+	right_content.add_child(owned_label)
+	UiFontConfig.apply_label_font_size(owned_label, UiFontConfig.UPGRADE_VALUE_FONT_SIZE)
 
-	var empty_label := Label.new()
-	empty_label.name = "EmptyRowLabel"
-	empty_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	empty_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	empty_label.autowrap_mode = TextServer.AUTOWRAP_OFF
-	_place_card_row(empty_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_3_HEIGHT + CARD_ROW_4_HEIGHT + CARD_ROW_GAP * 4, CARD_ROW_5_HEIGHT)
-	right_content.add_child(empty_label)
-	UiFontConfig.apply_label_font_size(empty_label, UiFontConfig.UPGRADE_MILESTONE_FONT_SIZE)
+	var total_bonus_label := Label.new()
+	total_bonus_label.name = "ProductTotalBonusLabel"
+	total_bonus_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	total_bonus_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	total_bonus_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_place_card_row(total_bonus_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_3_HEIGHT + CARD_ROW_4_HEIGHT + CARD_ROW_GAP * 4, CARD_ROW_5_HEIGHT)
+	right_content.add_child(total_bonus_label)
+	UiFontConfig.apply_label_font_size(total_bonus_label, UiFontConfig.UPGRADE_MILESTONE_FONT_SIZE)
 
 	var button := Button.new()
 	button.name = "BuyButton"
@@ -207,9 +207,10 @@ func _create_product_row(product_id: String) -> Dictionary:
 
 	return {
 		"name_label": name_label,
-		"price_label": price_label,
-		"desc_label": desc_label,
-		"extra_label": extra_label,
+		"description_label": description_label,
+		"effect_label": effect_label,
+		"owned_label": owned_label,
+		"total_bonus_label": total_bonus_label,
 		"button": button,
 		"button_label": button_label,
 		"button_image_holder": button_image_holder,
@@ -220,9 +221,10 @@ func _create_product_row(product_id: String) -> Dictionary:
 
 func _update_product_row(product_data: Dictionary, row: Dictionary) -> void:
 	var name_label: Label = row["name_label"]
-	var price_label: Label = row["price_label"]
-	var desc_label: Label = row["desc_label"]
-	var extra_label: Label = row["extra_label"]
+	var description_label: Label = row["description_label"]
+	var effect_label: Label = row["effect_label"]
+	var owned_label: Label = row["owned_label"]
+	var total_bonus_label: Label = row["total_bonus_label"]
 	var button: Button = row["button"]
 	var button_label: Label = row["button_label"]
 	var button_image_holder = row["button_image_holder"]
@@ -237,27 +239,26 @@ func _update_product_row(product_data: Dictionary, row: Dictionary) -> void:
 	var owned_count: int = int(product_data.get("owned_count", -1))
 	var total_multiplier: int = int(product_data.get("total_multiplier", -1))
 	var product_type: String = String(product_data.get("product_type", "consumable"))
+	var effect_key: String = String(product_data.get("effect_key", ""))
+	var effect_params: Dictionary = product_data.get("effect_params", {})
 
 	name_label.text = display_name
-	desc_label.text = display_desc
-
-	var can_buy: bool = bool(product_data.get("can_buy", false))
+	description_label.text = display_desc
+	effect_label.text = LocalizationManager.format_key(effect_key, effect_params) if effect_key != "" else ""
 
 	if product_type == "permanent_multiplier":
-		price_label.text = LocalizationManager.format_key(
-			"shop.buy_button_count",
-			{"count": str(buy_count), "cost": NumberFormatter.compact(cost_gems)}
-		)
-		extra_label.text = "Owned: %d  |  Current: x%d" % [owned_count, total_multiplier]
+		owned_label.text = LocalizationManager.format_key("shop.card.owned", {"count": str(owned_count)})
+		total_bonus_label.text = LocalizationManager.format_key("shop.card.total_multiplier", {"multiplier": str(total_multiplier)})
 	else:
-		price_label.text = LocalizationManager.format_key(
-			"shop.buy_button_count",
-			{"count": str(buy_count), "cost": NumberFormatter.compact(cost_gems)}
-		)
-		extra_label.text = ""
+		owned_label.text = ""
+		total_bonus_label.text = ""
 
+	var can_buy: bool = bool(product_data.get("can_buy", false))
 	button.disabled = not can_buy
-	button_label.text = LocalizationManager.tr_key("shop.buy_button")
+	button_label.text = LocalizationManager.format_key(
+		"shop.buy_button_count",
+		{"count": str(buy_count), "cost": NumberFormatter.compact(cost_gems)}
+	)
 	button_image_holder.modulate = Color.WHITE if can_buy else Color(0.65, 0.65, 0.65, 1.0)
 	button_label.modulate = Color.WHITE if can_buy else Color(0.45, 0.45, 0.45, 1.0)
 
