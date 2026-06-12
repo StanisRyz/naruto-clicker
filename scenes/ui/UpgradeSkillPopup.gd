@@ -4,8 +4,8 @@ extends Control
 signal hero_skill_purchase_requested(skill_id: String)
 signal ability_skill_purchase_requested(skill_id: String)
 
-const POPUP_WIDTH: float = 300.0
-const POPUP_HEIGHT: float = 260.0
+const POPUP_WIDTH: float = 350.0
+const POPUP_HEIGHT: float = 270.0
 const POPUP_SIZE: Vector2 = Vector2(POPUP_WIDTH, POPUP_HEIGHT)
 const POPUP_MARGIN: float = 8.0
 const BOTTOM_SAFE_MARGIN: float = 112.0
