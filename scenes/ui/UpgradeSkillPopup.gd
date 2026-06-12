@@ -10,15 +10,20 @@ const POPUP_SIZE: Vector2 = Vector2(POPUP_WIDTH, POPUP_HEIGHT)
 const POPUP_MARGIN: float = 8.0
 const BOTTOM_SAFE_MARGIN: float = 112.0
 
+const MARGIN_LEFT: int = 14
+const MARGIN_TOP: int = 12
+const MARGIN_RIGHT: int = 14
+const CONTENT_WIDTH: int = 322
+
 const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 
 @onready var panel_container: PanelContainer = $PanelContainer
-@onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/Header/CloseButton
-@onready var name_label: Label = $PanelContainer/MarginContainer/VBoxContainer/Header/NameLabel
-@onready var effect_label: Label = $PanelContainer/MarginContainer/VBoxContainer/EffectLabel
-@onready var requirement_label: Label = $PanelContainer/MarginContainer/VBoxContainer/RequirementLabel
-@onready var current_state_label: Label = $PanelContainer/MarginContainer/VBoxContainer/CurrentStateLabel
-@onready var buy_button: Button = $PanelContainer/MarginContainer/VBoxContainer/BuyButton
+@onready var close_button: Button = $PanelContainer/ContentRoot/Header/CloseButton
+@onready var name_label: Label = $PanelContainer/ContentRoot/Header/NameLabel
+@onready var effect_label: Label = $PanelContainer/ContentRoot/EffectLabel
+@onready var requirement_label: Label = $PanelContainer/ContentRoot/RequirementLabel
+@onready var current_state_label: Label = $PanelContainer/ContentRoot/CurrentStateLabel
+@onready var buy_button: Button = $PanelContainer/ContentRoot/BuyButton
 
 var current_skill_id: String = ""
 var current_owner_type: String = ""
@@ -35,6 +40,7 @@ func _ready() -> void:
 	_make_image_icon_button(close_button, "ui.sheet.close_button")
 	_buy_button_label = _make_image_button_label(buy_button, "ui.popup.button.default", "")
 	_apply_fixed_panel_size()
+	_apply_fixed_row_layout()
 	hide()
 
 
@@ -43,8 +49,10 @@ func show_skill(state: ClickerState, owner_type: String, skill_id: String, ancho
 	current_skill_id = skill_id
 	current_anchor_global_position = anchor_global_position
 	_apply_fixed_panel_size()
+	_apply_fixed_row_layout()
 	_update_view(state)
 	_apply_fixed_panel_size()
+	_apply_fixed_row_layout()
 	_position_panel(POPUP_SIZE)
 	show()
 	call_deferred("_deferred_resize_and_position_panel")
@@ -122,8 +130,31 @@ func _apply_fixed_panel_size() -> void:
 	panel_container.clip_contents = true
 
 
+func _apply_fixed_row_layout() -> void:
+	var header: HBoxContainer = $PanelContainer/ContentRoot/Header
+	_place_control(header, MARGIN_LEFT, MARGIN_TOP, CONTENT_WIDTH, 36)
+	_place_control(effect_label, MARGIN_LEFT, 56, CONTENT_WIDTH, 54)
+	_place_control(requirement_label, MARGIN_LEFT, 118, CONTENT_WIDTH, 34)
+	_place_control(current_state_label, MARGIN_LEFT, 160, CONTENT_WIDTH, 34)
+	_place_control(buy_button, MARGIN_LEFT, 202, CONTENT_WIDTH, 56)
+
+
+func _place_control(control: Control, x: int, y: int, w: int, h: int) -> void:
+	control.anchor_left = 0.0
+	control.anchor_top = 0.0
+	control.anchor_right = 0.0
+	control.anchor_bottom = 0.0
+	control.offset_left = x
+	control.offset_top = y
+	control.offset_right = x + w
+	control.offset_bottom = y + h
+	control.custom_minimum_size = Vector2(w, h)
+	control.size = Vector2(w, h)
+
+
 func _deferred_resize_and_position_panel() -> void:
 	_apply_fixed_panel_size()
+	_apply_fixed_row_layout()
 	_position_panel(POPUP_SIZE)
 
 

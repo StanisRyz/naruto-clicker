@@ -1,9 +1,6 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/PrestigeConfirmDialog.gd" id="1_pcd"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dialog_panel"]
-bg_color = Color(0.045, 0.05, 0.06, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dialog_inner"]
 bg_color = Color(0.08, 0.085, 0.1, 1)
@@ -24,7 +21,7 @@ grow_vertical = 2
 mouse_filter = 0
 script = ExtResource("1_pcd")
 
-[node name="PanelContainer" type="PanelContainer" parent="."]
+[node name="DimOverlay" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -32,64 +29,78 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 0
-theme_override_styles/panel = SubResource("StyleBoxFlat_dialog_panel")
+color = Color(0, 0, 0, 0.55)
 
-[node name="CenterContainer" type="CenterContainer" parent="PanelContainer"]
-layout_mode = 2
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
-[node name="InnerPanel" type="PanelContainer" parent="PanelContainer/CenterContainer"]
+[node name="InnerPanel" type="PanelContainer" parent="CenterContainer"]
 custom_minimum_size = Vector2(656, 350)
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
+mouse_filter = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_dialog_inner")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/CenterContainer/InnerPanel"]
+[node name="MarginContainer" type="MarginContainer" parent="CenterContainer/InnerPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 24
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/InnerPanel/MarginContainer"]
 layout_mode = 2
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="TitleLabel" type="Label" parent="PanelContainer/CenterContainer/InnerPanel/VBoxContainer"]
+[node name="TitleLabel" type="Label" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = ""
 horizontal_alignment = 1
 
-[node name="StageLabel" type="Label" parent="PanelContainer/CenterContainer/InnerPanel/VBoxContainer"]
+[node name="StageLabel" type="Label" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = ""
 horizontal_alignment = 1
 
-[node name="LevelLabel" type="Label" parent="PanelContainer/CenterContainer/InnerPanel/VBoxContainer"]
+[node name="LevelLabel" type="Label" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = ""
 horizontal_alignment = 1
 
-[node name="PointsToGainLabel" type="Label" parent="PanelContainer/CenterContainer/InnerPanel/VBoxContainer"]
+[node name="PointsToGainLabel" type="Label" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = ""
 horizontal_alignment = 1
 
-[node name="ResetWarningLabel" type="Label" parent="PanelContainer/CenterContainer/InnerPanel/VBoxContainer"]
+[node name="ResetWarningLabel" type="Label" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = ""
 horizontal_alignment = 1
 
-[node name="TalentsKeptLabel" type="Label" parent="PanelContainer/CenterContainer/InnerPanel/VBoxContainer"]
+[node name="TalentsKeptLabel" type="Label" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = ""
 horizontal_alignment = 1
 
-[node name="ButtonRow" type="HBoxContainer" parent="PanelContainer/CenterContainer/InnerPanel/VBoxContainer"]
+[node name="ButtonRow" type="HBoxContainer" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="YesButton" type="Button" parent="PanelContainer/CenterContainer/InnerPanel/VBoxContainer/ButtonRow"]
+[node name="YesButton" type="Button" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ButtonRow"]
 custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Yes"
 
-[node name="NoButton" type="Button" parent="PanelContainer/CenterContainer/InnerPanel/VBoxContainer/ButtonRow"]
+[node name="NoButton" type="Button" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ButtonRow"]
 custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 size_flags_horizontal = 3

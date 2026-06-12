@@ -1,9 +1,8 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/PrestigeSheet.gd" id="1_psheet"]
 [ext_resource type="Script" path="res://scripts/ui/ImageSlot.gd" id="4_image_slot"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PrestigePanel.tscn" id="2_ppanel"]
-[ext_resource type="PackedScene" path="res://scenes/ui/PrestigeConfirmDialog.tscn" id="3_pcd"]
 [ext_resource type="PackedScene" path="res://scenes/ui/BuyModeSelector.tscn" id="5_buy_mode"]
 
 [node name="PrestigeSheet" type="Control"]
@@ -108,5 +107,3 @@ vertical_scroll_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="PrestigeConfirmDialog" parent="." instance=ExtResource("3_pcd")]
-layout_mode = 1

@@ -9,7 +9,6 @@ signal closed
 @onready var header_resource_value_label: Label = $PanelContainer/MarginContainer/VBoxContainer/Header/HeaderResourceContainer/ResourceValueLabel
 @onready var buy_mode_selector: BuyModeSelector = $PanelContainer/MarginContainer/VBoxContainer/BuyModeSelector
 @onready var prestige_panel: PrestigePanel = $PanelContainer/MarginContainer/VBoxContainer/ScrollContainer/PrestigePanel
-@onready var prestige_confirm_dialog: PrestigeConfirmDialog = $PrestigeConfirmDialog
 
 var current_state: ClickerState = null
 
@@ -30,7 +29,6 @@ func show_sheet() -> void:
 
 
 func hide_sheet() -> void:
-	prestige_confirm_dialog.hide()
 	hide()
 	closed.emit()
 
@@ -39,10 +37,6 @@ func update_view(state: ClickerState) -> void:
 	current_state = state
 	header_resource_value_label.text = NumberFormatter.compact(state.prestige_points_available)
 	prestige_panel.update_view(state)
-
-
-func show_prestige_confirm(state: ClickerState) -> void:
-	prestige_confirm_dialog.show_dialog(state)
 
 
 func _on_buy_mode_changed(mode: String) -> void:

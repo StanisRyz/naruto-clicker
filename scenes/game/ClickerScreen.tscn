@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://iyfdkc71gxgi"]
+[gd_scene load_steps=19 format=3 uid="uid://iyfdkc71gxgi"]
 
 [ext_resource type="Script" uid="uid://dnim7mf4hei23" path="res://scenes/game/ClickerScreen.gd" id="1_ymqc8"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PrimaryStatsPanel.tscn" id="2_primary"]
@@ -17,6 +17,7 @@
 [ext_resource type="Theme" uid="uid://wdthdulajagr" path="res://themes/main_theme.tres" id="16_main_theme"]
 [ext_resource type="Script" uid="uid://ce8dj0fpb4kbh" path="res://scenes/ui/CombatEffectsLayer.gd" id="17_combat"]
 [ext_resource type="Script" uid="uid://chiw5g6nystq4" path="res://scripts/ui/ImageSlot.gd" id="18_imageslot"]
+[ext_resource type="PackedScene" path="res://scenes/ui/PrestigeConfirmDialog.tscn" id="19_pcd"]
 
 [node name="ClickerScreen" type="Control"]
 layout_mode = 3
@@ -291,3 +292,11 @@ layout_mode = 1
 
 [node name="SettingsWindow" parent="." instance=ExtResource("15_settings")]
 layout_mode = 1
+
+[node name="PrestigeConfirmDialog" parent="." instance=ExtResource("19_pcd")]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

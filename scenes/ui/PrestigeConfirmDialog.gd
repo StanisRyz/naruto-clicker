@@ -6,22 +6,20 @@ signal cancelled
 
 const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 
-@onready var _title_label: Label = $PanelContainer/CenterContainer/InnerPanel/VBoxContainer/TitleLabel
-@onready var _stage_label: Label = $PanelContainer/CenterContainer/InnerPanel/VBoxContainer/StageLabel
-@onready var _level_label: Label = $PanelContainer/CenterContainer/InnerPanel/VBoxContainer/LevelLabel
-@onready var _points_label: Label = $PanelContainer/CenterContainer/InnerPanel/VBoxContainer/PointsToGainLabel
-@onready var _reset_warning_label: Label = $PanelContainer/CenterContainer/InnerPanel/VBoxContainer/ResetWarningLabel
-@onready var _talents_kept_label: Label = $PanelContainer/CenterContainer/InnerPanel/VBoxContainer/TalentsKeptLabel
-@onready var yes_button: Button = $PanelContainer/CenterContainer/InnerPanel/VBoxContainer/ButtonRow/YesButton
-@onready var no_button: Button = $PanelContainer/CenterContainer/InnerPanel/VBoxContainer/ButtonRow/NoButton
+@onready var _title_label: Label = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/TitleLabel
+@onready var _stage_label: Label = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/StageLabel
+@onready var _level_label: Label = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/LevelLabel
+@onready var _points_label: Label = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/PointsToGainLabel
+@onready var _reset_warning_label: Label = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ResetWarningLabel
+@onready var _talents_kept_label: Label = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/TalentsKeptLabel
+@onready var yes_button: Button = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ButtonRow/YesButton
+@onready var no_button: Button = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ButtonRow/NoButton
 
 
 func _ready() -> void:
 	yes_button.pressed.connect(_on_yes_pressed)
 	no_button.pressed.connect(_on_no_pressed)
-	var outer_panel: PanelContainer = $PanelContainer
-	var inner_panel: PanelContainer = $PanelContainer/CenterContainer/InnerPanel
-	_add_background_image_holder(outer_panel, "PrestigeDialogBackgroundImageHolder", "ui.dialog.prestige.background")
+	var inner_panel: PanelContainer = $CenterContainer/InnerPanel
 	_add_background_image_holder(inner_panel, "PrestigeDialogInnerBackgroundImageHolder", "ui.dialog.prestige.inner_background")
 	_make_image_button_label(yes_button, "ui.popup.button.default", LocalizationManager.tr_key("prestige.confirm.yes"))
 	_make_image_button_label(no_button, "ui.popup.button.default", LocalizationManager.tr_key("prestige.confirm.no"))
@@ -38,6 +36,7 @@ func show_dialog(state: ClickerState) -> void:
 	_reset_warning_label.text = L.tr_key("prestige.confirm.reset_warning")
 	_talents_kept_label.text = L.tr_key("prestige.confirm.talents_kept")
 	show()
+	move_to_front()
 
 
 func _on_yes_pressed() -> void:

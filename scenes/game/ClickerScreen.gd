@@ -64,7 +64,7 @@ var _debug_visual_test_previous_gems: int = 0
 @onready var settlement_sheet: SettlementSheet = $SettlementSheet
 @onready var prestige_sheet: PrestigeSheet = $PrestigeSheet
 @onready var shop_sheet: ShopSheet = $ShopSheet
-@onready var prestige_confirm_dialog: PrestigeConfirmDialog = $PrestigeSheet/PrestigeConfirmDialog
+@onready var prestige_confirm_dialog: PrestigeConfirmDialog = $PrestigeConfirmDialog
 @onready var upgrades_button_image = $BottomBar/MarginContainer/HBoxContainer/UpgradesButton/ImageHolder
 @onready var partners_button_image = $BottomBar/MarginContainer/HBoxContainer/PartnersButton/ImageHolder
 @onready var settlement_button_image = $BottomBar/MarginContainer/HBoxContainer/SettlementButton/ImageHolder
@@ -435,7 +435,7 @@ func _on_shop_button_pressed() -> void:
 
 
 func _on_prestige_requested() -> void:
-	prestige_sheet.show_prestige_confirm(state)
+	prestige_confirm_dialog.show_dialog(state)
 
 
 func _on_prestige_talent_purchase_requested(talent_index: int, mode: String) -> void:
