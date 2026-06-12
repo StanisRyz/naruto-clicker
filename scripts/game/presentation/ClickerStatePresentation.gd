@@ -32,11 +32,23 @@ static func get_building_short_effect_description(state: ClickerState, building_
 			return "+%d%% Bonus" % amount
 
 
+# --- Localization helper (safe for headless/tool mode where autoload may be absent) ---
+
+static func _fmt(key: String, params: Dictionary = {}) -> String:
+	var tree: MainLoop = Engine.get_main_loop()
+	if tree == null:
+		return key
+	var lm: Node = (tree as SceneTree).root.get_node_or_null("LocalizationManager")
+	if lm == null:
+		return key
+	return lm.format_key(key, params)
+
+
 # --- Building card localized text helpers ---
 
 static func get_building_purchase_bonus_gain_text(state: ClickerState, building_index: int, mode: String) -> String:
 	var bonus: int = state.get_building_display_bulk_bonus_gain(building_index, mode)
-	return LocalizationManager.format_key(
+	return _fmt(
 		SettlementConfig.get_purchase_gain_key(building_index),
 		{"bonus": NumberFormatter.compact(bonus)}
 	)
@@ -44,7 +56,7 @@ static func get_building_purchase_bonus_gain_text(state: ClickerState, building_
 
 static func get_building_total_bonus_text(state: ClickerState, building_index: int) -> String:
 	var bonus: int = state.get_building_display_total_bonus_percent(building_index)
-	return LocalizationManager.format_key(
+	return _fmt(
 		SettlementConfig.get_total_bonus_key(building_index),
 		{"bonus": NumberFormatter.compact(bonus)}
 	)
@@ -87,7 +99,7 @@ static func get_prestige_talent_description(state: ClickerState, talent_index: i
 
 static func get_prestige_talent_purchase_bonus_gain_text(state: ClickerState, talent_index: int, mode: String) -> String:
 	var bonus: int = state.get_prestige_talent_display_bulk_bonus_gain(talent_index, mode)
-	return LocalizationManager.format_key(
+	return _fmt(
 		PrestigeConfig.get_purchase_gain_key(talent_index),
 		{"bonus": NumberFormatter.compact(bonus)}
 	)
@@ -95,7 +107,7 @@ static func get_prestige_talent_purchase_bonus_gain_text(state: ClickerState, ta
 
 static func get_prestige_talent_total_bonus_text(state: ClickerState, talent_index: int) -> String:
 	var bonus: int = state.get_prestige_talent_display_total_bonus_percent(talent_index)
-	return LocalizationManager.format_key(
+	return _fmt(
 		PrestigeConfig.get_total_bonus_key(talent_index),
 		{"bonus": NumberFormatter.compact(bonus)}
 	)
@@ -157,25 +169,25 @@ static func get_ability_effect_text(state: ClickerState, ability_id: String) -> 
 				BalanceConfig.AUTOCLICK_BASE_HITS_PER_SEC
 				* (1.0 + BalanceConfig.AUTOCLICK_RANK_RATE_STEP * rank)
 			)
-			return LocalizationManager.format_key(
+			return _fmt(
 				AbilityConfig.get_effect_key(ability_id),
 				{"hits": hits}
 			)
 		"gold_bonus":
 			var multiplier: float = BalanceConfig.ABILITY_BASE_MULTIPLIER + BalanceConfig.ABILITY_RANK_MULTIPLIER_STEP * rank
-			return LocalizationManager.format_key(
+			return _fmt(
 				AbilityConfig.get_effect_key(ability_id),
 				{"multiplier": "%.2f" % multiplier}
 			)
 		"focus_burst":
 			var multiplier: float = BalanceConfig.ABILITY_BASE_MULTIPLIER + BalanceConfig.ABILITY_RANK_MULTIPLIER_STEP * rank
-			return LocalizationManager.format_key(
+			return _fmt(
 				AbilityConfig.get_effect_key(ability_id),
 				{"multiplier": "%.2f" % multiplier}
 			)
 		"rally":
 			var multiplier: float = BalanceConfig.ABILITY_BASE_MULTIPLIER + BalanceConfig.ABILITY_RANK_MULTIPLIER_STEP * rank
-			return LocalizationManager.format_key(
+			return _fmt(
 				AbilityConfig.get_effect_key(ability_id),
 				{"multiplier": "%.2f" % multiplier}
 			)
@@ -196,7 +208,7 @@ static func get_ability_duration_text(state: ClickerState, ability_id: String) -
 			seconds = int(BalanceConfig.RALLY_BASE_DURATION_SEC)
 		_:
 			return ""
-	return LocalizationManager.format_key(AbilityConfig.get_duration_key(ability_id), {"seconds": seconds})
+	return _fmt(AbilityConfig.get_duration_key(ability_id), {"seconds": seconds})
 
 
 # --- Skill state labels ---
