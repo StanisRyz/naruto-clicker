@@ -31,8 +31,8 @@ const CARD_ROW_4_HEIGHT: int = 22
 const CARD_ROW_5_HEIGHT: int = 32
 const SKILL_COUNT: int = 5
 const SKILL_ICON_COLORS: Dictionary = {
-	"locked": Color(0.32, 0.32, 0.34, 1.0),
-	"available": Color(0.18, 0.44, 0.95, 1.0),
+	"locked": Color(0.35, 0.35, 0.35, 1.0),
+	"available": Color(0.65, 1.0, 0.65, 1.0),
 	"purchased": Color.WHITE,
 }
 
@@ -310,6 +310,12 @@ func _create_partner_row(partner_index: int) -> Dictionary:
 	}
 
 
+func _apply_skill_icon_visual(image_holder, skill_state: String) -> void:
+	var tint: Color = SKILL_ICON_COLORS.get(skill_state, SKILL_ICON_COLORS["locked"])
+	image_holder.modulate = tint
+	image_holder.set_fallback_color(tint)
+
+
 func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionary) -> void:
 	var partner_name_label: Label = row["partner_name_label"]
 	var purchase_gain_label: Label = row["purchase_gain_label"]
@@ -345,12 +351,12 @@ func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionar
 		var skill_image_holder = skill_image_holders[i]
 		if i >= skills.size():
 			skill_button.disabled = true
-			skill_image_holder.set_fallback_color(SKILL_ICON_COLORS["locked"])
+			_apply_skill_icon_visual(skill_image_holder, "locked")
 		else:
 			skill_button.disabled = false
 			var skill_id: String = String(skills[i].get("id", ""))
 			var skill_state: String = state.get_partner_skill_state(skill_id)
-			skill_image_holder.set_fallback_color(SKILL_ICON_COLORS.get(skill_state, SKILL_ICON_COLORS["locked"]))
+			_apply_skill_icon_visual(skill_image_holder, skill_state)
 
 	var bulk_count: int = state.get_partner_bulk_display_count(partner_index, selected_buy_mode)
 	var bulk_cost: int = state.get_partner_bulk_display_cost(partner_index, selected_buy_mode)

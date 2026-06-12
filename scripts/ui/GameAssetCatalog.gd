@@ -135,18 +135,12 @@ static func get_path(asset_key: String) -> String:
 		if parts.size() == 3 and parts[2] == "icon":
 			var idx: int = parts[1].to_int()
 			return "res://assets/images/partners/partner_%02d/partner.png" % (idx + 1)
-	# Dynamic partner skill: "partner.N.skill.M" — shared icons, partner_index unused
-	if asset_key.begins_with("partner.") and ".skill." in asset_key:
+	# Shared skill rank icon: "skill.rank.N"
+	if asset_key.begins_with("skill.rank."):
 		var parts: PackedStringArray = asset_key.split(".")
-		if parts.size() == 4 and parts[2] == "skill":
-			var level: int = parts[3].to_int()
-			return "res://assets/images/partners/Skills/skill%d.png" % level
-	# Dynamic hero skill: "hero_skill.N"
-	if asset_key.begins_with("hero_skill."):
-		var parts: PackedStringArray = asset_key.split(".")
-		if parts.size() == 2:
-			var level: int = parts[1].to_int()
-			return "res://assets/images/hero_skills/skill_%02d.png" % level
+		if parts.size() == 3:
+			var level: int = parts[2].to_int()
+			return "res://assets/images/skills/skill_%02d.png" % level
 	return ""
 
 
@@ -166,20 +160,24 @@ static func partner_icon_key(partner_index: int) -> String:
 	return "partner.%d.icon" % partner_index
 
 
-static func partner_skill_key(partner_index: int, skill_level: int) -> String:
-	return "partner.%d.skill.%d" % [partner_index, skill_level]
+static func skill_rank_icon_key(skill_level: int) -> String:
+	return "skill.rank.%d" % skill_level
+
+
+static func partner_skill_key(_partner_index: int, skill_level: int) -> String:
+	return skill_rank_icon_key(skill_level)
 
 
 static func ability_icon_key(ability_id: String) -> String:
 	return "ability.%s" % ability_id
 
 
-static func ability_skill_key(ability_id: String, _skill_level: int) -> String:
-	return ability_icon_key(ability_id)
+static func ability_skill_key(_ability_id: String, skill_level: int) -> String:
+	return skill_rank_icon_key(skill_level)
 
 
 static func hero_skill_key(skill_level: int) -> String:
-	return "hero_skill.%d" % skill_level
+	return skill_rank_icon_key(skill_level)
 
 
 static func building_icon_key(building_index: int) -> String:

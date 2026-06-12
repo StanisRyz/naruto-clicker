@@ -40,8 +40,8 @@ const CARD_ROW_4_HEIGHT: int = 22
 const CARD_ROW_5_HEIGHT: int = 32
 const SKILL_COUNT: int = 5
 const SKILL_ICON_COLORS: Dictionary = {
-	"locked": Color(0.32, 0.32, 0.34, 1.0),
-	"available": Color(0.18, 0.44, 0.95, 1.0),
+	"locked": Color(0.35, 0.35, 0.35, 1.0),
+	"available": Color(0.65, 1.0, 0.65, 1.0),
 	"purchased": Color.WHITE,
 }
 
@@ -259,7 +259,7 @@ func _create_ability_row(ability_index: int) -> Dictionary:
 	row_content["image_holder"].set_asset_key("upgrade.%s" % ability_id)
 	var skill_holders: Array = row_content["skill_image_holders"]
 	for i in range(skill_holders.size()):
-		skill_holders[i].set_asset_key(GameAssetCatalog.ability_icon_key(ability_id), SKILL_ICON_COLORS["locked"])
+		skill_holders[i].set_asset_key(GameAssetCatalog.ability_skill_key(ability_id, i + 1), SKILL_ICON_COLORS["locked"])
 
 	return row_content
 
@@ -454,19 +454,25 @@ func _update_ability_unlock_button(state: ClickerState, ability_id: String, row:
 		_set_card_button_state(row, state.can_buy_ability_unlock(ability_id))
 
 
+func _apply_skill_icon_visual(image_holder, skill_state: String) -> void:
+	var tint: Color = SKILL_ICON_COLORS.get(skill_state, SKILL_ICON_COLORS["locked"])
+	image_holder.modulate = tint
+	image_holder.set_fallback_color(tint)
+
+
 func _update_skill_icon_row(skills: Array[Dictionary], skill_buttons: Array, skill_image_holders: Array, state: ClickerState, is_hero: bool) -> void:
 	for i in range(skill_buttons.size()):
 		var skill_button: Button = skill_buttons[i]
 		var skill_image_holder = skill_image_holders[i]
 		if i >= skills.size():
 			skill_button.disabled = true
-			skill_image_holder.set_fallback_color(SKILL_ICON_COLORS["locked"])
+			_apply_skill_icon_visual(skill_image_holder, "locked")
 			continue
 
 		skill_button.disabled = false
 		var skill_id: String = String(skills[i].get("id", ""))
 		var skill_state: String = state.get_hero_skill_state(skill_id) if is_hero else state.get_ability_skill_state(skill_id)
-		skill_image_holder.set_fallback_color(SKILL_ICON_COLORS.get(skill_state, SKILL_ICON_COLORS["locked"]))
+		_apply_skill_icon_visual(skill_image_holder, skill_state)
 
 
 func _on_hero_skill_button_pressed(skill_index: int, skill_button: Button) -> void:

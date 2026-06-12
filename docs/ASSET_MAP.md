@@ -298,10 +298,36 @@ What the script checks:
 | Enemy state | `healthy.png`, `hit.png`, `wounded.png`, `defeated.png` |
 | Background | `background.png` |
 | Partner / ability / building / shop / task / UI icon | `icon.png` |
-| Hero skill icons | `skill_01.png` … `skill_05.png` |
+| Shared skill rank icons | `skill_01.png` … `skill_05.png` (see below) |
 | Prestige talent icons | `talent_01.png` … `talent_06.png` |
 
-Note: Ability rank does **not** change the icon. All rank buttons reuse `abilities/ability_id/icon.png`. There is no `ability_skills/` folder and no `rank_01.png` … `rank_05.png` for abilities.
+### Shared skill rank icons
+
+All hero skill, partner skill, and ability rank skill buttons use the same 5 shared icon files:
+
+| Asset key | Path | Displayed size |
+|-----------|------|---------------|
+| `skill.rank.1` | `assets/images/skills/skill_01.png` | 32×32 px |
+| `skill.rank.2` | `assets/images/skills/skill_02.png` | 32×32 px |
+| `skill.rank.3` | `assets/images/skills/skill_03.png` | 32×32 px |
+| `skill.rank.4` | `assets/images/skills/skill_04.png` | 32×32 px |
+| `skill.rank.5` | `assets/images/skills/skill_05.png` | 32×32 px |
+
+Recommended source size: **64×64 or 128×128 px**.
+
+Used by:
+- Hero skill slots (ranks 1–5) via `GameAssetCatalog.hero_skill_key(rank)`
+- Partner skill slots (ranks 1–5) via `GameAssetCatalog.partner_skill_key(partner_index, rank)`
+- Ability rank skill slots (ranks 1–5) via `GameAssetCatalog.ability_skill_key(ability_id, rank)`
+
+All three helpers resolve to `skill.rank.N`, which `GameAssetCatalog.get_path()` maps to the shared file. The `partner_index` and `ability_id` arguments are retained in the method signatures for call-site compatibility but do not affect the returned path.
+
+Icon visual state is applied as `modulate` on the `ImageSlot` node:
+- **Purchased** → `Color.WHITE` (no tint)
+- **Affordable / can buy** → `Color(0.65, 1.0, 0.65)` (light green)
+- **Locked / cannot buy** → `Color(0.35, 0.35, 0.35)` (dark gray)
+
+Missing files fall back to the locked dark-gray color — no crash.
 
 Active ability visual: a white radial timer drawn by `AbilityCooldownOverlay` (ACTIVE mode). No image file is used — `active.png` is not referenced.
 
