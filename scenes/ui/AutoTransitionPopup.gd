@@ -3,7 +3,8 @@ extends Control
 
 signal auto_button_pressed_through(anchor_global_position: Vector2, button_global_rect: Rect2)
 
-const POPUP_WIDTH: float = 300.0
+const POPUP_WIDTH: float = 340.0
+const POPUP_HEIGHT: float = 220.0
 const POPUP_MARGIN: float = 6.0
 
 const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
@@ -61,9 +62,7 @@ func _gui_input(event: InputEvent) -> void:
 func _deferred_resize_and_position_popup() -> void:
 	if not visible:
 		return
-	_panel.reset_size()
-	var minimum_size: Vector2 = _panel.get_combined_minimum_size()
-	_panel.size = Vector2(POPUP_WIDTH, minimum_size.y)
+	_panel.size = Vector2(POPUP_WIDTH, POPUP_HEIGHT)
 	_position_popup(_pending_anchor)
 
 

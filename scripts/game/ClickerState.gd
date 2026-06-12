@@ -110,6 +110,7 @@ var debug_visual_test_mode_enabled: bool = false
 const DEBUG_VISUAL_TEST_HP: int = 100000
 const DEBUG_PURCHASE_COST: int = 1
 const DEBUG_PURCHASE_MAX_BULK: int = 100
+const DEBUG_PRESTIGE_REWARD: int = 999
 
 var prestige_points: int:
 	get:
@@ -130,6 +131,8 @@ func _init() -> void:
 
 
 func can_prestige() -> bool:
+	if is_debug_visual_test_mode_enabled():
+		return true
 	return get_prestige_reward() > 0
 
 
@@ -142,6 +145,8 @@ func get_prestige_character_points() -> int:
 
 
 func get_prestige_reward() -> int:
+	if is_debug_visual_test_mode_enabled():
+		return DEBUG_PRESTIGE_REWARD
 	return get_prestige_stage_points() + get_prestige_character_points()
 
 

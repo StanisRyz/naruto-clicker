@@ -3,7 +3,8 @@ extends Control
 
 signal skill_purchase_requested(skill_id: String)
 
-const POPUP_WIDTH: float = 260.0
+const POPUP_WIDTH: float = 300.0
+const POPUP_HEIGHT: float = 260.0
 const POPUP_MARGIN: float = 8.0
 const BOTTOM_SAFE_MARGIN: float = 112.0
 
@@ -106,12 +107,8 @@ func _input(event: InputEvent) -> void:
 
 
 func _deferred_resize_and_position_panel() -> void:
-	panel_container.size = Vector2(POPUP_WIDTH, 0)
-	panel_container.reset_size()
-	await get_tree().process_frame
-	var panel_height: float = panel_container.get_combined_minimum_size().y
-	panel_container.size = Vector2(POPUP_WIDTH, panel_height)
-	_position_panel(Vector2(POPUP_WIDTH, panel_height))
+	panel_container.size = Vector2(POPUP_WIDTH, POPUP_HEIGHT)
+	_position_panel(Vector2(POPUP_WIDTH, POPUP_HEIGHT))
 
 
 func _position_panel(panel_size: Vector2) -> void:
