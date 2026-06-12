@@ -97,7 +97,7 @@ size_flags_horizontal = 3
 text = "Settings"
 
 [node name="CloseButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/Header"]
-custom_minimum_size = Vector2(66, 54)
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 text = "X"
 
@@ -140,7 +140,7 @@ size_flags_horizontal = 4
 text = "Save Now"
 
 [node name="ResetButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(324, 72)
+custom_minimum_size = Vector2(210, 72)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_styles/normal = SubResource("StyleBoxFlat_reset_button")
@@ -227,7 +227,7 @@ size_flags_horizontal = 0
 text = "Cancel"
 
 [node name="ResetButton" type="Button" parent="ResetConfirmDialog/PanelContainer/MarginContainer/VBoxContainer/ButtonRow"]
-custom_minimum_size = Vector2(216, 48)
+custom_minimum_size = Vector2(210, 72)
 layout_mode = 2
 size_flags_horizontal = 0
 theme_override_styles/normal = SubResource("StyleBoxFlat_reset_button")

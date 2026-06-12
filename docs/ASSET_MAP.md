@@ -381,7 +381,7 @@ All popup/window backgrounds and action buttons use `ImageSlot` nodes added at r
 - **Texture exists** → texture shown, fallback hidden (`show_fallback_behind_texture = false`).
 - **Texture missing** → white rectangle fallback shown, no crash.
 
-Close buttons reuse the existing sheet close button: `ui.sheet.close_button` / `assets/images/ui/sheets/close_button.png` (72×56 px).
+Close buttons reuse the existing sheet close button: `ui.sheet.close_button` / `assets/images/ui/sheets/close_button.png` (64×64 px, 1:1). x2 source option: 128×128 px.
 
 ### Popup backgrounds
 
@@ -405,15 +405,16 @@ Close buttons reuse the existing sheet close button: `ui.sheet.close_button` / `
 | Asset key | Path | Base size | Aspect ratio | Source style | Used for |
 |-----------|------|-----------|-------------|-------------|---------|
 | `ui.popup.button.default` | `assets/images/ui/popups/buttons/default.png` | 210×72 px | 35:12 | Copied from `assets/images/ui/cards/button/default.png` | Buy, Save, Cancel, Yes/No buttons |
-| `ui.popup.button.danger` | `assets/images/ui/popups/buttons/danger.png` | 324×72 px | 4.5:1 | — | Reset and destructive action buttons |
+| `ui.popup.button.danger` | `assets/images/ui/popups/buttons/danger.png` | 210×72 px | 35:12 | Same ratio as default | Reset and destructive action buttons |
 
-**Default button aspect ratio rule:** All buttons using `ui.popup.button.default` must keep a **35:12** ratio (same as card buy buttons) so the texture is never stretched or distorted. Do not scale this texture to arbitrary widths.
+**Shared button aspect ratio rule:** All popup action buttons (default and danger) must keep a **35:12** ratio (same as card buy buttons) so textures are never stretched or distorted. Do not scale either texture to arbitrary widths. If using a ×2 source: `420×144 px`, aspect ratio 35:12.
 
-Valid scaled sizes for `ui.popup.button.default`:
+Valid scaled sizes for `ui.popup.button.default` and `ui.popup.button.danger`:
 
 | Size | Used in |
 |------|---------|
 | 210×72 px | UpgradeSkillPopup BuyButton, PartnerSkillPopup BuyButton, SettingsWindow SaveButton, ResetConfirmDialog CancelButton, ShopPurchaseConfirmDialog ConfirmButton/CancelButton, PrestigeConfirmDialog YesButton/NoButton |
+| 210×72 px | SettingsWindow ResetButton (danger), ResetConfirmDialog ResetButton (danger) |
 | 175×60 px | SettingsWindow SoundToggleButton, MusicToggleButton |
 
 Button text is drawn by a child `Label` (`ButtonTextLabel`) placed above the `ImageSlot` (`ButtonImageHolder`). Native button text is cleared. Both children have `mouse_filter = IGNORE` so clicks reach the `Button` node.
@@ -425,7 +426,7 @@ Button text is drawn by a child `Label` (`ButtonTextLabel`) placed above the `Im
 | Asset key | Path | Recommended size |
 |-----------|------|-----------------|
 | `ui.sheet.standard` | `assets/images/ui/sheets/standard_sheet.png` | 720×645 px |
-| `ui.sheet.close_button` | `assets/images/ui/sheets/close_button.png` | 72×56 px |
+| `ui.sheet.close_button` | `assets/images/ui/sheets/close_button.png` | 64×64 px (1:1) |
 
 Used by UpgradeSheet, PartnerSheet, SettlementSheet, PrestigeSheet, and ShopSheet.
 Rendered by `SheetBackgroundImageHolder` (`ImageSlot`) — first child of `PanelContainer` (Control),

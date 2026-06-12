@@ -135,7 +135,7 @@ Folder: `assets/images/ui/sheets/`
 | File | Asset key | Recommended size |
 |------|-----------|-----------------|
 | `sheets/standard_sheet.png` | `ui.sheet.standard` | 720×645 px |
-| `sheets/close_button.png` | `ui.sheet.close_button` | 72×56 px |
+| `sheets/close_button.png` | `ui.sheet.close_button` | 64×64 px (1:1) |
 
 Used by:
 - UpgradeSheet
@@ -163,7 +163,7 @@ Sheet header layout (after cleanup):
 Shop-specific layout note:
 - ShopSheet uses `ShopBuyModeSelector` (x1/x2/x3/x4, 56px height) between the header and
   the ScrollContainer — same height as `BuyModeSelector` in other sheets.
-  - Missing `close_button.png`: white 72×56 fallback rectangle.
+  - Missing `close_button.png`: white 64×64 fallback square.
   - Present `close_button.png`: texture shown, fallback hidden. Texture should include the × icon.
   - The game draws no "Close" text over this button.
 
