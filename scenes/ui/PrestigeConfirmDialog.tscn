@@ -92,16 +92,16 @@ horizontal_alignment = 1
 
 [node name="ButtonRow" type="HBoxContainer" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 12
 
 [node name="YesButton" type="Button" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ButtonRow"]
-custom_minimum_size = Vector2(0, 64)
+custom_minimum_size = Vector2(216, 48)
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 0
 text = "Yes"
 
 [node name="NoButton" type="Button" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ButtonRow"]
-custom_minimum_size = Vector2(0, 64)
+custom_minimum_size = Vector2(216, 48)
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 0
 text = "No"

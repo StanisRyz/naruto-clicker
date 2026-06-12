@@ -101,8 +101,8 @@ text_overrun_behavior = 3
 
 [node name="BuyButton" type="Button" parent="PanelContainer/ContentRoot"]
 layout_mode = 0
-offset_left = 14.0
+offset_left = 31.0
 offset_top = 198.0
-offset_right = 336.0
-offset_bottom = 254.0
+offset_right = 319.0
+offset_bottom = 262.0
 text = "Buy: 0"
