@@ -1,0 +1,17 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://cas0cr14d07py"
+
+[deps]
+
+files=["res://balance_audit_report_v12.level.translation", "res://balance_audit_report_v12.hp.translation", "res://balance_audit_report_v12.reward.translation", "res://balance_audit_report_v12.cost.translation", "res://balance_audit_report_v12.damage.translation", "res://balance_audit_report_v12.dps.translation", "res://balance_audit_report_v12.ttd.translation", "res://balance_audit_report_v12.notes.translation"]
+
+source_file="res://balance_audit_report_v12.csv"
+dest_files=["res://balance_audit_report_v12.level.translation", "res://balance_audit_report_v12.hp.translation", "res://balance_audit_report_v12.reward.translation", "res://balance_audit_report_v12.cost.translation", "res://balance_audit_report_v12.damage.translation", "res://balance_audit_report_v12.dps.translation", "res://balance_audit_report_v12.ttd.translation", "res://balance_audit_report_v12.notes.translation"]
+
+[params]
+
+compress=true
+delimiter=0
