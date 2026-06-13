@@ -70,6 +70,8 @@ const ASSET_PATHS: Dictionary = {
 	"prestige.boss_hunter": "res://assets/images/prestige/boss_hunter.png",
 
 	# Shop
+	# Required path (create before release): res://assets/images/shop/rewarded_gems_ad.png
+	"shop.rewarded_gems_ad": "res://assets/images/shop/rewarded_gems_ad.png",
 	"shop.gold_pack_small": "res://assets/images/shop/gold_pack_small.png",
 	"shop.gold_pack_large": "res://assets/images/shop/gold_pack_large.png",
 

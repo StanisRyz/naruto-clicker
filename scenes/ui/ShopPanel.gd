@@ -255,10 +255,15 @@ func _update_product_row(product_data: Dictionary, row: Dictionary) -> void:
 
 	var can_buy: bool = bool(product_data.get("can_buy", false))
 	button.disabled = not can_buy
-	button_label.text = LocalizationManager.format_key(
-		"shop.buy_button_count",
-		{"count": str(buy_count), "cost": NumberFormatter.compact(cost_gems)}
-	)
+	if product_type == "rewarded_ad":
+		button_label.text = LocalizationManager.tr_key("shop.button.watch_ad")
+		owned_label.text = ""
+		total_bonus_label.text = ""
+	else:
+		button_label.text = LocalizationManager.format_key(
+			"shop.buy_button_count",
+			{"count": str(buy_count), "cost": NumberFormatter.compact(cost_gems)}
+		)
 	button_image_holder.modulate = Color.WHITE if can_buy else Color(0.65, 0.65, 0.65, 1.0)
 	button_label.modulate = Color.WHITE if can_buy else Color(0.45, 0.45, 0.45, 1.0)
 

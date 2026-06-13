@@ -901,6 +901,19 @@ func grant_rewarded_ad_bonus(reward_id: String) -> Dictionary:
 	}
 
 
+func grant_shop_rewarded_gems() -> Dictionary:
+	gems += BalanceConfig.SHOP_REWARDED_GEMS_AD_REWARD
+	return {
+		"reward_id": "shop_rewarded_gems",
+		"reward_gems": BalanceConfig.SHOP_REWARDED_GEMS_AD_REWARD,
+		"status_text": LocalizationManager.format_key(
+			"shop.rewarded_gems_ad.reward_status",
+			{"amount": str(BalanceConfig.SHOP_REWARDED_GEMS_AD_REWARD)}
+		),
+		"upgraded": true,
+	}
+
+
 func get_character_level_bulk_damage_gain(mode: String) -> int:
 	var count: int = get_character_level_bulk_display_count(mode)
 	if count <= 0:

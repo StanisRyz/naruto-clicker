@@ -41,6 +41,8 @@ const _AUTOSAVE_INTERVAL: float = 10.0
 var _rewarded_ad_reward_granted_for_current_request: bool = false
 var _rewarded_ad_damage_buff_was_active: bool = false
 var _rewarded_ad_gold_buff_was_active: bool = false
+var _rewarded_ad_request_context: String = ""
+var _rewarded_ad_shop_product_id: String = ""
 var balance_logger: BalancePlaytestLogger = null
 var _is_initialized: bool = false
 var _debug_visual_test_previous_gems: int = 0
@@ -471,10 +473,24 @@ func _on_prestige_talent_purchase_requested(talent_index: int, mode: String) -> 
 
 
 func _on_shop_product_purchase_requested(product_id: String, mode: String) -> void:
+	var product: Dictionary = state.get_shop_product(product_id)
+	if String(product.get("product_type", "")) == "rewarded_ad":
+		_request_shop_rewarded_gems_ad(product_id)
+		return
 	_pending_shop_product_id = product_id
 	shop_sheet.set_product_buy_button_modal_pressed(product_id, true)
 	var product_name: String = _get_shop_product_display_name(product_id)
 	shop_purchase_confirm_dialog.show_dialog(product_id, mode, product_name)
+
+
+func _request_shop_rewarded_gems_ad(product_id: String) -> void:
+	if _rewarded_ad_request_context != "":
+		return
+	_rewarded_ad_request_context = "shop_gems"
+	_rewarded_ad_shop_product_id = product_id
+	_rewarded_ad_reward_granted_for_current_request = false
+	shop_sheet.set_product_buy_button_modal_pressed(product_id, true)
+	YandexBridge.show_rewarded_ad()
 
 
 func _get_shop_product_display_name(product_id: String) -> String:
@@ -1202,6 +1218,8 @@ func _on_rewarded_ad_banner_pressed() -> void:
 	if not state.can_request_rewarded_ad():
 		rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.COOLDOWN)
 		return
+	_rewarded_ad_request_context = "bonus_banner"
+	_rewarded_ad_shop_product_id = ""
 	_rewarded_ad_reward_granted_for_current_request = false
 	rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.LOADING)
 	YandexBridge.show_rewarded_ad()
@@ -1211,24 +1229,46 @@ func _on_rewarded_ad_rewarded() -> void:
 	if _rewarded_ad_reward_granted_for_current_request:
 		return
 	_rewarded_ad_reward_granted_for_current_request = true
-	state.ensure_rewarded_ad_current_reward_selected()
-	var result: Dictionary = state.grant_rewarded_ad_bonus(state.get_rewarded_ad_current_reward_id())
-	_handle_status_text(result.get("status_text", ""))
-	state.refresh_derived_stats()
-	_update_ui()
-	_save_game_now()
-	state.reroll_rewarded_ad_current_reward()
+	match _rewarded_ad_request_context:
+		"bonus_banner":
+			state.ensure_rewarded_ad_current_reward_selected()
+			var banner_result: Dictionary = state.grant_rewarded_ad_bonus(state.get_rewarded_ad_current_reward_id())
+			_handle_status_text(banner_result.get("status_text", ""))
+			state.refresh_derived_stats()
+			_update_ui()
+			_save_game_now()
+			state.reroll_rewarded_ad_current_reward()
+		"shop_gems":
+			var shop_result: Dictionary = state.grant_shop_rewarded_gems()
+			_handle_status_text(shop_result.get("status_text", ""))
+			state.refresh_derived_stats()
+			_update_ui()
+			_save_game_now()
+		_:
+			pass
 
 
 func _on_rewarded_ad_closed(_was_shown: bool) -> void:
-	if state.can_request_rewarded_ad():
-		rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.AVAILABLE)
-	else:
-		rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.COOLDOWN)
+	if _rewarded_ad_request_context == "shop_gems":
+		shop_sheet.set_product_buy_button_modal_pressed(_rewarded_ad_shop_product_id, false)
+	elif _rewarded_ad_request_context == "bonus_banner":
+		if state.can_request_rewarded_ad():
+			rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.AVAILABLE)
+		else:
+			rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.COOLDOWN)
+	_rewarded_ad_request_context = ""
+	_rewarded_ad_shop_product_id = ""
+	_rewarded_ad_reward_granted_for_current_request = false
 
 
 func _on_rewarded_ad_error(_message: String) -> void:
-	rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.ERROR)
+	if _rewarded_ad_request_context == "shop_gems":
+		shop_sheet.set_product_buy_button_modal_pressed(_rewarded_ad_shop_product_id, false)
+	else:
+		rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.ERROR)
+	_rewarded_ad_request_context = ""
+	_rewarded_ad_shop_product_id = ""
+	_rewarded_ad_reward_granted_for_current_request = false
 
 
 func _update_rewarded_ad_banner() -> void:

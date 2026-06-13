@@ -237,6 +237,11 @@ shop.card.click_damage_multiplier,Gives Click Damage x{multiplier},Даёт ур
 shop.card.gold_multiplier,Gives Gold x{multiplier},Даёт золото x{multiplier},ShopPanel card effect row for gold multiplier product,{multiplier} is integer
 shop.card.owned,Owned: {count},Копий: {count},ShopPanel card row 4 owned count,{count} is integer
 shop.card.total_multiplier,Total bonus: x{multiplier},Суммарный бонус: x{multiplier},ShopPanel card row 5 total bonus,{multiplier} is integer
+shop.rewarded_gems_ad.name,Watch Ad: +3 Gems,Реклама: +3 гема,Shop rewarded ad product name,
+shop.rewarded_gems_ad.description,Watch an ad to receive gems,Посмотрите рекламу чтобы получить гемы,Shop rewarded ad product description,
+shop.card.rewarded_gems,Gives +{amount} Gems,Даёт +{amount} гемов,ShopPanel card effect row for rewarded gems ad,{amount} is compact number
+shop.button.watch_ad,Watch Ad,Смотреть,ShopPanel buy button for rewarded ad products,
+shop.rewarded_gems_ad.reward_status,+{amount} Gems!,+{amount} гемов!,Status text after rewarded ad grants gems,{amount} is integer
 task.manual_damage_500.title,Deal 500 manual damage,,TaskConfig task title,
 task.defeat_25_enemies.title,Defeat 25 enemies,,TaskConfig task title,
 task.defeat_2_elites.title,Defeat 2 elite enemies,,TaskConfig task title,

@@ -4,8 +4,8 @@ extends RefCounted
 # AUTO-GENERATED — do not edit by hand.
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
-# Generated key count: 322
-# Generated at: 1781367336
+# Generated key count: 327
+# Generated at: 1781368286
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -247,6 +247,11 @@ const TRANSLATIONS: Dictionary = {
 		"shop.card.gold_multiplier": "Gives Gold x{multiplier}",
 		"shop.card.owned": "Owned: {count}",
 		"shop.card.total_multiplier": "Total bonus: x{multiplier}",
+		"shop.rewarded_gems_ad.name": "Watch Ad: +3 Gems",
+		"shop.rewarded_gems_ad.description": "Watch an ad to receive gems",
+		"shop.card.rewarded_gems": "Gives +{amount} Gems",
+		"shop.button.watch_ad": "Watch Ad",
+		"shop.rewarded_gems_ad.reward_status": "+{amount} Gems!",
 		"task.manual_damage_500.title": "Deal 500 manual damage",
 		"task.defeat_25_enemies.title": "Defeat 25 enemies",
 		"task.defeat_2_elites.title": "Defeat 2 elite enemies",
@@ -571,6 +576,11 @@ const TRANSLATIONS: Dictionary = {
 		"shop.card.gold_multiplier": "Даёт золото x{multiplier}",
 		"shop.card.owned": "Копий: {count}",
 		"shop.card.total_multiplier": "Суммарный бонус: x{multiplier}",
+		"shop.rewarded_gems_ad.name": "Реклама: +3 гема",
+		"shop.rewarded_gems_ad.description": "Посмотрите рекламу чтобы получить гемы",
+		"shop.card.rewarded_gems": "Даёт +{amount} гемов",
+		"shop.button.watch_ad": "Смотреть",
+		"shop.rewarded_gems_ad.reward_status": "+{amount} гемов!",
 		"task.manual_damage_500.title": "",
 		"task.defeat_25_enemies.title": "",
 		"task.defeat_2_elites.title": "",

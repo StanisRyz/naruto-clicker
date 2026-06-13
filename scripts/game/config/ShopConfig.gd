@@ -8,6 +8,17 @@ const PERMANENT_UPGRADE_MULTIPLIER_PER_LEVEL: float = 2.0
 
 const SHOP_PRODUCTS: Array = [
 	{
+		"id": "rewarded_gems_ad",
+		"name": "Watch Ad: +3 Gems",
+		"name_key": "shop.rewarded_gems_ad.name",
+		"description": "Watch an ad to receive gems",
+		"description_key": "shop.rewarded_gems_ad.description",
+		"product_type": "rewarded_ad",
+		"reward_type": "gems",
+		"reward_gems": 3,
+		"cost_gems": 0,
+	},
+	{
 		"id": "gold_pack_small",
 		"name": "Small Gold Pack",
 		"name_key": "shop.gold_pack_small.name",

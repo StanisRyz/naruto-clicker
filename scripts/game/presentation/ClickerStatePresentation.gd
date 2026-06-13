@@ -268,6 +268,7 @@ static func get_shop_product_view_data(state: ClickerState, mode: String = "x1")
 		var effect_key: String
 		var effect_params: Dictionary
 
+		var can_buy: bool
 		if product_type == "permanent_multiplier":
 			cost_gems = ShopRuntime.get_permanent_upgrade_bulk_cost(state, product_id, buy_count)
 			owned_count = state.get_shop_permanent_upgrade_count(product_id)
@@ -284,6 +285,14 @@ static func get_shop_product_view_data(state: ClickerState, mode: String = "x1")
 				_:
 					effect_key = ""
 			effect_params = {"multiplier": str(purchase_multiplier)}
+			can_buy = state.gems >= cost_gems and cost_gems > 0
+		elif product_type == "rewarded_ad":
+			cost_gems = 0
+			owned_count = -1
+			total_multiplier = -1
+			effect_key = "shop.card.rewarded_gems"
+			effect_params = {"amount": NumberFormatter.compact(BalanceConfig.SHOP_REWARDED_GEMS_AD_REWARD)}
+			can_buy = true
 		else:
 			cost_gems = int(product.get("cost_gems", 0)) * buy_count
 			owned_count = -1
@@ -296,6 +305,7 @@ static func get_shop_product_view_data(state: ClickerState, mode: String = "x1")
 			else:
 				effect_key = ""
 				effect_params = {}
+			can_buy = state.gems >= cost_gems and cost_gems > 0
 
 		result.append({
 			"id": product_id,
@@ -306,7 +316,7 @@ static func get_shop_product_view_data(state: ClickerState, mode: String = "x1")
 			"product_type": product_type,
 			"cost_gems": cost_gems,
 			"buy_count": buy_count,
-			"can_buy": state.gems >= cost_gems and cost_gems > 0,
+			"can_buy": can_buy,
 			"owned_count": owned_count,
 			"total_multiplier": total_multiplier,
 			"effect_key": effect_key,
