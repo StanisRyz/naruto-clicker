@@ -133,6 +133,15 @@ const ASSET_PATHS: Dictionary = {
 	"ui.popup.button.default": "res://assets/images/ui/popups/buttons/default.png",
 	"ui.popup.button.danger": "res://assets/images/ui/popups/buttons/danger.png",
 	"ui.popup.button.pressed": "res://assets/images/ui/popups/buttons/pressed.png",
+
+	# Rewarded ad banner thumbnails — all three must share the same pixel dimensions.
+	# Required paths (create before release):
+	#   res://assets/images/ui/rewarded_ads/banner_all_damage.png
+	#   res://assets/images/ui/rewarded_ads/banner_gems.png
+	#   res://assets/images/ui/rewarded_ads/banner_gold.png
+	"rewarded_ad.banner.all_damage": "res://assets/images/ui/rewarded_ads/banner_all_damage.png",
+	"rewarded_ad.banner.gems":       "res://assets/images/ui/rewarded_ads/banner_gems.png",
+	"rewarded_ad.banner.gold":       "res://assets/images/ui/rewarded_ads/banner_gold.png",
 }
 
 

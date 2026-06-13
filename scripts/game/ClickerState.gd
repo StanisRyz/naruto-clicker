@@ -108,6 +108,13 @@ var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var rewarded_ad_all_damage_x2_expires_at: int = 0
 var rewarded_ad_gold_x2_expires_at: int = 0
 var rewarded_ad_banner_cooldown_until: int = 0
+var rewarded_ad_current_reward_id: String = ""
+
+const REWARDED_AD_REWARD_IDS: Array[String] = [
+	"all_damage_x2",
+	"gems_5",
+	"gold_x4",
+]
 
 var debug_visual_test_mode_enabled: bool = false
 const DEBUG_VISUAL_TEST_HP: int = 100000
@@ -838,23 +845,32 @@ func can_request_rewarded_ad() -> bool:
 	return int(Time.get_unix_time_from_system()) >= rewarded_ad_banner_cooldown_until
 
 
+func ensure_rewarded_ad_current_reward_selected() -> void:
+	if rewarded_ad_current_reward_id == "":
+		reroll_rewarded_ad_current_reward()
+
+
+func reroll_rewarded_ad_current_reward() -> void:
+	rewarded_ad_current_reward_id = REWARDED_AD_REWARD_IDS[rng.randi_range(0, REWARDED_AD_REWARD_IDS.size() - 1)]
+
+
+func get_rewarded_ad_current_reward_id() -> String:
+	return rewarded_ad_current_reward_id
+
+
 func grant_random_rewarded_ad_bonus() -> Dictionary:
-	var rewards: Array[String] = [
-		"all_damage_x2",
-		"gems_5",
-		"gold_x2",
-	]
-	var reward_id: String = rewards[rng.randi_range(0, rewards.size() - 1)]
-	return grant_rewarded_ad_bonus(reward_id)
+	ensure_rewarded_ad_current_reward_selected()
+	return grant_rewarded_ad_bonus(rewarded_ad_current_reward_id)
 
 
 func grant_rewarded_ad_bonus(reward_id: String) -> Dictionary:
 	var now: int = int(Time.get_unix_time_from_system())
 	rewarded_ad_banner_cooldown_until = now + BalanceConfig.REWARDED_AD_BANNER_COOLDOWN_SECONDS
+	rewarded_ad_current_reward_id = ""
 
 	match reward_id:
 		"all_damage_x2":
-			rewarded_ad_all_damage_x2_expires_at = now + BalanceConfig.REWARDED_AD_BUFF_DURATION_SECONDS
+			rewarded_ad_all_damage_x2_expires_at = now + BalanceConfig.REWARDED_AD_DAMAGE_BUFF_DURATION_SECONDS
 			refresh_derived_stats()
 			return {
 				"reward_id": reward_id,
@@ -870,8 +886,8 @@ func grant_rewarded_ad_bonus(reward_id: String) -> Dictionary:
 				"upgraded": true,
 			}
 
-		"gold_x2":
-			rewarded_ad_gold_x2_expires_at = now + BalanceConfig.REWARDED_AD_BUFF_DURATION_SECONDS
+		"gold_x4":
+			rewarded_ad_gold_x2_expires_at = now + BalanceConfig.REWARDED_AD_GOLD_BUFF_DURATION_SECONDS
 			return {
 				"reward_id": reward_id,
 				"status_text": LocalizationManager.tr_key("rewarded_ad.reward.gold"),

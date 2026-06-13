@@ -4,10 +4,24 @@ signal reward_ad_requested
 
 enum BannerState { AVAILABLE, LOADING, COOLDOWN, ERROR }
 
+const _REWARD_BANNER_KEYS: Dictionary = {
+	"all_damage_x2": "rewarded_ad.banner.all_damage",
+	"gems_5":        "rewarded_ad.banner.gems",
+	"gold_x4":       "rewarded_ad.banner.gold",
+}
+
+const _REWARD_ASSET_KEYS: Dictionary = {
+	"all_damage_x2": "rewarded_ad.banner.all_damage",
+	"gems_5":        "rewarded_ad.banner.gems",
+	"gold_x4":       "rewarded_ad.banner.gold",
+}
+
 var _current_state: BannerState = BannerState.AVAILABLE
+var _current_reward_id: String = ""
 
 @onready var _button: Button = $Button
 @onready var _label: Label = $Button/Label
+@onready var _image: ImageSlot = $Button/ImageHolder
 
 
 func _ready() -> void:
@@ -20,6 +34,11 @@ func set_banner_state(new_state: BannerState) -> void:
 	_refresh_view()
 
 
+func set_reward_id(reward_id: String) -> void:
+	_current_reward_id = reward_id
+	_refresh_view()
+
+
 func _on_button_pressed() -> void:
 	if _current_state == BannerState.AVAILABLE:
 		reward_ad_requested.emit()
@@ -28,7 +47,13 @@ func _on_button_pressed() -> void:
 func _refresh_view() -> void:
 	match _current_state:
 		BannerState.AVAILABLE:
-			_label.text = LocalizationManager.tr_key("rewarded_ad.banner.available")
+			var label_key: String = _REWARD_BANNER_KEYS.get(_current_reward_id, "rewarded_ad.banner.available")
+			_label.text = LocalizationManager.tr_key(label_key)
+			var asset_key: String = _REWARD_ASSET_KEYS.get(_current_reward_id, "")
+			if asset_key != "":
+				_image.set_asset_key(asset_key, Color.TRANSPARENT)
+			else:
+				_image.set_asset_key("", Color.TRANSPARENT)
 			_button.disabled = false
 			modulate = Color(1.0, 1.0, 1.0, 1.0)
 		BannerState.LOADING:

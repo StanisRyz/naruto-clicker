@@ -1211,11 +1211,13 @@ func _on_rewarded_ad_rewarded() -> void:
 	if _rewarded_ad_reward_granted_for_current_request:
 		return
 	_rewarded_ad_reward_granted_for_current_request = true
-	var result: Dictionary = state.grant_random_rewarded_ad_bonus()
+	state.ensure_rewarded_ad_current_reward_selected()
+	var result: Dictionary = state.grant_rewarded_ad_bonus(state.get_rewarded_ad_current_reward_id())
 	_handle_status_text(result.get("status_text", ""))
 	state.refresh_derived_stats()
 	_update_ui()
 	_save_game_now()
+	state.reroll_rewarded_ad_current_reward()
 
 
 func _on_rewarded_ad_closed(_was_shown: bool) -> void:
@@ -1231,6 +1233,8 @@ func _on_rewarded_ad_error(_message: String) -> void:
 
 func _update_rewarded_ad_banner() -> void:
 	if state.can_request_rewarded_ad():
+		state.ensure_rewarded_ad_current_reward_selected()
+		rewarded_ad_banner.set_reward_id(state.get_rewarded_ad_current_reward_id())
 		rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.AVAILABLE)
 	else:
 		rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.COOLDOWN)

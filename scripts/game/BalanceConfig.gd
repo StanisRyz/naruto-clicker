@@ -205,7 +205,10 @@ const PRESTIGE_BASE_REWARD_POINTS: int = 1
 
 # --- Rewarded Ads ---
 const REWARDED_AD_DAMAGE_MULTIPLIER: float = 2.0
-const REWARDED_AD_GOLD_MULTIPLIER: float = 2.0
-const REWARDED_AD_BUFF_DURATION_SECONDS: int = 120
+const REWARDED_AD_GOLD_MULTIPLIER: float = 4.0
+const REWARDED_AD_DAMAGE_BUFF_DURATION_SECONDS: int = 60
+const REWARDED_AD_GOLD_BUFF_DURATION_SECONDS: int = 60
 const REWARDED_AD_GEMS_REWARD: int = 5
-const REWARDED_AD_BANNER_COOLDOWN_SECONDS: int = 60
+const REWARDED_AD_BANNER_COOLDOWN_SECONDS: int = 300
+# Kept for BalanceAuditReport compile compatibility — new logic uses split duration constants above.
+const REWARDED_AD_BUFF_DURATION_SECONDS: int = 60

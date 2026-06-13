@@ -60,6 +60,7 @@ static func build_save_data(state: ClickerState) -> Dictionary:
 		"rewarded_ad_all_damage_x2_expires_at": state.rewarded_ad_all_damage_x2_expires_at,
 		"rewarded_ad_gold_x2_expires_at": state.rewarded_ad_gold_x2_expires_at,
 		"rewarded_ad_banner_cooldown_until": state.rewarded_ad_banner_cooldown_until,
+		"rewarded_ad_current_reward_id": state.rewarded_ad_current_reward_id,
 	}
 
 
@@ -178,6 +179,7 @@ static func apply_save_data(state: ClickerState, data: Dictionary) -> bool:
 	state.rewarded_ad_all_damage_x2_expires_at = maxi(0, int(data.get("rewarded_ad_all_damage_x2_expires_at", 0)))
 	state.rewarded_ad_gold_x2_expires_at = maxi(0, int(data.get("rewarded_ad_gold_x2_expires_at", 0)))
 	state.rewarded_ad_banner_cooldown_until = maxi(0, int(data.get("rewarded_ad_banner_cooldown_until", 0)))
+	state.rewarded_ad_current_reward_id = str(data.get("rewarded_ad_current_reward_id", ""))
 
 	if not _try_restore_tasks(state, data):
 		state.initialize_tasks()
