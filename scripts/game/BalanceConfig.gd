@@ -49,17 +49,21 @@ const HERO_SKILL_COST_MULTIPLIERS: Array = [4, 7, 11, 17, 26]
 # --- Partners ---
 const PARTNER_DPS_VALUES: Array = [
 	4, 12, 30, 70, 150, 320, 680, 1450, 3100, 6600, 14000, 30000, 64000,
-	# Temporary placeholder values for partners 14–28. Final balance pass will be done later.
-	136000, 290000, 620000, 1320000, 2800000, 6000000, 12800000, 27000000,
-	58000000, 123000000, 260000000, 550000000, 1160000000, 2450000000, 5200000000,
+	# Partners 14–28 use the accepted late_partner_curve_soft balance from BalanceAuditReport v14.
+	# Generated from partner 13 with approximately:
+	# DPS growth x2.15 and cost growth x2.10 between new partner tiers.
+	137600, 295840, 636056, 1367520, 2940169, 6321363, 13590931, 29220501,
+	62824076, 135071764, 290404294, 624369231, 1342393847, 2886146771, 6205215558,
 ]
 # Partner 1 is a weak idle assistant; mid partners carry mid game; later partners are long-term goals.
 
 const PARTNER_BASE_COSTS: Array = [
 	35, 110, 300, 750, 1700, 3800, 8500, 19000, 43000, 96000, 215000, 480000, 1050000,
-	# Temporary placeholder values for partners 14–28. Final balance pass will be done later.
-	2300000, 5000000, 11000000, 24000000, 52000000, 115000000, 250000000, 550000000,
-	1200000000, 2600000000, 5700000000, 12500000000, 27000000000, 59000000000, 130000000000,
+	# Partners 14–28 use the accepted late_partner_curve_soft balance from BalanceAuditReport v14.
+	# Generated from partner 13 with approximately:
+	# DPS growth x2.15 and cost growth x2.10 between new partner tiers.
+	2205000, 4630500, 9724050, 20420505, 42883061, 90054427, 189114297, 397140023,
+	833994049, 1751387503, 3677913756, 7723618887, 16219599663, 34061159291, 71528434512,
 ]
 
 # Segmented adaptive exponential cost by owned count:
@@ -153,6 +157,12 @@ const ELITE_REWARD_MULTIPLIER: int = 5
 const BOSS_HP_MULTIPLIER: int = 20
 const BOSS_REWARD_MULTIPLIER: int = 15
 const BOSS_TIME_LIMIT: float = 30.0
+
+# Zone cycle scaling — applied per full cycle of 105 levels.
+# Intentionally larger than the final zone multipliers (hp=36.3, reward=25.7)
+# so each new visual cycle starts slightly stronger than the end of the previous one.
+const ZONE_CYCLE_HP_MULTIPLIER: float = 40.0
+const ZONE_CYCLE_REWARD_MULTIPLIER: float = 28.0
 
 
 # --- Tasks — ETV baseline (for documentation; formula uses unit * reward_scale) ---

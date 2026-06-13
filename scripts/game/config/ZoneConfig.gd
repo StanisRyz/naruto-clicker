@@ -324,3 +324,21 @@ static func get_boss_key(zone_index: int) -> String:
 
 static func get_name_key_for_level(level: int) -> String:
 	return get_name_key(get_zone_index_for_level(level))
+
+
+static func get_zone_cycle_index_for_level(level: int) -> int:
+	var safe_level: int = maxi(level, 1)
+	@warning_ignore("integer_division")
+	return int((safe_level - 1) / TOTAL_ZONE_LEVELS)
+
+
+static func get_effective_hp_multiplier_for_level(level: int, cycle_hp_multiplier: float) -> float:
+	var zone: Dictionary = get_zone_data_for_level(level)
+	var cycle_index: int = get_zone_cycle_index_for_level(level)
+	return float(zone.get("hp_multiplier", 1.0)) * pow(cycle_hp_multiplier, float(cycle_index))
+
+
+static func get_effective_reward_multiplier_for_level(level: int, cycle_reward_multiplier: float) -> float:
+	var zone: Dictionary = get_zone_data_for_level(level)
+	var cycle_index: int = get_zone_cycle_index_for_level(level)
+	return float(zone.get("reward_multiplier", 1.0)) * pow(cycle_reward_multiplier, float(cycle_index))

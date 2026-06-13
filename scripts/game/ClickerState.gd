@@ -2065,11 +2065,16 @@ func choose_enemy_for_current_level() -> void:
 
 
 func recalculate_level_values() -> void:
-	var zone: Dictionary = ZoneConfig.ZONE_DATA[current_zone_index]
 	var base_hp: int = get_base_enemy_hp_for_level(current_level)
 	var base_reward: int = get_base_enemy_reward_for_level(current_level)
-	target_max_hp = EnemyCalc.get_scaled_hp(base_hp, zone.hp_multiplier, is_boss_level, is_elite_enemy, BalanceConfig.BOSS_HP_MULTIPLIER, elite_hp_multiplier)
-	reward_gold = EnemyCalc.get_scaled_reward(base_reward, zone.reward_multiplier, is_boss_level, is_elite_enemy, BalanceConfig.BOSS_REWARD_MULTIPLIER, elite_reward_multiplier)
+	var hp_multiplier: float = ZoneConfig.get_effective_hp_multiplier_for_level(
+		current_level, BalanceConfig.ZONE_CYCLE_HP_MULTIPLIER
+	)
+	var reward_multiplier: float = ZoneConfig.get_effective_reward_multiplier_for_level(
+		current_level, BalanceConfig.ZONE_CYCLE_REWARD_MULTIPLIER
+	)
+	target_max_hp = EnemyCalc.get_scaled_hp(base_hp, hp_multiplier, is_boss_level, is_elite_enemy, BalanceConfig.BOSS_HP_MULTIPLIER, elite_hp_multiplier)
+	reward_gold = EnemyCalc.get_scaled_reward(base_reward, reward_multiplier, is_boss_level, is_elite_enemy, BalanceConfig.BOSS_REWARD_MULTIPLIER, elite_reward_multiplier)
 
 
 func get_base_enemy_hp_for_level(level: int) -> int:

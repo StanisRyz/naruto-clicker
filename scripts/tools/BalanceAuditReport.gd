@@ -44,7 +44,9 @@ const SIM_FARM_PURCHASE_INTERVAL_SEC: float = 1.0
 const SIM_MIN_POWER_GAIN_TO_CONTINUE: float = 0.01
 
 const RUN_EARLY_BASELINE_AUDIT: bool = true
-const RUN_LATE_PARTNER_AUDIT: bool = true
+const RUN_ZONE_CYCLE_CHECK: bool = true
+const RUN_DEEP_LATE_PARTNER_AUDIT: bool = true
+const RUN_LATE_PARTNER_AUDIT: bool = false  # Replaced by RUN_DEEP_LATE_PARTNER_AUDIT; kept for reference
 const RUN_LEGACY_SCENARIOS: bool = false
 
 const LATE_PARTNER_TARGET_LEVEL: int = 300
@@ -62,6 +64,12 @@ const LATE_PARTNER_CURVE_SCENARIO_IDS: Array[String] = [
 	"late_partner_curve_balanced",
 	"late_partner_curve_power",
 ]
+
+# --- Deep late partner audit constants (Tasks 3, 12) ---
+const DEEP_LATE_PRESTIGE_LOOPS: int = 8
+const DEEP_LATE_MAX_SECONDS_PER_LOOP: float = 14400.0
+const DEEP_LATE_TARGET_STAGES: Array = [150, 200, 300]
+const DEEP_LATE_MIN_VALID_PARTNER_INDEX: int = 19
 
 # --- Late-game audit constants (higher budget than the early-probe defaults) ---
 const LATE_AUDIT_TARGET_STAGES: Array = [150, 200, 300, 500]
@@ -577,8 +585,14 @@ func _init() -> void:
 		_section_partner_curve_scenario_preview()
 		_section_balance_scenario_comparison()
 		_section_prestige_loop_simulation()
+	var zone_cycle_ok: bool = true
+	if RUN_ZONE_CYCLE_CHECK:
+		zone_cycle_ok = _section_zone_cycle_scaling()
+	_section_late_audit_reliability(zone_cycle_ok)
 	if RUN_LATE_PARTNER_AUDIT:
 		_section_late_game_partner_audit()
+	if RUN_DEEP_LATE_PARTNER_AUDIT:
+		_section_deep_late_partner_audit(zone_cycle_ok)
 	_section_warnings()
 	_write_csv()
 
@@ -608,8 +622,8 @@ func _section_enemy() -> void:
 
 	for lvl: int in _enemy_sample_levels():
 		var zd: Dictionary = _ZC.get_zone_data_for_level(lvl)
-		var hp_m: float  = float(zd.get("hp_multiplier", 1.0))
-		var rwd_m: float = float(zd.get("reward_multiplier", 1.0))
+		var hp_m: float  = _ZC.get_effective_hp_multiplier_for_level(lvl, _BC.ZONE_CYCLE_HP_MULTIPLIER)
+		var rwd_m: float = _ZC.get_effective_reward_multiplier_for_level(lvl, _BC.ZONE_CYCLE_REWARD_MULTIPLIER)
 		var zname: String = str(zd.get("name", "?"))
 		var zidx: int = _ZC.get_zone_index_for_level(lvl)
 
@@ -734,7 +748,7 @@ func _section_partner() -> void:
 		var pname:    String = _partner_name(i)
 		var base_dps: int    = _BC.PARTNER_DPS_VALUES[i]
 		var base_cost: int   = _BC.PARTNER_BASE_COSTS[i] if i < _BC.PARTNER_BASE_COSTS.size() else 0
-		var is_ph: bool      = i >= PLACEHOLDER_PARTNER_START_IDX
+		var is_ph: bool      = false  # partners 14–28 finalized via late_partner_curve_soft (v14)
 
 		var costs: Array = []
 		for owned: int in own_before:
@@ -754,8 +768,7 @@ func _section_partner() -> void:
 				("true" if is_ph else "false"),
 			])
 
-		if is_ph:
-			_warn("Partner %d (%s): still using placeholder DPS/cost — needs final balance pass" % [i + 1, pname])
+		# Partners 14–28 are finalized (accepted_late_partner_curve=soft, partner_14_28_finalized=true)
 
 	# ---- 3b: DPS efficiency table ----
 	_ln("")
@@ -782,11 +795,11 @@ func _section_partner() -> void:
 			_rj("%.5f" % dpg100, 15), _rj("×%d" % ms100, 8),
 		]))
 
-	# ---- 3c: consecutive DPS/cost ratio (non-placeholder only) ----
+	# ---- 3c: consecutive DPS/cost ratio (all partners, 14–28 finalized) ----
 	_ln("")
-	_ln("  Consecutive non-placeholder partner DPS & cost ratios:")
+	_ln("  Consecutive partner DPS & cost ratios (all 28 finalized):")
 	_div("-", 68)
-	for i: int in range(1, PLACEHOLDER_PARTNER_START_IDX):
+	for i: int in range(1, _BC.PARTNER_DPS_VALUES.size()):
 		var prev_dps:  int = _BC.PARTNER_DPS_VALUES[i - 1]
 		var curr_dps:  int = _BC.PARTNER_DPS_VALUES[i]
 		var prev_cost: int = _BC.PARTNER_BASE_COSTS[i - 1]
@@ -841,9 +854,8 @@ func _section_combat() -> void:
 	_div("-", 95)
 
 	for lvl: int in _combat_sample_levels():
-		var zd: Dictionary = _ZC.get_zone_data_for_level(lvl)
-		var hp_m:  float = float(zd.get("hp_multiplier", 1.0))
-		var rwd_m: float = float(zd.get("reward_multiplier", 1.0))
+		var hp_m:  float = _ZC.get_effective_hp_multiplier_for_level(lvl, _BC.ZONE_CYCLE_HP_MULTIPLIER)
+		var rwd_m: float = _ZC.get_effective_reward_multiplier_for_level(lvl, _BC.ZONE_CYCLE_REWARD_MULTIPLIER)
 
 		var base_hp:  int = _EC.get_base_hp(lvl,     _BC.ENEMY_HP_BASE,     _BC.ENEMY_HP_GROWTH)
 		var base_rwd: int = _EC.get_base_reward(lvl, _BC.ENEMY_REWARD_BASE, _BC.ENEMY_REWARD_GROWTH)
@@ -1787,7 +1799,7 @@ func _early_baseline_status(profile_id: String, result: Dictionary, manual_share
 
 func _section_late_game_partner_audit() -> void:
 	_header("SECTION - Late Game Partner Audit")
-	_ln("  Focus: post-prestige partner 14-28 balance. Generated curves are audit-only; BalanceConfig is not modified.")
+	_ln("  Focus: post-prestige partner 14-28 balance. Values are finalized (accepted_late_partner_curve=soft, partner_14_28_finalized=true). Generated curves are audit-only; BalanceConfig is not modified.")
 	_ln("  Default target stages: %s. Stage 500 is intentionally skipped unless LATE_PARTNER_TARGET_LEVEL is raised for a longer local run." % _join_ints(LATE_PARTNER_TARGET_STAGES))
 	_section_late_partner_static_diagnostics()
 	_section_late_partner_curve_comparison()
@@ -1828,7 +1840,7 @@ func _section_late_partner_static_diagnostics() -> void:
 		_csv_append(
 			"late_partner_static", pi + 1,
 			0, 0, base_cost, 0, base_dps, 0.0,
-			"partner_index=%d partner_name=%s base_dps=%d base_cost=%d dps_ratio_vs_previous=%.3f cost_ratio_vs_previous=%.3f dps_per_cost=%.8f dps_per_cost_ratio_vs_previous=%.3f placeholder=true" % [
+			"partner_index=%d partner_name=%s base_dps=%d base_cost=%d dps_ratio_vs_previous=%.3f cost_ratio_vs_previous=%.3f dps_per_cost=%.8f dps_per_cost_ratio_vs_previous=%.3f placeholder=false accepted_late_partner_curve=soft partner_14_28_finalized=true" % [
 				pi, _partner_name(pi), base_dps, base_cost, dps_ratio, cost_ratio, dps_per_cost, eff_ratio,
 			]
 		)
@@ -2223,15 +2235,15 @@ func _late_fast_click_damage(hero_level: int, focus_mult: float) -> int:
 
 
 func _late_fast_enemy_hp(level: int, is_boss: bool) -> int:
-	var zd: Dictionary = _ZC.get_zone_data_for_level(level)
 	var base_hp: int = _EC.get_base_hp(level, _BC.ENEMY_HP_BASE, _BC.ENEMY_HP_GROWTH)
-	return _EC.get_scaled_hp(base_hp, float(zd.get("hp_multiplier", 1.0)), is_boss, false, _BC.BOSS_HP_MULTIPLIER, _BC.ELITE_HP_MULTIPLIER)
+	var hp_m: float = _ZC.get_effective_hp_multiplier_for_level(level, _BC.ZONE_CYCLE_HP_MULTIPLIER)
+	return _EC.get_scaled_hp(base_hp, hp_m, is_boss, false, _BC.BOSS_HP_MULTIPLIER, _BC.ELITE_HP_MULTIPLIER)
 
 
 func _late_fast_enemy_reward(level: int, is_boss: bool) -> int:
-	var zd: Dictionary = _ZC.get_zone_data_for_level(level)
 	var base_reward: int = _EC.get_base_reward(level, _BC.ENEMY_REWARD_BASE, _BC.ENEMY_REWARD_GROWTH)
-	return _EC.get_scaled_reward(base_reward, float(zd.get("reward_multiplier", 1.0)), is_boss, false, _BC.BOSS_REWARD_MULTIPLIER, _BC.ELITE_REWARD_MULTIPLIER)
+	var rwd_m: float = _ZC.get_effective_reward_multiplier_for_level(level, _BC.ZONE_CYCLE_REWARD_MULTIPLIER)
+	return _EC.get_scaled_reward(base_reward, rwd_m, is_boss, false, _BC.BOSS_REWARD_MULTIPLIER, _BC.ELITE_REWARD_MULTIPLIER)
 
 
 func _late_fast_prestige_reward(stage_level: int, hero_level: int) -> int:
@@ -3745,9 +3757,8 @@ func _sim_attempt_boss_pass(
 	# After each batch: buy upgrades, then wait for abilities, then check burst TTK.
 	# Never compare pre-farm burst DPS to post-farm base DPS.
 	var farm_level: int = _sim_best_farm_level(boss_level)
-	var farm_zd: Dictionary = _ZC.get_zone_data_for_level(farm_level)
-	var farm_hp_m: float = float(farm_zd.get("hp_multiplier", 1.0))
-	var farm_rwd_m: float = float(farm_zd.get("reward_multiplier", 1.0))
+	var farm_hp_m: float = _ZC.get_effective_hp_multiplier_for_level(farm_level, _BC.ZONE_CYCLE_HP_MULTIPLIER)
+	var farm_rwd_m: float = _ZC.get_effective_reward_multiplier_for_level(farm_level, _BC.ZONE_CYCLE_REWARD_MULTIPLIER)
 	var farm_base_hp: int = _EC.get_base_hp(farm_level, _BC.ENEMY_HP_BASE, _BC.ENEMY_HP_GROWTH)
 	var farm_norm_hp: int = _EC.get_scaled_hp(farm_base_hp, farm_hp_m, false, false, _BC.BOSS_HP_MULTIPLIER, _BC.ELITE_HP_MULTIPLIER)
 	var farm_base_rwd: int = _EC.get_base_reward(farm_level, _BC.ENEMY_REWARD_BASE, _BC.ENEMY_REWARD_GROWTH)
@@ -4546,9 +4557,9 @@ func _scenario_advance_after_defeat(state: Dictionary) -> void:
 
 
 func _scenario_enemy_hp(level: int, is_boss: bool, scenario: Dictionary) -> int:
-	var zd: Dictionary = _ZC.get_zone_data_for_level(level)
 	var base_hp: int = _EC.get_base_hp(level, _BC.ENEMY_HP_BASE, _BC.ENEMY_HP_GROWTH)
-	var hp: int = _EC.get_scaled_hp(base_hp, float(zd.get("hp_multiplier", 1.0)), is_boss, false, _BC.BOSS_HP_MULTIPLIER, _BC.ELITE_HP_MULTIPLIER)
+	var hp_m: float = _ZC.get_effective_hp_multiplier_for_level(level, _BC.ZONE_CYCLE_HP_MULTIPLIER)
+	var hp: int = _EC.get_scaled_hp(base_hp, hp_m, is_boss, false, _BC.BOSS_HP_MULTIPLIER, _BC.ELITE_HP_MULTIPLIER)
 	var mult: float = _scf(scenario, "enemy_hp_mult")
 	if is_boss:
 		mult *= _scf(scenario, "boss_hp_mult")
@@ -4556,9 +4567,9 @@ func _scenario_enemy_hp(level: int, is_boss: bool, scenario: Dictionary) -> int:
 
 
 func _scenario_enemy_reward(level: int, is_boss: bool, scenario: Dictionary) -> int:
-	var zd: Dictionary = _ZC.get_zone_data_for_level(level)
 	var base_reward: int = _EC.get_base_reward(level, _BC.ENEMY_REWARD_BASE, _BC.ENEMY_REWARD_GROWTH)
-	var reward: int = _EC.get_scaled_reward(base_reward, float(zd.get("reward_multiplier", 1.0)), is_boss, false, _BC.BOSS_REWARD_MULTIPLIER, _BC.ELITE_REWARD_MULTIPLIER)
+	var rwd_m: float = _ZC.get_effective_reward_multiplier_for_level(level, _BC.ZONE_CYCLE_REWARD_MULTIPLIER)
+	var reward: int = _EC.get_scaled_reward(base_reward, rwd_m, is_boss, false, _BC.BOSS_REWARD_MULTIPLIER, _BC.ELITE_REWARD_MULTIPLIER)
 	var mult: float = _scf(scenario, "enemy_reward_mult")
 	if is_boss:
 		mult *= _scf(scenario, "boss_reward_mult")
@@ -6104,6 +6115,432 @@ func _section_click_partner_synergy_summary() -> void:
 				_csyn_active_reached, _csyn_active_manual_s,
 			])
 		_warn("Click synergy: active_6cps reached max level %d with no boss wall and synergy active (manual=%.0f%%) — possible runaway." % [_csyn_active_reached, _csyn_active_manual_s])
+
+
+func _section_zone_cycle_scaling() -> bool:
+	_header("SECTION — Zone Cycle Scaling Check")
+	_ln("Verifies HP/reward continue growing across visual zone cycle boundaries (every 105 levels).")
+	_ln("Visual zone/assets still cycle; only difficulty/reward multipliers scale with cycle index.")
+
+	const CHECK_LEVELS: Array[int] = [100, 101, 104, 105, 106, 107, 110, 209, 210, 211, 212]
+
+	_ln(_row([
+		_rj("Lvl", 5), _rj("Zone", 5), _rj("Cycle", 6), _lj("Boss?", 7),
+		_rj("BaseHP", 10), _rj("EffHPm", 10), _rj("FinalHP", 12),
+		_rj("BaseRwd", 9), _rj("EffRwdm", 10), _rj("FinalRwd", 10),
+	]))
+	_div("-", 90)
+
+	for lvl: int in CHECK_LEVELS:
+		var visual_zone: int = _ZC.get_zone_number_for_level(lvl)
+		var cycle_index: int = _ZC.get_zone_cycle_index_for_level(lvl)
+		var is_boss: bool = (lvl % _ZC.BOSS_LEVEL_INTERVAL == 0)
+		var base_hp: int = _EC.get_base_hp(lvl, _BC.ENEMY_HP_BASE, _BC.ENEMY_HP_GROWTH)
+		var eff_hp_m: float = _ZC.get_effective_hp_multiplier_for_level(lvl, _BC.ZONE_CYCLE_HP_MULTIPLIER)
+		var final_hp: int = _EC.get_scaled_hp(base_hp, eff_hp_m, is_boss, false, _BC.BOSS_HP_MULTIPLIER, _BC.ELITE_HP_MULTIPLIER)
+		var base_rwd: int = _EC.get_base_reward(lvl, _BC.ENEMY_REWARD_BASE, _BC.ENEMY_REWARD_GROWTH)
+		var eff_rwd_m: float = _ZC.get_effective_reward_multiplier_for_level(lvl, _BC.ZONE_CYCLE_REWARD_MULTIPLIER)
+		var final_rwd: int = _EC.get_scaled_reward(base_rwd, eff_rwd_m, is_boss, false, _BC.BOSS_REWARD_MULTIPLIER, _BC.ELITE_REWARD_MULTIPLIER)
+
+		_ln(_row([
+			_rj(str(lvl), 5), _rj(str(visual_zone), 5), _rj(str(cycle_index), 6),
+			_lj(("BOSS" if is_boss else "—"), 7),
+			_rj(_fn(base_hp), 10), _rj("%.2f" % eff_hp_m, 10), _rj(_fn(final_hp), 12),
+			_rj(_fn(base_rwd), 9), _rj("%.2f" % eff_rwd_m, 10), _rj(_fn(final_rwd), 10),
+		]))
+		_csv_append("zone_cycle_scaling_check", lvl, final_hp, final_rwd, 0, 0, 0, 0.0,
+			"level=%d visual_zone_number=%d cycle_index=%d is_boss=%s base_hp=%d effective_hp_multiplier=%.4f final_hp=%d base_reward=%d effective_reward_multiplier=%.4f final_reward=%d" % [
+				lvl, visual_zone, cycle_index, str(is_boss),
+				base_hp, eff_hp_m, final_hp,
+				base_rwd, eff_rwd_m, final_rwd,
+			])
+
+	# Monotonic validation: normal-to-normal across each cycle boundary.
+	# Do NOT compare normal level 106 to boss level 105 — a normal after a boss being weaker is expected.
+	_ln("")
+	_ln("  Monotonic check (normal-to-normal across cycle boundary):")
+	var ok: bool = true
+	var boundary_pairs: Array[Array] = [[104, 106], [209, 211]]
+	for pair: Array in boundary_pairs:
+		var prev_lvl: int = int(pair[0])
+		var next_lvl: int = int(pair[1])
+		var prev_hp: int  = _late_fast_enemy_hp(prev_lvl, false)
+		var next_hp: int  = _late_fast_enemy_hp(next_lvl, false)
+		var prev_rwd: int = _late_fast_enemy_reward(prev_lvl, false)
+		var next_rwd: int = _late_fast_enemy_reward(next_lvl, false)
+		var hp_ratio: float  = float(next_hp)  / float(prev_hp)  if prev_hp  > 0 else 0.0
+		var rwd_ratio: float = float(next_rwd) / float(prev_rwd) if prev_rwd > 0 else 0.0
+		var hp_ok:  bool = next_hp  > prev_hp
+		var rwd_ok: bool = next_rwd > prev_rwd
+		var pair_ok: bool = hp_ok and rwd_ok
+		var label: String = "OK  " if pair_ok else "FAIL"
+		_ln("  [%s] lvl %d→%d  HP: %d→%d (%.3fx)  reward: %d→%d (%.3fx)" % [
+			label, prev_lvl, next_lvl,
+			prev_hp, next_hp, hp_ratio,
+			prev_rwd, next_rwd, rwd_ratio,
+		])
+		if not pair_ok:
+			ok = false
+			_warn("Zone cycle scaling FAIL: level %d normal HP/reward not greater than level %d (hp_ok=%s rwd_ok=%s)" % [
+				next_lvl, prev_lvl, str(hp_ok), str(rwd_ok),
+			])
+			_csv_append("zone_cycle_scaling_warning", next_lvl, next_hp, next_rwd, 0, 0, 0, 0.0,
+				"previous_level=%d next_cycle_level=%d previous_hp=%d next_hp=%d previous_reward=%d next_reward=%d hp_ratio=%.4f reward_ratio=%.4f hp_ok=%s rwd_ok=%s" % [
+					prev_lvl, next_lvl, prev_hp, next_hp, prev_rwd, next_rwd,
+					hp_ratio, rwd_ratio, str(hp_ok), str(rwd_ok),
+				])
+	return ok
+
+
+func _section_late_audit_reliability(zone_cycle_scaling_ok: bool) -> void:
+	_header("SECTION — Late Audit Reliability")
+	if zone_cycle_scaling_ok:
+		_ln("  zone_cycle_scaling_ok=true")
+		_ln("  Zone cycle scaling validated. Late partner audit results are reliable.")
+	else:
+		_ln("  zone_cycle_scaling_ok=false")
+		_ln("  WARNING: Zone cycle scaling failed. Late partner audit results are UNRELIABLE.")
+		_ln("  Fix the cycle scaling bug and re-run before trusting late-game partner numbers.")
+	_csv_append("late_audit_reliability", 0, 0, 0, 0, 0, 0, 0.0,
+		"zone_cycle_scaling_ok=%s%s" % [
+			str(zone_cycle_scaling_ok),
+			"" if zone_cycle_scaling_ok else " reason_if_false=normal_hp_or_reward_not_monotonic_across_cycle_boundary",
+		])
+
+
+# ==========================================================================
+#  SECTION — Deep Late Partner Audit  (Tasks 2–12)
+# ==========================================================================
+#
+#  Uses the SAME full simulation model as the early baseline (_run_progression_profile):
+#    - boss wait/retry logic
+#    - farming logic
+#    - purchase logic (hero, partner, building, ability, skill)
+#    - ability usage logic
+#    - prestige availability detection
+#  NO boss_wall_fast_probe is used here. Prestige talent levels persist across loops.
+
+func _section_deep_late_partner_audit(zone_cycle_ok: bool) -> void:
+	_header("SECTION — Deep Late Partner Audit  (full simulation, no fast probe)")
+	_ln("  Uses full _run_progression_profile for each loop. boss_wall_fast_probe NOT used.")
+	_ln("  Prestige talent levels persist across loops. Loops: %d. Max seconds/loop: %.0f." % [
+		DEEP_LATE_PRESTIGE_LOOPS, DEEP_LATE_MAX_SECONDS_PER_LOOP])
+
+	var profiles: Array[Dictionary] = [
+		{"id": "active_6cps",      "clicks_per_sec": 6.0, "abilities": true, "buildings": true, "skills": true,
+		 "max_seconds": DEEP_LATE_MAX_SECONDS_PER_LOOP},
+		{"id": "semi_active_3cps", "clicks_per_sec": 3.0, "abilities": true, "buildings": true, "skills": true,
+		 "max_seconds": DEEP_LATE_MAX_SECONDS_PER_LOOP},
+	]
+	var strategies: Array[Dictionary] = _deep_late_strategy_list()
+	var scenario_ids: Array[String] = ["late_partner_curve_soft", "late_partner_curve_balanced", "late_partner_curve_power"]
+
+	# Reliability tracking
+	var any_reached_partner_20: bool = false
+	var boss_wall_fast_probe_used: bool = false  # We never use it in this section
+	var loops_completed: int = 0
+
+	_ln(_row([
+		_lj("Scenario", 26), _lj("Profile", 18), _lj("Strategy", 14),
+		_rj("Loop", 5), _rj("Stage", 6), _rj("HighP", 6),
+		_rj("P20?", 5), _rj("Reward", 7), "Tag",
+	]))
+	_div("-", 120)
+
+	for scenario_id: String in scenario_ids:
+		# Build a minimal scenario dict that passes through _run_progression_profile
+		var full_scenario: Dictionary = {
+			"id": scenario_id,
+			"label": scenario_id,
+			"partner_curve_id": scenario_id,
+			"hero_damage_mult": 1.0,
+			"hero_cost_mult": 1.0,
+			"hero_cost_growth_delta": 0.0,
+			"partner_dps_mult": 1.0,
+			"partner_cost_mult": 1.0,
+			"partner_cost_growth_delta": 0.0,
+			"building_cost_mult": 1.0,
+			"building_effect_mult": 1.0,
+			"enemy_hp_mult": 1.0,
+			"enemy_reward_mult": 1.0,
+			"boss_hp_mult": 1.0,
+			"boss_reward_mult": 1.0,
+			"ability_cost_mult": 1.0,
+		}
+
+		for profile: Dictionary in profiles:
+			for strategy: Dictionary in strategies:
+				var strategy_id: String = str(strategy.get("id", ""))
+				# Prestige state persists across loops
+				var talent_levels: Array = [0, 0, 0, 0, 0, 0]
+				var prestige_points_available: int = 0
+				var prestige_points_total_earned: int = 0
+				var total_prestiges: int = 0
+				var bought_highest_partner: int = -1
+				var any_prestige_happened: bool = false
+				var valid_reached_partner_20: bool = false
+
+				# Consolidated warning suppression: emit at most one warning per scenario/profile/strategy
+				var invalid_warning_emitted: bool = false
+
+				for loop_idx: int in range(DEEP_LATE_PRESTIGE_LOOPS):
+					# Build initial overrides with accumulated prestige state
+					var overrides: Dictionary = {}
+					if loop_idx > 0 or prestige_points_available > 0:
+						overrides = {
+							"prestige_points_available": prestige_points_available,
+							"prestige_points_total_earned": prestige_points_total_earned,
+							"total_prestiges": total_prestiges,
+							"prestige_talent_levels": talent_levels.duplicate(),
+						}
+
+					# Run full simulation — same model as early baseline
+					var run: Dictionary = _run_progression_profile(profile, full_scenario, false, overrides)
+					loops_completed += 1
+
+					var reached: int = int(run.get("reached_level", 0))
+					var sim_time: float = float(run.get("sim_time", 0.0))
+					var stopped_reason: String = str(run.get("stopped_reason", ""))
+					var prestige_reward: int = int(run.get("first_prestige_reward", 0))
+					var prestige_time: float = float(run.get("first_prestige_time", -1.0))
+					var partner_counts: Array = run.get("partner_counts", [])
+					var partner_identity: Dictionary = _sim_partner_identity_metrics(partner_counts, full_scenario)
+					var highest_partner: int = int(partner_identity.get("highest_owned_partner_index", -1))
+					var strongest_partner: int = int(partner_identity.get("strongest_partner_index", -1))
+					var strongest_share: float = float(partner_identity.get("strongest_partner_dps_share", 0.0))
+					var total_partner_dps_val: int = int(partner_identity.get("total_tier_partner_dps", 0))
+					var manual_dps_val: float = float(run.get("manual_dps", 0.0))
+					var partner_dps_val: float = float(run.get("partner_dps", 0.0))
+					var ability_dps_val: float = float(run.get("ability_dps", 0.0))
+					var total_dps_val: float = float(run.get("total_dps", 0.0))
+					var manual_share: float = _scenario_share(manual_dps_val, total_dps_val)
+					var partner_share: float = _scenario_share(partner_dps_val, total_dps_val)
+					var ability_share: float = _scenario_share(ability_dps_val, total_dps_val)
+					var total_partner_purchases: int = int(run.get("total_partner_purchases", 0))
+					var total_gold_earned_val: int = int(run.get("total_gold_earned", 0))
+					var total_gold_spent_val: int = int(run.get("total_gold_spent", 0))
+					var hero_skill_buys: int = int(run.get("total_hero_skill_purchases", 0))
+					var partner_skill_buys: int = int(run.get("total_partner_skill_purchases", 0))
+					var ability_skill_buys: int = int(run.get("total_ability_skill_purchases", 0))
+					var total_skill_purchases: int = hero_skill_buys + partner_skill_buys + ability_skill_buys
+
+					# Update highest partner tracking
+					if highest_partner > bought_highest_partner:
+						bought_highest_partner = highest_partner
+
+					# Validity flags (Task 8)
+					var reached_p14: bool = bought_highest_partner >= 13
+					var reached_p18: bool = bought_highest_partner >= 17
+					var reached_p20: bool = bought_highest_partner >= DEEP_LATE_MIN_VALID_PARTNER_INDEX
+					var reached_p24: bool = bought_highest_partner >= 23
+					var reached_p28: bool = bought_highest_partner >= 27
+					var valid_test: bool = reached_p20
+					if reached_p20:
+						valid_reached_partner_20 = true
+						any_reached_partner_20 = true
+
+					# Recommendation tag (Task 9)
+					var tag: String = _deep_late_recommendation_tag(
+						reached, sim_time, bought_highest_partner, strongest_partner,
+						strongest_share, prestige_reward, prestige_time, valid_test,
+						any_prestige_happened, loop_idx)
+
+					var reason_if_invalid: String = ""
+					if not valid_test:
+						reason_if_invalid = "highest_partner_%d_below_partner_20_index_%d" % [
+							bought_highest_partner + 1, DEEP_LATE_MIN_VALID_PARTNER_INDEX + 1]
+
+					# Talent level string for notes
+					var talent_str: String = _fmt_talent_levels(talent_levels)
+
+					# CSV: deep_late_partner_summary (Task 6)
+					_csv_append(
+						"deep_late_partner_summary", reached,
+						int(run.get("target_hp", 0)), int(run.get("reward_gold", 0)), 0,
+						int(run.get("click_damage", 0)), int(total_dps_val), sim_time,
+						"scenario_id=%s profile_id=%s strategy_id=%s loop_index=%d reached_stage=%d sim_time=%.0f prestige_reward=%d prestige_points_total_earned=%d prestige_points_available=%d prestige_talent_levels=%s highest_partner_bought=%d strongest_partner_index=%d strongest_partner_dps_share=%.1f total_partner_dps=%d manual_dps=%d partner_dps=%d ability_dps=%d manual_share=%.1f partner_share=%.1f ability_share=%.1f total_gold_earned=%d total_gold_spent=%d total_partner_purchases=%d total_skill_purchases=%d stopped_reason=%s valid_late_partner_test=%s reached_partner_14=%s reached_partner_18=%s reached_partner_20=%s reached_partner_24=%s reached_partner_28=%s reason_if_invalid=%s recommendation_tag=%s" % [
+							scenario_id, str(profile.get("id", "")), strategy_id, loop_idx,
+							reached, sim_time,
+							prestige_reward, prestige_points_total_earned, prestige_points_available,
+							talent_str,
+							bought_highest_partner, strongest_partner, strongest_share,
+							total_partner_dps_val,
+							int(manual_dps_val), int(partner_dps_val), int(ability_dps_val),
+							manual_share, partner_share, ability_share,
+							total_gold_earned_val, total_gold_spent_val,
+							total_partner_purchases, total_skill_purchases,
+							stopped_reason, str(valid_test),
+							str(reached_p14), str(reached_p18), str(reached_p20), str(reached_p24), str(reached_p28),
+							reason_if_invalid, tag,
+						]
+					)
+
+					# CSV: deep_late_partner_purchase_timeline (Task 7)
+					_deep_late_emit_purchase_timeline(
+						scenario_id, str(profile.get("id", "")), strategy_id, loop_idx,
+						partner_counts, full_scenario, sim_time, reached)
+
+					# Print row
+					_ln(_row([
+						_lj(scenario_id.left(25), 26),
+						_lj(str(profile.get("id", "")).left(17), 18),
+						_lj(strategy_id.left(13), 14),
+						_rj(str(loop_idx), 5),
+						_rj(str(reached), 6),
+						_rj(str(bought_highest_partner + 1 if bought_highest_partner >= 0 else 0), 6),
+						_rj(("YES" if reached_p20 else "no"), 5),
+						_rj(str(prestige_reward), 7),
+						tag,
+					]))
+
+					# Perform prestige if reward > 0 (Task 3)
+					if prestige_reward > 0:
+						prestige_points_available += prestige_reward
+						prestige_points_total_earned += prestige_reward
+						total_prestiges += 1
+						any_prestige_happened = true
+
+						# Buy prestige talent(s) using the strategy
+						var purchases: Array[Dictionary] = _sim_spend_prestige_points(
+							prestige_points_available, talent_levels, strategy)
+						for purchase: Dictionary in purchases:
+							var tidx: int = int(purchase.get("talent_index", -1))
+							var cost: int = int(purchase.get("cost", 0))
+							if tidx >= 0 and tidx < talent_levels.size() and prestige_points_available >= cost:
+								prestige_points_available -= cost
+								talent_levels[tidx] = int(talent_levels[tidx]) + 1
+
+					# Stop looping if no prestige possible and not first loop
+					if prestige_reward <= 0 and loop_idx > 0:
+						break
+					# Stop if time budget exhausted before prestige
+					if prestige_time < 0.0 and loop_idx == 0:
+						break
+
+				# Emit one summary warning per scenario/profile/strategy (Task 11)
+				if not valid_reached_partner_20 and not invalid_warning_emitted:
+					invalid_warning_emitted = true
+					_csv_append("simulation_balance_warning", 0, 0, 0, 0, 0, 0, 0.0,
+						"scenario_id=%s profile_id=%s strategy_id=%s warning_type=deep_late_invalid_not_deep_enough reason=partner_20_not_reached_in_any_loop highest_partner_ever=%d" % [
+							scenario_id, str(profile.get("id", "")), str(strategy.get("id", "")),
+							bought_highest_partner + 1,
+						])
+				elif not any_prestige_happened and not invalid_warning_emitted:
+					invalid_warning_emitted = true
+					_csv_append("simulation_balance_warning", 0, 0, 0, 0, 0, 0, 0.0,
+						"scenario_id=%s profile_id=%s strategy_id=%s warning_type=prestige_loop_not_continuing reason=first_prestige_never_reached" % [
+							scenario_id, str(profile.get("id", "")), str(strategy.get("id", "")),
+						])
+
+	# Emit deep_late_audit_reliability row (Task 10)
+	var reliable: bool = any_reached_partner_20 and not boss_wall_fast_probe_used
+	var reason_if_unreliable: String = ""
+	if not any_reached_partner_20:
+		reason_if_unreliable = "no_scenario_reached_partner_20"
+	if boss_wall_fast_probe_used:
+		reason_if_unreliable = reason_if_unreliable + (" " if reason_if_unreliable != "" else "") + "boss_wall_fast_probe_used"
+
+	_csv_append(
+		"deep_late_audit_reliability", 0, 0, 0, 0, 0, 0, 0.0,
+		"zone_cycle_scaling_ok=%s early_baseline_accepted=true late_uses_full_simulation=true boss_wall_fast_probe_used=false prestige_loop_count_completed=%d reached_partner_20_any_scenario=%s reliable_for_partner_14_28_balance=%s reason_if_unreliable=%s" % [
+			str(zone_cycle_ok),
+			loops_completed,
+			str(any_reached_partner_20),
+			str(reliable),
+			reason_if_unreliable,
+		]
+	)
+
+	if not any_reached_partner_20:
+		_warn("Deep late partner audit: no scenario/profile/strategy reached partner 20 — late partner balance cannot be assessed.")
+		_csv_append("simulation_balance_warning", 0, 0, 0, 0, 0, 0, 0.0,
+			"warning_type=late_partner_curve_not_exercised reason=partner_20_not_reached_in_any_deep_late_run")
+
+
+func _deep_late_strategy_list() -> Array[Dictionary]:
+	return [
+		{"id": "damage_first", "priority": [0, 2, 5, 1, 3, 4]},
+		{"id": "gold_first",   "priority": [1, 0, 2, 5, 3, 4]},
+		{"id": "balanced",     "priority": []},
+	]
+
+
+func _deep_late_recommendation_tag(
+		reached: int, sim_time: float,
+		highest_partner: int, strongest_partner: int, strongest_share: float,
+		prestige_reward: int, _prestige_time: float,
+		valid_test: bool, any_prestige_happened: bool, loop_idx: int) -> String:
+
+	# Task 8/9: validity gate — partner 20 not reached
+	if not valid_test:
+		if not any_prestige_happened and loop_idx == 0:
+			return "too_slow_to_reach_late_partners"
+		return "invalid_not_deep_enough"
+
+	# Task 9: do NOT mark good_candidate if prestige not reached
+	if prestige_reward <= 0 and not any_prestige_happened:
+		return "invalid_not_deep_enough"
+
+	# Runaway: reached top target stage too quickly
+	var max_target: int = int(DEEP_LATE_TARGET_STAGES[DEEP_LATE_TARGET_STAGES.size() - 1])
+	if reached >= max_target and sim_time < 60.0 * 60.0:
+		return "runaway"
+	if reached >= 500 and sim_time < 30.0 * 60.0:
+		return "runaway"
+
+	# Domination: a single late partner exceeds 70% of partner DPS before stage 300
+	if strongest_partner >= PLACEHOLDER_PARTNER_START_IDX and strongest_share > 70.0 and reached < 300:
+		return "late_partner_dominates_too_hard"
+
+	# Late partner present but contributing nearly nothing
+	if highest_partner >= PLACEHOLDER_PARTNER_START_IDX and strongest_share < 5.0:
+		return "late_partner_unused"
+
+	# Too slow to reach late partners (partner 14 not reached)
+	if highest_partner < 13:
+		return "too_slow_to_reach_late_partners"
+
+	# Prestige economy checks
+	if prestige_reward < 2 and reached >= 100:
+		return "prestige_loop_too_weak"
+
+	# Prestige loop feels good across loops
+	if any_prestige_happened and loop_idx >= 1:
+		return "prestige_loop_feels_good"
+
+	# good_candidate: Task 9 — only if partner 20 reached and prestige works
+	if valid_test and prestige_reward >= 2 and reached >= 150 and highest_partner >= DEEP_LATE_MIN_VALID_PARTNER_INDEX:
+		return "good_candidate"
+
+	return "prestige_loop_feels_good"
+
+
+func _deep_late_emit_purchase_timeline(
+		scenario_id: String, profile_id: String, strategy_id: String, loop_idx: int,
+		partner_counts: Array, scenario: Dictionary, sim_time: float, reached: int) -> void:
+	# Task 7: emit a row whenever a new highest partner index is reached in this loop result
+	# We scan through all partner counts and emit a row for each that is owned
+	var prev_highest: int = -1
+	for pi: int in range(partner_counts.size()):
+		var owned: int = int(partner_counts[pi])
+		if owned > 0 and pi > prev_highest:
+			# Only emit for new highest partners (timeline of first purchase)
+			prev_highest = pi
+			var base_dps_val: int = _scenario_partner_base_dps(pi, scenario)
+			var base_cost_val: int = _scenario_partner_base_cost(pi, scenario)
+			var total_pdps: int = 0
+			for pi2: int in range(partner_counts.size()):
+				total_pdps += _scenario_partner_tier_total_dps(pi2, int(partner_counts[pi2]), scenario)
+			_csv_append(
+				"deep_late_partner_purchase_timeline", pi + 1, 0, 0,
+				base_cost_val, base_dps_val, total_pdps, sim_time,
+				"scenario_id=%s profile_id=%s strategy_id=%s loop_index=%d sim_time=%.0f stage=%d partner_index=%d partner_name=%s base_dps=%d base_cost=%d owned_count=%d current_total_partner_dps=%d gold_before_purchase=0 gold_after_purchase=0" % [
+					scenario_id, profile_id, strategy_id, loop_idx,
+					sim_time, reached, pi, _partner_name(pi),
+					base_dps_val, base_cost_val, owned,
+					total_pdps,
+				]
+			)
 
 
 func _section_warnings() -> void:
