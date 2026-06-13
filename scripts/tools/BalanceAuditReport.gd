@@ -1604,6 +1604,7 @@ func _run_profiled_progression_simulations() -> void:
 			elif str(_r.get("profile_id", "")) == "semi_active_3cps":
 				r_semi = _r
 		if not r_active.is_empty() and not r_semi.is_empty():
+			_append_profile_fairness_diagnostic(r_active, r_semi)
 			var active_level: int = int(r_active.get("reached_level", 0))
 			var semi_level: int = int(r_semi.get("reached_level", 0))
 			var active_time: float = float(r_active.get("sim_time", 0.0))
@@ -1621,6 +1622,71 @@ func _run_profiled_progression_simulations() -> void:
 					"profile_id=cross_profile warning_type=click_rate_irrelevant level=%d manual_share=0 partner_share=0 ability_share=0 explanation=semi_3cps_time_ratio_vs_active_6cps=%.2f_too_close_to_1.0_clicks_not_impactful" % [
 						active_level, time_ratio,
 					])
+
+
+func _profile_time_to_level(result: Dictionary, level: int) -> float:
+	var level_times: Dictionary = result.get("level_times", {})
+	return float(level_times.get(level, -1.0))
+
+
+func _profile_ability_damage(result: Dictionary, ability_id: String) -> int:
+	var diagnostics_by_id: Dictionary = result.get("ability_diagnostics", {})
+	var diagnostics: Dictionary = diagnostics_by_id.get(ability_id, {})
+	return int(float(diagnostics.get("estimated_damage_contributed", 0.0)))
+
+
+func _profile_ability_gold(result: Dictionary, ability_id: String) -> int:
+	var diagnostics_by_id: Dictionary = result.get("ability_diagnostics", {})
+	var diagnostics: Dictionary = diagnostics_by_id.get(ability_id, {})
+	return int(float(diagnostics.get("estimated_gold_contributed", 0.0)))
+
+
+func _append_profile_fairness_diagnostic(active: Dictionary, semi: Dictionary) -> void:
+	for result: Dictionary in [active, semi]:
+		var profile_id: String = str(result.get("profile_id", ""))
+		var total_skill_purchases: int = int(result.get("total_hero_skill_purchases", 0)) \
+			+ int(result.get("total_partner_skill_purchases", 0)) \
+			+ int(result.get("total_ability_skill_purchases", 0))
+		var autoclick_damage: int = _profile_ability_damage(result, "autoclick")
+		var gold_bonus_reward: int = _profile_ability_gold(result, "gold_bonus")
+		_csv_append(
+			"profile_fairness_diagnostic", int(result.get("reached_level", 0)),
+			int(result.get("target_hp", 0)), int(result.get("reward_gold", 0)), int(result.get("total_gold_spent", 0)),
+			int(result.get("click_damage", 0)), int(result.get("total_dps", 0)), float(result.get("sim_time", 0.0)),
+			"profile_id=%s time_to_level_30=%.0f time_to_level_50=%.0f time_to_level_75=%.0f time_to_level_100=%.0f first_prestige_time=%.0f total_gold_earned=%d total_gold_spent=%d total_partner_purchases=%d total_building_purchases=%d total_skill_purchases=%d total_farm_time=%.0f total_wait_time=%.0f autoclick_total_damage=%d gold_bonus_total_reward=%d final_manual_dps=%d final_partner_dps=%d final_ability_dps=%d" % [
+				profile_id,
+				_profile_time_to_level(result, 30), _profile_time_to_level(result, 50),
+				_profile_time_to_level(result, 75), _profile_time_to_level(result, 100),
+				float(result.get("first_prestige_time", -1.0)),
+				int(result.get("total_gold_earned", 0)), int(result.get("total_gold_spent", 0)),
+				int(result.get("total_partner_purchases", 0)), int(result.get("total_building_purchases", 0)),
+				total_skill_purchases, float(result.get("total_farm_time", 0.0)), float(result.get("total_wait_time", 0.0)),
+				autoclick_damage, gold_bonus_reward,
+				int(result.get("manual_dps", 0.0)), int(result.get("partner_dps", 0.0)), int(result.get("ability_dps", 0.0)),
+			]
+		)
+
+	var active_first: float = float(active.get("first_prestige_time", -1.0))
+	var semi_first: float = float(semi.get("first_prestige_time", -1.0))
+	if active_first > 0.0 and semi_first > 0.0 and active_first > semi_first:
+		var active_total_purchases: int = _sim_count_total_purchases(active)
+		var semi_total_purchases: int = _sim_count_total_purchases(semi)
+		var active_autoclick: int = _profile_ability_damage(active, "autoclick")
+		var semi_autoclick: int = _profile_ability_damage(semi, "autoclick")
+		var active_gold_bonus: int = _profile_ability_gold(active, "gold_bonus")
+		var semi_gold_bonus: int = _profile_ability_gold(semi, "gold_bonus")
+		_csv_append(
+			"simulation_balance_warning", int(active.get("reached_level", 0)),
+			0, 0, 0, 0, int(active.get("total_dps", 0)), 0.0,
+			"profile_id=cross_profile warning_type=active_slower_than_semi active_first_prestige_time=%.0f semi_first_prestige_time=%.0f semi_total_farm_time=%.0f active_total_farm_time=%.0f semi_gold_bonus_reward=%d active_gold_bonus_reward=%d semi_autoclick_damage=%d active_autoclick_damage=%d semi_total_purchases=%d active_total_purchases=%d likely_causes=compare_farm_gold_bonus_autoclick_and_purchase_counts" % [
+				active_first, semi_first,
+				float(semi.get("total_farm_time", 0.0)), float(active.get("total_farm_time", 0.0)),
+				semi_gold_bonus, active_gold_bonus,
+				semi_autoclick, active_autoclick,
+				semi_total_purchases, active_total_purchases,
+			]
+		)
+		_warn("Profile fairness: active_6cps first prestige %.0fs is slower than semi_active_3cps %.0fs." % [active_first, semi_first])
 
 
 func _run_progression_profile(profile: Dictionary, scenario: Dictionary = {}, emit_live_output: bool = true, initial_overrides: Dictionary = {}) -> Dictionary:
@@ -1670,6 +1736,7 @@ func _run_progression_profile(profile: Dictionary, scenario: Dictionary = {}, em
 	var total_gold_spent_buildings: int = 0
 	var total_gold_spent_abilities: int = 0
 	var total_gold_spent_skills: int = 0
+	var total_gold_earned: int = 0
 
 	var boss_wall_level: int = -1
 	var boss_wall_dps_needed: float = 0.0
@@ -1807,12 +1874,27 @@ func _run_progression_profile(profile: Dictionary, scenario: Dictionary = {}, em
 			var farm_attempt: Dictionary = _sim_attempt_boss_pass(
 				state, profile, clicks_per_sec, ability_state, ability_diagnostics,
 				sim_time, lv, enemy_hp, scenario if use_scenario_modifiers else {},
-				emit_live_output, profile_id
+				emit_live_output, profile_id, purchase_count, skill_spend
 			)
 			sim_time = float(farm_attempt.get("sim_time", sim_time))
 			total_farm_time += float(farm_attempt.get("farm_time", 0.0))
 			total_wait_time += float(farm_attempt.get("wait_time", 0.0))
 			farm_sessions += int(farm_attempt.get("farm_sessions", 0))
+			total_gold_earned += int(farm_attempt.get("gold_earned_during_farm", 0))
+			var farm_purchase_totals: Dictionary = farm_attempt.get("purchase_totals", {})
+			total_hero_buys += int(farm_purchase_totals.get("hero_buys", 0))
+			total_partner_buys += int(farm_purchase_totals.get("partner_buys", 0))
+			total_building_buys += int(farm_purchase_totals.get("building_buys", 0))
+			total_ability_buys += int(farm_purchase_totals.get("ability_buys", 0))
+			total_hero_skill_buys += int(farm_purchase_totals.get("hero_skill_buys", 0))
+			total_partner_skill_buys += int(farm_purchase_totals.get("partner_skill_buys", 0))
+			total_ability_skill_buys += int(farm_purchase_totals.get("ability_skill_buys", 0))
+			total_gold_spent_hero += int(farm_purchase_totals.get("gold_spent_hero", 0))
+			total_gold_spent_partners += int(farm_purchase_totals.get("gold_spent_partners", 0))
+			total_gold_spent_buildings += int(farm_purchase_totals.get("gold_spent_buildings", 0))
+			total_gold_spent_abilities += int(farm_purchase_totals.get("gold_spent_abilities", 0))
+			total_gold_spent_skills += int(farm_purchase_totals.get("gold_spent_skills", 0))
+			purchase_count += int(farm_attempt.get("purchase_count", 0))
 
 			if bool(farm_attempt.get("passed", false)):
 				var pass_reason_str: String = str(farm_attempt.get("pass_reason", "boss_defeated_after_farm"))
@@ -1906,6 +1988,7 @@ func _run_progression_profile(profile: Dictionary, scenario: Dictionary = {}, em
 		if gold_gained > state.reward_gold and _sim_is_ability_active(ability_state, "gold_bonus", defeat_time):
 			ability_event_counts["gold_bonus_reward"] = int(ability_event_counts.get("gold_bonus_reward", 0)) + 1
 			_sim_track_gold_bonus_contribution(state, ability_diagnostics, gold_gained)
+		total_gold_earned += maxi(gold_gained, 0)
 		_sim_clear_expired_ability_flags(state, ability_state, sim_time)
 
 	if stopped_reason == "reached_max_seconds" and state.current_level > SIM_MAX_LEVEL:
@@ -1954,14 +2037,16 @@ func _run_progression_profile(profile: Dictionary, scenario: Dictionary = {}, em
 		_csv_append("simulation_summary_%s" % profile_id, reached_level,
 			state.target_max_hp, state.reward_gold, 0,
 			int(final_stats.get("click_damage", state.get_current_click_damage())), int(final_tdps), sim_time,
-			"profile_id=%s reached_level=%d sim_time=%.0f hero=%d gold=%d click=%d manual_dps=%d partner_dps=%d ability_dps=%d total_dps=%d partner_dps_click_bonus_percent=%.4f max_theoretical_partner_dps_click_bonus_percent=%.4f autoclick_base_hits_per_sec=%.1f autoclick_damage_per_hit=%d autoclick_total_damage_contributed=%d ability_share=%.1f manual_share=%.1f partner_share=%.1f prestige_reward=%d total_hero_purchases=%d total_partner_purchases=%d total_building_purchases=%d total_ability_purchases=%d total_hero_skill_purchases=%d total_partner_skill_purchases=%d total_ability_skill_purchases=%d gold_spent_hero=%d gold_spent_partners=%d gold_spent_buildings=%d gold_spent_abilities=%d gold_spent_skills=%d ability_events=%s stopped_reason=%s boss_walls_seen=%d boss_walls_passed_by_wait=%d boss_walls_passed_by_farm=%d total_farm_time=%.0f total_wait_time=%.0f farm_sessions=%d final_wall_level=%d final_wall_missing_dps_percent=%.1f" % [
+			"profile_id=%s reached_level=%d sim_time=%.0f hero=%d gold=%d click=%d manual_dps=%d partner_dps=%d ability_dps=%d total_dps=%d partner_dps_click_bonus_percent=%.4f max_theoretical_partner_dps_click_bonus_percent=%.4f autoclick_base_hits_per_sec=%.1f autoclick_damage_per_hit=%d autoclick_total_damage_contributed=%d ability_share=%.1f manual_share=%.1f partner_share=%.1f prestige_reward=%d total_gold_earned=%d total_gold_spent=%d total_hero_purchases=%d total_partner_purchases=%d total_building_purchases=%d total_ability_purchases=%d total_hero_skill_purchases=%d total_partner_skill_purchases=%d total_ability_skill_purchases=%d gold_spent_hero=%d gold_spent_partners=%d gold_spent_buildings=%d gold_spent_abilities=%d gold_spent_skills=%d ability_events=%s stopped_reason=%s boss_walls_seen=%d boss_walls_passed_by_wait=%d boss_walls_passed_by_farm=%d total_farm_time=%.0f total_wait_time=%.0f farm_sessions=%d final_wall_level=%d final_wall_missing_dps_percent=%.1f" % [
 				profile_id, reached_level, sim_time, state.character_level, state.gold,
 				int(final_stats.get("click_damage", state.get_current_click_damage())), int(final_stats.get("manual_dps", 0.0)),
 				int(final_stats.get("partner_dps", 0.0)), int(final_stats.get("ability_dps", 0.0)), int(final_tdps),
 				final_partner_click_bonus_pct, EXPECTED_PARTNER_CLICK_SYNERGY_MAX, _BC.AUTOCLICK_BASE_HITS_PER_SEC,
 				final_autoclick_damage_per_hit, final_autoclick_total_damage,
 				final_ability_share, final_manual_share, final_partner_share,
-				first_prestige_reward, total_hero_buys, total_partner_buys, total_building_buys, total_ability_buys,
+				first_prestige_reward, total_gold_earned,
+				total_gold_spent_hero + total_gold_spent_partners + total_gold_spent_buildings + total_gold_spent_abilities + total_gold_spent_skills,
+				total_hero_buys, total_partner_buys, total_building_buys, total_ability_buys,
 				total_hero_skill_buys, total_partner_skill_buys, total_ability_skill_buys,
 				total_gold_spent_hero, total_gold_spent_partners, total_gold_spent_buildings,
 				total_gold_spent_abilities, total_gold_spent_skills, _sim_format_counts(ability_event_counts), stopped_reason,
@@ -2039,6 +2124,7 @@ func _run_progression_profile(profile: Dictionary, scenario: Dictionary = {}, em
 		},
 		"first_prestige_reward": first_prestige_reward,
 		"first_prestige_time": first_prestige_time,
+		"level_times": level_times.duplicate(),
 		"hero_level": state.character_level,
 		"gold": state.gold,
 		"click_damage": int(final_stats.get("click_damage", state.get_current_click_damage())),
@@ -2053,7 +2139,15 @@ func _run_progression_profile(profile: Dictionary, scenario: Dictionary = {}, em
 		"used_abilities": _sim_used_abilities_note(ability_diagnostics),
 		"currently_active_abilities": _sim_currently_active_abilities_note(ability_state, sim_time),
 		"total_dps": int(final_tdps),
+		"total_gold_earned": total_gold_earned,
+		"total_gold_spent": total_gold_spent_hero + total_gold_spent_partners + total_gold_spent_buildings + total_gold_spent_abilities + total_gold_spent_skills,
+		"total_hero_purchases": total_hero_buys,
 		"total_partner_purchases": total_partner_buys,
+		"total_building_purchases": total_building_buys,
+		"total_ability_purchases": total_ability_buys,
+		"total_hero_skill_purchases": total_hero_skill_buys,
+		"total_partner_skill_purchases": total_partner_skill_buys,
+		"total_ability_skill_purchases": total_ability_skill_buys,
 		"strongest_partner_index": int(partner_identity.get("strongest_partner_index", -1)),
 		"strongest_partner_dps": int(partner_identity.get("strongest_partner_dps", 0)),
 		"strongest_partner_dps_share": float(partner_identity.get("strongest_partner_dps_share", 0.0)),
@@ -2413,6 +2507,16 @@ func _sim_new_ability_state() -> Dictionary:
 	}
 
 
+func _sim_count_total_purchases(result: Dictionary) -> int:
+	return int(result.get("total_hero_purchases", 0)) \
+		+ int(result.get("total_partner_purchases", 0)) \
+		+ int(result.get("total_building_purchases", 0)) \
+		+ int(result.get("total_ability_purchases", 0)) \
+		+ int(result.get("total_hero_skill_purchases", 0)) \
+		+ int(result.get("total_partner_skill_purchases", 0)) \
+		+ int(result.get("total_ability_skill_purchases", 0))
+
+
 func _sim_new_ability_diagnostics() -> Dictionary:
 	var out: Dictionary = {}
 	for ability_id in _AC.ABILITY_IDS:
@@ -2745,13 +2849,27 @@ func _sim_base_dps_snapshot(state: _CS, clicks_per_sec: float) -> Dictionary:
 	return {"manual": manual, "partner": partner, "total": manual + partner}
 
 
-# Snapshot of BURST DPS with boss-relevant abilities that are ready at sim_time.
-# gold_bonus is excluded (affects reward, not DPS). Saves/restores ability flags.
-func _sim_burst_dps_snapshot(state: _CS, clicks_per_sec: float, ability_state: Dictionary, sim_time: float) -> Dictionary:
+func _calculate_boss_burst_dps(state: _CS, profile: Dictionary, ability_state: Dictionary, clicks_per_sec: float = SIM_CLICKS_PER_SEC, sim_time: float = 0.0) -> Dictionary:
+	var base: Dictionary = _sim_base_dps_snapshot(state, clicks_per_sec)
+	if not bool(profile.get("abilities", true)):
+		return {
+			"base_manual": base.manual,
+			"base_partner": base.partner,
+			"base_ability": 0.0,
+			"base_total": base.total,
+			"burst_manual": base.manual,
+			"burst_partner": base.partner,
+			"burst_ability": 0.0,
+			"burst_total": base.total,
+			"ability_flags_applied": false,
+		}
+
 	var ready_at: Dictionary = ability_state.get("ready_at", {})
-	var focus_on: bool = state.is_ability_purchased("focus_burst") and sim_time >= float(ready_at.get("focus_burst", 0.0))
-	var rally_on: bool = state.is_ability_purchased("rally") and sim_time >= float(ready_at.get("rally", 0.0))
-	var autoclick_on: bool = state.is_ability_purchased("autoclick") and sim_time >= float(ready_at.get("autoclick", 0.0))
+	var focus_on: bool = state.is_ability_purchased("focus_burst") and (_sim_is_ability_active(ability_state, "focus_burst", sim_time) or sim_time >= float(ready_at.get("focus_burst", 0.0)))
+	var rally_on: bool = state.is_ability_purchased("rally") and (_sim_is_ability_active(ability_state, "rally", sim_time) or sim_time >= float(ready_at.get("rally", 0.0)))
+	var autoclick_on: bool = state.is_ability_purchased("autoclick") and (_sim_is_ability_active(ability_state, "autoclick", sim_time) or sim_time >= float(ready_at.get("autoclick", 0.0)))
+	var ability_flags_applied: bool = focus_on or rally_on or autoclick_on
+
 	var g: bool = state.gold_bonus_active
 	var f: bool = state.focus_burst_active
 	var r: bool = state.rally_active
@@ -2763,7 +2881,30 @@ func _sim_burst_dps_snapshot(state: _CS, clicks_per_sec: float, ability_state: D
 	if autoclick_on:
 		ability = float(state.get_autoclick_damage()) * _BC.AUTOCLICK_BASE_HITS_PER_SEC * state.get_autoclick_rank_rate_multiplier()
 	_sim_set_ability_flags(state, g, f, r, a)
-	return {"manual": manual, "partner": partner, "ability": ability, "total": manual + partner + ability}
+	return {
+		"base_manual": base.manual,
+		"base_partner": base.partner,
+		"base_ability": 0.0,
+		"base_total": base.total,
+		"burst_manual": manual,
+		"burst_partner": partner,
+		"burst_ability": ability,
+		"burst_total": manual + partner + ability,
+		"ability_flags_applied": ability_flags_applied,
+	}
+
+
+# Snapshot of BURST DPS with boss-relevant abilities that are ready at sim_time.
+# gold_bonus is excluded (affects reward, not DPS). Saves/restores ability flags.
+func _sim_burst_dps_snapshot(state: _CS, clicks_per_sec: float, ability_state: Dictionary, sim_time: float) -> Dictionary:
+	var burst: Dictionary = _calculate_boss_burst_dps(state, {"abilities": true}, ability_state, clicks_per_sec, sim_time)
+	return {
+		"manual": float(burst.get("burst_manual", 0.0)),
+		"partner": float(burst.get("burst_partner", 0.0)),
+		"ability": float(burst.get("burst_ability", 0.0)),
+		"total": float(burst.get("burst_total", 0.0)),
+		"ability_flags_applied": bool(burst.get("ability_flags_applied", false)),
+	}
 
 
 # Boss wall farming/retry logic.
@@ -2775,7 +2916,8 @@ func _sim_attempt_boss_pass(
 		state: _CS, profile: Dictionary, clicks_per_sec: float,
 		ability_state: Dictionary, ability_diagnostics: Dictionary,
 		sim_time: float, boss_level: int, boss_hp: int,
-		scenario: Dictionary, emit_live_output: bool, profile_id: String) -> Dictionary:
+		scenario: Dictionary, emit_live_output: bool, profile_id: String, purchases_before_farm: int,
+		skill_spend: Dictionary) -> Dictionary:
 
 	var out_sim_time: float = sim_time
 	var total_farm_time_out: float = 0.0
@@ -2786,12 +2928,44 @@ func _sim_attempt_boss_pass(
 	var stop_reason: String = "boss_wall_after_max_farm"
 	var farm_budget: float = SIM_MAX_BOSS_FARM_SECONDS
 	var abilities_waited_after_farm: bool = false
+	var farm_gold_earned: int = 0
+	var farm_gold_spent: int = 0
+	var farm_purchase_count: int = 0
+	var farm_purchase_types: Dictionary = {}
+	var farm_purchase_totals: Dictionary = {
+		"hero_buys": 0,
+		"partner_buys": 0,
+		"building_buys": 0,
+		"ability_buys": 0,
+		"hero_skill_buys": 0,
+		"partner_skill_buys": 0,
+		"ability_skill_buys": 0,
+		"gold_spent_hero": 0,
+		"gold_spent_partners": 0,
+		"gold_spent_buildings": 0,
+		"gold_spent_abilities": 0,
+		"gold_spent_skills": 0,
+	}
 
 	# Compute base and burst DPS at entry (before any wait/farm)
 	var base_entry: Dictionary = _sim_base_dps_snapshot(state, clicks_per_sec)
 	var burst_entry: Dictionary = _sim_burst_dps_snapshot(state, clicks_per_sec, ability_state, out_sim_time)
 	var boss_ttk_base_before: float = float(boss_hp) / base_entry.total if base_entry.total > 0.0 else INF
 	var boss_ttk_burst_before: float = float(boss_hp) / burst_entry.total if burst_entry.total > 0.0 else INF
+	if boss_ttk_burst_before <= state.boss_time_limit:
+		return {
+			"passed": true,
+			"pass_reason": "boss_defeated_with_ready_burst",
+			"stop_reason": "",
+			"sim_time": out_sim_time,
+			"farm_time": 0.0,
+			"wait_time": 0.0,
+			"farm_sessions": 0,
+			"gold_earned_during_farm": 0,
+			"gold_spent_during_farm": 0,
+			"purchase_count": 0,
+			"purchase_totals": farm_purchase_totals,
+		}
 
 	# --- Step 1: Wait for boss-relevant abilities, then retry with burst DPS ---
 	if bool(profile.get("abilities", true)) and SIM_BOSS_RETRY_WAIT_FOR_ABILITIES:
@@ -2812,22 +2986,32 @@ func _sim_attempt_boss_pass(
 
 			_sim_update_ability_usage(state, profile, out_sim_time, ability_state, ability_diagnostics, clicks_per_sec)
 
-			var burst_after_wait: Dictionary = _sim_burst_dps_snapshot(state, clicks_per_sec, ability_state, out_sim_time)
-			var boss_ttk_burst_after_wait: float = float(boss_hp) / burst_after_wait.total if burst_after_wait.total > 0.0 else INF
+			var burst_after_wait: Dictionary = _calculate_boss_burst_dps(state, profile, ability_state, clicks_per_sec, out_sim_time)
+			var burst_total_after_wait: float = float(burst_after_wait.get("burst_total", 0.0))
+			var burst_gain: float = burst_total_after_wait - float(burst_after_wait.get("base_total", 0.0))
+			var burst_gain_percent: float = burst_gain / float(burst_after_wait.get("base_total", 0.0)) * 100.0 if float(burst_after_wait.get("base_total", 0.0)) > 0.0 else 0.0
+			var boss_ttk_burst_after_wait: float = float(boss_hp) / burst_total_after_wait if burst_total_after_wait > 0.0 else INF
 			var retry_success: bool = boss_ttk_burst_after_wait <= state.boss_time_limit
 
 			if emit_live_output:
 				_csv_append(
 					"simulation_boss_wait_retry_%s" % profile_id, boss_level,
 					boss_hp, state.reward_gold, 0,
-					state.get_current_click_damage(), int(burst_after_wait.total), boss_ttk_burst_after_wait,
-					"boss_level=%d waited_seconds=%.0f abilities_waited_for=%s base_dps_before=%.0f burst_dps_after_wait=%.0f boss_ttk_base_before=%.1f boss_ttk_burst_after_wait=%.1f retry_success=%s" % [
+					state.get_current_click_damage(), int(burst_total_after_wait), boss_ttk_burst_after_wait,
+					"boss_level=%d waited_seconds=%.0f abilities_waited_for=%s base_dps_before=%.0f burst_dps_after_wait=%.0f burst_gain=%.0f burst_gain_percent=%.2f ability_flags_applied=%s boss_ttk_base_before=%.1f boss_ttk_burst_after_wait=%.1f retry_success=%s" % [
 						boss_level, max_wait, "|".join(PackedStringArray(abilities_to_wait)),
-						base_entry.total, burst_after_wait.total,
+						float(burst_after_wait.get("base_total", 0.0)), burst_total_after_wait,
+						burst_gain, burst_gain_percent,
+						str(bool(burst_after_wait.get("ability_flags_applied", false))),
 						boss_ttk_base_before, boss_ttk_burst_after_wait,
 						str(retry_success),
 					]
 				)
+				if not abilities_to_wait.is_empty() and burst_gain_percent <= 0.01:
+					_csv_append("simulation_balance_warning", boss_level, 0, 0, 0, 0, int(burst_total_after_wait), 0.0,
+						"profile_id=%s warning_type=boss_wait_no_burst_gain boss_level=%d abilities_waited_for=%s burst_gain_percent=%.2f explanation=waited_for_boss_abilities_but_burst_dps_did_not_increase" % [
+							profile_id, boss_level, "|".join(PackedStringArray(abilities_to_wait)), burst_gain_percent,
+						])
 
 			if retry_success:
 				return {
@@ -2838,6 +3022,10 @@ func _sim_attempt_boss_pass(
 					"farm_time": 0.0,
 					"wait_time": total_wait_time_out,
 					"farm_sessions": 0,
+					"gold_earned_during_farm": 0,
+					"gold_spent_during_farm": 0,
+					"purchase_count": 0,
+					"purchase_totals": farm_purchase_totals,
 				}
 
 	# --- Step 2: Farm + burst-retry loop ---
@@ -2859,6 +3047,8 @@ func _sim_attempt_boss_pass(
 	var boss_ttk_base_before_farm: float = boss_ttk_base_before
 	var boss_ttk_burst_before_farm: float = boss_ttk_burst_before
 	var prev_burst_dps: float = burst_dps_before_farm
+	var farm_entry_dps: float = _sim_get_farm_dps_at(state, profile, clicks_per_sec, out_sim_time, ability_state)
+	var farm_level_ttk: float = float(farm_norm_hp) / farm_entry_dps if farm_entry_dps > 0.0 else INF
 
 	for _retry in range(30):
 		if farm_budget <= 0.0:
@@ -2874,7 +3064,9 @@ func _sim_attempt_boss_pass(
 			break
 		var farm_ttk: float = float(farm_norm_hp) / farm_dps
 		var kills: int = int(batch_time / maxf(farm_ttk, 0.001))
-		state.gold += kills * farm_norm_rwd
+		var batch_gold: int = kills * farm_norm_rwd
+		state.gold += batch_gold
+		farm_gold_earned += batch_gold
 
 		out_sim_time += batch_time
 		farm_budget -= batch_time
@@ -2882,7 +3074,25 @@ func _sim_attempt_boss_pass(
 		farm_sessions_out += 1
 
 		# Buy upgrades with accumulated gold
-		_sim_do_profile_purchases(state, profile, clicks_per_sec, scenario)
+		var farm_pr: Dictionary = _sim_do_profile_purchases(state, profile, clicks_per_sec, scenario)
+		farm_purchase_totals["hero_buys"] = int(farm_purchase_totals.get("hero_buys", 0)) + int(farm_pr.get("hero_buys", 0))
+		farm_purchase_totals["partner_buys"] = int(farm_purchase_totals.get("partner_buys", 0)) + int(farm_pr.get("partner_buys", 0))
+		farm_purchase_totals["building_buys"] = int(farm_purchase_totals.get("building_buys", 0)) + int(farm_pr.get("building_buys", 0))
+		farm_purchase_totals["ability_buys"] = int(farm_purchase_totals.get("ability_buys", 0)) + int(farm_pr.get("ability_buys", 0))
+		farm_purchase_totals["hero_skill_buys"] = int(farm_purchase_totals.get("hero_skill_buys", 0)) + int(farm_pr.get("hero_skill_buys", 0))
+		farm_purchase_totals["partner_skill_buys"] = int(farm_purchase_totals.get("partner_skill_buys", 0)) + int(farm_pr.get("partner_skill_buys", 0))
+		farm_purchase_totals["ability_skill_buys"] = int(farm_purchase_totals.get("ability_skill_buys", 0)) + int(farm_pr.get("ability_skill_buys", 0))
+		farm_purchase_totals["gold_spent_hero"] = int(farm_purchase_totals.get("gold_spent_hero", 0)) + int(farm_pr.get("gold_spent_hero", 0))
+		farm_purchase_totals["gold_spent_partners"] = int(farm_purchase_totals.get("gold_spent_partners", 0)) + int(farm_pr.get("gold_spent_partners", 0))
+		farm_purchase_totals["gold_spent_buildings"] = int(farm_purchase_totals.get("gold_spent_buildings", 0)) + int(farm_pr.get("gold_spent_buildings", 0))
+		farm_purchase_totals["gold_spent_abilities"] = int(farm_purchase_totals.get("gold_spent_abilities", 0)) + int(farm_pr.get("gold_spent_abilities", 0))
+		farm_purchase_totals["gold_spent_skills"] = int(farm_purchase_totals.get("gold_spent_skills", 0)) + int(farm_pr.get("gold_spent_skills", 0))
+		farm_gold_spent += int(farm_pr.get("gold_spent_hero", 0)) + int(farm_pr.get("gold_spent_partners", 0)) + int(farm_pr.get("gold_spent_buildings", 0)) + int(farm_pr.get("gold_spent_abilities", 0)) + int(farm_pr.get("gold_spent_skills", 0))
+		for p_entry in farm_pr.get("purchases", []):
+			farm_purchase_count += 1
+			var farm_ptype: String = str(p_entry.get("type", ""))
+			farm_purchase_types[farm_ptype] = int(farm_purchase_types.get(farm_ptype, 0)) + 1
+			_sim_track_profile_purchase_diagnostics(p_entry, ability_diagnostics, skill_spend)
 
 		# Wait for abilities again before checking burst TTK
 		abilities_waited_after_farm = false
@@ -2926,13 +3136,21 @@ func _sim_attempt_boss_pass(
 	var final_burst_ttk: float = float(boss_hp) / final_burst.total if final_burst.total > 0.0 else INF
 
 	if emit_live_output and total_farm_time_out > 0.0:
+		var purchases_after_farm: int = purchases_before_farm + farm_purchase_count
+		var farm_gold_per_second: float = float(farm_gold_earned) / total_farm_time_out if total_farm_time_out > 0.0 else 0.0
+		var dps_gain_from_farm: float = final_burst.total - burst_dps_before_farm
+		var dps_gain_percent_from_farm: float = dps_gain_from_farm / burst_dps_before_farm * 100.0 if burst_dps_before_farm > 0.0 else 0.0
 		_csv_append(
 			"simulation_farm_session_%s" % profile_id, boss_level,
 			boss_hp, state.reward_gold, 0,
 			state.get_current_click_damage(), int(final_burst.total), final_burst_ttk,
-			"boss_level=%d farm_level=%d farm_seconds=%.0f gold_before=%d gold_after=%d purchases_made=%d base_dps_before=%.0f burst_dps_before=%.0f base_dps_after=%.0f burst_dps_after=%.0f boss_ttk_base_before=%.1f boss_ttk_burst_before=%.1f boss_ttk_base_after=%.1f boss_ttk_burst_after=%.1f retry_success=%s abilities_waited_after_farm=%s" % [
-				boss_level, farm_level, total_farm_time_out,
-				gold_before_farming, state.gold, farm_sessions_out,
+			"boss_level=%d farm_level=%d farm_level_reward=%d farm_level_ttk=%.2f farm_gold_per_second=%.2f farm_seconds=%.0f gold_before=%d gold_after=%d purchases_before_farm=%d purchases_after_farm=%d purchases_made=%d purchase_types_made=%s gold_earned_during_farm=%d gold_spent_during_farm=%d dps_gain_from_farm=%.0f dps_gain_percent_from_farm=%.2f base_dps_before=%.0f burst_dps_before=%.0f base_dps_after=%.0f burst_dps_after=%.0f boss_ttk_base_before=%.1f boss_ttk_burst_before=%.1f boss_ttk_base_after=%.1f boss_ttk_burst_after=%.1f retry_success=%s abilities_waited_after_farm=%s" % [
+				boss_level, farm_level, farm_norm_rwd, farm_level_ttk, farm_gold_per_second, total_farm_time_out,
+				gold_before_farming, state.gold,
+				purchases_before_farm, purchases_after_farm, farm_purchase_count,
+				_sim_format_counts(farm_purchase_types),
+				farm_gold_earned, farm_gold_spent,
+				dps_gain_from_farm, dps_gain_percent_from_farm,
 				base_dps_before_farm, burst_dps_before_farm,
 				final_base.total, final_burst.total,
 				boss_ttk_base_before_farm, boss_ttk_burst_before_farm,
@@ -2952,6 +3170,10 @@ func _sim_attempt_boss_pass(
 		"farm_time": total_farm_time_out,
 		"wait_time": total_wait_time_out,
 		"farm_sessions": farm_sessions_out,
+		"gold_earned_during_farm": farm_gold_earned,
+		"gold_spent_during_farm": farm_gold_spent,
+		"purchase_count": farm_purchase_count,
+		"purchase_totals": farm_purchase_totals,
 	}
 
 
