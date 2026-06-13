@@ -310,3 +310,11 @@ enemy.pool_17.elite_01.name,Minato Namikaze,Минато Намикадзе,Enem
 enemy.pool_17.elite_02.name,Hashirama Senzu,Хаширама Сенджу,EnemyPoolConfig pool 17 elite enemy 02,
 enemy.pool_17.elite_03.name,Maito Guy (8 Gates),Майто Гай (8 Врат),EnemyPoolConfig pool 17 elite enemy 03,
 ui.combat.gold_reward,+{amount} Gold,+{amount} Золота,Combat reward floating text,{amount} is compact formatted gold amount
+rewarded_ad.banner.available,Watch Ad: Get Bonus,Смотреть рекламу: Получи бонус,RewardedAdBanner button available state,
+rewarded_ad.banner.loading,Loading Ad...,Загрузка рекламы...,RewardedAdBanner button loading state,
+rewarded_ad.banner.cooldown,Bonus available soon,Бонус скоро будет доступен,RewardedAdBanner button cooldown state,
+rewarded_ad.banner.error,Ad unavailable,Реклама недоступна,RewardedAdBanner button error state,
+rewarded_ad.reward.all_damage,All damage x2 for 2 minutes!,Весь урон x2 на 2 минуты!,RewardedAdBanner reward notification,
+rewarded_ad.reward.gems,+5 Gems!,+5 Кристаллов!,RewardedAdBanner reward notification,
+rewarded_ad.reward.gold,Gold x2 for 2 minutes!,Золото x2 на 2 минуты!,RewardedAdBanner reward notification,
+rewarded_ad.status.not_available,Reward unavailable,Награда недоступна,RewardedAdBanner fallback error,

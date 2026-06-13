@@ -43,8 +43,8 @@ func _notification(what: int) -> void:
 
 func update_view(state: ClickerState) -> void:
 	gold_value_label.text = NumberFormatter.compact(state.gold)
-	damage_value_label.text = NumberFormatter.compact(state.click_damage)
-	partner_dps_value_label.text = NumberFormatter.compact(state.get_final_partner_dps(false))
+	damage_value_label.text = NumberFormatter.compact(state.get_current_display_click_damage())
+	partner_dps_value_label.text = NumberFormatter.compact(state.get_current_display_partner_dps())
 
 
 func _on_settings_button_pressed() -> void:

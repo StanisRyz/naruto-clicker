@@ -4,8 +4,8 @@ extends RefCounted
 # AUTO-GENERATED — do not edit by hand.
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
-# Generated key count: 311
-# Generated at: 1781361512
+# Generated key count: 319
+# Generated at: 1781365326
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -320,6 +320,14 @@ const TRANSLATIONS: Dictionary = {
 		"enemy.pool_17.elite_02.name": "Hashirama Senzu",
 		"enemy.pool_17.elite_03.name": "Maito Guy (8 Gates)",
 		"ui.combat.gold_reward": "+{amount} Gold",
+		"rewarded_ad.banner.available": "Watch Ad: Get Bonus",
+		"rewarded_ad.banner.loading": "Loading Ad...",
+		"rewarded_ad.banner.cooldown": "Bonus available soon",
+		"rewarded_ad.banner.error": "Ad unavailable",
+		"rewarded_ad.reward.all_damage": "All damage x2 for 2 minutes!",
+		"rewarded_ad.reward.gems": "+5 Gems!",
+		"rewarded_ad.reward.gold": "Gold x2 for 2 minutes!",
+		"rewarded_ad.status.not_available": "Reward unavailable",
 	},
 	"ru": {
 		"ui.common.close": "Закрыть",
@@ -633,6 +641,14 @@ const TRANSLATIONS: Dictionary = {
 		"enemy.pool_17.elite_02.name": "Хаширама Сенджу",
 		"enemy.pool_17.elite_03.name": "Майто Гай (8 Врат)",
 		"ui.combat.gold_reward": "+{amount} Золота",
+		"rewarded_ad.banner.available": "Смотреть рекламу: Получи бонус",
+		"rewarded_ad.banner.loading": "Загрузка рекламы...",
+		"rewarded_ad.banner.cooldown": "Бонус скоро будет доступен",
+		"rewarded_ad.banner.error": "Реклама недоступна",
+		"rewarded_ad.reward.all_damage": "Весь урон x2 на 2 минуты!",
+		"rewarded_ad.reward.gems": "+5 Кристаллов!",
+		"rewarded_ad.reward.gold": "Золото x2 на 2 минуты!",
+		"rewarded_ad.status.not_available": "Награда недоступна",
 	},
 }
 

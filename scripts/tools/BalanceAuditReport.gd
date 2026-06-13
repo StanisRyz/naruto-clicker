@@ -594,6 +594,11 @@ func _init() -> void:
 	if RUN_DEEP_LATE_PARTNER_AUDIT:
 		_section_deep_late_partner_audit(zone_cycle_ok)
 	_section_gold_reward_economy()
+	_section_shop_permanent_persistence_check()
+	_section_hud_damage_consistency_check()
+	_section_rewarded_ad_bonus_check()
+	_section_rewarded_ad_damage_formula_check()
+	_section_rewarded_ad_gold_formula_check()
 	_section_warnings()
 	_write_csv()
 
@@ -6703,6 +6708,363 @@ func _section_warnings() -> void:
 	else:
 		for i: int in range(_warnings.size()):
 			_ln("  [W%02d]  %s" % [i + 1, _warnings[i]])
+
+
+# ==========================================================================
+#  SECTION — Shop Permanent Upgrade Persistence Check
+# ==========================================================================
+
+func _section_shop_permanent_persistence_check() -> void:
+	_header("SECTION — shop_permanent_persistence_check")
+
+	var s: _CS = _CS.new()
+
+	# Seed counts so the test is non-trivial.
+	s.shop_permanent_partner_dps_x2_count = 3
+	s.shop_permanent_click_damage_x2_count = 2
+	s.shop_permanent_gold_x2_count = 1
+
+	var snap_before: Dictionary = s.get_shop_permanent_upgrade_snapshot()
+	_ln("  Before prestige:  pdps_count=%d  click_count=%d  gold_count=%d" % [
+		snap_before.get("shop_permanent_partner_dps_x2_count", -1),
+		snap_before.get("shop_permanent_click_damage_x2_count", -1),
+		snap_before.get("shop_permanent_gold_x2_count", -1),
+	])
+
+	# Simulate prestige (force reward path by using debug mode).
+	s.debug_visual_test_mode_enabled = true
+	var _prestige_result: Dictionary = s.perform_prestige()
+
+	var after_prestige_pdps: int = s.shop_permanent_partner_dps_x2_count
+	var after_prestige_click: int = s.shop_permanent_click_damage_x2_count
+	var after_prestige_gold: int = s.shop_permanent_gold_x2_count
+
+	var prestige_ok: bool = (
+		after_prestige_pdps == 3
+		and after_prestige_click == 2
+		and after_prestige_gold == 1
+	)
+	_ln("  After  prestige:  pdps_count=%d  click_count=%d  gold_count=%d  →  %s" % [
+		after_prestige_pdps, after_prestige_click, after_prestige_gold,
+		"OK" if prestige_ok else "FAIL",
+	])
+	if not prestige_ok:
+		_warn("shop_permanent_persistence_check: counts changed after prestige (expected 3/2/1, got %d/%d/%d)" % [
+			after_prestige_pdps, after_prestige_click, after_prestige_gold,
+		])
+
+	# Simulate reset + snapshot restore.
+	var snap: Dictionary = s.get_shop_permanent_upgrade_snapshot()
+	s.reset_to_new_game()
+	s.apply_shop_permanent_upgrade_snapshot(snap)
+
+	var after_reset_pdps: int = s.shop_permanent_partner_dps_x2_count
+	var after_reset_click: int = s.shop_permanent_click_damage_x2_count
+	var after_reset_gold: int = s.shop_permanent_gold_x2_count
+
+	var reset_ok: bool = (
+		after_reset_pdps == 3
+		and after_reset_click == 2
+		and after_reset_gold == 1
+	)
+	_ln("  After  reset+restore: pdps_count=%d  click_count=%d  gold_count=%d  →  %s" % [
+		after_reset_pdps, after_reset_click, after_reset_gold,
+		"OK" if reset_ok else "FAIL",
+	])
+	if not reset_ok:
+		_warn("shop_permanent_persistence_check: counts wrong after reset+restore (expected 3/2/1, got %d/%d/%d)" % [
+			after_reset_pdps, after_reset_click, after_reset_gold,
+		])
+
+	# Verify multipliers reflect counts after restore.
+	var pdps_mult: float = s.get_shop_partner_dps_multiplier()
+	var click_mult: float = s.get_shop_click_damage_multiplier()
+	var gold_mult: float = s.get_shop_gold_multiplier()
+	_ln("  Multipliers after restore:  pdps=%.4f  click=%.4f  gold=%.4f" % [pdps_mult, click_mult, gold_mult])
+	if pdps_mult <= 1.0 or click_mult <= 1.0 or gold_mult <= 1.0:
+		_warn("shop_permanent_persistence_check: a multiplier is <=1.0 after restore — counts may not be applied")
+
+	_csv_append("shop_permanent_persistence_check", 0, 0, 0, 0, 0, 0, 0.0,
+		"prestige_ok=%s reset_restore_ok=%s pdps_mult=%.3f click_mult=%.3f gold_mult=%.3f" % [
+			prestige_ok, reset_ok, pdps_mult, click_mult, gold_mult,
+		])
+
+
+# ==========================================================================
+#  SECTION — HUD Damage Consistency Check
+# ==========================================================================
+
+func _section_hud_damage_consistency_check() -> void:
+	_header("SECTION — hud_damage_consistency_check")
+
+	var s: _CS = _CS.new()
+	s.character_level = 50
+	s.partner_counts[0] = 10
+	s.partner_counts[1] = 5
+	s.refresh_derived_stats()
+
+	# 1. Normal enemy.
+	s.is_boss_level = false
+	s.is_elite_enemy = false
+	s.focus_burst_active = false
+	s.rally_active = false
+	s.refresh_derived_stats()
+
+	var display_click_normal: int = s.get_current_display_click_damage()
+	var actual_click_normal: int = s.get_current_click_damage()
+	var display_pdps_normal: int = s.get_current_display_partner_dps()
+	var actual_pdps_normal: int = s.get_final_partner_dps(true)
+
+	var click_normal_ok: bool = display_click_normal == actual_click_normal
+	var pdps_normal_ok: bool = display_pdps_normal == actual_pdps_normal
+	_ln("  Normal enemy:")
+	_ln("    display_click=%d  actual_click=%d  →  %s" % [display_click_normal, actual_click_normal, "OK" if click_normal_ok else "MISMATCH"])
+	_ln("    display_pdps=%d  actual_pdps=%d  →  %s" % [display_pdps_normal, actual_pdps_normal, "OK" if pdps_normal_ok else "MISMATCH"])
+	if not click_normal_ok:
+		_warn("hud_damage_consistency_check: display click != actual click on normal enemy")
+	if not pdps_normal_ok:
+		_warn("hud_damage_consistency_check: display partner dps != actual partner dps on normal enemy")
+
+	# 2. Boss enemy.
+	s.is_boss_level = true
+	s.is_elite_enemy = false
+	s.refresh_derived_stats()
+
+	var display_click_boss: int = s.get_current_display_click_damage()
+	var actual_click_boss: int = s.get_current_click_damage()
+	var display_pdps_boss: int = s.get_current_display_partner_dps()
+	var actual_pdps_boss: int = s.get_final_partner_dps(true)
+
+	var click_boss_ok: bool = display_click_boss == actual_click_boss
+	var pdps_boss_ok: bool = display_pdps_boss == actual_pdps_boss
+	var click_boss_boosted: bool = display_click_boss >= display_click_normal
+	var pdps_boss_boosted: bool = display_pdps_boss >= display_pdps_normal
+	_ln("  Boss enemy:")
+	_ln("    display_click=%d  actual_click=%d  boosted=%s  →  %s" % [display_click_boss, actual_click_boss, click_boss_boosted, "OK" if click_boss_ok else "MISMATCH"])
+	_ln("    display_pdps=%d  actual_pdps=%d  boosted=%s  →  %s" % [display_pdps_boss, actual_pdps_boss, pdps_boss_boosted, "OK" if pdps_boss_ok else "MISMATCH"])
+	if not click_boss_ok:
+		_warn("hud_damage_consistency_check: display click != actual click on boss enemy")
+	if not pdps_boss_ok:
+		_warn("hud_damage_consistency_check: display partner dps != actual partner dps on boss enemy")
+
+	# 3. Focus Burst active (normal enemy).
+	s.is_boss_level = false
+	s.focus_burst_purchased = true
+	s.focus_burst_active = true
+	s.refresh_derived_stats()
+	var display_click_fb_active: int = s.get_current_display_click_damage()
+
+	s.focus_burst_active = false
+	s.refresh_derived_stats()
+	var display_click_fb_off: int = s.get_current_display_click_damage()
+
+	var fb_active_boosted: bool = display_click_fb_active > display_click_fb_off
+	_ln("  Focus Burst:")
+	_ln("    click_fb_active=%d  click_fb_off=%d  boosted=%s" % [display_click_fb_active, display_click_fb_off, fb_active_boosted])
+	if not fb_active_boosted:
+		_warn("hud_damage_consistency_check: display click damage did not increase with focus_burst_active=true")
+
+	# 4. Rally active (normal enemy).
+	s.rally_purchased = true
+	s.rally_active = true
+	s.refresh_derived_stats()
+	var display_pdps_rally_active: int = s.get_current_display_partner_dps()
+
+	s.rally_active = false
+	s.refresh_derived_stats()
+	var display_pdps_rally_off: int = s.get_current_display_partner_dps()
+
+	var rally_boosted: bool = display_pdps_rally_active > display_pdps_rally_off
+	_ln("  Rally:")
+	_ln("    pdps_rally_active=%d  pdps_rally_off=%d  boosted=%s" % [display_pdps_rally_active, display_pdps_rally_off, rally_boosted])
+	if not rally_boosted:
+		_warn("hud_damage_consistency_check: display partner dps did not increase with rally_active=true")
+
+	_csv_append("hud_damage_consistency_check", 0, 0, 0, 0, display_click_normal, display_pdps_normal, 0.0,
+		"normal_click_ok=%s normal_pdps_ok=%s boss_click_ok=%s boss_pdps_ok=%s fb_boosted=%s rally_boosted=%s" % [
+			click_normal_ok, pdps_normal_ok, click_boss_ok, pdps_boss_ok, fb_active_boosted, rally_boosted,
+		])
+
+
+# ==========================================================================
+#  SECTION — Rewarded Ad Bonus Check
+# ==========================================================================
+
+func _section_rewarded_ad_bonus_check() -> void:
+	_header("SECTION — rewarded_ad_bonus_check")
+
+	var s: _CS = _CS.new()
+	s.character_level = 50
+	s.partner_counts[0] = 10
+	s.partner_counts[1] = 5
+	s.refresh_derived_stats()
+
+	var now_fake: int = 1000000000
+	var far_future: int = now_fake + _BC.REWARDED_AD_BUFF_DURATION_SECONDS + 1
+
+	# -- cooldown check --
+	s.rewarded_ad_banner_cooldown_until = 0
+	var can_before: bool = s.can_request_rewarded_ad()
+	s.rewarded_ad_banner_cooldown_until = far_future
+	var can_during: bool = s.can_request_rewarded_ad()
+	s.rewarded_ad_banner_cooldown_until = 0
+	var can_after: bool = s.can_request_rewarded_ad()
+	var cooldown_ok: bool = can_before and not can_during and can_after
+	_ln("  Cooldown: can_before=%s  can_during=%s  can_after=%s  →  %s" % [can_before, can_during, can_after, "OK" if cooldown_ok else "FAIL"])
+	if not cooldown_ok:
+		_warn("rewarded_ad_bonus_check: cooldown logic failed")
+
+	# -- gems reward --
+	var gems_before: int = s.gems
+	s.rewarded_ad_banner_cooldown_until = 0
+	s.grant_rewarded_ad_bonus("gems_5")
+	var gems_gained: int = s.gems - gems_before
+	var gems_ok: bool = gems_gained == _BC.REWARDED_AD_GEMS_REWARD
+	_ln("  Gems reward: gained=%d  expected=%d  →  %s" % [gems_gained, _BC.REWARDED_AD_GEMS_REWARD, "OK" if gems_ok else "FAIL"])
+	if not gems_ok:
+		_warn("rewarded_ad_bonus_check: gems reward granted wrong amount")
+
+	# -- save/load expiry preservation --
+	s.rewarded_ad_all_damage_x2_expires_at = far_future
+	s.rewarded_ad_gold_x2_expires_at = far_future
+	s.rewarded_ad_banner_cooldown_until = far_future
+	var save_data: Dictionary = s.get_save_data()
+	var s2: _CS = _CS.new()
+	s2.apply_save_data(save_data)
+	var damage_exp_ok: bool = s2.rewarded_ad_all_damage_x2_expires_at == far_future
+	var gold_exp_ok: bool = s2.rewarded_ad_gold_x2_expires_at == far_future
+	var cooldown_exp_ok: bool = s2.rewarded_ad_banner_cooldown_until == far_future
+	_ln("  Save/load: damage_exp_ok=%s  gold_exp_ok=%s  cooldown_exp_ok=%s" % [damage_exp_ok, gold_exp_ok, cooldown_exp_ok])
+	if not damage_exp_ok:
+		_warn("rewarded_ad_bonus_check: rewarded_ad_all_damage_x2_expires_at not preserved across save/load")
+	if not gold_exp_ok:
+		_warn("rewarded_ad_bonus_check: rewarded_ad_gold_x2_expires_at not preserved across save/load")
+	if not cooldown_exp_ok:
+		_warn("rewarded_ad_bonus_check: rewarded_ad_banner_cooldown_until not preserved across save/load")
+
+	# -- expired buffs do not remain active (use expired timestamp = 1) --
+	s2.rewarded_ad_all_damage_x2_expires_at = 1
+	s2.rewarded_ad_gold_x2_expires_at = 1
+	var expired_damage_ok: bool = not s2.is_rewarded_ad_all_damage_active()
+	var expired_gold_ok: bool = not s2.is_rewarded_ad_gold_active()
+	_ln("  Expired buffs inactive: damage_ok=%s  gold_ok=%s" % [expired_damage_ok, expired_gold_ok])
+	if not expired_damage_ok:
+		_warn("rewarded_ad_bonus_check: expired damage buff still reports active")
+	if not expired_gold_ok:
+		_warn("rewarded_ad_bonus_check: expired gold buff still reports active")
+
+	var all_ok: bool = cooldown_ok and gems_ok and damage_exp_ok and gold_exp_ok and cooldown_exp_ok and expired_damage_ok and expired_gold_ok
+	_csv_append("rewarded_ad_bonus_check", 0, 0, 0, 0, 0, 0, 0.0,
+		"cooldown_ok=%s gems_ok=%s save_ok=%s expired_ok=%s all=%s" % [
+			cooldown_ok, gems_ok, (damage_exp_ok and gold_exp_ok and cooldown_exp_ok),
+			(expired_damage_ok and expired_gold_ok), all_ok])
+
+
+func _section_rewarded_ad_damage_formula_check() -> void:
+	_header("SECTION — rewarded_ad_damage_formula_check")
+
+	var s: _CS = _CS.new()
+	s.character_level = 50
+	s.partner_counts[0] = 10
+	s.partner_counts[1] = 5
+	s.is_boss_level = false
+	s.is_elite_enemy = false
+	s.refresh_derived_stats()
+
+	var far_future: int = 9999999999
+
+	# Baseline (buff off)
+	s.rewarded_ad_all_damage_x2_expires_at = 0
+	s.refresh_derived_stats()
+	var click_base: int = s.get_current_click_damage()
+	var pdps_base: int = s.get_final_partner_dps(false)
+	var tick_base: int = s.get_partner_tick_damage()
+	var autoclick_base: int = s.get_autoclick_damage()
+
+	# Buff active
+	s.rewarded_ad_all_damage_x2_expires_at = far_future
+	s.refresh_derived_stats()
+	var click_buff: int = s.get_current_click_damage()
+	var pdps_buff: int = s.get_final_partner_dps(false)
+	var tick_buff: int = s.get_partner_tick_damage()
+	var autoclick_buff: int = s.get_autoclick_damage()
+
+	var expected_mult: float = _BC.REWARDED_AD_DAMAGE_MULTIPLIER
+
+	var click_ok: bool = click_base > 0 and absf(float(click_buff) / float(click_base) - expected_mult) < 0.02
+	var pdps_ok: bool = pdps_base > 0 and absf(float(pdps_buff) / float(pdps_base) - expected_mult) < 0.02
+	var tick_ok: bool = tick_base > 0 and float(tick_buff) >= float(tick_base) * (expected_mult - 0.05)
+	var autoclick_ok: bool = autoclick_base > 0 and float(autoclick_buff) >= float(autoclick_base) * (expected_mult - 0.05)
+
+	_ln("  Click:     base=%d  buff=%d  ratio=%.3f  →  %s" % [click_base, click_buff, float(click_buff)/maxi(click_base,1), "OK" if click_ok else "FAIL"])
+	_ln("  PartnerDPS:base=%d  buff=%d  ratio=%.3f  →  %s" % [pdps_base, pdps_buff, float(pdps_buff)/maxi(pdps_base,1), "OK" if pdps_ok else "FAIL"])
+	_ln("  TickDmg:   base=%d  buff=%d  ratio=%.3f  →  %s" % [tick_base, tick_buff, float(tick_buff)/maxi(tick_base,1), "OK" if tick_ok else "FAIL"])
+	_ln("  Autoclick: base=%d  buff=%d  ratio=%.3f  →  %s" % [autoclick_base, autoclick_buff, float(autoclick_buff)/maxi(autoclick_base,1), "OK" if autoclick_ok else "FAIL"])
+
+	if not click_ok:
+		_warn("rewarded_ad_damage_formula_check: click damage did not double with buff active")
+	if not pdps_ok:
+		_warn("rewarded_ad_damage_formula_check: partner DPS did not double with buff active")
+	if not tick_ok:
+		_warn("rewarded_ad_damage_formula_check: partner tick damage did not double with buff active")
+	if not autoclick_ok:
+		_warn("rewarded_ad_damage_formula_check: autoclick damage did not double with buff active")
+
+	var all_ok: bool = click_ok and pdps_ok and tick_ok and autoclick_ok
+	_csv_append("rewarded_ad_damage_formula_check", 0, 0, 0, 0, click_base, pdps_base, 0.0,
+		"click_ok=%s pdps_ok=%s tick_ok=%s autoclick_ok=%s all=%s" % [click_ok, pdps_ok, tick_ok, autoclick_ok, all_ok])
+
+
+func _section_rewarded_ad_gold_formula_check() -> void:
+	_header("SECTION — rewarded_ad_gold_formula_check")
+
+	var s: _CS = _CS.new()
+	s.character_level = 20
+	s.current_level = 10
+	s.setup_current_level()
+	s.refresh_derived_stats()
+
+	var far_future: int = 9999999999
+
+	# Defeat the enemy so reward preview is active
+	s.target_hp = 0
+
+	# Gold buff off
+	s.rewarded_ad_gold_x2_expires_at = 0
+	var gold_base: int = s.get_current_target_reward_gold_preview()
+
+	# Gold buff on
+	s.rewarded_ad_gold_x2_expires_at = far_future
+	var gold_buff: int = s.get_current_target_reward_gold_preview()
+
+	var expected_mult: float = _BC.REWARDED_AD_GOLD_MULTIPLIER
+	var gold_ok: bool = gold_base > 0 and absf(float(gold_buff) / float(gold_base) - expected_mult) < 0.02
+	_ln("  Enemy kill gold: base=%d  buff=%d  ratio=%.3f  →  %s" % [gold_base, gold_buff, float(gold_buff)/maxi(gold_base,1), "OK" if gold_ok else "FAIL"])
+	if not gold_ok:
+		_warn("rewarded_ad_gold_formula_check: enemy kill gold did not double with buff active")
+
+	# Task reward must NOT be affected — use TaskRuntime helper
+	var task_reward_base: int = s.get_current_task_reward_unit()
+	s.rewarded_ad_gold_x2_expires_at = far_future
+	var task_reward_buff: int = s.get_current_task_reward_unit()
+	var task_unaffected: bool = task_reward_base == task_reward_buff
+	_ln("  Task reward: base=%d  buff=%d  unaffected=%s" % [task_reward_base, task_reward_buff, "OK" if task_unaffected else "FAIL"])
+	if not task_unaffected:
+		_warn("rewarded_ad_gold_formula_check: task reward was incorrectly multiplied by rewarded ad gold buff")
+
+	# Offline gold must NOT be affected
+	s.rewarded_ad_gold_x2_expires_at = 0
+	var offline_base: int = int(s.calculate_offline_gold_reward(300).get("reward_gold", 0))
+	s.rewarded_ad_gold_x2_expires_at = far_future
+	var offline_buff: int = int(s.calculate_offline_gold_reward(300).get("reward_gold", 0))
+	var offline_unaffected: bool = offline_base == offline_buff
+	_ln("  Offline gold: base=%d  buff=%d  unaffected=%s" % [offline_base, offline_buff, "OK" if offline_unaffected else "FAIL"])
+	if not offline_unaffected:
+		_warn("rewarded_ad_gold_formula_check: offline gold was incorrectly multiplied by rewarded ad gold buff")
+
+	var all_ok: bool = gold_ok and task_unaffected and offline_unaffected
+	_csv_append("rewarded_ad_gold_formula_check", 0, 0, 0, 0, gold_base, gold_buff, 0.0,
+		"gold_ok=%s task_unaffected=%s offline_unaffected=%s all=%s" % [gold_ok, task_unaffected, offline_unaffected, all_ok])
 
 
 # ==========================================================================

@@ -105,6 +105,10 @@ var total_bosses_defeated: int = 0
 var total_autoclick_activations: int = 0
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
+var rewarded_ad_all_damage_x2_expires_at: int = 0
+var rewarded_ad_gold_x2_expires_at: int = 0
+var rewarded_ad_banner_cooldown_until: int = 0
+
 var debug_visual_test_mode_enabled: bool = false
 const DEBUG_VISUAL_TEST_HP: int = 100000
 const DEBUG_PURCHASE_COST: int = 1
@@ -467,6 +471,21 @@ func get_shop_gold_multiplier() -> float:
 	return pow(ShopConfig.PERMANENT_UPGRADE_MULTIPLIER_PER_LEVEL, float(shop_permanent_gold_x2_count))
 
 
+func get_shop_permanent_upgrade_snapshot() -> Dictionary:
+	return {
+		"shop_permanent_partner_dps_x2_count": shop_permanent_partner_dps_x2_count,
+		"shop_permanent_click_damage_x2_count": shop_permanent_click_damage_x2_count,
+		"shop_permanent_gold_x2_count": shop_permanent_gold_x2_count,
+	}
+
+
+func apply_shop_permanent_upgrade_snapshot(snapshot: Dictionary) -> void:
+	shop_permanent_partner_dps_x2_count = maxi(0, int(snapshot.get("shop_permanent_partner_dps_x2_count", 0)))
+	shop_permanent_click_damage_x2_count = maxi(0, int(snapshot.get("shop_permanent_click_damage_x2_count", 0)))
+	shop_permanent_gold_x2_count = maxi(0, int(snapshot.get("shop_permanent_gold_x2_count", 0)))
+	_update_character_state()
+
+
 func get_shop_product_view_data(mode: String = "x1") -> Array[Dictionary]:
 	return Presentation.get_shop_product_view_data(self, mode)
 
@@ -519,6 +538,8 @@ func perform_prestige() -> Dictionary:
 
 	_reset_partner_state()
 	_reset_building_state()
+
+	# Permanent shop upgrades intentionally survive prestige.
 
 	recalculate_character_level_cost()
 	_update_character_state()
@@ -584,7 +605,8 @@ func get_current_target_reward_gold_preview() -> int:
 	)
 	var settlement_gold: int = int(talent_gold * get_settlement_gold_multiplier())
 	var pre_shop_gold: int = int(settlement_gold * get_gold_bonus_multiplier()) if gold_bonus_active else settlement_gold
-	return int(pre_shop_gold * get_shop_gold_multiplier())
+	var shop_gold: int = int(pre_shop_gold * get_shop_gold_multiplier())
+	return int(shop_gold * get_rewarded_ad_gold_multiplier())
 
 
 func resolve_defeated_target() -> Dictionary:
@@ -792,7 +814,75 @@ func get_click_damage_for_character_level(level: int) -> int:
 		)
 	)
 	var partner_dps_click_bonus: int = get_partner_dps_click_damage_bonus()
-	return maxi(1, hero_click_damage + partner_dps_click_bonus)
+	var combined: int = maxi(1, hero_click_damage + partner_dps_click_bonus)
+	return maxi(1, int(float(combined) * get_rewarded_ad_all_damage_multiplier()))
+
+
+func is_rewarded_ad_all_damage_active() -> bool:
+	return int(Time.get_unix_time_from_system()) < rewarded_ad_all_damage_x2_expires_at
+
+
+func is_rewarded_ad_gold_active() -> bool:
+	return int(Time.get_unix_time_from_system()) < rewarded_ad_gold_x2_expires_at
+
+
+func get_rewarded_ad_all_damage_multiplier() -> float:
+	return BalanceConfig.REWARDED_AD_DAMAGE_MULTIPLIER if is_rewarded_ad_all_damage_active() else 1.0
+
+
+func get_rewarded_ad_gold_multiplier() -> float:
+	return BalanceConfig.REWARDED_AD_GOLD_MULTIPLIER if is_rewarded_ad_gold_active() else 1.0
+
+
+func can_request_rewarded_ad() -> bool:
+	return int(Time.get_unix_time_from_system()) >= rewarded_ad_banner_cooldown_until
+
+
+func grant_random_rewarded_ad_bonus() -> Dictionary:
+	var rewards: Array[String] = [
+		"all_damage_x2",
+		"gems_5",
+		"gold_x2",
+	]
+	var reward_id: String = rewards[rng.randi_range(0, rewards.size() - 1)]
+	return grant_rewarded_ad_bonus(reward_id)
+
+
+func grant_rewarded_ad_bonus(reward_id: String) -> Dictionary:
+	var now: int = int(Time.get_unix_time_from_system())
+	rewarded_ad_banner_cooldown_until = now + BalanceConfig.REWARDED_AD_BANNER_COOLDOWN_SECONDS
+
+	match reward_id:
+		"all_damage_x2":
+			rewarded_ad_all_damage_x2_expires_at = now + BalanceConfig.REWARDED_AD_BUFF_DURATION_SECONDS
+			refresh_derived_stats()
+			return {
+				"reward_id": reward_id,
+				"status_text": LocalizationManager.tr_key("rewarded_ad.reward.all_damage"),
+				"upgraded": true,
+			}
+
+		"gems_5":
+			gems += BalanceConfig.REWARDED_AD_GEMS_REWARD
+			return {
+				"reward_id": reward_id,
+				"status_text": LocalizationManager.tr_key("rewarded_ad.reward.gems"),
+				"upgraded": true,
+			}
+
+		"gold_x2":
+			rewarded_ad_gold_x2_expires_at = now + BalanceConfig.REWARDED_AD_BUFF_DURATION_SECONDS
+			return {
+				"reward_id": reward_id,
+				"status_text": LocalizationManager.tr_key("rewarded_ad.reward.gold"),
+				"upgraded": true,
+			}
+
+	return {
+		"reward_id": "",
+		"status_text": LocalizationManager.tr_key("rewarded_ad.status.not_available"),
+		"upgraded": false,
+	}
 
 
 func get_character_level_bulk_damage_gain(mode: String) -> int:
@@ -846,6 +936,7 @@ func get_final_partner_dps(include_contextual_boss_multiplier: bool = false) -> 
 		* get_partner_skill_bonus_multiplier("all_damage")
 		* get_rally_multiplier()
 		* get_shop_partner_dps_multiplier()
+		* get_rewarded_ad_all_damage_multiplier()
 	)
 
 	if include_contextual_boss_multiplier:
@@ -2213,7 +2304,8 @@ func _update_character_state() -> void:
 			* get_shop_click_damage_multiplier()
 		)
 	)
-	click_damage = maxi(1, hero_click_damage + get_partner_dps_click_damage_bonus())
+	var combined_click_damage: int = hero_click_damage + get_partner_dps_click_damage_bonus()
+	click_damage = maxi(1, int(float(combined_click_damage) * get_rewarded_ad_all_damage_multiplier()))
 	update_ability_unlocks()
 
 
@@ -2223,6 +2315,14 @@ func get_current_click_damage() -> int:
 		return 0
 
 	return maxi(1, int(base_damage * get_boss_damage_multiplier()))
+
+
+func get_current_display_click_damage() -> int:
+	return get_current_click_damage()
+
+
+func get_current_display_partner_dps() -> int:
+	return get_final_partner_dps(true)
 
 
 func get_current_elite_spawn_chance() -> float:

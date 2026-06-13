@@ -38,6 +38,9 @@ const ENEMY_SPAWN_INVULNERABILITY_DURATION: float = 0.1
 const BOTTOM_TAB_BUTTON_FALLBACK_COLOR: Color = Color(1, 1, 1, 1)
 var _autosave_timer: float = 0.0
 const _AUTOSAVE_INTERVAL: float = 10.0
+var _rewarded_ad_reward_granted_for_current_request: bool = false
+var _rewarded_ad_damage_buff_was_active: bool = false
+var _rewarded_ad_gold_buff_was_active: bool = false
 var balance_logger: BalancePlaytestLogger = null
 var _is_initialized: bool = false
 var _debug_visual_test_previous_gems: int = 0
@@ -73,6 +76,7 @@ var _pending_shop_product_id: String = ""
 @onready var prestige_button_image = $BottomBar/MarginContainer/HBoxContainer/PrestigeButton/ImageHolder
 @onready var shop_button_image = $BottomBar/MarginContainer/HBoxContainer/ShopButton/ImageHolder
 @onready var bottom_tabs_backdrop = $BottomTabsBackdrop
+@onready var rewarded_ad_banner: Control = $RewardedAdBanner
 
 
 func _ready() -> void:
@@ -116,6 +120,10 @@ func _ready() -> void:
 	settlement_sheet.closed.connect(_on_sheet_closed)
 	prestige_sheet.closed.connect(_on_sheet_closed)
 	shop_sheet.closed.connect(_on_sheet_closed)
+	rewarded_ad_banner.reward_ad_requested.connect(_on_rewarded_ad_banner_pressed)
+	YandexBridge.rewarded_ad_rewarded.connect(_on_rewarded_ad_rewarded)
+	YandexBridge.rewarded_ad_closed.connect(_on_rewarded_ad_closed)
+	YandexBridge.rewarded_ad_error.connect(_on_rewarded_ad_error)
 	LocalizationManager.language_changed.connect(_on_language_changed)
 	_apply_ui_font_sizes()
 	_apply_button_visual_cleanup()
@@ -150,6 +158,7 @@ func _process(delta: float) -> void:
 			return
 
 	_process_ability_timers(delta)
+	_process_rewarded_ad_buff_expiry()
 
 	if state.autoclick_active:
 		autoclick_accumulator += delta
@@ -182,6 +191,7 @@ func _update_ui() -> void:
 	_update_tasks_button_image()
 	_update_tasks_if_visible()
 	_update_settings_if_visible()
+	_update_rewarded_ad_banner()
 
 
 func _update_main_hud() -> void:
@@ -342,8 +352,10 @@ func _on_settings_save_requested() -> void:
 
 
 func _on_settings_reset_confirmed() -> void:
+	var permanent_shop_snapshot: Dictionary = state.get_shop_permanent_upgrade_snapshot()
 	SaveManager.delete_save()
 	state.reset_to_new_game()
+	state.apply_shop_permanent_upgrade_snapshot(permanent_shop_snapshot)
 	_reset_runtime_state_for_new_game()
 	_hide_all_bottom_sheets()
 	active_bottom_tab = ""
@@ -746,6 +758,7 @@ func _on_rally_requested() -> void:
 
 	state.rally_active = true
 	rally_time_left = _get_scaled_duration(rally_duration, true)
+	state.refresh_derived_stats()
 	if balance_logger:
 		balance_logger.log_ability_used(state, "rally")
 	_update_ui()
@@ -780,6 +793,8 @@ func _process_ability_timers(delta: float) -> void:
 		if rally_time_left <= 0.0:
 			state.rally_active = false
 			rally_cooldown_left = _get_scaled_cooldown(rally_cooldown_duration)
+			state.refresh_derived_stats()
+			needs_full_ui_update = true
 
 	if autoclick_cooldown_left > 0.0:
 		autoclick_cooldown_left = maxf(autoclick_cooldown_left - delta, 0.0)
@@ -816,6 +831,25 @@ func _process_ability_timers(delta: float) -> void:
 		_get_focus_burst_active_duration(),
 		_get_rally_active_duration()
 	)
+
+
+func _process_rewarded_ad_buff_expiry() -> void:
+	var damage_active: bool = state.is_rewarded_ad_all_damage_active()
+	var gold_active: bool = state.is_rewarded_ad_gold_active()
+
+	var damage_just_expired: bool = _rewarded_ad_damage_buff_was_active and not damage_active
+	var gold_just_expired: bool = _rewarded_ad_gold_buff_was_active and not gold_active
+
+	_rewarded_ad_damage_buff_was_active = damage_active
+	_rewarded_ad_gold_buff_was_active = gold_active
+
+	if damage_just_expired:
+		state.refresh_derived_stats()
+		_update_ui()
+	elif gold_just_expired:
+		_update_ui()
+
+	_update_rewarded_ad_banner()
 
 
 func _get_current_autoclick_interval() -> float:
@@ -1162,3 +1196,41 @@ func _input(event: InputEvent) -> void:
 			_debug_visual_damage_51_percent()
 		KEY_K:
 			_debug_visual_clear_level()
+
+
+func _on_rewarded_ad_banner_pressed() -> void:
+	if not state.can_request_rewarded_ad():
+		rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.COOLDOWN)
+		return
+	_rewarded_ad_reward_granted_for_current_request = false
+	rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.LOADING)
+	YandexBridge.show_rewarded_ad()
+
+
+func _on_rewarded_ad_rewarded() -> void:
+	if _rewarded_ad_reward_granted_for_current_request:
+		return
+	_rewarded_ad_reward_granted_for_current_request = true
+	var result: Dictionary = state.grant_random_rewarded_ad_bonus()
+	_handle_status_text(result.get("status_text", ""))
+	state.refresh_derived_stats()
+	_update_ui()
+	_save_game_now()
+
+
+func _on_rewarded_ad_closed(_was_shown: bool) -> void:
+	if state.can_request_rewarded_ad():
+		rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.AVAILABLE)
+	else:
+		rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.COOLDOWN)
+
+
+func _on_rewarded_ad_error(_message: String) -> void:
+	rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.ERROR)
+
+
+func _update_rewarded_ad_banner() -> void:
+	if state.can_request_rewarded_ad():
+		rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.AVAILABLE)
+	else:
+		rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.COOLDOWN)

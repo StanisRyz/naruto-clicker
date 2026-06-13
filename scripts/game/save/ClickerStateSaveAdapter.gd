@@ -57,6 +57,9 @@ static func build_save_data(state: ClickerState) -> Dictionary:
 		"music_enabled": state.music_enabled,
 		"language": state.language,
 		"last_save_unix_time": int(Time.get_unix_time_from_system()),
+		"rewarded_ad_all_damage_x2_expires_at": state.rewarded_ad_all_damage_x2_expires_at,
+		"rewarded_ad_gold_x2_expires_at": state.rewarded_ad_gold_x2_expires_at,
+		"rewarded_ad_banner_cooldown_until": state.rewarded_ad_banner_cooldown_until,
 	}
 
 
@@ -172,6 +175,9 @@ static func apply_save_data(state: ClickerState, data: Dictionary) -> bool:
 	state.total_bosses_defeated = maxi(0, int(data.get("total_bosses_defeated", 0)))
 	state.total_autoclick_activations = maxi(0, int(data.get("total_autoclick_activations", 0)))
 	state.last_save_unix_time = maxi(0, int(data.get("last_save_unix_time", 0)))
+	state.rewarded_ad_all_damage_x2_expires_at = maxi(0, int(data.get("rewarded_ad_all_damage_x2_expires_at", 0)))
+	state.rewarded_ad_gold_x2_expires_at = maxi(0, int(data.get("rewarded_ad_gold_x2_expires_at", 0)))
+	state.rewarded_ad_banner_cooldown_until = maxi(0, int(data.get("rewarded_ad_banner_cooldown_until", 0)))
 
 	if not _try_restore_tasks(state, data):
 		state.initialize_tasks()
