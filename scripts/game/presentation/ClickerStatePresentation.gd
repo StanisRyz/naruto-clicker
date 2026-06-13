@@ -77,7 +77,7 @@ static func get_prestige_talent_description(state: ClickerState, talent_index: i
 	if talent_index < 0 or talent_index >= PrestigeConfig.TALENT_BONUS_TYPES.size():
 		return ""
 
-	var amount: int = state.prestige_talent_bonus_percent_per_level
+	var amount: int = state.get_prestige_talent_bonus_percent_per_level(talent_index)
 	match PrestigeConfig.TALENT_BONUS_TYPES[talent_index]:
 		"click_damage":
 			return "+%d%% Click Damage per level" % amount

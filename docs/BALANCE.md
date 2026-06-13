@@ -491,13 +491,16 @@ The x3 combo/chakra meter mechanic has been removed. Manual click damage is now 
 
 Settlement is meaningful after early game but not mandatory. Clock Tower cooldown reduction correctly uses diminishing returns (can never reach 0).
 
-### Prestige timing (unchanged, confirmed reasonable)
+### Prestige timing
 
-- `PRESTIGE_REQUIRED_LEVEL = 50` — first prestige point available at stage 50.
-- `PRESTIGE_CHARACTER_INTERVAL = 100` — +1 point per 100 hero levels.
-- `PRESTIGE_TALENT_BONUS_PERCENT_PER_LEVEL = 5` — 5% bonus per talent level.
+- `PRESTIGE_REQUIRED_LEVEL = 100` — first prestige point available at stage 100.
+- `PRESTIGE_CHARACTER_INTERVAL = 200` — +1 point per 200 hero levels.
+- `PRESTIGE_DAMAGE_TALENT_BONUS_PERCENT_PER_LEVEL = 25` — 25% bonus per damage talent level.
+- `PRESTIGE_GOLD_TALENT_BONUS_PERCENT_PER_LEVEL = 50` — 50% bonus per gold talent level.
+- `PRESTIGE_UTILITY_TALENT_BONUS_PERCENT_PER_LEVEL = 5` — 5% bonus per utility talent level.
+- `PRESTIGE_TALENT_BASE_COST = 2`, `PRESTIGE_TALENT_COST_GROWTH = 1.5` — next talent cost is `ceil(2 * 1.5^current_talent_level)`.
 
-First prestige expected at 1–3 hours depending on play style. Not changed in this pass.
+First prestige now occurs later: usually at stage 100 unless hero level reaches 200 first.
 
 ### Task and shop rewards (unchanged, confirmed consistent)
 
@@ -760,11 +763,11 @@ Raise after playtesting confirms the economy feels rewarding enough.
 
 ---
 
-## Prestige (unchanged from prototype)
+## Prestige
 
-- First prestige point at game level 50 (`PRESTIGE_REQUIRED_LEVEL`)
-- Hero contributes 1 point per 100 levels (`PRESTIGE_CHARACTER_INTERVAL`)
-- Each talent level gives +5% bonus (`PRESTIGE_TALENT_BONUS_PERCENT_PER_LEVEL`)
+- First prestige point at game level 100 (`PRESTIGE_REQUIRED_LEVEL`)
+- Hero contributes 1 point per 200 levels (`PRESTIGE_CHARACTER_INTERVAL`)
+- Damage prestige talents give +25% per level, gold prestige talents give +50% per level, and utility prestige talents give +5% per level.
 
 ---
 

@@ -21,6 +21,10 @@ static func get_talent_bonus_type(index: int) -> String:
 	return TALENT_BONUS_TYPES[index]
 
 
+static func get_effect_type(index: int) -> String:
+	return get_talent_bonus_type(index)
+
+
 static func get_name_key(index: int) -> String:
 	return "prestige.talent.%02d.name" % (index + 1)
 

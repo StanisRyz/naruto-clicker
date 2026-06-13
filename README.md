@@ -182,9 +182,9 @@ Prestige is an unlockable reset in its own bottom `Prestige` tab.
 - Upgrade skill icon colors match partner skills: gray = locked, blue = available to buy, white = purchased.
 - Ability activation uses the ability purchased flag. Ability rank/effects are derived from purchased passive skill icons, and passive ability skills require buying the ability first.
 - Hero skills and ability skills are normal progression and reset on prestige.
-- Reward: `floor(current_level / 50) + floor(character_level / 100)` prestige points per prestige action.
-- Stage level 52 and character level 102 gives 2 points.
-- Stage level 101 and character level 301 gives 5 points.
+- Reward: `floor(current_level / 100) + floor(character_level / 200)` prestige points per prestige action.
+- Stage level 99 and character level 199 gives 0 points.
+- Stage level 100 and character level 200 gives 2 points.
 - The Prestige button is disabled when the reward is 0 and enabled when the reward is greater than 0.
 - Pressing the button opens a fully opaque confirmation dialog inside `PrestigeSheet` showing stage points, character points, and total reward points.
 - The main Prestige panel shows only a card-style prestige action and card-style talent rows; available prestige points are shown in the `PrestigeSheet` header, and detailed prestige calculations live in the confirmation dialog.
@@ -192,13 +192,13 @@ Prestige is an unlockable reset in its own bottom `Prestige` tab.
 - Prestige points do not provide passive damage or gold bonuses by themselves.
 - Available prestige points can be spent on prestige talents; total earned prestige points are historical/stat data only.
 - Purchased prestige talents are the only source of prestige-related bonuses.
-- Focus Training adds +5% click/autoclick damage per level.
-- Trade Routes adds +5% gold gain per level.
-- Command Aura adds +5% partner DPS per level.
+- Focus Training adds +25% click/autoclick damage per level.
+- Trade Routes adds +50% gold gain per level.
+- Command Aura adds +25% partner DPS per level.
 - Quick Hands adds +5% Autoclick attack rate per level, with a minimum final interval of 0.02 seconds.
 - Builder Wisdom adds +5% settlement building bonus effectiveness per level.
-- Boss Hunter adds +5% damage against bosses per level for manual clicks, autoclick, and partners.
-- Each talent's next cost is `1 + current talent level` available prestige points.
+- Boss Hunter adds +25% damage against bosses per level for manual clicks, autoclick, and partners.
+- Each talent's next cost is `ceil(2 * 1.5^current_talent_level)` available prestige points.
 - Gold Bonus still doubles rewards on top of talent and settlement gold multipliers.
 - Prestige state and talents are included in local Save System v1.
 

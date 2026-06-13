@@ -95,7 +95,6 @@ var prestige_points_total_earned: int = 0
 var total_prestiges: int = 0
 var prestige_required_level: int = BalanceConfig.PRESTIGE_REQUIRED_LEVEL
 var prestige_talent_levels: Array[int] = [0, 0, 0, 0, 0, 0]
-var prestige_talent_bonus_percent_per_level: int = BalanceConfig.PRESTIGE_TALENT_BONUS_PERCENT_PER_LEVEL
 var active_task_ids: Array[String] = []
 var inactive_task_ids: Array[String] = []
 var active_task_states: Dictionary = {}
@@ -141,7 +140,7 @@ func get_prestige_stage_points() -> int:
 
 
 func get_prestige_character_points() -> int:
-	return int(character_level / 100.0)
+	return int(character_level / BalanceConfig.PRESTIGE_CHARACTER_INTERVAL)
 
 
 func get_prestige_reward() -> int:
@@ -214,27 +213,27 @@ func get_command_aura_multiplier() -> float:
 
 
 func get_focus_training_bonus_percent() -> int:
-	return prestige_talent_levels[0] * prestige_talent_bonus_percent_per_level
+	return get_prestige_talent_total_bonus_percent(0)
 
 
 func get_trade_routes_bonus_percent() -> int:
-	return prestige_talent_levels[1] * prestige_talent_bonus_percent_per_level
+	return get_prestige_talent_total_bonus_percent(1)
 
 
 func get_command_aura_bonus_percent() -> int:
-	return prestige_talent_levels[2] * prestige_talent_bonus_percent_per_level
+	return get_prestige_talent_total_bonus_percent(2)
 
 
 func get_quick_hands_bonus_percent() -> int:
-	return prestige_talent_levels[3] * prestige_talent_bonus_percent_per_level
+	return get_prestige_talent_total_bonus_percent(3)
 
 
 func get_builder_wisdom_bonus_percent() -> int:
-	return prestige_talent_levels[4] * prestige_talent_bonus_percent_per_level
+	return get_prestige_talent_total_bonus_percent(4)
 
 
 func get_boss_hunter_bonus_percent() -> int:
-	return prestige_talent_levels[5] * prestige_talent_bonus_percent_per_level
+	return get_prestige_talent_total_bonus_percent(5)
 
 
 func get_quick_hands_multiplier() -> float:
@@ -285,7 +284,14 @@ func get_current_enemy_type() -> String:
 
 
 func get_prestige_talent_cost_for_level(level: int) -> int:
-	return 1 + maxi(level, 0)
+	var safe_level: int = maxi(level, 0)
+	return maxi(
+		BalanceConfig.PRESTIGE_TALENT_BASE_COST,
+		ceili(
+			float(BalanceConfig.PRESTIGE_TALENT_BASE_COST)
+			* pow(BalanceConfig.PRESTIGE_TALENT_COST_GROWTH, float(safe_level))
+		)
+	)
 
 
 func get_prestige_talent_cost(talent_index: int) -> int:
@@ -352,14 +358,24 @@ func get_prestige_talent_bulk_display_cost(talent_index: int, mode: String) -> i
 	return get_prestige_talent_cost(talent_index)
 
 
-func get_prestige_talent_bonus_percent_for_level(level: int) -> int:
-	return maxi(level, 0) * prestige_talent_bonus_percent_per_level
+func get_prestige_talent_bonus_percent_per_level(talent_index: int) -> int:
+	match PrestigeConfig.get_effect_type(talent_index):
+		"damage", "click_damage", "partner_dps", "boss_damage", "all_damage":
+			return BalanceConfig.PRESTIGE_DAMAGE_TALENT_BONUS_PERCENT_PER_LEVEL
+		"gold", "gold_reward", "gold_income":
+			return BalanceConfig.PRESTIGE_GOLD_TALENT_BONUS_PERCENT_PER_LEVEL
+		_:
+			return BalanceConfig.PRESTIGE_UTILITY_TALENT_BONUS_PERCENT_PER_LEVEL
+
+
+func get_prestige_talent_bonus_percent_for_level(talent_index: int, level: int) -> int:
+	return maxi(level, 0) * get_prestige_talent_bonus_percent_per_level(talent_index)
 
 
 func get_prestige_talent_total_bonus_percent(talent_index: int) -> int:
 	if talent_index < 0 or talent_index >= prestige_talent_levels.size():
 		return 0
-	return get_prestige_talent_bonus_percent_for_level(prestige_talent_levels[talent_index])
+	return get_prestige_talent_bonus_percent_for_level(talent_index, prestige_talent_levels[talent_index])
 
 
 func get_prestige_talent_bulk_bonus_gain(talent_index: int, mode: String) -> int:
@@ -369,8 +385,8 @@ func get_prestige_talent_bulk_bonus_gain(talent_index: int, mode: String) -> int
 	if count <= 0:
 		return 0
 	var talent_level: int = prestige_talent_levels[talent_index]
-	var current_bonus: int = get_prestige_talent_bonus_percent_for_level(talent_level)
-	var future_bonus: int = get_prestige_talent_bonus_percent_for_level(talent_level + count)
+	var current_bonus: int = get_prestige_talent_bonus_percent_for_level(talent_index, talent_level)
+	var future_bonus: int = get_prestige_talent_bonus_percent_for_level(talent_index, talent_level + count)
 	return maxi(future_bonus - current_bonus, 0)
 
 
@@ -459,7 +475,12 @@ func buy_shop_product(product_id: String) -> Dictionary:
 func perform_prestige() -> Dictionary:
 	var reward: int = get_prestige_reward()
 	if reward <= 0:
-		return _make_purchase_result("Prestige requires stage level %d or character level 100" % prestige_required_level)
+		return _make_purchase_result(
+			"Prestige requires stage level %d or character level %d" % [
+				prestige_required_level,
+				int(BalanceConfig.PRESTIGE_CHARACTER_INTERVAL),
+			]
+		)
 
 	prestige_points_available += reward
 	prestige_points_total_earned += reward
