@@ -753,9 +753,28 @@ func get_character_level_bulk_display_cost(mode: String) -> int:
 	return character_level_upgrade_cost
 
 
+func get_partner_dps_click_damage_bonus_percent() -> float:
+	var total_bonus: float = 0.0
+	for skill: Dictionary in PartnerSkillConfig.SKILL_DEFINITIONS:
+		var skill_id: String = String(skill.get("id", ""))
+		if not is_partner_skill_purchased(skill_id):
+			continue
+		if String(skill.get("bonus_type", "")) == "click_damage_from_partner_dps":
+			total_bonus += float(skill.get("bonus_value", 0.0))
+	return total_bonus
+
+
+func get_partner_dps_click_damage_bonus() -> int:
+	var bonus_percent: float = get_partner_dps_click_damage_bonus_percent()
+	if bonus_percent <= 0.0:
+		return 0
+	var partner_dps_for_click_bonus: int = get_final_partner_dps(false)
+	return maxi(0, int(float(partner_dps_for_click_bonus) * bonus_percent))
+
+
 func get_click_damage_for_character_level(level: int) -> int:
 	var base_damage: int = int(BalanceConfig.HERO_BASE_DAMAGE + float(level) * BalanceConfig.HERO_DAMAGE_PER_LEVEL) * get_milestone_multiplier(level)
-	return maxi(
+	var hero_click_damage: int = maxi(
 		1,
 		int(
 			base_damage
@@ -768,6 +787,8 @@ func get_click_damage_for_character_level(level: int) -> int:
 			* get_shop_click_damage_multiplier()
 		)
 	)
+	var partner_dps_click_bonus: int = get_partner_dps_click_damage_bonus()
+	return maxi(1, hero_click_damage + partner_dps_click_bonus)
 
 
 func get_character_level_bulk_damage_gain(mode: String) -> int:
@@ -2170,7 +2191,7 @@ func _update_zone() -> void:
 
 func _update_character_state() -> void:
 	var base_damage: int = int(BalanceConfig.HERO_BASE_DAMAGE + float(character_level) * BalanceConfig.HERO_DAMAGE_PER_LEVEL) * get_character_milestone_multiplier()
-	click_damage = maxi(
+	var hero_click_damage: int = maxi(
 		1,
 		int(
 			base_damage
@@ -2183,6 +2204,7 @@ func _update_character_state() -> void:
 			* get_shop_click_damage_multiplier()
 		)
 	)
+	click_damage = maxi(1, hero_click_damage + get_partner_dps_click_damage_bonus())
 	update_ability_unlocks()
 
 

@@ -103,7 +103,7 @@ Naruto Clicker is a vertical idle/clicker game targeting Web / Yandex Games, wit
 - Active abilities are unlocked once through the large card button, then have passive ranks 0–5 from gold-purchased skill icons on the ability card. Prestige resets purchased abilities and passive ranks to 0.
 - Ability skill purchases must never use BuyModeSelector; each skill icon purchase buys exactly one rank through `UpgradeSkillPopup`, and ClickerScreen routes purchases to `buy_ability_skill()`.
 - Ability unlocks use the existing base costs; passive skill costs use `ability_skill_cost_multipliers`.
-- Autoclick unlocks at character level 15, base cost 50 gold. Base: 20 hits/sec for 15 s, 60 s cooldown. Each passive rank adds +15% attack rate (via get_autoclick_rank_rate_multiplier()) and +2 s duration.
+- Autoclick unlocks at character level 15, base cost 50 gold. Base: 15 hits/sec for 15 s, 60 s cooldown. Each passive rank adds +15% attack rate (via get_autoclick_rank_rate_multiplier()) and +2 s duration.
 - Gold Bonus unlocks at character level 30, base cost 150 gold. Base multiplier is x2.00 plus +0.25 per passive rank, 45 s, 300 s cooldown.
 - Focus Burst unlocks at character level 60, base cost 500 gold. Base multiplier is x2.00 plus +0.25 per passive rank, 20 s, 120 s cooldown.
 - Rally unlocks at character level 80, base cost 1000 gold. Base multiplier is x2.00 plus +0.25 per passive rank, 30 s, 180 s cooldown.

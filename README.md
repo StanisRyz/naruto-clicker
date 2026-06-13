@@ -94,7 +94,7 @@ The main scene contains the first local clicker loop:
 - The Shop includes a temporary dev-only `Prototype: Get 50 Gems` button for testing product flow without payments.
 - Boss Retry tokens automatically retry the same failed boss level once per token. Task Reward Boost doubles the next claimed task reward only once.
 - Gems, Boss Retry tokens, and Task Reward Boost are local-save prototype state until real payments/save integration are explicitly added.
-- Autoclick unlock base: 20 hits/sec for 15 s, 60 s cooldown. Each passive rank adds +15% rate and +2 s duration after Autoclick is purchased.
+- Autoclick unlock base: 15 hits/sec for 15 s, 60 s cooldown. Each passive rank adds +15% rate and +2 s duration after Autoclick is purchased.
 - Gold Bonus base: x2 gold for 45 s, 300 s cooldown. Passive ranks add +0.25 multiplier each.
 - Focus Burst base: x2 damage for 20 s, 120 s cooldown. Passive ranks add +0.25 multiplier each.
 - Rally base: x2 partner DPS for 30 s, 180 s cooldown. Passive ranks add +0.25 multiplier each.

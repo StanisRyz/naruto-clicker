@@ -94,8 +94,8 @@ const ABILITY_MAX_RANK: int = 5
 const ABILITY_BASE_MULTIPLIER: float = 2.0
 const ABILITY_RANK_MULTIPLIER_STEP: float = 0.25
 
-# Autoclick: rate multiplier = 1.0 + RATE_STEP * rank (base 20 hits/sec at rank 0)
-const AUTOCLICK_BASE_HITS_PER_SEC: float = 20.0
+# Autoclick: rate multiplier = 1.0 + RATE_STEP * rank (base 15 hits/sec at rank 0)
+const AUTOCLICK_BASE_HITS_PER_SEC: float = 15.0
 const AUTOCLICK_BASE_DURATION_SEC: int = 15
 const AUTOCLICK_RANK_DURATION_BONUS_SEC: int = 2
 const AUTOCLICK_RANK_RATE_STEP: float = 0.15

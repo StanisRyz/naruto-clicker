@@ -22,13 +22,16 @@ const _CS = preload("res://scripts/game/ClickerState.gd")
 const CLICKS_PER_SEC: float = 6.0
 # Partners 14–28 (index 13+) are marked placeholder in BalanceConfig.
 const PLACEHOLDER_PARTNER_START_IDX: int = 13
+const EXPECTED_PARTNER_CLICK_SYNERGY_PER_SKILL: float = 0.007
+const EXPECTED_PARTNER_CLICK_SYNERGY_MAX: float = 0.196
+const EXPECTED_AUTOCLICK_BASE_HITS_PER_SEC: float = 15.0
 
 # --- Simulation constants ---
 const SIM_MAX_SECONDS: float = 7200.0
-const SIM_MAX_LEVEL: int = 150
+const SIM_MAX_LEVEL: int = 100
 const SIM_CLICKS_PER_SEC: float = 6.0
 const SIM_PURCHASE_INTERVAL_SEC: float = 1.0
-const SIM_REPORT_LEVELS: Array = [1, 5, 10, 15, 20, 25, 30, 40, 50, 75, 100, 150]
+const SIM_REPORT_LEVELS: Array = [1, 5, 10, 15, 20, 25, 30, 40, 50, 75, 100]
 const SIM_LOG_ALL_PURCHASES: bool = false
 const SIM_HERO_LOG_MILESTONES: Array = [10, 25, 50, 100]
 const SIM_PARTNER_LOG_MILESTONES: Array = [1, 10, 25, 50]
@@ -488,6 +491,32 @@ const BALANCE_SCENARIOS: Array[Dictionary] = [
 		"boss_reward_mult": 1.0,
 		"ability_cost_mult": 1.0,
 	},
+	# --- Click/partner synergy validation scenario (current live config) ---
+	{
+		"id": "click_synergy_current_real",
+		"label": "Click Synergy (Current Real)",
+		"hero_damage_mult": 1.0,
+		"hero_cost_mult": 1.0,
+		"hero_cost_growth_delta": 0.0,
+		"partner_dps_mult": 1.0,
+		"partner_cost_mult": 1.0,
+		"partner_cost_growth_delta": 0.0,
+		"building_cost_mult": 1.0,
+		"building_effect_mult": 1.0,
+		"enemy_hp_mult": 1.0,
+		"enemy_reward_mult": 1.0,
+		"boss_hp_mult": 1.0,
+		"boss_reward_mult": 1.0,
+		"ability_cost_mult": 1.0,
+	},
+]
+
+# Scenarios run by default in _section_balance_scenario_comparison. All scenario definitions
+# remain in BALANCE_SCENARIOS and can be enabled by adding IDs here.
+const DEFAULT_SCENARIO_IDS: Array[String] = [
+	"baseline",
+	"manual_value_v1",
+	"click_synergy_current_real",
 ]
 
 var _warnings: Array[String] = []
@@ -512,10 +541,8 @@ func _init() -> void:
 	_section_combat()
 	_section_prestige()
 	_section_prestige_economy_verification()
-	_section_prestige_loop_simulation()
 	_section_progression_simulation()
-	_section_partner_curve_scenario_preview()
-	_section_balance_scenario_comparison()
+	_section_click_partner_synergy_summary()
 	_section_warnings()
 	_write_csv()
 
@@ -735,14 +762,26 @@ func _section_partner() -> void:
 		if val_r < 0.5 and cost_r > 1.0:
 			_warn("Partner %d→%d: DPS-per-cost drops >50%% — value discontinuity" % [i + 1, i + 2])
 
-	# Validate all partner skills are own_partner_dps x2
+	# Validate partner skill config: skill_level 2 = click_damage_from_partner_dps, others = own_partner_dps / 1.0
+	var _ps_invalid_l2: bool = false
+	var _ps_invalid_other: bool = false
 	for skill: Dictionary in _PSC.SKILL_DEFINITIONS:
-		if String(skill.get("bonus_type", "")) != "own_partner_dps" or float(skill.get("bonus_value", 0.0)) != 1.0:
-			_warn("Partner skill %s: bonus_type=%s bonus_value=%.2f — expected own_partner_dps / 1.0 (x2 DPS Mastery config)." % [
-				String(skill.get("id", "?")),
-				String(skill.get("bonus_type", "?")),
-				float(skill.get("bonus_value", 0.0)),
-			])
+		var _ps_level: int = int(skill.get("skill_level", 0))
+		var _ps_type: String = String(skill.get("bonus_type", ""))
+		var _ps_val: float = float(skill.get("bonus_value", 0.0))
+		if _ps_level == 2:
+			if not _ps_invalid_l2 and _ps_type != "click_damage_from_partner_dps":
+				_ps_invalid_l2 = true
+				_warn("Partner skill %s (level 2): bonus_type=%s — expected click_damage_from_partner_dps." % [String(skill.get("id", "?")), _ps_type])
+			if _ps_type == "click_damage_from_partner_dps" and absf(_ps_val - EXPECTED_PARTNER_CLICK_SYNERGY_PER_SKILL) > 0.0001:
+				_warn("Partner skill %s (level 2): click synergy bonus_value=%.3f; expected %.3f." % [String(skill.get("id", "?")), _ps_val, EXPECTED_PARTNER_CLICK_SYNERGY_PER_SKILL])
+			if _ps_type == "click_damage_from_partner_dps" and absf(_ps_val - 0.01) <= 0.0001:
+				_warn("Partner skill %s (level 2): old click synergy value 0.01 is still present." % String(skill.get("id", "?")))
+		else:
+			if not _ps_invalid_other and (_ps_type != "own_partner_dps" or _ps_val != 1.0):
+				_ps_invalid_other = true
+				_warn("Partner skill %s (level %d): bonus_type=%s bonus_value=%.2f — expected own_partner_dps / 1.0." % [String(skill.get("id", "?")), _ps_level, _ps_type, _ps_val])
+		if _ps_invalid_l2 and _ps_invalid_other:
 			break
 
 
@@ -751,6 +790,10 @@ func _section_partner() -> void:
 # ==========================================================================
 
 func _section_combat() -> void:
+	if absf(_BC.AUTOCLICK_BASE_HITS_PER_SEC - EXPECTED_AUTOCLICK_BASE_HITS_PER_SEC) > 0.001:
+		_csv_append("simulation_balance_warning", 0, 0, 0, 0, 0, 0, 0.0,
+			"warning_type=autoclick_base_hits_mismatch actual=%.1f expected=%.1f" % [_BC.AUTOCLICK_BASE_HITS_PER_SEC, EXPECTED_AUTOCLICK_BASE_HITS_PER_SEC])
+		_warn("Autoclick: base hits/sec is %.1f; expected %.1f." % [_BC.AUTOCLICK_BASE_HITS_PER_SEC, EXPECTED_AUTOCLICK_BASE_HITS_PER_SEC])
 	_header("SECTION 4 — Combat Pressure  (hero-only, hero_level = game_level)")
 	_ln("Worst-case: no partner DPS, no passive multipliers beyond milestone.")
 	_ln("BossResult shows estimated seconds to kill boss at 6 clicks/sec.")
@@ -1898,13 +1941,26 @@ func _run_progression_profile(profile: Dictionary, scenario: Dictionary = {}, em
 				])
 
 	if emit_live_output:
+		var final_manual_dps: float = float(final_stats.get("manual_dps", 0.0))
+		var final_partner_dps: float = float(final_stats.get("partner_dps", 0.0))
+		var final_ability_dps: float = float(final_stats.get("ability_dps", 0.0))
+		var final_manual_share: float = final_manual_dps / final_tdps * 100.0 if final_tdps > 0.0 else 0.0
+		var final_partner_share: float = final_partner_dps / final_tdps * 100.0 if final_tdps > 0.0 else 0.0
+		var final_ability_share: float = final_ability_dps / final_tdps * 100.0 if final_tdps > 0.0 else 0.0
+		var final_partner_click_bonus_pct: float = state.get_partner_dps_click_damage_bonus_percent()
+		var final_autoclick_damage_per_hit: int = state.get_autoclick_damage()
+		var final_autoclick_diag: Dictionary = ability_diagnostics.get("autoclick", {})
+		var final_autoclick_total_damage: int = int(float(final_autoclick_diag.get("estimated_damage_contributed", 0.0)))
 		_csv_append("simulation_summary_%s" % profile_id, reached_level,
 			state.target_max_hp, state.reward_gold, 0,
 			int(final_stats.get("click_damage", state.get_current_click_damage())), int(final_tdps), sim_time,
-			"profile_id=%s reached_level=%d sim_time=%.0f hero=%d gold=%d click=%d manual_dps=%d partner_dps=%d ability_dps=%d total_dps=%d prestige_reward=%d total_hero_purchases=%d total_partner_purchases=%d total_building_purchases=%d total_ability_purchases=%d total_hero_skill_purchases=%d total_partner_skill_purchases=%d total_ability_skill_purchases=%d gold_spent_hero=%d gold_spent_partners=%d gold_spent_buildings=%d gold_spent_abilities=%d gold_spent_skills=%d ability_events=%s stopped_reason=%s boss_walls_seen=%d boss_walls_passed_by_wait=%d boss_walls_passed_by_farm=%d total_farm_time=%.0f total_wait_time=%.0f farm_sessions=%d final_wall_level=%d final_wall_missing_dps_percent=%.1f" % [
+			"profile_id=%s reached_level=%d sim_time=%.0f hero=%d gold=%d click=%d manual_dps=%d partner_dps=%d ability_dps=%d total_dps=%d partner_dps_click_bonus_percent=%.4f max_theoretical_partner_dps_click_bonus_percent=%.4f autoclick_base_hits_per_sec=%.1f autoclick_damage_per_hit=%d autoclick_total_damage_contributed=%d ability_share=%.1f manual_share=%.1f partner_share=%.1f prestige_reward=%d total_hero_purchases=%d total_partner_purchases=%d total_building_purchases=%d total_ability_purchases=%d total_hero_skill_purchases=%d total_partner_skill_purchases=%d total_ability_skill_purchases=%d gold_spent_hero=%d gold_spent_partners=%d gold_spent_buildings=%d gold_spent_abilities=%d gold_spent_skills=%d ability_events=%s stopped_reason=%s boss_walls_seen=%d boss_walls_passed_by_wait=%d boss_walls_passed_by_farm=%d total_farm_time=%.0f total_wait_time=%.0f farm_sessions=%d final_wall_level=%d final_wall_missing_dps_percent=%.1f" % [
 				profile_id, reached_level, sim_time, state.character_level, state.gold,
 				int(final_stats.get("click_damage", state.get_current_click_damage())), int(final_stats.get("manual_dps", 0.0)),
 				int(final_stats.get("partner_dps", 0.0)), int(final_stats.get("ability_dps", 0.0)), int(final_tdps),
+				final_partner_click_bonus_pct, EXPECTED_PARTNER_CLICK_SYNERGY_MAX, _BC.AUTOCLICK_BASE_HITS_PER_SEC,
+				final_autoclick_damage_per_hit, final_autoclick_total_damage,
+				final_ability_share, final_manual_share, final_partner_share,
 				first_prestige_reward, total_hero_buys, total_partner_buys, total_building_buys, total_ability_buys,
 				total_hero_skill_buys, total_partner_skill_buys, total_ability_skill_buys,
 				total_gold_spent_hero, total_gold_spent_partners, total_gold_spent_buildings,
@@ -1923,7 +1979,7 @@ func _run_progression_profile(profile: Dictionary, scenario: Dictionary = {}, em
 	if emit_live_output:
 		_sim_append_profile_partner_summary(profile_id, state)
 		_sim_append_profile_building_summary(profile_id, state)
-		ability_summary_rows = _sim_append_profile_ability_summary(profile_id, state, ability_diagnostics)
+		ability_summary_rows = _sim_append_profile_ability_summary(profile_id, state, ability_diagnostics, final_stats)
 		skill_summary_rows = _sim_append_profile_skill_summary(profile_id, state, skill_spend)
 		_sim_append_profile_timing_rows(profile_id, level_times, first_prestige_time, first_prestige_reward)
 
@@ -1951,6 +2007,8 @@ func _run_progression_profile(profile: Dictionary, scenario: Dictionary = {}, em
 			partner_skills_bought_by_50 = true
 		if not partner_skills_bought_by_50 and reached_level >= 50:
 			_warn("Simulation %s: no partner skills purchased by level 50." % profile_id)
+
+	var result_autoclick_diag: Dictionary = ability_diagnostics.get("autoclick", {})
 
 	return {
 		"profile_id": profile_id,
@@ -1987,6 +2045,9 @@ func _run_progression_profile(profile: Dictionary, scenario: Dictionary = {}, em
 		"manual_dps": float(final_stats.get("manual_dps", 0.0)),
 		"partner_dps": float(final_stats.get("partner_dps", 0.0)),
 		"ability_dps": float(final_stats.get("ability_dps", 0.0)),
+		"autoclick_base_hits_per_sec": _BC.AUTOCLICK_BASE_HITS_PER_SEC,
+		"autoclick_damage_per_hit": state.get_autoclick_damage(),
+		"autoclick_total_damage_contributed": int(float(result_autoclick_diag.get("estimated_damage_contributed", 0.0))),
 		"current_ability_dps": float(final_stats.get("ability_dps", 0.0)),
 		"cumulative_ability_damage": _sim_cumulative_ability_damage(ability_diagnostics),
 		"used_abilities": _sim_used_abilities_note(ability_diagnostics),
@@ -2313,6 +2374,8 @@ func _sim_skill_value_gain(skill: Dictionary, click_dps: float, partner_dps: flo
 			return maxf(click_dps * maxf(bonus_value, 0.15), 0.5)
 		"partner_dps", "own_partner_dps", "rally_rank":
 			return maxf(partner_dps * maxf(bonus_value, 0.15), 0.5)
+		"click_damage_from_partner_dps":
+			return maxf(partner_dps * bonus_value * SIM_CLICKS_PER_SEC, 0.5)
 		"gold", "gold_bonus_rank":
 			return maxf(reward * maxf(bonus_value, 0.25), 0.5)
 	return 0.5
@@ -2975,8 +3038,12 @@ func _sim_append_profile_building_summary(profile_id: String, state: _CS) -> voi
 		_csv_append("simulation_building_summary_%s" % profile_id, 0, 0, 0, 0, 0, 0, 0.0, "profile_id=%s no_buildings_purchased" % profile_id)
 
 
-func _sim_append_profile_ability_summary(profile_id: String, state: _CS, ability_diagnostics: Dictionary) -> int:
+func _sim_append_profile_ability_summary(profile_id: String, state: _CS, ability_diagnostics: Dictionary, final_stats: Dictionary = {}) -> int:
 	var rows: int = 0
+	var total_dps: float = float(final_stats.get("total_dps", 0.0))
+	var manual_share: float = float(final_stats.get("manual_dps", 0.0)) / total_dps * 100.0 if total_dps > 0.0 else 0.0
+	var partner_share: float = float(final_stats.get("partner_dps", 0.0)) / total_dps * 100.0 if total_dps > 0.0 else 0.0
+	var ability_share: float = float(final_stats.get("ability_dps", 0.0)) / total_dps * 100.0 if total_dps > 0.0 else 0.0
 	for ability_id in _AC.ABILITY_IDS:
 		var aid: String = str(ability_id)
 		var diagnostics: Dictionary = ability_diagnostics.get(aid, {})
@@ -2989,12 +3056,17 @@ func _sim_append_profile_ability_summary(profile_id: String, state: _CS, ability
 		var gold_contribution: float = float(diagnostics.get("estimated_gold_contributed", 0.0))
 		var cooldown: float = _sim_ability_cooldown(state, aid)
 		var duration: float = _sim_ability_duration(state, aid)
+		var autoclick_damage_per_hit: int = state.get_autoclick_damage() if aid == "autoclick" else 0
+		var autoclick_total_damage: int = int(damage_contribution) if aid == "autoclick" else 0
 		_csv_append(
 			"simulation_ability_summary_%s" % profile_id, rows + 1,
 			0, int(gold_contribution), spent, int(damage_contribution), 0, active_time,
-			"profile_id=%s ability_id=%s purchased=%s rank=%d unlock_rank_cost_spent=%d activations=%d total_active_time=%.1f estimated_damage_contributed=%d estimated_gold_contributed=%d cooldown=%.1f duration=%.1f" % [
+			"profile_id=%s ability_id=%s purchased=%s rank=%d unlock_rank_cost_spent=%d activations=%d total_active_time=%.1f estimated_damage_contributed=%d estimated_gold_contributed=%d autoclick_base_hits_per_sec=%.1f autoclick_damage_per_hit=%d autoclick_total_damage_contributed=%d ability_share=%.1f manual_share=%.1f partner_share=%.1f cooldown=%.1f duration=%.1f" % [
 				profile_id, aid, ("true" if purchased else "false"), rank, spent, activations,
-				active_time, int(damage_contribution), int(gold_contribution), cooldown, duration,
+				active_time, int(damage_contribution), int(gold_contribution),
+				_BC.AUTOCLICK_BASE_HITS_PER_SEC, autoclick_damage_per_hit, autoclick_total_damage,
+				ability_share, manual_share, partner_share,
+				cooldown, duration,
 			]
 		)
 		rows += 1
@@ -3142,6 +3214,8 @@ func _section_balance_scenario_comparison() -> void:
 	var baseline_active_wall_level: int = -1
 	var manual_value_results: Dictionary = {}
 	for scenario: Dictionary in BALANCE_SCENARIOS:
+		if not DEFAULT_SCENARIO_IDS.has(str(scenario.get("id", ""))):
+			continue
 		for profile: Dictionary in profiles:
 			var result: Dictionary = _run_balance_scenario_profile(scenario, profile)
 			_print_scenario_profile_row(result)
@@ -3723,13 +3797,27 @@ func _scenario_ability_cost(base_cost: int, scenario: Dictionary) -> int:
 	return maxi(1, int(round(float(base_cost) * _scf(scenario, "ability_cost_mult"))))
 
 
+func _scenario_partner_dps_click_damage_bonus(state: Dictionary, scenario: Dictionary) -> int:
+	var bonus_percent: float = 0.0
+	var purchased_ids: Array = state.get("purchased_partner_skill_ids", [])
+	for skill: Dictionary in _PSC.SKILL_DEFINITIONS:
+		if not purchased_ids.has(str(skill.get("id", ""))):
+			continue
+		if str(skill.get("bonus_type", "")) == "click_damage_from_partner_dps":
+			bonus_percent += float(skill.get("bonus_value", 0.0))
+	if bonus_percent <= 0.0:
+		return 0
+	return maxi(0, int(float(_scenario_total_partner_dps(state, scenario, false)) * bonus_percent))
+
+
 func _scenario_click_damage(state: Dictionary, scenario: Dictionary) -> int:
 	var value: float = float(_scenario_hero_damage(int(state.get("hero_level", 1)), scenario))
 	value *= _scenario_click_building_multiplier(state, scenario)
 	value *= _scenario_hero_skill_bonus_multiplier(state, "click_damage")
 	value *= _scenario_partner_skill_bonus_multiplier(state, "click_damage")
 	value *= _scenario_partner_skill_bonus_multiplier(state, "all_damage")
-	return maxi(1, int(round(value)))
+	var hero_click: int = maxi(1, int(round(value)))
+	return maxi(1, hero_click + _scenario_partner_dps_click_damage_bonus(state, scenario))
 
 
 func _scenario_total_partner_dps(state: Dictionary, scenario: Dictionary, boss_context: bool) -> float:
@@ -4900,6 +4988,145 @@ func _fmt_talent_levels(levels: Array) -> String:
 	for i: int in range(levels.size()):
 		parts.append(str(int(levels[i])))
 	return "|".join(parts)
+
+
+func _section_click_partner_synergy_summary() -> void:
+	_header("SECTION — Click/Partner Synergy Summary")
+	_ln("  Mechanic: each skill_level-2 partner skill adds +0.7% of total partner DPS as flat click damage.")
+	_ln("  Max synergy (28 partners, all skill 2 purchased): +19.6% of total partner DPS per click.")
+	_ln("")
+
+	# T8 config validation
+	var _csyn_skills: Array[Dictionary] = []
+	var _csyn_per_partner: Dictionary = {}
+	for skill: Dictionary in _PSC.SKILL_DEFINITIONS:
+		if str(skill.get("bonus_type", "")) == "click_damage_from_partner_dps":
+			_csyn_skills.append(skill)
+			var _csyn_pi: int = int(skill.get("partner_index", -1))
+			_csyn_per_partner[_csyn_pi] = int(_csyn_per_partner.get(_csyn_pi, 0)) + 1
+
+	if _csyn_skills.is_empty():
+		_csv_append("simulation_balance_warning", 0, 0, 0, 0, 0, 0, 0.0,
+			"warning_type=no_click_synergy_skills explanation=no_skill_with_bonus_type_click_damage_from_partner_dps_in_PartnerSkillConfig")
+		_warn("Click synergy: no click_damage_from_partner_dps skill found in PartnerSkillConfig — synergy mechanic is inactive.")
+
+	for _csyn_pi: int in _csyn_per_partner.keys():
+		if int(_csyn_per_partner[_csyn_pi]) > 1:
+			_csv_append("simulation_balance_warning", 0, 0, 0, 0, 0, 0, 0.0,
+				"warning_type=multiple_click_synergy_skills_per_partner partner_index=%d count=%d explanation=more_than_one_click_damage_from_partner_dps_for_same_partner" % [_csyn_pi, int(_csyn_per_partner[_csyn_pi])])
+			_warn("Click synergy: partner %d has %d click_damage_from_partner_dps skills — expected exactly 1." % [_csyn_pi + 1, int(_csyn_per_partner[_csyn_pi])])
+
+	var _csyn_max_pct: float = 0.0
+	for skill: Dictionary in _csyn_skills:
+		_csyn_max_pct += float(skill.get("bonus_value", 0.0))
+
+	var _csyn_expected_max: float = EXPECTED_PARTNER_CLICK_SYNERGY_MAX
+	if not _csyn_skills.is_empty():
+		if absf(_csyn_max_pct - _csyn_expected_max) > 0.001:
+			_csv_append("simulation_balance_warning", 0, 0, 0, 0, 0, 0, 0.0,
+				"warning_type=max_synergy_percent_mismatch actual=%.4f expected=%.4f explanation=max_click_synergy_is_not_19_6pct" % [_csyn_max_pct, _csyn_expected_max])
+			_warn("Click synergy: max synergy = %.1f%% (expected 19.6%%) — config mismatch." % (_csyn_max_pct * 100.0))
+		else:
+			_ln("  Max click synergy config check: %.1f%% of partner DPS. OK." % (_csyn_max_pct * 100.0))
+
+	_ln("")
+
+	# Per-profile results from live simulation
+	var _csyn_active: Dictionary = _live_profile_results.get("active_6cps", {})
+	var _csyn_semi: Dictionary = _live_profile_results.get("semi_active_3cps", {})
+	var _csyn_active_time: float = float(_csyn_active.get("sim_time", 0.0))
+	var _csyn_semi_time: float = float(_csyn_semi.get("sim_time", 0.0))
+	var _csyn_ratio: float = _csyn_active_time / _csyn_semi_time if _csyn_semi_time > 0.0 else 0.0
+
+	for _csyn_pid: String in ["active_6cps", "semi_active_3cps"]:
+		var _csyn_r: Dictionary = _live_profile_results.get(_csyn_pid, {})
+		if _csyn_r.is_empty():
+			continue
+
+		var _csyn_purchased: Array = _csyn_r.get("purchased_partner_skill_ids", [])
+		var _csyn_bonus_pct: float = 0.0
+		for skill: Dictionary in _PSC.SKILL_DEFINITIONS:
+			if str(skill.get("bonus_type", "")) == "click_damage_from_partner_dps":
+				if _csyn_purchased.has(str(skill.get("id", ""))):
+					_csyn_bonus_pct += float(skill.get("bonus_value", 0.0))
+
+		var _csyn_partner_dps: float = float(_csyn_r.get("partner_dps", 0.0))
+		var _csyn_click_dmg: int = int(_csyn_r.get("click_damage", 0))
+		var _csyn_bonus_per_click: int = maxi(0, int(_csyn_partner_dps * _csyn_bonus_pct))
+		var _csyn_hero_only: int = maxi(1, _csyn_click_dmg - _csyn_bonus_per_click)
+		var _csyn_manual_dps: float = float(_csyn_r.get("manual_dps", 0.0))
+		var _csyn_ability_dps: float = float(_csyn_r.get("ability_dps", 0.0))
+		var _csyn_total_dps: float = float(_csyn_r.get("total_dps", 0.0))
+		var _csyn_manual_share: float = _csyn_manual_dps / _csyn_total_dps * 100.0 if _csyn_total_dps > 0.0 else 0.0
+		var _csyn_partner_share: float = _csyn_partner_dps / _csyn_total_dps * 100.0 if _csyn_total_dps > 0.0 else 0.0
+		var _csyn_ability_share: float = _csyn_ability_dps / _csyn_total_dps * 100.0 if _csyn_total_dps > 0.0 else 0.0
+		var _csyn_reached: int = int(_csyn_r.get("reached_level", 0))
+		var _csyn_prestige_t: float = float(_csyn_r.get("first_prestige_time", -1.0))
+		var _csyn_wall: int = int(_csyn_r.get("final_wall_level", -1))
+		var _csyn_autoclick_total: int = int(_csyn_r.get("autoclick_total_damage_contributed", 0))
+		var _csyn_autoclick_hit: int = int(_csyn_r.get("autoclick_damage_per_hit", 0))
+
+		var _csyn_tag: String = "ok"
+		if _csyn_bonus_pct <= 0.0:
+			_csyn_tag = "no_synergy_purchased"
+		elif _csyn_manual_share >= 30.0:
+			_csyn_tag = "manual_dominates"
+		elif _csyn_manual_share >= 5.0:
+			_csyn_tag = "healthy_manual_share"
+		else:
+			_csyn_tag = "synergy_not_lifting_manual"
+
+		_ln("  [%s] lvl=%d prestige=%s wall=%s synergy=%.1f%% bonus/click=%d hero_only=%d total_click=%d manual%%=%.0f" % [
+			_csyn_pid, _csyn_reached,
+			_scenario_time_note(_csyn_prestige_t),
+			str(_csyn_wall) if _csyn_wall > 0 else "none",
+			_csyn_bonus_pct * 100.0, _csyn_bonus_per_click, _csyn_hero_only, _csyn_click_dmg, _csyn_manual_share,
+		])
+
+		_csv_append(
+			"click_partner_synergy_summary", _csyn_reached,
+			0, 0, 0, _csyn_click_dmg, int(_csyn_total_dps), float(_csyn_r.get("sim_time", 0.0)),
+			"profile_id=%s reached_level=%d first_prestige_time=%s final_wall_level=%d partner_dps_click_bonus_percent=%.4f max_theoretical_partner_dps_click_bonus_percent=%.4f partner_dps_click_bonus_per_click=%d hero_click_damage_without_synergy=%d total_click_damage_with_synergy=%d autoclick_base_hits_per_sec=%.1f autoclick_damage_per_hit=%d autoclick_total_damage_contributed=%d manual_dps=%d partner_dps=%d ability_dps=%d ability_share=%.1f manual_share=%.1f partner_share=%.1f active_vs_semi_time_ratio=%.2f recommendation_tag=%s" % [
+				_csyn_pid, _csyn_reached,
+				_scenario_time_note(_csyn_prestige_t),
+				_csyn_wall, _csyn_bonus_pct, EXPECTED_PARTNER_CLICK_SYNERGY_MAX, _csyn_bonus_per_click,
+				_csyn_hero_only, _csyn_click_dmg,
+				_BC.AUTOCLICK_BASE_HITS_PER_SEC, _csyn_autoclick_hit, _csyn_autoclick_total,
+				int(_csyn_manual_dps), int(_csyn_partner_dps), int(_csyn_ability_dps),
+				_csyn_ability_share, _csyn_manual_share, _csyn_partner_share,
+				_csyn_ratio, _csyn_tag,
+			]
+		)
+
+		# T8 per-profile warnings
+		if _csyn_manual_share < 5.0 and _csyn_reached >= 100:
+			_csv_append("simulation_balance_warning", _csyn_reached, 0, 0, 0, 0, int(_csyn_total_dps), 0.0,
+				"profile_id=%s warning_type=manual_share_below_5pct_after_stage_100 manual_share=%.1f reached_level=%d explanation=click_synergy_not_lifting_manual_relevance" % [
+					_csyn_pid, _csyn_manual_share, _csyn_reached,
+				])
+
+	# Cross-profile warnings (emit once using active profile as anchor)
+	if _csyn_ratio > 0.85 and not _csyn_active.is_empty() and not _csyn_semi.is_empty():
+		_csv_append("simulation_balance_warning", int(_csyn_active.get("reached_level", 0)), 0, 0, 0, 0, 0, 0.0,
+			"profile_id=both warning_type=active_semi_too_similar active_vs_semi_time_ratio=%.2f explanation=click_synergy_not_differentiating_play_styles" % _csyn_ratio)
+		_warn("Click synergy: active_6cps and semi_active_3cps too similar (time ratio=%.2f) — synergy not differentiating play styles." % _csyn_ratio)
+
+	var _csyn_active_reached: int = int(_csyn_active.get("reached_level", 0))
+	var _csyn_active_wall: int = int(_csyn_active.get("final_wall_level", -1))
+	var _csyn_active_total: float = float(_csyn_active.get("total_dps", 0.0))
+	var _csyn_active_manual_s: float = float(_csyn_active.get("manual_dps", 0.0)) / _csyn_active_total * 100.0 if _csyn_active_total > 0.0 else 0.0
+	var _csyn_active_bonus: float = 0.0
+	for skill: Dictionary in _PSC.SKILL_DEFINITIONS:
+		if str(skill.get("bonus_type", "")) == "click_damage_from_partner_dps":
+			var _csyn_ap: Array = _csyn_active.get("purchased_partner_skill_ids", [])
+			if _csyn_ap.has(str(skill.get("id", ""))):
+				_csyn_active_bonus += float(skill.get("bonus_value", 0.0))
+	if _csyn_active_reached >= SIM_MAX_LEVEL and _csyn_active_wall <= 0 and _csyn_active_bonus > 0.0 and _csyn_active_manual_s >= 5.0:
+		_csv_append("simulation_balance_warning", _csyn_active_reached, 0, 0, 0, 0, int(_csyn_active_total), 0.0,
+			"profile_id=active_6cps warning_type=click_synergy_causes_runaway reached_level=%d manual_share=%.1f explanation=synergy_enabled_runaway_to_max_level_with_no_boss_wall" % [
+				_csyn_active_reached, _csyn_active_manual_s,
+			])
+		_warn("Click synergy: active_6cps reached max level %d with no boss wall and synergy active (manual=%.0f%%) — possible runaway." % [_csyn_active_reached, _csyn_active_manual_s])
 
 
 func _section_warnings() -> void:
