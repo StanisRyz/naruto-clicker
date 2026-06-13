@@ -146,7 +146,10 @@ func get_prestige_character_points() -> int:
 func get_prestige_reward() -> int:
 	if is_debug_visual_test_mode_enabled():
 		return DEBUG_PRESTIGE_REWARD
-	return get_prestige_stage_points() + get_prestige_character_points()
+	var progression_points: int = get_prestige_stage_points() + get_prestige_character_points()
+	if progression_points <= 0:
+		return 0
+	return BalanceConfig.PRESTIGE_BASE_REWARD_POINTS + progression_points
 
 
 func initialize_tasks() -> void:

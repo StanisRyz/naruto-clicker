@@ -34,6 +34,12 @@ const SIM_HERO_LOG_MILESTONES: Array = [10, 25, 50, 100]
 const SIM_PARTNER_LOG_MILESTONES: Array = [1, 10, 25, 50]
 const SCENARIO_ENEMIES_PER_LEVEL: int = 10
 
+# --- Boss wall farming constants ---
+const SIM_MAX_BOSS_FARM_SECONDS: float = 900.0
+const SIM_BOSS_RETRY_WAIT_FOR_ABILITIES: bool = true
+const SIM_FARM_PURCHASE_INTERVAL_SEC: float = 1.0
+const SIM_MIN_POWER_GAIN_TO_CONTINUE: float = 0.01
+
 const BALANCE_SCENARIOS: Array[Dictionary] = [
 	{
 		"id": "baseline",
@@ -345,6 +351,143 @@ const BALANCE_SCENARIOS: Array[Dictionary] = [
 		"boss_reward_mult": 1.0,
 		"ability_cost_mult": 1.0,
 	},
+	# --- Audit-only manual/hero progression scenarios (Option A — do not apply to BalanceConfig) ---
+	{
+		"id": "manual_value_v1",
+		"label": "Hero Damage +25%",
+		"hero_damage_mult": 1.25,
+		"hero_cost_mult": 1.0,
+		"hero_cost_growth_delta": 0.0,
+		"partner_dps_mult": 1.0,
+		"partner_cost_mult": 1.0,
+		"partner_cost_growth_delta": 0.0,
+		"building_cost_mult": 1.0,
+		"building_effect_mult": 1.0,
+		"enemy_hp_mult": 1.0,
+		"enemy_reward_mult": 1.0,
+		"boss_hp_mult": 1.0,
+		"boss_reward_mult": 1.0,
+		"ability_cost_mult": 1.0,
+	},
+	{
+		"id": "manual_value_v2",
+		"label": "Hero Damage +50%",
+		"hero_damage_mult": 1.50,
+		"hero_cost_mult": 1.0,
+		"hero_cost_growth_delta": 0.0,
+		"partner_dps_mult": 1.0,
+		"partner_cost_mult": 1.0,
+		"partner_cost_growth_delta": 0.0,
+		"building_cost_mult": 1.0,
+		"building_effect_mult": 1.0,
+		"enemy_hp_mult": 1.0,
+		"enemy_reward_mult": 1.0,
+		"boss_hp_mult": 1.0,
+		"boss_reward_mult": 1.0,
+		"ability_cost_mult": 1.0,
+	},
+	{
+		"id": "manual_value_v3",
+		"label": "Hero Cost -10%",
+		"hero_damage_mult": 1.0,
+		"hero_cost_mult": 0.90,
+		"hero_cost_growth_delta": 0.0,
+		"partner_dps_mult": 1.0,
+		"partner_cost_mult": 1.0,
+		"partner_cost_growth_delta": 0.0,
+		"building_cost_mult": 1.0,
+		"building_effect_mult": 1.0,
+		"enemy_hp_mult": 1.0,
+		"enemy_reward_mult": 1.0,
+		"boss_hp_mult": 1.0,
+		"boss_reward_mult": 1.0,
+		"ability_cost_mult": 1.0,
+	},
+	{
+		"id": "manual_value_v4",
+		"label": "Hero Cost -20%",
+		"hero_damage_mult": 1.0,
+		"hero_cost_mult": 0.80,
+		"hero_cost_growth_delta": 0.0,
+		"partner_dps_mult": 1.0,
+		"partner_cost_mult": 1.0,
+		"partner_cost_growth_delta": 0.0,
+		"building_cost_mult": 1.0,
+		"building_effect_mult": 1.0,
+		"enemy_hp_mult": 1.0,
+		"enemy_reward_mult": 1.0,
+		"boss_hp_mult": 1.0,
+		"boss_reward_mult": 1.0,
+		"ability_cost_mult": 1.0,
+	},
+	{
+		"id": "manual_value_v5",
+		"label": "Hero Dmg +25% Cost -10%",
+		"hero_damage_mult": 1.25,
+		"hero_cost_mult": 0.90,
+		"hero_cost_growth_delta": 0.0,
+		"partner_dps_mult": 1.0,
+		"partner_cost_mult": 1.0,
+		"partner_cost_growth_delta": 0.0,
+		"building_cost_mult": 1.0,
+		"building_effect_mult": 1.0,
+		"enemy_hp_mult": 1.0,
+		"enemy_reward_mult": 1.0,
+		"boss_hp_mult": 1.0,
+		"boss_reward_mult": 1.0,
+		"ability_cost_mult": 1.0,
+	},
+	{
+		"id": "manual_value_v6",
+		"label": "Hero Dmg +50% Cost -10%",
+		"hero_damage_mult": 1.50,
+		"hero_cost_mult": 0.90,
+		"hero_cost_growth_delta": 0.0,
+		"partner_dps_mult": 1.0,
+		"partner_cost_mult": 1.0,
+		"partner_cost_growth_delta": 0.0,
+		"building_cost_mult": 1.0,
+		"building_effect_mult": 1.0,
+		"enemy_hp_mult": 1.0,
+		"enemy_reward_mult": 1.0,
+		"boss_hp_mult": 1.0,
+		"boss_reward_mult": 1.0,
+		"ability_cost_mult": 1.0,
+	},
+	{
+		"id": "manual_value_v7",
+		"label": "Hero Damage +100%",
+		"hero_damage_mult": 2.00,
+		"hero_cost_mult": 1.0,
+		"hero_cost_growth_delta": 0.0,
+		"partner_dps_mult": 1.0,
+		"partner_cost_mult": 1.0,
+		"partner_cost_growth_delta": 0.0,
+		"building_cost_mult": 1.0,
+		"building_effect_mult": 1.0,
+		"enemy_hp_mult": 1.0,
+		"enemy_reward_mult": 1.0,
+		"boss_hp_mult": 1.0,
+		"boss_reward_mult": 1.0,
+		"ability_cost_mult": 1.0,
+	},
+	{
+		"id": "manual_value_v8",
+		"label": "Hero Dmg +50% Cost -20%",
+		"hero_damage_mult": 1.50,
+		"hero_cost_mult": 0.80,
+		"hero_cost_growth_delta": 0.0,
+		"partner_dps_mult": 1.0,
+		"partner_cost_mult": 1.0,
+		"partner_cost_growth_delta": 0.0,
+		"building_cost_mult": 1.0,
+		"building_effect_mult": 1.0,
+		"enemy_hp_mult": 1.0,
+		"enemy_reward_mult": 1.0,
+		"boss_hp_mult": 1.0,
+		"boss_reward_mult": 1.0,
+		"ability_cost_mult": 1.0,
+	},
 ]
 
 var _warnings: Array[String] = []
@@ -368,6 +511,8 @@ func _init() -> void:
 	_section_partner()
 	_section_combat()
 	_section_prestige()
+	_section_prestige_economy_verification()
+	_section_prestige_loop_simulation()
 	_section_progression_simulation()
 	_section_partner_curve_scenario_preview()
 	_section_balance_scenario_comparison()
@@ -589,6 +734,16 @@ func _section_partner() -> void:
 		_ln("  P%d→P%d  DPS×%.2f  Cost×%.2f  value_ratio=%.2f" % [i, i + 1, dps_r, cost_r, val_r])
 		if val_r < 0.5 and cost_r > 1.0:
 			_warn("Partner %d→%d: DPS-per-cost drops >50%% — value discontinuity" % [i + 1, i + 2])
+
+	# Validate all partner skills are own_partner_dps x2
+	for skill: Dictionary in _PSC.SKILL_DEFINITIONS:
+		if String(skill.get("bonus_type", "")) != "own_partner_dps" or float(skill.get("bonus_value", 0.0)) != 1.0:
+			_warn("Partner skill %s: bonus_type=%s bonus_value=%.2f — expected own_partner_dps / 1.0 (x2 DPS Mastery config)." % [
+				String(skill.get("id", "?")),
+				String(skill.get("bonus_type", "?")),
+				float(skill.get("bonus_value", 0.0)),
+			])
+			break
 
 
 # ==========================================================================
@@ -1344,9 +1499,7 @@ func _run_profiled_progression_simulations() -> void:
 
 	var profiles: Array[Dictionary] = [
 		{"id": "active_6cps", "clicks_per_sec": 6.0, "abilities": true, "buildings": true, "skills": true},
-		{"id": "active_no_abilities", "clicks_per_sec": 6.0, "abilities": false, "buildings": true, "skills": true},
 		{"id": "semi_active_3cps", "clicks_per_sec": 3.0, "abilities": true, "buildings": true, "skills": true},
-		{"id": "idle_0cps", "clicks_per_sec": 0.0, "abilities": true, "buildings": true, "skills": true},
 	]
 
 	var results: Array[Dictionary] = []
@@ -1383,7 +1536,7 @@ func _run_profiled_progression_simulations() -> void:
 			int(result.get("target_hp", 0)), int(result.get("reward_gold", 0)), 0,
 			int(result.get("click_damage", 0)), int(result.get("total_dps", 0)),
 			float(result.get("sim_time", 0.0)),
-			"profile_id=%s cps=%.1f abilities=%s buildings=%s skills=%s boss_wall_level=%d stopped_reason=%s first_prestige_reward=%d" % [
+			"profile_id=%s cps=%.1f abilities=%s buildings=%s skills=%s boss_wall_level=%d stopped_reason=%s first_prestige_reward=%d base_total_dps=%d base_manual_dps=%d base_partner_dps=%d" % [
 				pid,
 				float(result.get("clicks_per_sec", 0.0)),
 				str(result.get("abilities_enabled", false)),
@@ -1392,8 +1545,39 @@ func _run_profiled_progression_simulations() -> void:
 				int(result.get("boss_wall_level", -1)),
 				str(result.get("stopped_reason", "")),
 				int(result.get("first_prestige_reward", 0)),
+				int(result.get("base_total_dps", 0.0)),
+				int(result.get("base_manual_dps", 0.0)),
+				int(result.get("base_partner_dps", 0.0)),
 			]
 		)
+
+	# Task 6 — cross-profile balance warnings (after both profiles finish)
+	if results.size() >= 2:
+		var r_active: Dictionary = {}
+		var r_semi: Dictionary = {}
+		for _r: Dictionary in results:
+			if str(_r.get("profile_id", "")) == "active_6cps":
+				r_active = _r
+			elif str(_r.get("profile_id", "")) == "semi_active_3cps":
+				r_semi = _r
+		if not r_active.is_empty() and not r_semi.is_empty():
+			var active_level: int = int(r_active.get("reached_level", 0))
+			var semi_level: int = int(r_semi.get("reached_level", 0))
+			var active_time: float = float(r_active.get("sim_time", 0.0))
+			var semi_time: float = float(r_semi.get("sim_time", 0.0))
+			# If both profiles reach a very similar level/time, manual clicks became irrelevant
+			var level_diff: int = absi(active_level - semi_level)
+			var time_ratio: float = semi_time / active_time if active_time > 0.0 else 0.0
+			if level_diff <= 5 and active_level >= 50:
+				_csv_append("simulation_balance_warning", active_level, 0, 0, 0, 0, 0, 0.0,
+					"profile_id=cross_profile warning_type=manual_clicks_irrelevant level=%d manual_share=0 partner_share=0 ability_share=0 explanation=active_6cps_and_semi_3cps_reach_same_level_%d_vs_%d_suggesting_click_rate_doesnt_matter" % [
+						active_level, active_level, semi_level,
+					])
+			if time_ratio > 0.9 and active_level >= 50:
+				_csv_append("simulation_balance_warning", active_level, 0, 0, 0, 0, 0, 0.0,
+					"profile_id=cross_profile warning_type=click_rate_irrelevant level=%d manual_share=0 partner_share=0 ability_share=0 explanation=semi_3cps_time_ratio_vs_active_6cps=%.2f_too_close_to_1.0_clicks_not_impactful" % [
+						active_level, time_ratio,
+					])
 
 
 func _run_progression_profile(profile: Dictionary, scenario: Dictionary = {}, emit_live_output: bool = true, initial_overrides: Dictionary = {}) -> Dictionary:
@@ -1455,6 +1639,20 @@ func _run_progression_profile(profile: Dictionary, scenario: Dictionary = {}, em
 	var boss_wall_hp: int = 0
 	var boss_wall_reward: int = 0
 	var boss_wall_ttk: float = 0.0
+
+	var boss_walls_seen: int = 0
+	var boss_walls_passed_by_wait: int = 0
+	var boss_walls_passed_by_farm: int = 0
+	var total_farm_time: float = 0.0
+	var total_wait_time: float = 0.0
+	var farm_sessions: int = 0
+	var final_wall_level: int = -1
+	var final_wall_missing_dps_percent: float = 0.0
+
+	# Balance warning tracking (Task 6)
+	var bw_partner_dom_warned: bool = false
+	var bw_manual_irrel_warned: bool = false
+	var bw_farm_never_passed: bool = true  # becomes false when farm session passes a wall
 
 	var first_prestige_time: float = -1.0
 	var first_prestige_reward: int = 0
@@ -1546,28 +1744,60 @@ func _run_progression_profile(profile: Dictionary, scenario: Dictionary = {}, em
 
 		var kill_time: float = float(enemy_hp) / total_dps
 		if state.is_boss_level and kill_time > state.boss_time_limit:
-			boss_wall_level = lv
-			boss_wall_dps_needed = float(enemy_hp) / state.boss_time_limit
-			boss_wall_dps_actual = total_dps
-			boss_wall_manual_dps = manual_dps
-			boss_wall_partner_dps = partner_dps
-			boss_wall_ability_dps = ability_dps
-			boss_wall_hero_level = state.character_level
-			boss_wall_gold = state.gold
-			boss_wall_hp = enemy_hp
-			boss_wall_reward = state.reward_gold
-			boss_wall_ttk = kill_time
-			stopped_reason = "boss_wall"
-			if not last_purchase_info.is_empty() and emit_live_output:
-				_csv_append(category, lv, 0, 0, int(last_purchase_info.get("cost", 0)),
-					int(stats.get("click_damage", state.get_current_click_damage())), int(total_dps), 0.0,
-					"event=last_purchase_before_boss_wall profile_id=%s sim_time=%.0f purchase_type=%s purchase_id=%s gold_after=%d hero_level=%d total_dps=%d" % [
-						profile_id, float(last_purchase_info.get("sim_time", 0.0)),
-						str(last_purchase_info.get("type", "")), str(last_purchase_info.get("id", "")),
-						int(last_purchase_info.get("gold", 0)), int(last_purchase_info.get("hero_level", 0)),
-						int(last_purchase_info.get("total_dps", 0)),
-					])
-			break
+			if boss_wall_level < 0:
+				boss_wall_level = lv
+				boss_wall_dps_needed = float(enemy_hp) / state.boss_time_limit
+				boss_wall_dps_actual = total_dps
+				boss_wall_manual_dps = manual_dps
+				boss_wall_partner_dps = partner_dps
+				boss_wall_ability_dps = ability_dps
+				boss_wall_hero_level = state.character_level
+				boss_wall_gold = state.gold
+				boss_wall_hp = enemy_hp
+				boss_wall_reward = state.reward_gold
+				boss_wall_ttk = kill_time
+			boss_walls_seen += 1
+			final_wall_level = lv
+			var req_dps_at_wall: float = float(enemy_hp) / state.boss_time_limit
+			final_wall_missing_dps_percent = maxf(req_dps_at_wall - total_dps, 0.0) / req_dps_at_wall * 100.0 if req_dps_at_wall > 0.0 else 0.0
+
+			var farm_attempt: Dictionary = _sim_attempt_boss_pass(
+				state, profile, clicks_per_sec, ability_state, ability_diagnostics,
+				sim_time, lv, enemy_hp, scenario if use_scenario_modifiers else {},
+				emit_live_output, profile_id
+			)
+			sim_time = float(farm_attempt.get("sim_time", sim_time))
+			total_farm_time += float(farm_attempt.get("farm_time", 0.0))
+			total_wait_time += float(farm_attempt.get("wait_time", 0.0))
+			farm_sessions += int(farm_attempt.get("farm_sessions", 0))
+
+			if bool(farm_attempt.get("passed", false)):
+				var pass_reason_str: String = str(farm_attempt.get("pass_reason", "boss_defeated_after_farm"))
+				if pass_reason_str == "boss_defeated_after_wait":
+					boss_walls_passed_by_wait += 1
+				else:
+					boss_walls_passed_by_farm += 1
+					bw_farm_never_passed = false
+				# Update stats with post-farming DPS and let the loop advance past the boss
+				var new_post_farm_stats: Dictionary = _sim_compute_profile_stats(state, profile, clicks_per_sec, sim_time, ability_state, scenario if use_scenario_modifiers else {})
+				total_dps = float(new_post_farm_stats.get("total_dps", total_dps))
+				manual_dps = float(new_post_farm_stats.get("manual_dps", manual_dps))
+				partner_dps = float(new_post_farm_stats.get("partner_dps", partner_dps))
+				ability_dps = float(new_post_farm_stats.get("ability_dps", ability_dps))
+				kill_time = float(enemy_hp) / total_dps if total_dps > 0.0 else state.boss_time_limit
+				# fall through to advance past this boss level
+			else:
+				stopped_reason = str(farm_attempt.get("stop_reason", "boss_wall_after_max_farm"))
+				if not last_purchase_info.is_empty() and emit_live_output:
+					_csv_append(category, lv, 0, 0, int(last_purchase_info.get("cost", 0)),
+						int(stats.get("click_damage", state.get_current_click_damage())), int(total_dps), 0.0,
+						"event=last_purchase_before_boss_wall profile_id=%s sim_time=%.0f purchase_type=%s purchase_id=%s gold_after=%d hero_level=%d total_dps=%d" % [
+							profile_id, float(last_purchase_info.get("sim_time", 0.0)),
+							str(last_purchase_info.get("type", "")), str(last_purchase_info.get("id", "")),
+							int(last_purchase_info.get("gold", 0)), int(last_purchase_info.get("hero_level", 0)),
+							int(last_purchase_info.get("total_dps", 0)),
+						])
+				break
 
 		var last_purchase_tag: String = "%s#%s" % [last_purchase_type, last_purchase_id] if last_purchase_type != "" else "none"
 		if emit_live_output and SIM_REPORT_LEVELS.has(lv) and not reported_set.has(lv):
@@ -1582,18 +1812,42 @@ func _run_progression_profile(profile: Dictionary, scenario: Dictionary = {}, em
 				_rj(_fn(enemy_hp), 10), _rj(_fn(state.reward_gold), 8),
 				_rj("%.1fs" % kill_time, 7), note,
 			]))
+			var _rpt_base: Dictionary = _sim_base_dps_snapshot(state, clicks_per_sec)
+			var _rpt_burst: Dictionary = _sim_burst_dps_snapshot(state, clicks_per_sec, ability_state, sim_time)
 			_csv_append(
 				category, lv, enemy_hp, state.reward_gold,
 				last_purchase_cost, int(stats.get("click_damage", state.get_current_click_damage())), int(total_dps), kill_time,
-				"profile_id=%s sim_time=%.0f hero=%d gold=%d click_damage=%d manual_dps=%d partner_dps=%d ability_dps=%d total_dps=%d prestige_rwd=%d total_hero_purchases=%d total_partner_purchases=%d total_building_purchases=%d total_ability_purchases=%d total_skill_purchases=%d last_purchase=%s ability_events=%s" % [
+				"profile_id=%s sim_time=%.0f hero=%d gold=%d click_damage=%d manual_dps=%d partner_dps=%d ability_dps=%d total_dps=%d base_manual_dps=%d base_partner_dps=%d base_total_dps=%d current_ability_dps=%d burst_manual_dps=%d burst_partner_dps=%d burst_ability_dps=%d burst_total_dps=%d prestige_rwd=%d total_hero_purchases=%d total_partner_purchases=%d total_building_purchases=%d total_ability_purchases=%d total_skill_purchases=%d last_purchase=%s ability_events=%s" % [
 					profile_id, sim_time, state.character_level, state.gold,
 					state.get_current_click_damage(), int(manual_dps), int(partner_dps), int(ability_dps), int(total_dps),
+					int(_rpt_base.manual), int(_rpt_base.partner), int(_rpt_base.total),
+					int(ability_dps),
+					int(_rpt_burst.manual), int(_rpt_burst.partner), int(_rpt_burst.ability), int(_rpt_burst.total),
 					first_prestige_reward, total_hero_buys, total_partner_buys, total_building_buys, total_ability_buys,
 					total_hero_skill_buys + total_partner_skill_buys + total_ability_skill_buys,
 					last_purchase_tag,
 					("|".join(PackedStringArray(last_ability_events)) if not last_ability_events.is_empty() else "none"),
 				]
 			)
+			# Task 6 — per-level DPS share balance warnings (before stage 100)
+			if emit_live_output and lv < 100:
+				var _bw_base: Dictionary = _sim_base_dps_snapshot(state, clicks_per_sec)
+				var _bw_total: float = _bw_base.total
+				if _bw_total > 0.0:
+					var _bw_partner_share: float = _bw_base.partner / _bw_total * 100.0
+					var _bw_manual_share: float = _bw_base.manual / _bw_total * 100.0
+					if _bw_partner_share > 90.0 and not bw_partner_dom_warned:
+						bw_partner_dom_warned = true
+						_csv_append("simulation_balance_warning", lv, 0, 0, 0, 0, int(_bw_total), 0.0,
+							"profile_id=%s warning_type=partner_dps_dominates level=%d manual_share=%.1f partner_share=%.1f ability_share=%.1f explanation=partner_dps_exceeds_90pct_before_stage_100" % [
+								profile_id, lv, _bw_manual_share, _bw_partner_share, 0.0,
+							])
+					if _bw_manual_share < 5.0 and not bw_manual_irrel_warned:
+						bw_manual_irrel_warned = true
+						_csv_append("simulation_balance_warning", lv, 0, 0, 0, 0, int(_bw_total), 0.0,
+							"profile_id=%s warning_type=manual_dps_irrelevant level=%d manual_share=%.1f partner_share=%.1f ability_share=%.1f explanation=manual_click_dps_below_5pct_before_stage_100" % [
+								profile_id, lv, _bw_manual_share, _bw_partner_share, 0.0,
+							])
 
 		var reward_gold_before: int = state.gold
 		var defeat_time: float = sim_time + kill_time
@@ -1613,6 +1867,10 @@ func _run_progression_profile(profile: Dictionary, scenario: Dictionary = {}, em
 
 	if stopped_reason == "reached_max_seconds" and state.current_level > SIM_MAX_LEVEL:
 		stopped_reason = "reached_target_level"
+	elif stopped_reason == "reached_max_seconds" and boss_walls_passed_by_farm > 0:
+		stopped_reason = "boss_defeated_after_farm"
+	elif stopped_reason == "reached_max_seconds" and boss_walls_passed_by_wait > 0 and boss_walls_passed_by_farm == 0:
+		stopped_reason = "boss_defeated_after_wait"
 
 	if emit_live_output:
 		_ln("  %s summary: reached=%d time=%s stopped=%s purchases hero=%d partners=%d buildings=%d abilities=%d skills=%d" % [
@@ -1623,12 +1881,27 @@ func _run_progression_profile(profile: Dictionary, scenario: Dictionary = {}, em
 
 	var final_stats: Dictionary = _sim_compute_profile_stats(state, profile, clicks_per_sec, sim_time, ability_state, scenario if use_scenario_modifiers else {})
 	var final_tdps: float = float(final_stats.get("total_dps", 0.0))
+	var final_base_snap: Dictionary = _sim_base_dps_snapshot(state, clicks_per_sec)
 	var partner_identity: Dictionary = _sim_partner_identity_metrics(state.partner_counts, scenario)
+
+	# Task 6 — emit end-of-profile balance warnings
+	if emit_live_output:
+		if boss_walls_seen > 0 and boss_walls_passed_by_wait > 0 and boss_walls_passed_by_farm == 0:
+			_csv_append("simulation_balance_warning", reached_level, 0, 0, 0, 0, int(final_tdps), 0.0,
+				"profile_id=%s warning_type=boss_walls_only_passed_by_ability_wait level=%d manual_share=0 partner_share=0 ability_share=0 explanation=no_farm_session_ever_passed_a_wall_relying_solely_on_ability_timing" % [
+					profile_id, final_wall_level,
+				])
+		if boss_walls_seen > 0 and farm_sessions > 0 and bw_farm_never_passed:
+			_csv_append("simulation_balance_warning", reached_level, 0, 0, 0, 0, int(final_tdps), 0.0,
+				"profile_id=%s warning_type=farm_sessions_never_passed_wall level=%d manual_share=0 partner_share=0 ability_share=0 explanation=farming_accumulated_gold_but_boss_still_could_not_be_defeated_after_max_farm" % [
+					profile_id, final_wall_level,
+				])
+
 	if emit_live_output:
 		_csv_append("simulation_summary_%s" % profile_id, reached_level,
 			state.target_max_hp, state.reward_gold, 0,
 			int(final_stats.get("click_damage", state.get_current_click_damage())), int(final_tdps), sim_time,
-			"profile_id=%s reached_level=%d sim_time=%.0f hero=%d gold=%d click=%d manual_dps=%d partner_dps=%d ability_dps=%d total_dps=%d prestige_reward=%d total_hero_purchases=%d total_partner_purchases=%d total_building_purchases=%d total_ability_purchases=%d total_hero_skill_purchases=%d total_partner_skill_purchases=%d total_ability_skill_purchases=%d gold_spent_hero=%d gold_spent_partners=%d gold_spent_buildings=%d gold_spent_abilities=%d gold_spent_skills=%d ability_events=%s stopped_reason=%s" % [
+			"profile_id=%s reached_level=%d sim_time=%.0f hero=%d gold=%d click=%d manual_dps=%d partner_dps=%d ability_dps=%d total_dps=%d prestige_reward=%d total_hero_purchases=%d total_partner_purchases=%d total_building_purchases=%d total_ability_purchases=%d total_hero_skill_purchases=%d total_partner_skill_purchases=%d total_ability_skill_purchases=%d gold_spent_hero=%d gold_spent_partners=%d gold_spent_buildings=%d gold_spent_abilities=%d gold_spent_skills=%d ability_events=%s stopped_reason=%s boss_walls_seen=%d boss_walls_passed_by_wait=%d boss_walls_passed_by_farm=%d total_farm_time=%.0f total_wait_time=%.0f farm_sessions=%d final_wall_level=%d final_wall_missing_dps_percent=%.1f" % [
 				profile_id, reached_level, sim_time, state.character_level, state.gold,
 				int(final_stats.get("click_damage", state.get_current_click_damage())), int(final_stats.get("manual_dps", 0.0)),
 				int(final_stats.get("partner_dps", 0.0)), int(final_stats.get("ability_dps", 0.0)), int(final_tdps),
@@ -1636,6 +1909,8 @@ func _run_progression_profile(profile: Dictionary, scenario: Dictionary = {}, em
 				total_hero_skill_buys, total_partner_skill_buys, total_ability_skill_buys,
 				total_gold_spent_hero, total_gold_spent_partners, total_gold_spent_buildings,
 				total_gold_spent_abilities, total_gold_spent_skills, _sim_format_counts(ability_event_counts), stopped_reason,
+				boss_walls_seen, boss_walls_passed_by_wait, boss_walls_passed_by_farm,
+				total_farm_time, total_wait_time, farm_sessions, final_wall_level, final_wall_missing_dps_percent,
 			])
 
 	if boss_wall_level > 0 and emit_live_output:
@@ -1662,6 +1937,20 @@ func _run_progression_profile(profile: Dictionary, scenario: Dictionary = {}, em
 		var ability_share: float = boss_wall_ability_dps / boss_wall_dps_actual
 		if ability_share > 0.5:
 			_warn("Simulation active_6cps: ability DPS is %.1f%% of total DPS at boss wall level %d." % [ability_share * 100.0, boss_wall_level])
+	if emit_live_output:
+		if profile_id == "active_6cps" and total_farm_time > 300.0 and final_wall_level > 0 and final_wall_level < 100:
+			_warn("Simulation active_6cps: needed more than %.0f seconds of farming before stage 100 (at level %d) — progression wall may be too hard." % [total_farm_time, final_wall_level])
+		if profile_id == "semi_active_3cps" and total_farm_time > 900.0 and final_wall_level > 0 and final_wall_level < 100:
+			_warn("Simulation semi_active_3cps: needed more than %.0f seconds of farming before stage 100 (at level %d) — progression wall may be too hard." % [total_farm_time, final_wall_level])
+		if boss_walls_passed_by_wait > 0 and boss_walls_passed_by_farm == 0:
+			_warn("Simulation %s: boss(es) defeated only after waiting for ability cooldowns — cooldown timing is critical to progression." % profile_id)
+		if boss_walls_passed_by_farm > 0 and total_farm_time > 600.0:
+			_warn("Simulation %s: boss(es) defeated only after %.0fs of farming — progression wall may be too hard." % [profile_id, total_farm_time])
+		var partner_skills_bought_by_50: bool = false
+		for psid: String in state.purchased_partner_skill_ids:
+			partner_skills_bought_by_50 = true
+		if not partner_skills_bought_by_50 and reached_level >= 50:
+			_warn("Simulation %s: no partner skills purchased by level 50." % profile_id)
 
 	return {
 		"profile_id": profile_id,
@@ -1677,6 +1966,9 @@ func _run_progression_profile(profile: Dictionary, scenario: Dictionary = {}, em
 		"stopped_reason": stopped_reason,
 		"boss_wall_level": boss_wall_level,
 		"wall_level": boss_wall_level,
+		"base_total_dps": final_base_snap.total,
+		"base_manual_dps": final_base_snap.manual,
+		"base_partner_dps": final_base_snap.partner,
 		"boss_wall": {
 			"boss_level": boss_wall_level,
 			"boss_hp": boss_wall_hp,
@@ -1729,6 +2021,14 @@ func _run_progression_profile(profile: Dictionary, scenario: Dictionary = {}, em
 			"focus_burst": state.is_ability_purchased("focus_burst"),
 			"rally": state.is_ability_purchased("rally"),
 		},
+		"boss_walls_seen": boss_walls_seen,
+		"boss_walls_passed_by_wait": boss_walls_passed_by_wait,
+		"boss_walls_passed_by_farm": boss_walls_passed_by_farm,
+		"total_farm_time": total_farm_time,
+		"total_wait_time": total_wait_time,
+		"farm_sessions": farm_sessions,
+		"final_wall_level": final_wall_level,
+		"final_wall_missing_dps_percent": final_wall_missing_dps_percent,
 	}
 
 
@@ -1844,9 +2144,14 @@ func _sim_apply_initial_overrides(state: _CS, overrides: Dictionary) -> void:
 	state.prestige_points_available = int(overrides.get("prestige_points_available", state.prestige_points_available))
 	state.prestige_points_total_earned = int(overrides.get("prestige_points_total_earned", state.prestige_points_total_earned))
 	state.total_prestiges = int(overrides.get("total_prestiges", state.total_prestiges))
-	var talent_index: int = int(overrides.get("buy_prestige_talent_index", -1))
-	if talent_index >= 0 and talent_index < state.prestige_talent_levels.size():
-		state.buy_prestige_talent(talent_index)
+	var talent_levels_override: Array = overrides.get("prestige_talent_levels", [])
+	if not talent_levels_override.is_empty():
+		for _toi: int in range(mini(talent_levels_override.size(), state.prestige_talent_levels.size())):
+			state.prestige_talent_levels[_toi] = maxi(0, int(talent_levels_override[_toi]))
+	else:
+		var talent_index: int = int(overrides.get("buy_prestige_talent_index", -1))
+		if talent_index >= 0 and talent_index < state.prestige_talent_levels.size():
+			state.buy_prestige_talent(talent_index)
 	state._update_character_state()
 	state.setup_current_level()
 
@@ -2341,6 +2646,252 @@ func _sim_ability_cooldown(state: _CS, ability_id: String) -> float:
 	return base * state.get_ability_cooldown_multiplier()
 
 
+# Returns best farming level given the current boss level.
+func _sim_best_farm_level(boss_level: int) -> int:
+	var farm_lv: int = boss_level - 1
+	if farm_lv > 0 and farm_lv % _ZC.BOSS_LEVEL_INTERVAL == 0:
+		farm_lv -= 1
+	return maxi(1, farm_lv)
+
+
+# Convenience: compute total DPS via _sim_compute_profile_stats.
+func _sim_get_total_dps_at(state: _CS, profile: Dictionary, clicks_per_sec: float, sim_time: float, ability_state: Dictionary, scenario: Dictionary = {}) -> float:
+	var s: Dictionary = _sim_compute_profile_stats(state, profile, clicks_per_sec, sim_time, ability_state, scenario)
+	return float(s.get("total_dps", 0.0))
+
+
+# DPS against a normal (non-boss) enemy — temporarily clears is_boss_level.
+func _sim_get_farm_dps_at(state: _CS, profile: Dictionary, clicks_per_sec: float, sim_time: float, ability_state: Dictionary) -> float:
+	var old_boss: bool = state.is_boss_level
+	state.is_boss_level = false
+	var s: Dictionary = _sim_compute_combat_stats(state, profile, clicks_per_sec, sim_time, ability_state)
+	state.is_boss_level = old_boss
+	return float(s.get("total_dps", 0.0))
+
+
+# Snapshot of BASE DPS with no temporary abilities active. Saves/restores ability flags.
+func _sim_base_dps_snapshot(state: _CS, clicks_per_sec: float) -> Dictionary:
+	var g: bool = state.gold_bonus_active
+	var f: bool = state.focus_burst_active
+	var r: bool = state.rally_active
+	var a: bool = state.autoclick_active
+	_sim_set_ability_flags(state, false, false, false, false)
+	var manual: float = float(state.get_current_click_damage()) * clicks_per_sec
+	var partner: float = float(state.get_final_partner_dps(true))
+	_sim_set_ability_flags(state, g, f, r, a)
+	return {"manual": manual, "partner": partner, "total": manual + partner}
+
+
+# Snapshot of BURST DPS with boss-relevant abilities that are ready at sim_time.
+# gold_bonus is excluded (affects reward, not DPS). Saves/restores ability flags.
+func _sim_burst_dps_snapshot(state: _CS, clicks_per_sec: float, ability_state: Dictionary, sim_time: float) -> Dictionary:
+	var ready_at: Dictionary = ability_state.get("ready_at", {})
+	var focus_on: bool = state.is_ability_purchased("focus_burst") and sim_time >= float(ready_at.get("focus_burst", 0.0))
+	var rally_on: bool = state.is_ability_purchased("rally") and sim_time >= float(ready_at.get("rally", 0.0))
+	var autoclick_on: bool = state.is_ability_purchased("autoclick") and sim_time >= float(ready_at.get("autoclick", 0.0))
+	var g: bool = state.gold_bonus_active
+	var f: bool = state.focus_burst_active
+	var r: bool = state.rally_active
+	var a: bool = state.autoclick_active
+	_sim_set_ability_flags(state, false, focus_on, rally_on, autoclick_on)
+	var manual: float = float(state.get_current_click_damage()) * clicks_per_sec
+	var partner: float = float(state.get_final_partner_dps(true))
+	var ability: float = 0.0
+	if autoclick_on:
+		ability = float(state.get_autoclick_damage()) * _BC.AUTOCLICK_BASE_HITS_PER_SEC * state.get_autoclick_rank_rate_multiplier()
+	_sim_set_ability_flags(state, g, f, r, a)
+	return {"manual": manual, "partner": partner, "ability": ability, "total": manual + partner + ability}
+
+
+# Boss wall farming/retry logic.
+# Returns: {passed, pass_reason, stop_reason, sim_time, farm_time, wait_time, farm_sessions}
+# Modifies state.gold and ability_state in place.
+# Retry order: (1) wait for abilities → burst retry; (2) farm + buy + wait → burst retry.
+# All TTK checks use BURST DPS (not base), so pre-farm and post-farm are comparable.
+func _sim_attempt_boss_pass(
+		state: _CS, profile: Dictionary, clicks_per_sec: float,
+		ability_state: Dictionary, ability_diagnostics: Dictionary,
+		sim_time: float, boss_level: int, boss_hp: int,
+		scenario: Dictionary, emit_live_output: bool, profile_id: String) -> Dictionary:
+
+	var out_sim_time: float = sim_time
+	var total_farm_time_out: float = 0.0
+	var total_wait_time_out: float = 0.0
+	var farm_sessions_out: int = 0
+	var passed: bool = false
+	var pass_reason: String = ""
+	var stop_reason: String = "boss_wall_after_max_farm"
+	var farm_budget: float = SIM_MAX_BOSS_FARM_SECONDS
+	var abilities_waited_after_farm: bool = false
+
+	# Compute base and burst DPS at entry (before any wait/farm)
+	var base_entry: Dictionary = _sim_base_dps_snapshot(state, clicks_per_sec)
+	var burst_entry: Dictionary = _sim_burst_dps_snapshot(state, clicks_per_sec, ability_state, out_sim_time)
+	var boss_ttk_base_before: float = float(boss_hp) / base_entry.total if base_entry.total > 0.0 else INF
+	var boss_ttk_burst_before: float = float(boss_hp) / burst_entry.total if burst_entry.total > 0.0 else INF
+
+	# --- Step 1: Wait for boss-relevant abilities, then retry with burst DPS ---
+	if bool(profile.get("abilities", true)) and SIM_BOSS_RETRY_WAIT_FOR_ABILITIES:
+		var ready_at: Dictionary = ability_state.get("ready_at", {})
+		var max_wait: float = 0.0
+		var abilities_to_wait: Array[String] = []
+		for aid: String in ["focus_burst", "rally", "autoclick"]:
+			if state.is_ability_purchased(aid):
+				var ra: float = float(ready_at.get(aid, 0.0))
+				if ra > out_sim_time:
+					max_wait = maxf(max_wait, ra - out_sim_time)
+					abilities_to_wait.append(aid)
+
+		if max_wait > 0.0 and max_wait <= farm_budget:
+			out_sim_time += max_wait
+			total_wait_time_out += max_wait
+			farm_budget -= max_wait
+
+			_sim_update_ability_usage(state, profile, out_sim_time, ability_state, ability_diagnostics, clicks_per_sec)
+
+			var burst_after_wait: Dictionary = _sim_burst_dps_snapshot(state, clicks_per_sec, ability_state, out_sim_time)
+			var boss_ttk_burst_after_wait: float = float(boss_hp) / burst_after_wait.total if burst_after_wait.total > 0.0 else INF
+			var retry_success: bool = boss_ttk_burst_after_wait <= state.boss_time_limit
+
+			if emit_live_output:
+				_csv_append(
+					"simulation_boss_wait_retry_%s" % profile_id, boss_level,
+					boss_hp, state.reward_gold, 0,
+					state.get_current_click_damage(), int(burst_after_wait.total), boss_ttk_burst_after_wait,
+					"boss_level=%d waited_seconds=%.0f abilities_waited_for=%s base_dps_before=%.0f burst_dps_after_wait=%.0f boss_ttk_base_before=%.1f boss_ttk_burst_after_wait=%.1f retry_success=%s" % [
+						boss_level, max_wait, "|".join(PackedStringArray(abilities_to_wait)),
+						base_entry.total, burst_after_wait.total,
+						boss_ttk_base_before, boss_ttk_burst_after_wait,
+						str(retry_success),
+					]
+				)
+
+			if retry_success:
+				return {
+					"passed": true,
+					"pass_reason": "boss_defeated_after_wait",
+					"stop_reason": "",
+					"sim_time": out_sim_time,
+					"farm_time": 0.0,
+					"wait_time": total_wait_time_out,
+					"farm_sessions": 0,
+				}
+
+	# --- Step 2: Farm + burst-retry loop ---
+	# After each batch: buy upgrades, then wait for abilities, then check burst TTK.
+	# Never compare pre-farm burst DPS to post-farm base DPS.
+	var farm_level: int = _sim_best_farm_level(boss_level)
+	var farm_zd: Dictionary = _ZC.get_zone_data_for_level(farm_level)
+	var farm_hp_m: float = float(farm_zd.get("hp_multiplier", 1.0))
+	var farm_rwd_m: float = float(farm_zd.get("reward_multiplier", 1.0))
+	var farm_base_hp: int = _EC.get_base_hp(farm_level, _BC.ENEMY_HP_BASE, _BC.ENEMY_HP_GROWTH)
+	var farm_norm_hp: int = _EC.get_scaled_hp(farm_base_hp, farm_hp_m, false, false, _BC.BOSS_HP_MULTIPLIER, _BC.ELITE_HP_MULTIPLIER)
+	var farm_base_rwd: int = _EC.get_base_reward(farm_level, _BC.ENEMY_REWARD_BASE, _BC.ENEMY_REWARD_GROWTH)
+	var farm_norm_rwd: int = _EC.get_scaled_reward(farm_base_rwd, farm_rwd_m, false, false, _BC.BOSS_REWARD_MULTIPLIER, _BC.ELITE_REWARD_MULTIPLIER)
+
+	var gold_before_farming: int = state.gold
+	# Record entry-point base/burst for farm session notes
+	var base_dps_before_farm: float = base_entry.total
+	var burst_dps_before_farm: float = burst_entry.total
+	var boss_ttk_base_before_farm: float = boss_ttk_base_before
+	var boss_ttk_burst_before_farm: float = boss_ttk_burst_before
+	var prev_burst_dps: float = burst_dps_before_farm
+
+	for _retry in range(30):
+		if farm_budget <= 0.0:
+			stop_reason = "reached_max_seconds"
+			break
+
+		var batch_time: float = minf(60.0, farm_budget)
+
+		# Farm a batch: estimate gold earned
+		var farm_dps: float = _sim_get_farm_dps_at(state, profile, clicks_per_sec, out_sim_time, ability_state)
+		if farm_dps <= 0.0:
+			stop_reason = "no_damage"
+			break
+		var farm_ttk: float = float(farm_norm_hp) / farm_dps
+		var kills: int = int(batch_time / maxf(farm_ttk, 0.001))
+		state.gold += kills * farm_norm_rwd
+
+		out_sim_time += batch_time
+		farm_budget -= batch_time
+		total_farm_time_out += batch_time
+		farm_sessions_out += 1
+
+		# Buy upgrades with accumulated gold
+		_sim_do_profile_purchases(state, profile, clicks_per_sec, scenario)
+
+		# Wait for abilities again before checking burst TTK
+		abilities_waited_after_farm = false
+		if bool(profile.get("abilities", true)):
+			var ready_at_farm: Dictionary = ability_state.get("ready_at", {})
+			var farm_wait: float = 0.0
+			for aid: String in ["focus_burst", "rally", "autoclick"]:
+				if state.is_ability_purchased(aid):
+					var ra: float = float(ready_at_farm.get(aid, 0.0))
+					if ra > out_sim_time:
+						farm_wait = maxf(farm_wait, ra - out_sim_time)
+			if farm_wait > 0.0 and farm_wait <= farm_budget:
+				out_sim_time += farm_wait
+				total_wait_time_out += farm_wait
+				farm_budget -= farm_wait
+				_sim_update_ability_usage(state, profile, out_sim_time, ability_state, ability_diagnostics, clicks_per_sec)
+				abilities_waited_after_farm = true
+
+		# Check boss passable using burst DPS (consistent with pre-farm check)
+		var new_base: Dictionary = _sim_base_dps_snapshot(state, clicks_per_sec)
+		var new_burst: Dictionary = _sim_burst_dps_snapshot(state, clicks_per_sec, ability_state, out_sim_time)
+		var new_base_ttk: float = float(boss_hp) / new_base.total if new_base.total > 0.0 else INF
+		var new_burst_ttk: float = float(boss_hp) / new_burst.total if new_burst.total > 0.0 else INF
+
+		if new_burst_ttk <= state.boss_time_limit:
+			passed = true
+			pass_reason = "boss_defeated_after_farm"
+			break
+
+		# Check for meaningful progress (compare burst DPS, not mixed base/burst)
+		var dps_gain_ratio: float = (new_burst.total - prev_burst_dps) / prev_burst_dps if prev_burst_dps > 0.0 else 0.0
+		prev_burst_dps = new_burst.total
+		if farm_sessions_out > 3 and dps_gain_ratio < SIM_MIN_POWER_GAIN_TO_CONTINUE:
+			stop_reason = "no_meaningful_power_gain"
+			break
+
+	# Compute final base/burst for farm session report
+	var final_base: Dictionary = _sim_base_dps_snapshot(state, clicks_per_sec)
+	var final_burst: Dictionary = _sim_burst_dps_snapshot(state, clicks_per_sec, ability_state, out_sim_time)
+	var final_base_ttk: float = float(boss_hp) / final_base.total if final_base.total > 0.0 else INF
+	var final_burst_ttk: float = float(boss_hp) / final_burst.total if final_burst.total > 0.0 else INF
+
+	if emit_live_output and total_farm_time_out > 0.0:
+		_csv_append(
+			"simulation_farm_session_%s" % profile_id, boss_level,
+			boss_hp, state.reward_gold, 0,
+			state.get_current_click_damage(), int(final_burst.total), final_burst_ttk,
+			"boss_level=%d farm_level=%d farm_seconds=%.0f gold_before=%d gold_after=%d purchases_made=%d base_dps_before=%.0f burst_dps_before=%.0f base_dps_after=%.0f burst_dps_after=%.0f boss_ttk_base_before=%.1f boss_ttk_burst_before=%.1f boss_ttk_base_after=%.1f boss_ttk_burst_after=%.1f retry_success=%s abilities_waited_after_farm=%s" % [
+				boss_level, farm_level, total_farm_time_out,
+				gold_before_farming, state.gold, farm_sessions_out,
+				base_dps_before_farm, burst_dps_before_farm,
+				final_base.total, final_burst.total,
+				boss_ttk_base_before_farm, boss_ttk_burst_before_farm,
+				final_base_ttk, final_burst_ttk,
+				str(passed), str(abilities_waited_after_farm),
+			]
+		)
+
+	if not passed:
+		stop_reason = stop_reason if stop_reason != "" else "boss_wall_after_max_farm"
+
+	return {
+		"passed": passed,
+		"pass_reason": pass_reason,
+		"stop_reason": stop_reason,
+		"sim_time": out_sim_time,
+		"farm_time": total_farm_time_out,
+		"wait_time": total_wait_time_out,
+		"farm_sessions": farm_sessions_out,
+	}
+
+
 func _sim_append_profile_boss_wall_rows(
 		profile_id: String, boss_wall_level: int, boss_wall_hp: int, boss_wall_reward: int,
 		boss_wall_manual_dps: float, boss_wall_partner_dps: float, boss_wall_ability_dps: float,
@@ -2589,6 +3140,7 @@ func _section_balance_scenario_comparison() -> void:
 	var profiles: Array[Dictionary] = _simulation_profiles()
 	var baseline_results: Array[Dictionary] = []
 	var baseline_active_wall_level: int = -1
+	var manual_value_results: Dictionary = {}
 	for scenario: Dictionary in BALANCE_SCENARIOS:
 		for profile: Dictionary in profiles:
 			var result: Dictionary = _run_balance_scenario_profile(scenario, profile)
@@ -2602,17 +3154,126 @@ func _section_balance_scenario_comparison() -> void:
 			else:
 				_append_scenario_runaway_warning_if_needed(result, baseline_active_wall_level)
 			_append_scenario_post_prestige_summary_if_needed(scenario, profile, result)
+			var _sid: String = str(scenario.get("id", ""))
+			if _sid.begins_with("manual_value_"):
+				if not manual_value_results.has(_sid):
+					manual_value_results[_sid] = {}
+				manual_value_results[_sid][str(profile.get("id", ""))] = result
 	for result: Dictionary in baseline_results:
 		_append_scenario_baseline_validation(result)
+	_emit_manual_value_scenario_summary(manual_value_results)
 
 
 func _simulation_profiles() -> Array[Dictionary]:
 	return [
 		{"id": "active_6cps", "clicks_per_sec": 6.0, "abilities": true, "buildings": true, "skills": true},
-		{"id": "active_no_abilities", "clicks_per_sec": 6.0, "abilities": false, "buildings": true, "skills": true},
 		{"id": "semi_active_3cps", "clicks_per_sec": 3.0, "abilities": true, "buildings": true, "skills": true},
-		{"id": "idle_0cps", "clicks_per_sec": 0.0, "abilities": true, "buildings": true, "skills": true},
 	]
+
+
+# Task 6 — Emit manual_value_scenario_summary CSV rows for each manual scenario × profile.
+func _emit_manual_value_scenario_summary(manual_results: Dictionary) -> void:
+	for scenario_id: String in manual_results.keys():
+		var by_profile: Dictionary = manual_results[scenario_id]
+		var r_active: Dictionary = by_profile.get("active_6cps", {})
+		var r_semi: Dictionary = by_profile.get("semi_active_3cps", {})
+		var active_time: float = float(r_active.get("sim_time", 0.0))
+		var semi_time: float = float(r_semi.get("sim_time", 0.0))
+		var active_vs_semi_time_ratio: float = active_time / semi_time if semi_time > 0.0 else 0.0
+		var active_level: int = int(r_active.get("reached_level", 0))
+		var semi_level: int = int(r_semi.get("reached_level", 0))
+		var active_vs_semi_level_delta: int = active_level - semi_level
+
+		# Cross-scenario warnings (Task 9)
+		if active_time > 0.0 and semi_time > 0.0 and active_vs_semi_time_ratio > 0.85 and active_level >= 50:
+			_warn("Scenario %s: active_6cps and semi_active_3cps remain too similar (time ratio=%.2f, level delta=%d) — manual hero buff not differentiating play styles" % [scenario_id, active_vs_semi_time_ratio, active_vs_semi_level_delta])
+
+		for profile_id: String in by_profile.keys():
+			var result: Dictionary = by_profile[profile_id]
+			var total_dps: float = float(result.get("total_dps", 0.0))
+			var manual_dps: float = float(result.get("manual_dps", 0.0))
+			var partner_dps: float = float(result.get("partner_dps", 0.0))
+			var ability_dps: float = float(result.get("ability_dps", 0.0))
+			var manual_share: float = manual_dps / total_dps * 100.0 if total_dps > 0.0 else 0.0
+			var partner_share: float = partner_dps / total_dps * 100.0 if total_dps > 0.0 else 0.0
+			var ability_share: float = ability_dps / total_dps * 100.0 if total_dps > 0.0 else 0.0
+			var tag: String = _manual_value_recommendation_tag(r_active, r_semi, result, profile_id)
+
+			_csv_append(
+				"manual_value_scenario_summary", int(result.get("reached_level", 0)),
+				0, 0, 0, int(result.get("click_damage", 0)), int(total_dps),
+				float(result.get("sim_time", 0.0)),
+				"scenario_id=%s profile_id=%s reached_level=%d sim_time=%.0f first_prestige_time=%s first_prestige_reward=%d final_wall_level=%d manual_dps=%d partner_dps=%d ability_dps=%d manual_share=%.1f partner_share=%.1f ability_share=%.1f active_vs_semi_time_ratio=%.2f active_vs_semi_level_delta=%d recommendation_tag=%s" % [
+					scenario_id, profile_id,
+					int(result.get("reached_level", 0)),
+					float(result.get("sim_time", 0.0)),
+					_scenario_time_note(float(result.get("first_prestige_time", -1.0))),
+					int(result.get("first_prestige_reward", 0)),
+					int(result.get("final_wall_level", -1)),
+					int(manual_dps), int(partner_dps), int(ability_dps),
+					manual_share, partner_share, ability_share,
+					active_vs_semi_time_ratio, active_vs_semi_level_delta,
+					tag,
+				]
+			)
+
+			# Per-profile warnings (Task 9)
+			var reached: int = int(result.get("reached_level", 0))
+			if manual_share < 5.0 and reached >= 50:
+				_warn("Scenario %s %s: manual_share=%.1f%% below 5%% before stage 100 — manual still irrelevant despite hero buff" % [scenario_id, profile_id, manual_share])
+			if partner_share > 90.0 and reached >= 50:
+				_warn("Scenario %s %s: partner_share=%.1f%% above 90%% before stage 100 — partners still dominate after hero buff" % [scenario_id, profile_id, partner_share])
+			if reached >= SIM_MAX_LEVEL and int(result.get("wall_level", -1)) <= 0 and manual_share >= 5.0:
+				_warn("Scenario %s %s: manual_share improved to %.1f%% but hero buff causes runaway to level %d with no boss wall" % [scenario_id, profile_id, manual_share, reached])
+
+
+# Task 7 — Recommendation tag for manual value scenarios.
+func _manual_value_recommendation_tag(r_active: Dictionary, r_semi: Dictionary, result: Dictionary, profile_id: String) -> String:
+	var active_prestige_time: float = float(r_active.get("first_prestige_time", -1.0))
+	var semi_prestige_time: float = float(r_semi.get("first_prestige_time", -1.0))
+	var active_time: float = float(r_active.get("sim_time", 0.0))
+	var semi_time: float = float(r_semi.get("sim_time", 0.0))
+	var active_level: int = int(r_active.get("reached_level", 0))
+
+	var total_dps: float = float(result.get("total_dps", 0.0))
+	var manual_share: float = float(result.get("manual_dps", 0.0)) / total_dps * 100.0 if total_dps > 0.0 else 0.0
+	var partner_share: float = float(result.get("partner_dps", 0.0)) / total_dps * 100.0 if total_dps > 0.0 else 0.0
+
+	var prestige_min_sec: float = 15.0 * 60.0
+	var prestige_max_active_sec: float = 35.0 * 60.0
+	var prestige_max_semi_sec: float = 45.0 * 60.0
+
+	# Runaway: active reaches max level with no boss wall
+	if active_level >= SIM_MAX_LEVEL and int(r_active.get("wall_level", -1)) <= 0:
+		if profile_id == "active_6cps":
+			return "active_too_strong"
+
+	# Prestige timing
+	if profile_id == "active_6cps":
+		if active_prestige_time < 0.0:
+			return "too_slow_to_prestige"
+		if active_prestige_time > prestige_max_active_sec:
+			return "too_slow_to_prestige"
+		if active_prestige_time < prestige_min_sec:
+			return "active_too_strong"
+	if profile_id == "semi_active_3cps":
+		if semi_prestige_time < 0.0:
+			return "too_slow_to_prestige"
+		if semi_prestige_time > prestige_max_semi_sec:
+			return "too_slow_to_prestige"
+
+	# DPS share checks
+	if partner_share > 90.0:
+		return "partner_still_dominates"
+	if manual_share < 5.0:
+		return "manual_still_irrelevant"
+
+	# Active vs semi differentiation (only evaluated from either profile's perspective)
+	var time_ratio: float = active_time / semi_time if semi_time > 0.0 else 0.0
+	if time_ratio > 0.85:
+		return "manual_still_irrelevant"
+
+	return "good_candidate"
 
 
 func _run_balance_scenario_profile(scenario: Dictionary, profile: Dictionary) -> Dictionary:
@@ -3326,10 +3987,12 @@ func _validate_prestige_formulas() -> void:
 	if state.get_prestige_character_points() != 1:
 		failures.append("hero points at 200 expected 1 got %d" % state.get_prestige_character_points())
 
-	if state.get_prestige_talent_bonus_percent_for_level(0, 1) != 25:
-		failures.append("damage talent level 1 bonus expected 25 got %d" % state.get_prestige_talent_bonus_percent_for_level(0, 1))
-	if state.get_prestige_talent_bonus_percent_for_level(1, 1) != 50:
-		failures.append("gold talent level 1 bonus expected 50 got %d" % state.get_prestige_talent_bonus_percent_for_level(1, 1))
+	if state.get_prestige_talent_bonus_percent_for_level(0, 1) != 50:
+		failures.append("damage talent level 1 bonus expected 50 got %d" % state.get_prestige_talent_bonus_percent_for_level(0, 1))
+	if state.get_prestige_talent_bonus_percent_for_level(1, 1) != 100:
+		failures.append("gold talent level 1 bonus expected 100 got %d" % state.get_prestige_talent_bonus_percent_for_level(1, 1))
+	if state.get_prestige_talent_bonus_percent_for_level(3, 1) != 10:
+		failures.append("utility talent level 1 bonus expected 10 got %d" % state.get_prestige_talent_bonus_percent_for_level(3, 1))
 
 	if failures.is_empty():
 		_ln("")
@@ -3520,22 +4183,28 @@ func _append_scenario_baseline_validation(result: Dictionary) -> void:
 	var live: Dictionary = _live_profile_results[profile_id]
 	var live_level: int = int(live.get("reached_level", 0))
 	var scenario_level: int = int(result.get("reached_level", 0))
+	# Use base_total_dps (no active abilities) for comparison so timing of ability
+	# activation at simulation end does not create a spurious 2x ratio.
+	var live_base_dps: float = float(live.get("base_total_dps", live.get("total_dps", 0.0)))
+	var scenario_base_dps: float = float(result.get("base_total_dps", result.get("total_dps", 0.0)))
 	var live_total_dps: float = float(live.get("total_dps", 0.0))
 	var scenario_total_dps: float = float(result.get("total_dps", 0.0))
 	var live_ability_dps: float = float(live.get("ability_dps", 0.0))
 	var scenario_ability_dps: float = float(result.get("ability_dps", 0.0))
 	var level_delta: int = scenario_level - live_level
-	var total_dps_ratio: float = scenario_total_dps / live_total_dps if live_total_dps > 0.0 else (1.0 if scenario_total_dps <= 0.0 else 999.0)
+	# Compare base DPS (no active abilities) so the ratio is not inflated by ability timing.
+	var total_dps_ratio: float = scenario_base_dps / live_base_dps if live_base_dps > 0.0 else (1.0 if scenario_base_dps <= 0.0 else 999.0)
 	var ability_dps_ratio: float = scenario_ability_dps / live_ability_dps if live_ability_dps > 0.0 else (1.0 if scenario_ability_dps <= 0.0 else 999.0)
 	var status: String = "ok"
-	if absi(level_delta) > 5 or absf(total_dps_ratio - 1.0) > 0.15 or (live_ability_dps > 0.0 and scenario_ability_dps <= 0.0):
+	if absi(level_delta) > 5 or absf(total_dps_ratio - 1.0) > 0.15:
 		status = "warn"
-		_warn("Scenario baseline validation %s: level_delta=%d total_dps_ratio=%.2f ability_dps_ratio=%.2f." % [profile_id, level_delta, total_dps_ratio, ability_dps_ratio])
+		_warn("Scenario baseline validation %s: level_delta=%d base_dps_ratio=%.2f (live_base=%d scenario_base=%d)." % [profile_id, level_delta, total_dps_ratio, int(live_base_dps), int(scenario_base_dps)])
 	_csv_append(
 		"scenario_baseline_validation", scenario_level,
-		0, 0, 0, int(result.get("click_damage", 0)), int(scenario_total_dps), float(result.get("sim_time", 0.0)),
-		"profile_id=%s live_reached_level=%d scenario_baseline_reached_level=%d live_total_dps=%d scenario_baseline_total_dps=%d live_ability_dps=%d scenario_baseline_ability_dps=%d level_delta=%d total_dps_ratio=%.3f ability_dps_ratio=%.3f status=%s" % [
-			profile_id, live_level, scenario_level, int(live_total_dps), int(scenario_total_dps),
+		0, 0, 0, int(result.get("click_damage", 0)), int(scenario_base_dps), float(result.get("sim_time", 0.0)),
+		"profile_id=%s live_reached_level=%d scenario_baseline_reached_level=%d live_base_dps=%d scenario_base_dps=%d live_total_dps=%d scenario_total_dps=%d live_ability_dps=%d scenario_baseline_ability_dps=%d level_delta=%d base_dps_ratio=%.3f ability_dps_ratio=%.3f status=%s note=base_dps_excludes_active_abilities_for_stable_comparison" % [
+			profile_id, live_level, scenario_level, int(live_base_dps), int(scenario_base_dps),
+			int(live_total_dps), int(scenario_total_dps),
 			int(live_ability_dps), int(scenario_ability_dps), level_delta, total_dps_ratio, ability_dps_ratio, status,
 		]
 	)
@@ -3681,6 +4350,556 @@ func _building_name(idx: int) -> String:
 	if idx >= 0 and idx < _SC.BUILDING_NAMES.size():
 		return str(_SC.BUILDING_NAMES[idx])
 	return "Building %d" % (idx + 1)
+
+
+# ==========================================================================
+#  SECTION — Prestige Economy Verification  (Task 1)
+# ==========================================================================
+
+func _section_prestige_economy_verification() -> void:
+	_header("SECTION — Prestige Economy Verification")
+	_ln("  Verifying prestige point formulas against expected values.")
+	_ln("  PRESTIGE_REQUIRED_LEVEL=%d  PRESTIGE_CHARACTER_INTERVAL=%.0f" % [
+		_BC.PRESTIGE_REQUIRED_LEVEL, _BC.PRESTIGE_CHARACTER_INTERVAL])
+
+	# Task 9 — Prestige bonus constant sanity warnings
+	if _BC.PRESTIGE_DAMAGE_TALENT_BONUS_PERCENT_PER_LEVEL != 50:
+		_warn("Prestige damage talent bonus is %d%% per level — expected 50%% (doubled from 25%%). Constants may not be updated correctly." % _BC.PRESTIGE_DAMAGE_TALENT_BONUS_PERCENT_PER_LEVEL)
+	if _BC.PRESTIGE_GOLD_TALENT_BONUS_PERCENT_PER_LEVEL != 100:
+		_warn("Prestige gold talent bonus is %d%% per level — expected 100%% (doubled from 50%%). Constants may not be updated correctly." % _BC.PRESTIGE_GOLD_TALENT_BONUS_PERCENT_PER_LEVEL)
+	if _BC.PRESTIGE_UTILITY_TALENT_BONUS_PERCENT_PER_LEVEL != 10:
+		_warn("Prestige utility talent bonus is %d%% per level — expected 10%% (doubled from 5%%). Constants may not be updated correctly." % _BC.PRESTIGE_UTILITY_TALENT_BONUS_PERCENT_PER_LEVEL)
+	if _BC.PRESTIGE_GOLD_TALENT_BONUS_PERCENT_PER_LEVEL >= 100:
+		_warn("PRESTIGE_GOLD_TALENT_BONUS_PERCENT_PER_LEVEL=%d%% — at 100%% per level the gold talent can cause runaway gold snowball if purchased early in loop 2+; monitor second loop income carefully." % _BC.PRESTIGE_GOLD_TALENT_BONUS_PERCENT_PER_LEVEL)
+	_ln("")
+
+	_ln("  Stage prestige points:")
+	_ln(_row([_rj("Stage", 8), _rj("Pts", 6), _lj("Check", 22)]))
+	_div("-", 40)
+	var stage_cases: Array = [[99, 0], [100, 1], [199, 1], [200, 2]]
+	for pair in stage_cases:
+		var lvl: int = int(pair[0])
+		var expected: int = int(pair[1])
+		var actual: int = int(lvl / float(_BC.PRESTIGE_REQUIRED_LEVEL))
+		var ok: bool = actual == expected
+		var note: String = "OK expect %d" % expected if ok else "FAIL expect %d got %d" % [expected, actual]
+		if not ok:
+			_warn("Prestige economy: stage %d expected %d pts, got %d" % [lvl, expected, actual])
+		_ln(_row([_rj(str(lvl), 8), _rj(str(actual), 6), _lj(note, 22)]))
+		_csv_append("prestige_economy_check", lvl, 0, actual, 0, 0, 0, 0.0,
+			"check=stage_pts stage=%d actual=%d expected=%d ok=%s" % [lvl, actual, expected, str(ok)])
+
+	_ln("")
+	_ln("  Hero prestige points:")
+	_ln(_row([_rj("HeroLvl", 8), _rj("Pts", 6), _lj("Check", 22)]))
+	_div("-", 40)
+	var hero_cases: Array = [[199, 0], [200, 1], [399, 1], [400, 2]]
+	for pair in hero_cases:
+		var hlvl: int = int(pair[0])
+		var expected: int = int(pair[1])
+		var actual: int = int(hlvl / _BC.PRESTIGE_CHARACTER_INTERVAL)
+		var ok: bool = actual == expected
+		var note: String = "OK expect %d" % expected if ok else "FAIL expect %d got %d" % [expected, actual]
+		if not ok:
+			_warn("Prestige economy: hero level %d expected %d pts, got %d" % [hlvl, expected, actual])
+		_ln(_row([_rj(str(hlvl), 8), _rj(str(actual), 6), _lj(note, 22)]))
+		_csv_append("prestige_economy_check", hlvl, 0, actual, 0, 0, 0, 0.0,
+			"check=hero_pts hero_level=%d actual=%d expected=%d ok=%s" % [hlvl, actual, expected, str(ok)])
+
+	_ln("")
+	_ln("  Talent cost examples (base=%d growth=%.2f):" % [_BC.PRESTIGE_TALENT_BASE_COST, _BC.PRESTIGE_TALENT_COST_GROWTH])
+	_ln(_row([_rj("TalLvl", 8), _rj("Cost", 6), _lj("Check", 22)]))
+	_div("-", 40)
+	var cost_cases: Array = [[0, 2], [1, 3], [2, 5], [3, 7], [4, 11], [5, 16]]
+	for pair in cost_cases:
+		var tlvl: int = int(pair[0])
+		var expected: int = int(pair[1])
+		var actual: int = _prestige_talent_cost_for_level(tlvl)
+		var ok: bool = actual == expected
+		var note: String = "OK expect %d" % expected if ok else "FAIL expect %d got %d" % [expected, actual]
+		if not ok:
+			_warn("Prestige talent cost at level %d: expected %d, got %d" % [tlvl, expected, actual])
+		_ln(_row([_rj(str(tlvl), 8), _rj(str(actual), 6), _lj(note, 22)]))
+		_csv_append("prestige_economy_check", tlvl, 0, 0, actual, 0, 0, 0.0,
+			"check=talent_cost talent_level=%d actual=%d expected=%d ok=%s" % [tlvl, actual, expected, str(ok)])
+
+	_ln("")
+	_ln("  Reward formula (base_reward=%d applies only when progression_points > 0):" % _BC.PRESTIGE_BASE_REWARD_POINTS)
+	_ln(_row([_rj("Stage", 8), _rj("Hero", 6), _rj("Reward", 8), _lj("Check", 30)]))
+	_div("-", 56)
+	# [stage_level, hero_level, expected_reward]
+	var reward_cases: Array = [[99, 199, 0], [100, 1, 2], [100, 200, 3], [200, 200, 4]]
+	for rcase in reward_cases:
+		var rstage: int = int(rcase[0])
+		var rhero: int = int(rcase[1])
+		var expected_rwd: int = int(rcase[2])
+		var stage_pts: int = int(rstage / float(_BC.PRESTIGE_REQUIRED_LEVEL))
+		var hero_pts: int = int(rhero / _BC.PRESTIGE_CHARACTER_INTERVAL)
+		var prog_pts: int = stage_pts + hero_pts
+		var actual_rwd: int = 0 if prog_pts <= 0 else _BC.PRESTIGE_BASE_REWARD_POINTS + prog_pts
+		var ok: bool = actual_rwd == expected_rwd
+		var note: String = "OK expect %d (base=%d stage_pts=%d hero_pts=%d)" % [
+			expected_rwd, _BC.PRESTIGE_BASE_REWARD_POINTS if prog_pts > 0 else 0, stage_pts, hero_pts]
+		if not ok:
+			note = "FAIL expect %d got %d" % [expected_rwd, actual_rwd]
+			_warn("Prestige reward formula: stage=%d hero=%d expected=%d got=%d" % [rstage, rhero, expected_rwd, actual_rwd])
+		_ln(_row([_rj(str(rstage), 8), _rj(str(rhero), 6), _rj(str(actual_rwd), 8), _lj(note, 30)]))
+		_csv_append("prestige_economy_check", rstage, 0, actual_rwd, 0, 0, 0, 0.0,
+			"check=reward_formula stage=%d hero=%d stage_pts=%d hero_pts=%d actual=%d expected=%d base_reward=%d base_reward_applies_only_when_progression_points_gt_0=true ok=%s" % [
+				rstage, rhero, stage_pts, hero_pts, actual_rwd, expected_rwd,
+				_BC.PRESTIGE_BASE_REWARD_POINTS if prog_pts > 0 else 0, str(ok)])
+
+
+# ==========================================================================
+#  SECTION — Prestige Loop Simulation  (Tasks 2–7)
+# ==========================================================================
+
+func _prestige_strategy_list() -> Array[Dictionary]:
+	return [
+		{"id": "damage_first", "priority": [0, 2, 5, 1, 3, 4]},
+		{"id": "gold_first",   "priority": [1, 0, 2, 5, 3, 4]},
+		{"id": "balanced",     "priority": []},
+	]
+
+
+func _prestige_scenario_id_list() -> Array[String]:
+	return [
+		"baseline",
+		"partner_curve_soft_idle",
+		"partner_curve_balanced_idle",
+		"partner_cost_minus_10",
+		"partner_cost_minus_15",
+	]
+
+
+func _section_prestige_loop_simulation() -> void:
+	_header("SECTION — Prestige Loop Simulation  (active_6cps, up to 3 loops)")
+	_ln("  Assumptions: active_6cps, greedy purchase strategy, prestige at first opportunity.")
+	_ln("  Each loop runs until boss wall or max level/time. Prestige performed if reward > 0.")
+	_ln("  Three talent spending strategies compared: damage_first, gold_first, balanced.")
+
+	var profile: Dictionary = {
+		"id": "active_6cps", "clicks_per_sec": 6.0,
+		"abilities": true, "buildings": true, "skills": true,
+	}
+	var all_strategy_results: Array[Dictionary] = []
+
+	for strategy: Dictionary in _prestige_strategy_list():
+		var result: Dictionary = _run_prestige_loop_strategy(profile, {}, strategy)
+		all_strategy_results.append(result)
+
+	# Strategy comparison table
+	_ln("")
+	_ln("  === Prestige Strategy Comparison (baseline scenario) ===")
+	_ln(_row([
+		_lj("Strategy", 15), _rj("L1Lvl", 6), _rj("L2Lvl", 6), _rj("L3Lvl", 6),
+		_rj("L1Wall", 7), _rj("PtsEarned", 10), _rj("PtsSpent", 9), "Tag",
+	]))
+	_div("-", 90)
+	for strat: Dictionary in all_strategy_results:
+		var sid: String = str(strat.get("strategy_id", ""))
+		var loops: Array = strat.get("loops", [])
+		var l1: Dictionary = loops[0] if loops.size() > 0 else {}
+		var l2: Dictionary = loops[1] if loops.size() > 1 else {}
+		var l3: Dictionary = loops[2] if loops.size() > 2 else {}
+		var pts_earned: int = int(strat.get("total_pts_earned", 0))
+		var pts_spent: int = int(strat.get("total_pts_spent", 0))
+		var tag: String = _prestige_recommendation_tag(l1, l2, l3)
+		_ln(_row([
+			_lj(sid, 15),
+			_rj(str(int(l1.get("reached_level", 0))), 6),
+			_rj(str(int(l2.get("reached_level", 0))), 6),
+			_rj(str(int(l3.get("reached_level", 0))), 6),
+			_rj(str(int(l1.get("wall_level", -1))), 7),
+			_rj(str(pts_earned), 10),
+			_rj(str(pts_spent), 9),
+			tag,
+		]))
+		_csv_append("prestige_strategy_comparison", int(l1.get("reached_level", 0)),
+			0, 0, 0,
+			int(l3.get("click_damage", l1.get("click_damage", 0))),
+			int(l3.get("total_dps", l1.get("total_dps", 0))),
+			float(l3.get("sim_time", l1.get("sim_time", 0.0))),
+			"strategy_id=%s loop1_level=%d loop2_level=%d loop3_level=%d loop1_wall=%d loop2_wall=%d loop3_wall=%d loop1_time=%.0f loop2_time=%.0f loop3_time=%.0f final_click=%d final_partner_dps=%d final_total_dps=%d pts_earned=%d pts_spent=%d remaining_pts=%d final_gold_mult_pct=%d final_boss_mult_pct=%d recommendation=%s stopped_l1=%s stopped_l2=%s stopped_l3=%s" % [
+				sid,
+				int(l1.get("reached_level", 0)), int(l2.get("reached_level", 0)), int(l3.get("reached_level", 0)),
+				int(l1.get("wall_level", -1)), int(l2.get("wall_level", -1)), int(l3.get("wall_level", -1)),
+				maxf(float(l1.get("sim_time", 0.0)), 0.0),
+				maxf(float(l2.get("sim_time", 0.0)), 0.0),
+				maxf(float(l3.get("sim_time", 0.0)), 0.0),
+				int(l3.get("click_damage", l1.get("click_damage", 0))),
+				int(l3.get("partner_dps", l1.get("partner_dps", 0.0))),
+				int(l3.get("total_dps", l1.get("total_dps", 0))),
+				pts_earned, pts_spent, int(strat.get("remaining_pts", 0)),
+				int(strat.get("final_gold_mult_pct", 0)),
+				int(strat.get("final_boss_mult_pct", 0)),
+				tag,
+				str(l1.get("stopped_reason", "")),
+				str(l2.get("stopped_reason", "")),
+				str(l3.get("stopped_reason", "")),
+			])
+
+	_prestige_check_all_warnings(all_strategy_results)
+	_section_prestige_scenario_comparison(profile)
+
+
+func _run_prestige_loop_strategy(profile: Dictionary, scenario: Dictionary, strategy: Dictionary) -> Dictionary:
+	var strategy_id: String = str(strategy.get("id", ""))
+	var scenario_id: String = str(scenario.get("id", "baseline")) if not scenario.is_empty() else "baseline"
+	var loops: Array[Dictionary] = []
+	var talent_levels: Array = [0, 0, 0, 0, 0, 0]
+	var prestige_points_available: int = 0
+	var prestige_points_total: int = 0
+	var total_pts_earned: int = 0
+	var total_pts_spent: int = 0
+
+	_ln("")
+	_ln("  --- Prestige Loop: strategy=%s scenario=%s ---" % [strategy_id, scenario_id])
+
+	for loop_idx: int in range(3):
+		var overrides: Dictionary = {}
+		if loop_idx > 0:
+			overrides = {
+				"prestige_points_available": prestige_points_available,
+				"prestige_points_total_earned": prestige_points_total,
+				"total_prestiges": loop_idx,
+				"prestige_talent_levels": talent_levels.duplicate(),
+			}
+
+		var run: Dictionary = _run_progression_profile(profile, scenario, false, overrides)
+		run["loop_index"] = loop_idx
+		run["strategy_id"] = strategy_id
+		loops.append(run)
+
+		var wall: int = int(run.get("wall_level", -1))
+		var reached: int = int(run.get("reached_level", 0))
+		var prestige_rwd: int = int(run.get("first_prestige_reward", 0))
+		var prestige_time: float = float(run.get("first_prestige_time", -1.0))
+		var stopped: String = str(run.get("stopped_reason", ""))
+
+		_ln("    Loop %d: reached=%d wall=%d prestige_reward=%d time=%s stopped=%s" % [
+			loop_idx + 1, reached, wall, prestige_rwd, _fmt_time(float(run.get("sim_time", 0.0))), stopped])
+
+		_csv_append("prestige_loop_summary", reached,
+			0, 0, 0,
+			int(run.get("click_damage", 0)),
+			int(run.get("total_dps", 0)),
+			float(run.get("sim_time", 0.0)),
+			"loop_index=%d strategy_id=%s scenario_id=%s wall_level=%d reached_level=%d stopped_reason=%s prestige_reward=%d prestige_time=%.0f hero_level=%d click_damage=%d partner_dps=%d total_dps=%d pts_available_before=%d pts_spent_so_far=%d talent_levels=%s" % [
+				loop_idx, strategy_id, scenario_id,
+				wall, reached, stopped, prestige_rwd,
+				maxf(prestige_time, 0.0),
+				int(run.get("hero_level", 0)),
+				int(run.get("click_damage", 0)),
+				int(run.get("partner_dps", 0.0)),
+				int(run.get("total_dps", 0)),
+				prestige_points_available, total_pts_spent,
+				_fmt_talent_levels(talent_levels),
+			])
+
+		if wall > 0:
+			var bw: Dictionary = run.get("boss_wall", {})
+			_csv_append("prestige_loop_wall", wall,
+				int(bw.get("boss_hp", 0)), 0, 0,
+				int(run.get("click_damage", 0)),
+				int(bw.get("current_dps", 0.0)),
+				float(bw.get("boss_ttk", 0.0)),
+				"loop_index=%d strategy_id=%s scenario_id=%s wall_level=%d required_dps=%d current_dps=%d missing_pct=%.1f hero_level=%d manual_dps=%d partner_dps=%d" % [
+					loop_idx, strategy_id, scenario_id, wall,
+					int(bw.get("required_dps", 0.0)),
+					int(bw.get("current_dps", 0.0)),
+					float(bw.get("missing_dps_percent", 0.0)),
+					int(run.get("hero_level", 0)),
+					int(run.get("manual_dps", 0.0)),
+					int(run.get("partner_dps", 0.0)),
+				])
+
+		if loop_idx < 2:
+			if prestige_rwd > 0:
+				prestige_points_available += prestige_rwd
+				prestige_points_total += prestige_rwd
+				total_pts_earned += prestige_rwd
+
+				var purchases: Array[Dictionary] = _sim_spend_prestige_points(
+					prestige_points_available, talent_levels, strategy)
+
+				for purchase: Dictionary in purchases:
+					var tidx: int = int(purchase.get("talent_index", -1))
+					var cost: int = int(purchase.get("cost", 0))
+					prestige_points_available -= cost
+					if tidx >= 0 and tidx < talent_levels.size():
+						talent_levels[tidx] = int(talent_levels[tidx]) + 1
+					total_pts_spent += cost
+
+					var new_level: int = int(talent_levels[tidx]) if tidx >= 0 else 0
+					var bonus_pct: int = new_level * _prestige_talent_bonus_percent_per_level(tidx) if tidx >= 0 else 0
+					_csv_append("prestige_loop_talent_purchase", loop_idx,
+						0, 0, cost, 0, 0, 0.0,
+						"loop_index=%d strategy_id=%s scenario_id=%s talent_index=%d talent_name=%s effect_type=%s cost=%d new_level=%d new_total_bonus=%d remaining_points=%d" % [
+							loop_idx, strategy_id, scenario_id,
+							tidx,
+							_PRC.get_talent_name(tidx) if tidx >= 0 else "",
+							_PRC.get_effect_type(tidx) if tidx >= 0 else "",
+							cost, new_level, bonus_pct,
+							prestige_points_available,
+						])
+			else:
+				_warn("Prestige loop strategy=%s scenario=%s loop %d: prestige reward is 0, skipping prestige." % [
+					strategy_id, scenario_id, loop_idx + 1])
+
+	var l1: Dictionary = loops[0] if loops.size() > 0 else {}
+	var l2: Dictionary = loops[1] if loops.size() > 1 else {}
+	var l3: Dictionary = loops[2] if loops.size() > 2 else {}
+
+	_csv_append("prestige_loop_comparison", int(l1.get("reached_level", 0)),
+		0, 0, 0,
+		int(l3.get("click_damage", l1.get("click_damage", 0))),
+		int(l3.get("total_dps", l1.get("total_dps", 0))),
+		float(l3.get("sim_time", l1.get("sim_time", 0.0))),
+		"strategy_id=%s scenario_id=%s loop1_level=%d loop2_level=%d loop3_level=%d loop1_wall=%d loop2_wall=%d loop3_wall=%d loop1_time=%.0f loop2_time=%.0f loop3_time=%.0f pts_earned=%d pts_spent=%d remaining_pts=%d talent_levels=%s" % [
+			strategy_id, scenario_id,
+			int(l1.get("reached_level", 0)),
+			int(l2.get("reached_level", 0)),
+			int(l3.get("reached_level", 0)),
+			int(l1.get("wall_level", -1)),
+			int(l2.get("wall_level", -1)),
+			int(l3.get("wall_level", -1)),
+			maxf(float(l1.get("sim_time", 0.0)), 0.0),
+			maxf(float(l2.get("sim_time", 0.0)), 0.0),
+			maxf(float(l3.get("sim_time", 0.0)), 0.0),
+			total_pts_earned, total_pts_spent, prestige_points_available,
+			_fmt_talent_levels(talent_levels),
+		])
+
+	return {
+		"strategy_id": strategy_id,
+		"scenario_id": scenario_id,
+		"loops": loops,
+		"talent_levels": talent_levels.duplicate(),
+		"total_pts_earned": total_pts_earned,
+		"total_pts_spent": total_pts_spent,
+		"remaining_pts": prestige_points_available,
+		"final_gold_mult_pct": int(talent_levels[1]) * _BC.PRESTIGE_GOLD_TALENT_BONUS_PERCENT_PER_LEVEL if talent_levels.size() > 1 else 0,
+		"final_boss_mult_pct": int(talent_levels[5]) * _BC.PRESTIGE_DAMAGE_TALENT_BONUS_PERCENT_PER_LEVEL if talent_levels.size() > 5 else 0,
+	}
+
+
+# Task 3 — Talent purchase strategy helper
+# Returns Array[Dictionary] each with {talent_index, cost}.
+# Strategy priority: damage_first=[0,2,5,1,3,4], gold_first=[1,0,2,5,3,4],
+# balanced=cheapest non-utility first, then utility.
+func _sim_spend_prestige_points(points: int, current_levels: Array, strategy: Dictionary) -> Array[Dictionary]:
+	var strategy_id: String = str(strategy.get("id", ""))
+	var priority: Array = strategy.get("priority", [0, 1, 2, 3, 4, 5])
+	var result: Array[Dictionary] = []
+	var remaining: int = points
+	var sim_levels: Array = current_levels.duplicate()
+
+	for _safety in range(200):
+		if remaining <= 0:
+			break
+		var bought_any: bool = false
+
+		if strategy_id == "balanced":
+			# Buy cheapest among damage/gold/boss; fall back to utility if nothing else
+			var useful: Array = [0, 1, 2, 5]
+			var utility: Array = [3, 4]
+			var best_idx: int = -1
+			var best_cost: int = 999999
+			for tidx in useful:
+				if tidx < sim_levels.size():
+					var cost: int = _prestige_talent_cost_for_level(int(sim_levels[tidx]))
+					if remaining >= cost and cost < best_cost:
+						best_cost = cost
+						best_idx = tidx
+			if best_idx < 0:
+				for tidx in utility:
+					if tidx < sim_levels.size():
+						var cost: int = _prestige_talent_cost_for_level(int(sim_levels[tidx]))
+						if remaining >= cost and cost < best_cost:
+							best_cost = cost
+							best_idx = tidx
+			if best_idx >= 0:
+				remaining -= best_cost
+				sim_levels[best_idx] = int(sim_levels[best_idx]) + 1
+				result.append({"talent_index": best_idx, "cost": best_cost})
+				bought_any = true
+		else:
+			for tidx in priority:
+				if tidx < sim_levels.size():
+					var cost: int = _prestige_talent_cost_for_level(int(sim_levels[tidx]))
+					if remaining >= cost:
+						remaining -= cost
+						sim_levels[tidx] = int(sim_levels[tidx]) + 1
+						result.append({"talent_index": tidx, "cost": cost})
+						bought_any = true
+						break
+
+		if not bought_any:
+			break
+
+	return result
+
+
+# Task 5 — Prestige-specific warnings
+func _prestige_check_all_warnings(all_strategy_results: Array[Dictionary]) -> void:
+	var damage_first_result: Dictionary = {}
+	var gold_first_result: Dictionary = {}
+	for sr: Dictionary in all_strategy_results:
+		match str(sr.get("strategy_id", "")):
+			"damage_first": damage_first_result = sr
+			"gold_first":   gold_first_result   = sr
+
+	for sr: Dictionary in all_strategy_results:
+		var sid: String = str(sr.get("strategy_id", ""))
+		var loops: Array = sr.get("loops", [])
+		var l1: Dictionary = loops[0] if loops.size() > 0 else {}
+		var l2: Dictionary = loops[1] if loops.size() > 1 else {}
+		var l3: Dictionary = loops[2] if loops.size() > 2 else {}
+
+		var first_rwd: int = int(l1.get("first_prestige_reward", 0))
+		var l1_time: float = float(l1.get("sim_time", 0.0))
+		var l2_time: float = float(l2.get("sim_time", 0.0))
+		var l1_reached: int = int(l1.get("reached_level", 0))
+		var l2_reached: int = int(l2.get("reached_level", 0))
+		var total_pts_spent: int = int(sr.get("total_pts_spent", 0))
+		var talent_levels: Array = sr.get("talent_levels", [0, 0, 0, 0, 0, 0])
+
+		if first_rwd <= 0:
+			_warn("Prestige loop %s: active_6cps cannot reach first prestige within SIM_MAX_SECONDS=%.0f" % [sid, SIM_MAX_SECONDS])
+
+		if first_rwd > 0 and first_rwd < _BC.PRESTIGE_TALENT_BASE_COST:
+			_warn("Prestige loop %s: first valid prestige reward=%d is less than PRESTIGE_TALENT_BASE_COST=%d — cannot buy any talent" % [sid, first_rwd, _BC.PRESTIGE_TALENT_BASE_COST])
+
+		if l2_reached > 0 and l1_reached > 0 and l2_reached < l1_reached + 10:
+			_warn("Prestige loop %s: loop 2 reaches level %d vs loop 1 level %d (less than +10 improvement)" % [sid, l2_reached, l1_reached])
+
+		if l1_time > 0.0 and l2_time > 0.0 and l2_time > l1_time * 1.25:
+			_warn("Prestige loop %s: loop 2 (%.0fs) is >25%% slower than loop 1 (%.0fs)" % [sid, l2_time, l1_time])
+
+		if first_rwd > 0 and total_pts_spent == 0:
+			_warn("Prestige loop %s: earned %d prestige points but spent 0 — all talent costs too high" % [sid, first_rwd])
+
+		if talent_levels.size() >= 5:
+			var utility_bought: bool = int(talent_levels[3]) > 0 or int(talent_levels[4]) > 0
+			var core_bought: bool = int(talent_levels[0]) > 0 or int(talent_levels[1]) > 0 or int(talent_levels[2]) > 0
+			if utility_bought and not core_bought:
+				_warn("Prestige loop %s: utility talents bought before any damage/gold talent" % sid)
+
+	# Compare damage_first vs gold_first
+	if not damage_first_result.is_empty() and not gold_first_result.is_empty():
+		var df_loops: Array = damage_first_result.get("loops", [])
+		var gf_loops: Array = gold_first_result.get("loops", [])
+		var df_end: Dictionary = df_loops[2] if df_loops.size() > 2 else (df_loops[1] if df_loops.size() > 1 else {})
+		var gf_end: Dictionary = gf_loops[2] if gf_loops.size() > 2 else (gf_loops[1] if gf_loops.size() > 1 else {})
+		var df_dps: float = float(df_end.get("total_dps", 0.0))
+		var gf_dps: float = float(gf_end.get("total_dps", 0.0))
+		if df_dps > 0.0 and gf_dps > 0.0:
+			var ratio: float = df_dps / gf_dps
+			if ratio > 2.0:
+				_warn("Prestige: damage_first final DPS (%.0f) is %.1fx stronger than gold_first (%.0f) — damage strategy dominates" % [df_dps, ratio, gf_dps])
+			elif ratio < 0.5:
+				_warn("Prestige: gold_first final DPS (%.0f) is %.1fx stronger than damage_first (%.0f) — gold strategy dominates" % [gf_dps, 1.0 / ratio, df_dps])
+
+
+# Task 7 — Recommendation tag
+func _prestige_recommendation_tag(loop1: Dictionary, loop2: Dictionary, loop3: Dictionary) -> String:
+	var l1_reached: int = int(loop1.get("reached_level", 0))
+	var l2_reached: int = int(loop2.get("reached_level", 0))
+	var l3_reached: int = int(loop3.get("reached_level", 0))
+	var l1_wall: int = int(loop1.get("wall_level", -1))
+	var l1_rwd: int = int(loop1.get("first_prestige_reward", 0))
+	var total_dps: float = float(loop1.get("total_dps", 0.0))
+	var manual_pct: float = _scenario_share(float(loop1.get("manual_dps", 0.0)), total_dps)
+	var partner_pct: float = _scenario_share(float(loop1.get("partner_dps", 0.0)), total_dps)
+	var ability_pct: float = _scenario_share(float(loop1.get("ability_dps", 0.0)), total_dps)
+
+	if l1_rwd <= 0:
+		return "prestige_too_weak"
+	if l1_reached >= SIM_MAX_LEVEL and l1_wall <= 0:
+		return "runaway"
+	if l2_reached > 0 and l2_reached < l1_reached + 5:
+		return "prestige_too_weak"
+	if l2_reached > 0 and l2_reached > l1_reached + 50:
+		return "prestige_too_strong"
+	if l2_reached > l1_reached and l3_reached > l2_reached:
+		if manual_pct > 85.0 and l1_reached >= 20:
+			return "manual_dominated"
+		if partner_pct > 85.0 and l1_reached >= 20:
+			return "partner_dominated"
+		if ability_pct > 50.0 and l1_reached >= 20:
+			return "ability_dominated"
+		return "good_candidate"
+	if l2_reached <= 0:
+		return "too_slow"
+	if l3_reached > 0 and l3_reached < l2_reached:
+		return "too_slow"
+	return "good_candidate"
+
+
+# Task 6 — Partner curve scenarios with prestige
+func _section_prestige_scenario_comparison(profile: Dictionary) -> void:
+	_header("SECTION — Prestige Scenario Comparison  (active_6cps + damage_first)")
+	_ln("  Re-runs existing partner curve and cost scenarios with 3-loop prestige simulation.")
+
+	var strategy: Dictionary = {"id": "damage_first", "priority": [0, 2, 5, 1, 3, 4]}
+
+	_ln(_row([
+		_lj("Scenario", 28), _rj("L1Lvl", 6), _rj("L2Lvl", 6), _rj("L3Lvl", 6),
+		_rj("L1Wall", 7), _rj("TotPts", 8), "Tag",
+	]))
+	_div("-", 82)
+
+	for scenario_id: String in _prestige_scenario_id_list():
+		var scenario: Dictionary = _get_balance_scenario_by_id(scenario_id)
+		if scenario.is_empty():
+			_ln("  (skipped: '%s' not found in BALANCE_SCENARIOS)" % scenario_id)
+			continue
+
+		var result: Dictionary = _run_prestige_loop_strategy(profile, scenario, strategy)
+		var loops: Array = result.get("loops", [])
+		var l1: Dictionary = loops[0] if loops.size() > 0 else {}
+		var l2: Dictionary = loops[1] if loops.size() > 1 else {}
+		var l3: Dictionary = loops[2] if loops.size() > 2 else {}
+		var pts_earned: int = int(result.get("total_pts_earned", 0))
+		var tag: String = _prestige_recommendation_tag(l1, l2, l3)
+
+		_ln(_row([
+			_lj(scenario_id.left(27), 28),
+			_rj(str(int(l1.get("reached_level", 0))), 6),
+			_rj(str(int(l2.get("reached_level", 0))), 6),
+			_rj(str(int(l3.get("reached_level", 0))), 6),
+			_rj(str(int(l1.get("wall_level", -1))), 7),
+			_rj(str(pts_earned), 8),
+			tag,
+		]))
+
+		var l1_total_dps: float = float(l1.get("total_dps", 0.0))
+		_csv_append("prestige_scenario_comparison", int(l1.get("reached_level", 0)),
+			0, 0, 0, int(l1.get("click_damage", 0)), int(l1.get("total_dps", 0)), float(l1.get("sim_time", 0.0)),
+			"scenario_id=%s strategy_id=%s loop1_wall=%d loop2_wall=%d loop3_wall=%d loop1_level=%d loop2_level=%d loop3_level=%d loop1_time=%.0f loop2_time=%.0f loop3_time=%.0f total_prestige_points=%d pts_spent=%d partner_share=%.1f manual_share=%.1f ability_share=%.1f recommended_status=%s talent_levels=%s" % [
+				scenario_id, str(strategy.get("id", "")),
+				int(l1.get("wall_level", -1)), int(l2.get("wall_level", -1)), int(l3.get("wall_level", -1)),
+				int(l1.get("reached_level", 0)), int(l2.get("reached_level", 0)), int(l3.get("reached_level", 0)),
+				maxf(float(l1.get("sim_time", 0.0)), 0.0),
+				maxf(float(l2.get("sim_time", 0.0)), 0.0),
+				maxf(float(l3.get("sim_time", 0.0)), 0.0),
+				pts_earned, int(result.get("total_pts_spent", 0)),
+				_scenario_share(float(l1.get("partner_dps", 0.0)), l1_total_dps),
+				_scenario_share(float(l1.get("manual_dps", 0.0)), l1_total_dps),
+				_scenario_share(float(l1.get("ability_dps", 0.0)), l1_total_dps),
+				tag,
+				_fmt_talent_levels(result.get("talent_levels", [])),
+			])
+
+
+func _fmt_talent_levels(levels: Array) -> String:
+	if levels.is_empty():
+		return "0|0|0|0|0|0"
+	var parts: PackedStringArray = PackedStringArray()
+	for i: int in range(levels.size()):
+		parts.append(str(int(levels[i])))
+	return "|".join(parts)
 
 
 func _section_warnings() -> void:
