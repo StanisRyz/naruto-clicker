@@ -5,7 +5,7 @@ extends RefCounted
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
 # Generated key count: 311
-# Generated at: 1781281923
+# Generated at: 1781361512
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -227,9 +227,9 @@ const TRANSLATIONS: Dictionary = {
 		"prestige.talent.06.purchase_gain": "+{bonus}% Boss Damage",
 		"prestige.talent.06.total_bonus": "Boss Damage +{bonus}%",
 		"shop.gold_pack_small.name": "Small Gold Pack",
-		"shop.gold_pack_small.description": "Gain stage-scaled gold",
+		"shop.gold_pack_small.description": "Gain 5 hours of idle gold",
 		"shop.gold_pack_large.name": "Large Gold Pack",
-		"shop.gold_pack_large.description": "Gain a large stage-scaled gold reward",
+		"shop.gold_pack_large.description": "Gain 24 hours of idle gold",
 		"shop.boss_retry_token.name": "Boss Retry",
 		"shop.boss_retry_token.description": "Return to the failed boss level",
 		"shop.task_boost.name": "Task Reward Boost",
@@ -540,9 +540,9 @@ const TRANSLATIONS: Dictionary = {
 		"prestige.talent.06.purchase_gain": "+{bonus}% Урон Боссу",
 		"prestige.talent.06.total_bonus": "Урон Боссу +{bonus}%",
 		"shop.gold_pack_small.name": "Малый пакет золота",
-		"shop.gold_pack_small.description": "Даёт золото с текущего этапа",
+		"shop.gold_pack_small.description": "5 часов офлайн-золота",
 		"shop.gold_pack_large.name": "Большой пакет золота",
-		"shop.gold_pack_large.description": "Даёт крупное количество золота с текущего этапа",
+		"shop.gold_pack_large.description": "24 часа офлайн-золота",
 		"shop.boss_retry_token.name": "",
 		"shop.boss_retry_token.description": "",
 		"shop.task_boost.name": "",

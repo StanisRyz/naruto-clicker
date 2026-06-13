@@ -993,10 +993,20 @@ func _save_game_now() -> bool:
 
 
 func _load_game_on_start() -> void:
+	var now: int = int(Time.get_unix_time_from_system())
 	var data: Dictionary = SaveManager.load_data()
 	if data.is_empty():
+		state.last_save_unix_time = now
 		return
+
 	state.apply_save_data(data)
+
+	var previous_time: int = state.last_save_unix_time
+	if previous_time > 0 and now > previous_time:
+		state.apply_offline_gold_reward(now - previous_time)
+
+	state.last_save_unix_time = now
+	_save_game_now()
 
 
 func _sync_debug_visual_test_gems() -> void:

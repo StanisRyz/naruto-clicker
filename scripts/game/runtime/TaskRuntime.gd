@@ -110,19 +110,16 @@ static func is_task_completed(state: ClickerState, task_id: String) -> bool:
 # --- Reward helpers ---
 
 static func get_current_task_reward_unit(state: ClickerState) -> int:
-	var base_reward: int = state.get_base_enemy_reward_for_level(state.current_level)
-	var zone_scaled: int = ceili(base_reward * state.zone_reward_multiplier)
-	return maxi(1, zone_scaled)
+	return state.get_gold_reward_baseline_for_idle_systems()
 
 
 static func get_task_reward_gold(state: ClickerState, task_id: String) -> int:
 	var task: Dictionary = TaskConfig.get_by_id(task_id)
 	if task.is_empty():
 		return 0
-	var reward_scale: int = int(task.get("reward_scale", 0))
-	if reward_scale <= 0:
-		return 0
-	return maxi(1, int(get_current_task_reward_unit(state) * reward_scale * state.get_partner_skill_bonus_multiplier("task_reward")))
+	var baseline: int = state.get_gold_reward_baseline_for_idle_systems()
+	var reward: int = baseline * BalanceConfig.TASK_REWARD_LAST_BOSS_MULTIPLIER
+	return maxi(1, int(float(reward) * state.get_partner_skill_bonus_multiplier("task_reward")))
 
 
 # --- Claim / rotation ---

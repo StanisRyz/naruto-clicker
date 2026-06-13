@@ -111,6 +111,10 @@ const DEBUG_PURCHASE_COST: int = 1
 const DEBUG_PURCHASE_MAX_BULK: int = 100
 const DEBUG_PRESTIGE_REWARD: int = 999
 
+var last_save_unix_time: int = 0
+var pending_offline_gold_reward: int = 0
+var pending_offline_elapsed_seconds: int = 0
+
 var prestige_points: int:
 	get:
 		return prestige_points_available
@@ -2269,6 +2273,94 @@ func _make_attack_result(
 		"zone_changed": zone_changed,
 		"zone_name": new_zone_name,
 	}
+
+
+# --- Boss reward baseline helpers (pure preview — do not mutate state) ---
+
+func get_first_boss_level() -> int:
+	return ZoneConfig.BOSS_LEVEL_INTERVAL
+
+
+func get_last_cleared_boss_level_in_current_run() -> int:
+	var best_boss_level: int = 0
+	for level_key in cleared_level_ids.keys():
+		var level: int = int(level_key)
+		if level > 0 and level % ZoneConfig.BOSS_LEVEL_INTERVAL == 0:
+			best_boss_level = maxi(best_boss_level, level)
+	return best_boss_level
+
+
+func get_enemy_reward_for_level_preview(level: int, as_boss: bool = false, as_elite: bool = false) -> int:
+	if level <= 0:
+		return 0
+	var base_reward: int = get_base_enemy_reward_for_level(level)
+	var reward_multiplier: float = ZoneConfig.get_effective_reward_multiplier_for_level(
+		level,
+		BalanceConfig.ZONE_CYCLE_REWARD_MULTIPLIER
+	)
+	return EnemyCalc.get_scaled_reward(
+		base_reward,
+		reward_multiplier,
+		as_boss,
+		as_elite,
+		BalanceConfig.BOSS_REWARD_MULTIPLIER,
+		elite_reward_multiplier
+	)
+
+
+func get_boss_gold_reward_preview(boss_level: int) -> int:
+	if boss_level <= 0:
+		return 0
+	return get_enemy_reward_for_level_preview(boss_level, true, false)
+
+
+func get_first_boss_gold_reward() -> int:
+	return get_boss_gold_reward_preview(get_first_boss_level())
+
+
+func get_last_cleared_boss_gold_reward() -> int:
+	var boss_level: int = get_last_cleared_boss_level_in_current_run()
+	if boss_level <= 0:
+		return 0
+	return get_boss_gold_reward_preview(boss_level)
+
+
+func get_gold_reward_baseline_for_idle_systems() -> int:
+	var last_boss_reward: int = get_last_cleared_boss_gold_reward()
+	if last_boss_reward > 0:
+		return last_boss_reward
+	return get_first_boss_gold_reward()
+
+
+# --- Offline gold helpers ---
+
+func calculate_offline_gold_reward(elapsed_seconds: int) -> Dictionary:
+	var safe_elapsed: int = maxi(elapsed_seconds, 0)
+	var capped_elapsed: int = safe_elapsed
+	if BalanceConfig.OFFLINE_GOLD_MAX_SECONDS > 0:
+		capped_elapsed = mini(capped_elapsed, int(BalanceConfig.OFFLINE_GOLD_MAX_SECONDS))
+
+	var baseline: int = get_gold_reward_baseline_for_idle_systems()
+	var ticks: int = int(float(capped_elapsed) / BalanceConfig.OFFLINE_GOLD_TICK_SECONDS)
+	var reward: int = maxi(0, ticks * baseline)
+
+	return {
+		"elapsed_seconds": safe_elapsed,
+		"capped_elapsed_seconds": capped_elapsed,
+		"ticks": ticks,
+		"baseline_gold": baseline,
+		"reward_gold": reward,
+	}
+
+
+func apply_offline_gold_reward(elapsed_seconds: int) -> Dictionary:
+	var result: Dictionary = calculate_offline_gold_reward(elapsed_seconds)
+	var reward: int = int(result.get("reward_gold", 0))
+	if reward > 0:
+		gold += reward
+		pending_offline_gold_reward = reward
+		pending_offline_elapsed_seconds = int(result.get("capped_elapsed_seconds", 0))
+	return result
 
 
 func get_save_data() -> Dictionary:

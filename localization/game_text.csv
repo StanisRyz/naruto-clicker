@@ -217,9 +217,9 @@ prestige.talent.05.total_bonus,Settlement +{bonus}%,Поселение +{bonus}%
 prestige.talent.06.purchase_gain,+{bonus}% Boss Damage,+{bonus}% Урон Боссу,PrestigePanel talent 06 card row 3,{bonus} is integer percent gain
 prestige.talent.06.total_bonus,Boss Damage +{bonus}%,Урон Боссу +{bonus}%,PrestigePanel talent 06 card row 4,{bonus} is integer current total bonus
 shop.gold_pack_small.name,Small Gold Pack,Малый пакет золота,ShopConfig product name,
-shop.gold_pack_small.description,Gain stage-scaled gold,Даёт золото с текущего этапа,ShopConfig product description,
+shop.gold_pack_small.description,Gain 5 hours of idle gold,5 часов офлайн-золота,ShopConfig product description,
 shop.gold_pack_large.name,Large Gold Pack,Большой пакет золота,ShopConfig product name,
-shop.gold_pack_large.description,Gain a large stage-scaled gold reward,Даёт крупное количество золота с текущего этапа,ShopConfig product description,
+shop.gold_pack_large.description,Gain 24 hours of idle gold,24 часа офлайн-золота,ShopConfig product description,
 shop.boss_retry_token.name,Boss Retry,,ShopConfig product name,
 shop.boss_retry_token.description,Return to the failed boss level,,ShopConfig product description,
 shop.task_boost.name,Task Reward Boost,,ShopConfig product name,

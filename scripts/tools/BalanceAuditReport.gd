@@ -593,6 +593,7 @@ func _init() -> void:
 		_section_late_game_partner_audit()
 	if RUN_DEEP_LATE_PARTNER_AUDIT:
 		_section_deep_late_partner_audit(zone_cycle_ok)
+	_section_gold_reward_economy()
 	_section_warnings()
 	_write_csv()
 
@@ -6541,6 +6542,158 @@ func _deep_late_emit_purchase_timeline(
 					total_pdps,
 				]
 			)
+
+
+func _section_gold_reward_economy() -> void:
+	_header("SECTION — Gold Reward Economy Check")
+
+	var state: _CS = _CS.new()
+
+	# --- 1. Normal/Boss rewards around boss boundaries ---
+	_ln("")
+	_ln("  Level reward comparison (normal vs boss):")
+	_ln(_row([
+		_rj("Lvl", 5), _rj("Boss?", 6), _rj("NormRwd", 9), _rj("BossRwd", 9), _rj("BossRwd×", 9),
+	]))
+	_div("-", 44)
+
+	var probe_levels: Array[int] = [1, 4, 5, 6, 99, 100, 101, 104, 105, 106, 110]
+	var prev_boss_rwd: int = 0
+	for lvl: int in probe_levels:
+		var norm_rwd: int = state.get_enemy_reward_for_level_preview(lvl, false, false)
+		var boss_rwd: int = state.get_enemy_reward_for_level_preview(lvl, true, false)
+		var is_boss: bool = (lvl % _ZC.BOSS_LEVEL_INTERVAL == 0)
+		var ratio_str: String = "—"
+		if is_boss and prev_boss_rwd > 0:
+			ratio_str = "%.2f×" % (float(boss_rwd) / float(prev_boss_rwd))
+		if is_boss:
+			prev_boss_rwd = boss_rwd
+		_ln(_row([
+			_rj(str(lvl), 5),
+			_rj("YES" if is_boss else "no", 6),
+			_rj(_fn(norm_rwd), 9),
+			_rj(_fn(boss_rwd), 9),
+			_rj(ratio_str, 9),
+		]))
+		_csv_append("gold_baseline_check", lvl, 0, boss_rwd if is_boss else norm_rwd, 0, 0, 0, 0.0,
+			"boss=%s" % ("yes" if is_boss else "no"))
+
+	# --- 2. Boss baseline scenarios ---
+	_ln("")
+	_ln("  Boss baseline scenarios:")
+
+	# no boss cleared
+	var state_fresh: _CS = _CS.new()
+	var fresh_baseline: int = state_fresh.get_gold_reward_baseline_for_idle_systems()
+	var first_boss_rwd: int = state_fresh.get_first_boss_gold_reward()
+	_ln("    No boss cleared  → baseline = %d  (first boss reward = %d)  %s" % [
+		fresh_baseline, first_boss_rwd,
+		"OK" if fresh_baseline == first_boss_rwd else "MISMATCH",
+	])
+	if fresh_baseline != first_boss_rwd:
+		_warn("Gold baseline: no-boss-cleared baseline %d != first boss reward %d" % [fresh_baseline, first_boss_rwd])
+	_csv_append("gold_baseline_check", 0, 0, fresh_baseline, 0, 0, 0, 0.0, "no_boss_cleared")
+
+	# boss 5 cleared
+	var state_b5: _CS = _CS.new()
+	state_b5.cleared_level_ids[5] = true
+	var b5_baseline: int = state_b5.get_gold_reward_baseline_for_idle_systems()
+	var b5_rwd: int = state_b5.get_boss_gold_reward_preview(5)
+	_ln("    Boss 5 cleared   → baseline = %d  (boss 5 reward = %d)  %s" % [
+		b5_baseline, b5_rwd,
+		"OK" if b5_baseline == b5_rwd else "MISMATCH",
+	])
+	if b5_baseline != b5_rwd:
+		_warn("Gold baseline: boss-5-cleared baseline %d != boss 5 reward %d" % [b5_baseline, b5_rwd])
+	_csv_append("gold_baseline_check", 5, 0, b5_baseline, 0, 0, 0, 0.0, "boss_5_cleared")
+
+	# boss 100 cleared
+	var state_b100: _CS = _CS.new()
+	state_b100.cleared_level_ids[100] = true
+	var b100_baseline: int = state_b100.get_gold_reward_baseline_for_idle_systems()
+	var b100_rwd: int = state_b100.get_boss_gold_reward_preview(100)
+	_ln("    Boss 100 cleared → baseline = %d  (boss 100 reward = %d)  %s" % [
+		b100_baseline, b100_rwd,
+		"OK" if b100_baseline == b100_rwd else "MISMATCH",
+	])
+	if b100_baseline != b100_rwd:
+		_warn("Gold baseline: boss-100-cleared baseline %d != boss 100 reward %d" % [b100_baseline, b100_rwd])
+	_csv_append("gold_baseline_check", 100, 0, b100_baseline, 0, 0, 0, 0.0, "boss_100_cleared")
+
+	# after prestige (cleared_level_ids reset)
+	var state_prestige: _CS = _CS.new()
+	var prestige_baseline: int = state_prestige.get_gold_reward_baseline_for_idle_systems()
+	_ln("    After prestige   → baseline = %d  (first boss reward = %d)  %s" % [
+		prestige_baseline, first_boss_rwd,
+		"OK" if prestige_baseline == first_boss_rwd else "MISMATCH",
+	])
+	if prestige_baseline != first_boss_rwd:
+		_warn("Gold baseline: post-prestige baseline %d != first boss reward %d" % [prestige_baseline, first_boss_rwd])
+	_csv_append("gold_baseline_check", 0, 0, prestige_baseline, 0, 0, 0, 0.0, "after_prestige")
+
+	# --- 3. Task reward ---
+	_ln("")
+	_ln("  Task reward checks (expected = baseline × %d):" % _BC.TASK_REWARD_LAST_BOSS_MULTIPLIER)
+
+	var task_cases: Array[Dictionary] = [
+		{"label": "No boss cleared", "baseline": fresh_baseline},
+		{"label": "Boss 5 cleared ", "baseline": b5_rwd},
+		{"label": "Boss 100 cleared", "baseline": b100_rwd},
+	]
+	for tc: Dictionary in task_cases:
+		var bl: int = int(tc.baseline)
+		var expected_reward: int = bl * _BC.TASK_REWARD_LAST_BOSS_MULTIPLIER
+		_ln("    %s → task reward = %d × %d = %d" % [
+			str(tc.label), bl, _BC.TASK_REWARD_LAST_BOSS_MULTIPLIER, expected_reward,
+		])
+		_csv_append("task_reward_check", 0, 0, expected_reward, 0, 0, 0, 0.0, str(tc.label))
+
+	# --- 4. Offline gold ---
+	_ln("")
+	_ln("  Offline gold reward (baseline = %d, tick = %.0fs):" % [fresh_baseline, _BC.OFFLINE_GOLD_TICK_SECONDS])
+
+	var offline_cases: Array = [
+		[19, 0],
+		[20, 1],
+		[40, 2],
+		[18000, 900],
+		[86400, 4320],
+	]
+	for oc: Array in offline_cases:
+		var elapsed: int = int(oc[0])
+		var expected_ticks: int = int(oc[1])
+		var result: Dictionary = state_fresh.calculate_offline_gold_reward(elapsed)
+		var actual_ticks: int = int(result.get("ticks", 0))
+		var actual_reward: int = int(result.get("reward_gold", 0))
+		var _expected_reward_val: int = expected_ticks * fresh_baseline
+		var ok: String = "OK" if actual_ticks == expected_ticks else "MISMATCH"
+		_ln("    %6ds → %4d ticks  reward = %d  %s" % [elapsed, actual_ticks, actual_reward, ok])
+		if actual_ticks != expected_ticks:
+			_warn("Offline gold: elapsed %ds expected %d ticks got %d" % [elapsed, expected_ticks, actual_ticks])
+		_csv_append("offline_gold_check", elapsed, 0, actual_reward, 0, 0, 0, 0.0,
+			"ticks=%d expected=%d" % [actual_ticks, expected_ticks])
+
+	# --- 5. Shop pack ---
+	_ln("")
+	_ln("  Shop gold pack checks (baseline = %d):" % [fresh_baseline])
+	var small_ticks: int = int(_BC.SHOP_SMALL_GOLD_OFFLINE_SECONDS / _BC.OFFLINE_GOLD_TICK_SECONDS)
+	var large_ticks: int = int(_BC.SHOP_LARGE_GOLD_OFFLINE_SECONDS / _BC.OFFLINE_GOLD_TICK_SECONDS)
+	var small_expected: int = fresh_baseline * small_ticks
+	var large_expected: int = fresh_baseline * large_ticks
+	_ln("    Small pack (5h)  → %d ticks × %d = %d" % [small_ticks, fresh_baseline, small_expected])
+	_ln("    Large pack (24h) → %d ticks × %d = %d" % [large_ticks, fresh_baseline, large_expected])
+	_csv_append("shop_gold_pack_check", 0, 0, small_expected, 0, 0, 0, 0.0, "small_pack_no_boss_cleared")
+	_csv_append("shop_gold_pack_check", 0, 0, large_expected, 0, 0, 0, 0.0, "large_pack_no_boss_cleared")
+
+	# --- Warnings ---
+	# Check level 106 reward doesn't drop below level 104 reward
+	var rwd_104: int = state.get_enemy_reward_for_level_preview(104, false, false)
+	var rwd_106: int = state.get_enemy_reward_for_level_preview(106, false, false)
+	if rwd_106 < rwd_104:
+		_warn("Level 106 normal reward (%d) is below level 104 reward (%d) — zone cycle scaling issue" % [rwd_106, rwd_104])
+
+	_ln("")
+	_ln("  Gold economy section complete.")
 
 
 func _section_warnings() -> void:

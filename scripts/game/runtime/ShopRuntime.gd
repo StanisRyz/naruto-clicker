@@ -39,19 +39,22 @@ static func get_shop_product(product_id: String) -> Dictionary:
 	return {}
 
 
+static func get_offline_gold_reward_for_seconds(state: ClickerState, seconds: float) -> int:
+	var baseline: int = state.get_gold_reward_baseline_for_idle_systems()
+	var ticks: int = int(seconds / BalanceConfig.OFFLINE_GOLD_TICK_SECONDS)
+	return maxi(0, baseline * ticks)
+
+
 static func get_gold_pack_reward_for_count(state: ClickerState, product_id: String, count: int) -> int:
-	var base_reward_unit: int = state.get_current_task_reward_unit()
-	var gold_per_pack: int
+	var seconds: float = 0.0
 	match product_id:
 		"gold_pack_small":
-			gold_per_pack = maxi(1, ceili(float(base_reward_unit) / BalanceConfig.TASK_BASELINE_TTK_SECONDS * BalanceConfig.SHOP_SMALL_GOLD_ETV_SECONDS))
+			seconds = BalanceConfig.SHOP_SMALL_GOLD_OFFLINE_SECONDS
 		"gold_pack_large":
-			gold_per_pack = maxi(1, ceili(float(base_reward_unit) / BalanceConfig.TASK_BASELINE_TTK_SECONDS * BalanceConfig.SHOP_LARGE_GOLD_ETV_SECONDS))
+			seconds = BalanceConfig.SHOP_LARGE_GOLD_OFFLINE_SECONDS
 		_:
-			var product: Dictionary = get_shop_product(product_id)
-			var reward_scale: int = int(product.get("reward_scale", 0))
-			gold_per_pack = maxi(1, base_reward_unit * reward_scale)
-	return gold_per_pack * count
+			return 0
+	return maxi(1, get_offline_gold_reward_for_seconds(state, seconds)) * count
 
 
 static func buy_shop_products(state: ClickerState, product_id: String, mode: String) -> Dictionary:

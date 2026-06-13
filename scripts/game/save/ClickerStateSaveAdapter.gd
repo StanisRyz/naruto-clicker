@@ -56,6 +56,7 @@ static func build_save_data(state: ClickerState) -> Dictionary:
 		"sound_enabled": state.sound_enabled,
 		"music_enabled": state.music_enabled,
 		"language": state.language,
+		"last_save_unix_time": int(Time.get_unix_time_from_system()),
 	}
 
 
@@ -170,6 +171,7 @@ static func apply_save_data(state: ClickerState, data: Dictionary) -> bool:
 	state.total_elite_enemies_defeated = maxi(0, int(data.get("total_elite_enemies_defeated", 0)))
 	state.total_bosses_defeated = maxi(0, int(data.get("total_bosses_defeated", 0)))
 	state.total_autoclick_activations = maxi(0, int(data.get("total_autoclick_activations", 0)))
+	state.last_save_unix_time = maxi(0, int(data.get("last_save_unix_time", 0)))
 
 	if not _try_restore_tasks(state, data):
 		state.initialize_tasks()

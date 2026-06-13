@@ -165,15 +165,27 @@ const ZONE_CYCLE_HP_MULTIPLIER: float = 40.0
 const ZONE_CYCLE_REWARD_MULTIPLIER: float = 28.0
 
 
-# --- Tasks — ETV baseline (for documentation; formula uses unit * reward_scale) ---
+# --- Tasks — ETV baseline (kept for audit backward-compat; not used for gold rewards) ---
 const TASK_BASELINE_TTK_SECONDS: float = 2.0
 const TASK_REWARD_SECONDS_BASE: float = 60.0
 
+# task_reward = last_cleared_boss_gold_reward * TASK_REWARD_LAST_BOSS_MULTIPLIER
+const TASK_REWARD_LAST_BOSS_MULTIPLIER: int = 3
 
-# --- Shop gold packs — ETV seconds ---
-# shop_gold = (enemy_reward / TASK_BASELINE_TTK_SECONDS) * etv_seconds
-const SHOP_SMALL_GOLD_ETV_SECONDS: float = 300.0    # 5 minutes ETV
-const SHOP_LARGE_GOLD_ETV_SECONDS: float = 1200.0   # 20 minutes ETV
+
+# --- Offline gold ---
+# One baseline boss reward is awarded every OFFLINE_GOLD_TICK_SECONDS offline.
+const OFFLINE_GOLD_TICK_SECONDS: float = 20.0
+const OFFLINE_GOLD_MAX_SECONDS: float = 86400.0   # 24-hour safety cap
+
+
+# --- Shop gold packs — offline-time equivalent ---
+const SHOP_SMALL_GOLD_OFFLINE_SECONDS: float = 18000.0   # 5 hours  = 900 ticks
+const SHOP_LARGE_GOLD_OFFLINE_SECONDS: float = 86400.0   # 24 hours = 4320 ticks
+
+# Legacy ETV constants — kept so BalanceAuditReport references compile; no longer used for pack values.
+const SHOP_SMALL_GOLD_ETV_SECONDS: float = 300.0
+const SHOP_LARGE_GOLD_ETV_SECONDS: float = 1200.0
 
 const SHOP_BOSS_RETRY_GEMS: int = 20
 const SHOP_TASK_BOOST_GEMS: int = 30
