@@ -8,6 +8,7 @@ const MUSIC_TRACK_PATHS: Array[String] = [
 	"res://assets/audio/music/track_04.ogg",
 	"res://assets/audio/music/track_05.ogg",
 	"res://assets/audio/music/track_06.ogg",
+	"res://assets/audio/music/track_07.ogg",
 ]
 
 const SFX_HIT_PATHS: Array[String] = [
