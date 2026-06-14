@@ -29,6 +29,12 @@ func _ready() -> void:
 	_cancel_label = _make_image_button_label(_cancel_button, "ui.popup.button.default", LocalizationManager.tr_key("shop.confirm.cancel"))
 	_confirm_holder = _confirm_button.find_child("ButtonImageHolder", false, false)
 	_cancel_holder = _cancel_button.find_child("ButtonImageHolder", false, false)
+	UiFontConfig.apply_label_font_size(_title_label, UiFontConfig.SHOP_CONFIRM_TITLE_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(_product_name_label, UiFontConfig.SHOP_CONFIRM_PRODUCT_NAME_FONT_SIZE)
+	if _confirm_label:
+		UiFontConfig.apply_label_font_size(_confirm_label, UiFontConfig.SHOP_CONFIRM_BUTTON_FONT_SIZE)
+	if _cancel_label:
+		UiFontConfig.apply_label_font_size(_cancel_label, UiFontConfig.SHOP_CONFIRM_BUTTON_FONT_SIZE)
 	hide()
 
 

@@ -104,6 +104,11 @@ const OFFLINE_REWARD_TIME_FONT_SIZE: int = 20
 const OFFLINE_REWARD_REWARD_FONT_SIZE: int = 20
 const OFFLINE_REWARD_BUTTON_FONT_SIZE: int = 20
 
+# Shop purchase confirm dialog
+const SHOP_CONFIRM_TITLE_FONT_SIZE: int = 20
+const SHOP_CONFIRM_PRODUCT_NAME_FONT_SIZE: int = 20
+const SHOP_CONFIRM_BUTTON_FONT_SIZE: int = 18
+
 
 static func apply_boss_timer_theme(label: Label) -> void:
 	if label == null:

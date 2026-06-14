@@ -63,8 +63,11 @@ func hide_dialog() -> void:
 
 func set_buttons_loading(loading: bool) -> void:
 	_set_buttons_disabled(loading)
-	if loading and _claim_ad_label:
-		_claim_ad_label.text = LocalizationManager.tr_key("offline_reward.loading_ad")
+	if _claim_ad_label:
+		if loading:
+			_claim_ad_label.text = LocalizationManager.tr_key("offline_reward.loading_ad")
+		else:
+			_claim_ad_label.text = LocalizationManager.tr_key("offline_reward.claim_x3")
 
 
 func _refresh_all_text() -> void:
