@@ -1179,6 +1179,7 @@ func _load_game_on_start() -> void:
 		return
 
 	state.apply_save_data(data)
+	LocalizationManager.set_language(state.language)
 
 	if state.has_pending_offline_gold_reward():
 		# A previously-queued reward was not yet claimed — show it directly.

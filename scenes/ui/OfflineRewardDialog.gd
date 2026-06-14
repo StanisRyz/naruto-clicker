@@ -12,6 +12,10 @@ var _claim_holder = null
 var _claim_ad_holder = null
 var _action_pending: bool = false
 
+var _last_elapsed_seconds: int = 0
+var _last_reward_gold: int = 0
+var _has_reward_data: bool = false
+
 @onready var _title_label: Label = $CenterContainer/InnerPanel/MarginContainer/OuterVBox/LabelsVBox/TitleLabel
 @onready var _time_label: Label = $CenterContainer/InnerPanel/MarginContainer/OuterVBox/LabelsVBox/TimeLabel
 @onready var _reward_label: Label = $CenterContainer/InnerPanel/MarginContainer/OuterVBox/LabelsVBox/RewardLabel
@@ -43,13 +47,10 @@ func show_reward(elapsed_seconds: int, reward_gold: int) -> void:
 	_action_pending = false
 	_reset_button_visuals()
 	_set_buttons_disabled(false)
-	_title_label.text = LocalizationManager.tr_key("offline_reward.title")
-	_time_label.text = LocalizationManager.format_key("offline_reward.time", {"time": format_duration(elapsed_seconds)})
-	_reward_label.text = LocalizationManager.format_key("offline_reward.reward", {"gold": _format_number(reward_gold)})
-	if _claim_label:
-		_claim_label.text = LocalizationManager.tr_key("offline_reward.claim")
-	if _claim_ad_label:
-		_claim_ad_label.text = LocalizationManager.tr_key("offline_reward.claim_x3")
+	_last_elapsed_seconds = elapsed_seconds
+	_last_reward_gold = reward_gold
+	_has_reward_data = true
+	_refresh_all_text()
 	show()
 	move_to_front()
 
@@ -66,13 +67,24 @@ func set_buttons_loading(loading: bool) -> void:
 		_claim_ad_label.text = LocalizationManager.tr_key("offline_reward.loading_ad")
 
 
-func _refresh_labels() -> void:
-	if not visible:
-		return
+func _refresh_all_text() -> void:
+	if _has_reward_data:
+		_title_label.text = LocalizationManager.tr_key("offline_reward.title")
+		_time_label.text = LocalizationManager.format_key("offline_reward.time", {"time": format_duration(_last_elapsed_seconds)})
+		_reward_label.text = LocalizationManager.format_key("offline_reward.reward", {"gold": _format_number(_last_reward_gold)})
 	if _claim_label:
 		_claim_label.text = LocalizationManager.tr_key("offline_reward.claim")
 	if _claim_ad_label:
-		_claim_ad_label.text = LocalizationManager.tr_key("offline_reward.claim_x3")
+		if _action_pending:
+			_claim_ad_label.text = LocalizationManager.tr_key("offline_reward.loading_ad")
+		else:
+			_claim_ad_label.text = LocalizationManager.tr_key("offline_reward.claim_x3")
+
+
+func _refresh_labels() -> void:
+	if not visible:
+		return
+	_refresh_all_text()
 
 
 func _on_claim_pressed() -> void:
