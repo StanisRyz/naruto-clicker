@@ -5,7 +5,7 @@ extends RefCounted
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
 # Generated key count: 369
-# Generated at: 1781426921
+# Generated at: 1781428695
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -266,13 +266,13 @@ const TRANSLATIONS: Dictionary = {
 		"shop.gem_purchase.total": "Total: {amount} Gems",
 		"shop.gem_purchase.price": "{price} ₽",
 		"shop.gems_25.name": "25 Gems",
-		"shop.gems_25.description": "25 gems for 25 ₽",
+		"shop.gems_25.description": "25 gems for 24 ₽",
 		"shop.gems_150.name": "150 Gems",
-		"shop.gems_150.description": "100 gems + 50 free for 100 ₽",
+		"shop.gems_150.description": "100 gems + 50 free for 99 ₽",
 		"shop.gems_500.name": "500 Gems",
-		"shop.gems_500.description": "250 gems + 250 free for 250 ₽",
+		"shop.gems_500.description": "250 gems + 250 free for 249 ₽",
 		"shop.gems_1500.name": "1500 Gems",
-		"shop.gems_1500.description": "500 gems + 1000 free for 500 ₽",
+		"shop.gems_1500.description": "500 gems + 1000 free for 499 ₽",
 		"shop.rewarded_gems_ad.reward_status": "+{amount} Gems!",
 		"task.manual_damage_500.title": "Deal 500 Damage",
 		"task.defeat_25_enemies.title": "Defeat 25 enemies",
@@ -637,13 +637,13 @@ const TRANSLATIONS: Dictionary = {
 		"shop.gem_purchase.total": "Всего: {amount} гемов",
 		"shop.gem_purchase.price": "{price} ₽",
 		"shop.gems_25.name": "25 гемов",
-		"shop.gems_25.description": "25 гемов за 25 ₽",
+		"shop.gems_25.description": "25 гемов за 24 ₽",
 		"shop.gems_150.name": "150 гемов",
-		"shop.gems_150.description": "100 гемов + 50 бесплатно за 100 ₽",
+		"shop.gems_150.description": "100 гемов + 50 бесплатно за 99 ₽",
 		"shop.gems_500.name": "500 гемов",
-		"shop.gems_500.description": "250 гемов + 250 бесплатно за 250 ₽",
+		"shop.gems_500.description": "250 гемов + 250 бесплатно за 249 ₽",
 		"shop.gems_1500.name": "1500 гемов",
-		"shop.gems_1500.description": "500 гемов + 1000 бесплатно за 500 ₽",
+		"shop.gems_1500.description": "500 гемов + 1000 бесплатно за 499 ₽",
 		"shop.rewarded_gems_ad.reward_status": "+{amount} гемов!",
 		"task.manual_damage_500.title": "Нанести 500 Урона",
 		"task.defeat_25_enemies.title": "Победить 25 врагов",

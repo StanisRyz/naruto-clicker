@@ -57,6 +57,8 @@ var balance_logger: BalancePlaytestLogger = null
 var _is_initialized: bool = false
 var _debug_visual_test_previous_gems: int = 0
 var _pending_shop_product_id: String = ""
+var _pending_payment_product_id: String = ""
+var _payment_reward_granted_for_current_request: bool = false
 
 @onready var top_interface_image_holder = $TopInterfaceImageHolder
 @onready var combat_effects_layer: CombatEffectsLayer = $CombatEffectsLayer
@@ -551,25 +553,38 @@ func _on_gem_product_purchase_requested(product_id: String) -> void:
 	if product.is_empty():
 		return
 	var yandex_product_id: String = String(product.get("yandex_product_id", ""))
+	_pending_payment_product_id = product_id
+	_payment_reward_granted_for_current_request = false
 	YandexBridge.purchase_product(yandex_product_id, product_id)
 
 
 func _on_payment_purchase_success(local_product_id: String, purchase_token: String) -> void:
+	if _payment_reward_granted_for_current_request:
+		return
+	if local_product_id != _pending_payment_product_id:
+		push_warning("YandexBridge: success for unexpected product '%s' (pending '%s'), ignoring" % [local_product_id, _pending_payment_product_id])
+		return
+	_payment_reward_granted_for_current_request = true
 	var result: Dictionary = state.grant_paid_gem_purchase(local_product_id)
 	_handle_status_text(result.get("status_text", ""))
 	AudioManager.play_purchase_success()
 	_update_ui()
 	_save_game_now()
 	YandexBridge.consume_purchase(purchase_token)
+	_pending_payment_product_id = ""
 	gem_purchase_dialog.hide_dialog()
 
 
 func _on_payment_purchase_cancelled(_local_product_id: String) -> void:
+	_pending_payment_product_id = ""
+	_payment_reward_granted_for_current_request = false
 	gem_purchase_dialog.set_payment_done()
 	_handle_status_text(LocalizationManager.tr_key("shop.gem_purchase.cancelled"))
 
 
 func _on_payment_purchase_error(_local_product_id: String, _message: String) -> void:
+	_pending_payment_product_id = ""
+	_payment_reward_granted_for_current_request = false
 	gem_purchase_dialog.set_payment_done()
 	AudioManager.play_purchase_error()
 	_handle_status_text(LocalizationManager.tr_key("shop.gem_purchase.error"))

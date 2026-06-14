@@ -256,13 +256,13 @@ shop.gem_purchase.amount_bonus,+{base} Gems +{bonus} Free,+{base} гемов +{b
 shop.gem_purchase.total,Total: {amount} Gems,Всего: {amount} гемов,GemPurchaseDialog total gems label,{amount} is integer
 shop.gem_purchase.price,{price} ₽,{price} ₽,GemPurchaseDialog price label,{price} is integer
 shop.gems_25.name,25 Gems,25 гемов,GemPurchaseConfig product name,
-shop.gems_25.description,25 gems for 25 ₽,25 гемов за 25 ₽,GemPurchaseConfig product description,
+shop.gems_25.description,25 gems for 24 ₽,25 гемов за 24 ₽,GemPurchaseConfig product description,
 shop.gems_150.name,150 Gems,150 гемов,GemPurchaseConfig product name,
-shop.gems_150.description,100 gems + 50 free for 100 ₽,100 гемов + 50 бесплатно за 100 ₽,GemPurchaseConfig product description,
+shop.gems_150.description,100 gems + 50 free for 99 ₽,100 гемов + 50 бесплатно за 99 ₽,GemPurchaseConfig product description,
 shop.gems_500.name,500 Gems,500 гемов,GemPurchaseConfig product name,
-shop.gems_500.description,250 gems + 250 free for 250 ₽,250 гемов + 250 бесплатно за 250 ₽,GemPurchaseConfig product description,
+shop.gems_500.description,250 gems + 250 free for 249 ₽,250 гемов + 250 бесплатно за 249 ₽,GemPurchaseConfig product description,
 shop.gems_1500.name,1500 Gems,1500 гемов,GemPurchaseConfig product name,
-shop.gems_1500.description,500 gems + 1000 free for 500 ₽,500 гемов + 1000 бесплатно за 500 ₽,GemPurchaseConfig product description,
+shop.gems_1500.description,500 gems + 1000 free for 499 ₽,500 гемов + 1000 бесплатно за 499 ₽,GemPurchaseConfig product description,
 shop.rewarded_gems_ad.reward_status,+{amount} Gems!,+{amount} гемов!,Status text after rewarded ad grants gems,{amount} is integer
 task.manual_damage_500.title,Deal 500 Damage,Нанести 500 Урона,TaskConfig task title,
 task.defeat_25_enemies.title,Defeat 25 enemies,Победить 25 врагов,TaskConfig task title,

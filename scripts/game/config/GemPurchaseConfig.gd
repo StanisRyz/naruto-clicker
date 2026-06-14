@@ -10,7 +10,7 @@ const GEM_PRODUCTS: Array[Dictionary] = [
 		"amount_gems": 25,
 		"base_gems": 25,
 		"bonus_gems": 0,
-		"price_rub": 25,
+		"price_rub": 24,
 		"icon_key": "shop.gems_25",
 	},
 	{
@@ -21,7 +21,7 @@ const GEM_PRODUCTS: Array[Dictionary] = [
 		"amount_gems": 150,
 		"base_gems": 100,
 		"bonus_gems": 50,
-		"price_rub": 100,
+		"price_rub": 99,
 		"icon_key": "shop.gems_150",
 	},
 	{
@@ -32,7 +32,7 @@ const GEM_PRODUCTS: Array[Dictionary] = [
 		"amount_gems": 500,
 		"base_gems": 250,
 		"bonus_gems": 250,
-		"price_rub": 250,
+		"price_rub": 249,
 		"icon_key": "shop.gems_500",
 	},
 	{
@@ -43,7 +43,7 @@ const GEM_PRODUCTS: Array[Dictionary] = [
 		"amount_gems": 1500,
 		"base_gems": 500,
 		"bonus_gems": 1000,
-		"price_rub": 500,
+		"price_rub": 499,
 		"icon_key": "shop.gems_1500",
 	},
 ]
