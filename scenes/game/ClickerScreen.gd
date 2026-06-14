@@ -142,6 +142,7 @@ func _ready() -> void:
 	prestige_sheet.closed.connect(_on_sheet_closed)
 	shop_sheet.closed.connect(_on_sheet_closed)
 	rewarded_ad_banner.reward_ad_requested.connect(_on_rewarded_ad_banner_pressed)
+	YandexBridge.rewarded_ad_opened.connect(_on_rewarded_ad_opened)
 	YandexBridge.rewarded_ad_rewarded.connect(_on_rewarded_ad_rewarded)
 	YandexBridge.rewarded_ad_closed.connect(_on_rewarded_ad_closed)
 	YandexBridge.rewarded_ad_error.connect(_on_rewarded_ad_error)
@@ -1414,6 +1415,10 @@ func _on_rewarded_ad_banner_pressed() -> void:
 	YandexBridge.show_rewarded_ad()
 
 
+func _on_rewarded_ad_opened() -> void:
+	AudioManager.pause_for_ad()
+
+
 func _on_rewarded_ad_rewarded() -> void:
 	if _rewarded_ad_reward_granted_for_current_request:
 		return
@@ -1446,6 +1451,7 @@ func _on_rewarded_ad_rewarded() -> void:
 
 
 func _on_rewarded_ad_closed(_was_shown: bool) -> void:
+	AudioManager.resume_after_ad()
 	if _rewarded_ad_request_context == "shop_gems":
 		shop_sheet.set_product_buy_button_modal_pressed(_rewarded_ad_shop_product_id, false)
 	if _rewarded_ad_request_context == "offline_gold_x3" and not _rewarded_ad_reward_granted_for_current_request:
@@ -1457,6 +1463,7 @@ func _on_rewarded_ad_closed(_was_shown: bool) -> void:
 
 
 func _on_rewarded_ad_error(_message: String) -> void:
+	AudioManager.resume_after_ad()
 	if _rewarded_ad_request_context == "shop_gems":
 		shop_sheet.set_product_buy_button_modal_pressed(_rewarded_ad_shop_product_id, false)
 	if _rewarded_ad_request_context == "offline_gold_x3":

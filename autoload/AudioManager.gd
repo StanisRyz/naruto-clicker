@@ -1,9 +1,12 @@
 extends Node
 
 const _SFX_POOL_SIZE: int = 6
+const GOLD_RECEIVED_SOUND_MIN_INTERVAL_SEC: float = 0.15
 
 var _sound_enabled: bool = true
 var _music_enabled: bool = true
+var _paused_for_ad: bool = false
+var _last_gold_received_time: float = -999.0
 
 var _music_player: AudioStreamPlayer = null
 var _sfx_players: Array[AudioStreamPlayer] = []
@@ -145,8 +148,30 @@ func play_reward_received() -> void:
 
 
 func play_gold_received() -> void:
-	if _sound_enabled:
-		_play_sfx(_gold_stream)
+	if not _sound_enabled:
+		return
+	var now: float = Time.get_ticks_msec() / 1000.0
+	if now - _last_gold_received_time < GOLD_RECEIVED_SOUND_MIN_INTERVAL_SEC:
+		return
+	_last_gold_received_time = now
+	_play_sfx(_gold_stream)
+
+
+# --- Ad pause/resume ---
+
+func pause_for_ad() -> void:
+	if _paused_for_ad:
+		return
+	_paused_for_ad = true
+	_music_player.stream_paused = true
+
+
+func resume_after_ad() -> void:
+	if not _paused_for_ad:
+		return
+	_paused_for_ad = false
+	if _music_enabled:
+		_music_player.stream_paused = false
 
 
 # --- Button binding ---
@@ -184,8 +209,19 @@ func _play_track_at_index(index: int) -> void:
 	_music_player.play()
 
 
+func _notification(what: int) -> void:
+	if _music_player == null:
+		return
+	match what:
+		NOTIFICATION_APPLICATION_FOCUS_OUT:
+			_music_player.stream_paused = true
+		NOTIFICATION_APPLICATION_FOCUS_IN:
+			if _music_enabled and not _paused_for_ad:
+				_music_player.stream_paused = false
+
+
 func _play_sfx(stream: AudioStream) -> void:
-	if stream == null:
+	if stream == null or _paused_for_ad:
 		return
 	for player: AudioStreamPlayer in _sfx_players:
 		if not player.playing:
