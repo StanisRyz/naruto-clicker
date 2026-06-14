@@ -13,7 +13,8 @@ config_version=5
 config/name="Naruto Clicker"
 run/main_scene="uid://vp5q6agyccmk"
 config/features=PackedStringArray("4.5", "GL Compatibility")
-config/icon="res://icon.svg"
+boot_splash/image="uid://d2xxh4ek0b7ag"
+config/icon="uid://b2er20jnl6rl0"
 
 [autoload]
 
@@ -28,8 +29,6 @@ AudioManager="*res://autoload/AudioManager.gd"
 window/size/viewport_width=720
 window/size/viewport_height=1600
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
-window/stretch/scale_mode="fractional"
 window/handheld/orientation=1
 
 [editor_plugins]
