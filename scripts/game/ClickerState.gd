@@ -8,7 +8,7 @@ const EnemyCalc = preload("res://scripts/game/calculators/EnemyScalingCalculator
 const Presentation = preload("res://scripts/game/presentation/ClickerStatePresentation.gd")
 const TaskRT = preload("res://scripts/game/runtime/TaskRuntime.gd")
 const ShopRT = preload("res://scripts/game/runtime/ShopRuntime.gd")
-const GemPurchaseConfig = preload("res://scripts/game/config/GemPurchaseConfig.gd")
+const GemPurchaseConfigData = preload("res://scripts/game/config/GemPurchaseConfig.gd")
 
 
 var gold: int = 0
@@ -916,7 +916,7 @@ func grant_rewarded_ad_bonus(reward_id: String) -> Dictionary:
 
 
 func grant_paid_gem_purchase(product_id: String) -> Dictionary:
-	var product: Dictionary = GemPurchaseConfig.get_by_id(product_id)
+	var product: Dictionary = GemPurchaseConfigData.get_by_id(product_id)
 	if product.is_empty():
 		return _make_purchase_result(LocalizationManager.tr_key("shop.gem_purchase.invalid_product"))
 

@@ -31,7 +31,7 @@ settings.title,Settings,Настройки,SettingsWindow title,
 settings.language,Language,Язык,SettingsWindow language row label,
 settings.language.en,English,English,Language selector option,
 settings.language.ru,Русский,Русский,Language selector option,
-settings.reset_progress,Reset Progress,Сбросить Прогресс,SettingsWindow,
+settings.reset_progress,Reset Progress,Сброс Прогресса,SettingsWindow,
 settings.confirm_reset,Confirm Reset,Подтвердить Сброс,SettingsWindow reset confirm dialog,
 settings.saved,Saved,Сохранено,SettingsWindow save status message,
 settings.save_failed,Save failed,Ошибка Сохранения,SettingsWindow save status message,
@@ -44,9 +44,9 @@ auto_transition.description.line_3,move to the next,автоматически �
 auto_transition.description.line_4,unlocked level,на следующий уровень,AutoTransitionPopup description line 4,
 skill_popup.hero.title,Skill,Навык,UpgradeSkillPopup header title fallback,
 skill_popup.partner.title,Partner Skill,Навык партнёра,PartnerSkillPopup header title fallback,
-skill_popup.requirement.hero_level,Requires Hero Level {level},Требуется уровень героя {level},Skill popup requirement row,{level} is integer
-skill_popup.requirement.ability_purchase,Requires buying {ability},Требуется купить {ability},Skill popup requirement row for ability-gated skill,{ability} is ability display name
-skill_popup.requirement.partner_count,Requires {count} {partner},Требуется {count} {partner},Skill popup requirement row,{count} integer; {partner} name
+skill_popup.requirement.hero_level,Requires {level} Lv,Требуется {level} Ур,Skill popup requirement row,{level} is integer
+skill_popup.requirement.ability_purchase,Requires {ability},Требуется {ability},Skill popup requirement row for ability-gated skill,{ability} is ability display name
+skill_popup.requirement.partner_count,Requires {count},Требуется {count},Skill popup requirement row,{count} integer; {partner} name
 skill_popup.current.hero_level,Current: {current} / {required},Сейчас: {current} / {required},Skill popup current state row,{current} and {required} are integers
 skill_popup.current.partner_count,Current: {current} / {required},Сейчас: {current} / {required},Skill popup current state row,{current} and {required} are integers
 skill_popup.current.unlocked,Unlocked,Открыто,Skill popup current state when requirement met,
@@ -85,20 +85,20 @@ prestige.action,Prestige,Престиж,PrestigePanel button,
 prestige.action_card.title,Prestige,Престиж,PrestigePanel action card row 1,
 prestige.action_card.reward,Receive +{points},Получить +{points},PrestigePanel action card row 2,{points} is compact number
 prestige.action_card.reset_progress,Reset progress,Сбросить прогресс,PrestigePanel action card row 3,
-prestige.action_card.get_points,get points,получить очки,PrestigePanel action card row 4,
+prestige.action_card.get_points,Get points,Получить очки,PrestigePanel action card row 4,
 prestige.talent_upgrade_bulk,x{count} - {cost},x{count} - {cost},PrestigePanel talent upgrade button,{count} is integer; {cost} is compact PP cost
 prestige.card.name,{name},{name},PrestigePanel talent card row 1,{name} is talent name
 prestige.card.count,Owned: {count},Кол-во: {count},PrestigePanel talent card row 2,{count} is integer talent level
 prestige.card.empty, , ,PrestigePanel talent card row 5 (reserved blank row),
-prestige.confirm.stage_level,Stage level,Этап,PrestigeConfirmDialog label,followed by colon and value in code
-prestige.confirm.character_level,Character level,Уровень,PrestigeConfirmDialog label,
+prestige.confirm.stage_level,Stage,Этап,PrestigeConfirmDialog label,followed by colon and value in code
+prestige.confirm.character_level,Level,Уровень,PrestigeConfirmDialog label,
 prestige.confirm.stage_points,Stage points,Очки этапа,PrestigeConfirmDialog label,
-prestige.confirm.character_points,Character points,Очки уровня,PrestigeConfirmDialog label,
+prestige.confirm.character_points,Level points,Очки уровня,PrestigeConfirmDialog label,
 prestige.confirm.points_to_gain,Points to gain: {points},Очки к получению: {points},PrestigeConfirmDialog label,{points} is compact number
 prestige.confirm.available_after,Available after,Доступно после,PrestigeConfirmDialog label,
 prestige.confirm.total_earned_after,Total earned after,Все заработано,PrestigeConfirmDialog label,
 prestige.confirm.warning,All normal progress will reset,Весь прогресс будет сброшен,PrestigeConfirmDialog warning text,
-prestige.confirm.talents_note,Purchased prestige talents remain,Купленные таланты престижа сохраняются,PrestigeConfirmDialog note,
+prestige.confirm.talents_note,Purchased talents remain,Купленные таланты сохраняются,PrestigeConfirmDialog note,
 prestige.confirm.title,Prestige,Престиж,PrestigeConfirmDialog window title,
 prestige.confirm.stage,Stage: {stage},Этап: {stage},PrestigeConfirmDialog stage row,{stage} is integer level
 prestige.confirm.level,Level: {level},Уровень: {level},PrestigeConfirmDialog character level row,{level} is integer
@@ -217,34 +217,34 @@ prestige.talent.05.total_bonus,Settlement +{bonus}%,Поселение +{bonus}%
 prestige.talent.06.purchase_gain,+{bonus}% Boss Damage,+{bonus}% Урон Боссу,PrestigePanel talent 06 card row 3,{bonus} is integer percent gain
 prestige.talent.06.total_bonus,Boss Damage +{bonus}%,Урон Боссу +{bonus}%,PrestigePanel talent 06 card row 4,{bonus} is integer current total bonus
 shop.gold_pack_small.name,Small Gold Pack,Малый пакет золота,ShopConfig product name,
-shop.gold_pack_small.description,Gain 5 hours of idle gold,5 часов офлайн-золота,ShopConfig product description,
+shop.gold_pack_small.description,Gain 5 hours of gold,5 часов золота,ShopConfig product description,
 shop.gold_pack_large.name,Large Gold Pack,Большой пакет золота,ShopConfig product name,
-shop.gold_pack_large.description,Gain 24 hours of idle gold,24 часа офлайн-золота,ShopConfig product description,
+shop.gold_pack_large.description,Gain 24 hours of gold,24 часа золота,ShopConfig product description,
 shop.boss_retry_token.name,Boss Retry,,ShopConfig product name,
 shop.boss_retry_token.description,Return to the failed boss level,,ShopConfig product description,
 shop.task_boost.name,Task Reward Boost,,ShopConfig product name,
 shop.task_boost.description,Next claimed task gives x2 gold,,ShopConfig product description,
-shop.permanent_partner_dps_x2.name,Permanent Partner DPS x2,Вечный x2 ДПС партнёров,Shop product name,
-shop.permanent_partner_dps_x2.description,Permanently doubles Partner DPS,Навсегда удваивает ДПС партнёров,Shop product description,
-shop.permanent_click_damage_x2.name,Permanent Click Damage x2,Вечный x2 урон клика,Shop product name,
-shop.permanent_click_damage_x2.description,Permanently doubles click damage,Навсегда удваивает урон клика,Shop product description,
+shop.permanent_partner_dps_x2.name,Permanent DPS x2,Вечный x2 DPS,Shop product name,
+shop.permanent_partner_dps_x2.description,Permanently х2 DPS,Навсегда х2 DPS,Shop product description,
+shop.permanent_click_damage_x2.name,Permanent Damage x2,Вечный x2 Урон,Shop product name,
+shop.permanent_click_damage_x2.description,Permanently х2 Damage,Навсегда x2 Урон,Shop product description,
 shop.permanent_gold_x2.name,Permanent Gold x2,Вечный x2 золото,Shop product name,
-shop.permanent_gold_x2.description,Permanently doubles gold from enemies,Навсегда удваивает золото с врагов,Shop product description,
+shop.permanent_gold_x2.description,Permanently x2 Gold,Навсегда х2 Золота,Shop product description,
 shop.buy_button_count,x{count} - {cost},x{count} - {cost},ShopPanel buy button,{count} is integer; {cost} is compact number
 shop.card.gold_reward,Gives +{amount} Gold,Даёт +{amount} золота,ShopPanel card effect row for gold packs,{amount} is compact number
-shop.card.partner_dps_multiplier,Gives Partner DPS x{multiplier},Даёт DPS партнёров x{multiplier},ShopPanel card effect row for partner DPS product,{multiplier} is integer
-shop.card.click_damage_multiplier,Gives Click Damage x{multiplier},Даёт урон клика x{multiplier},ShopPanel card effect row for click damage product,{multiplier} is integer
-shop.card.gold_multiplier,Gives Gold x{multiplier},Даёт золото x{multiplier},ShopPanel card effect row for gold multiplier product,{multiplier} is integer
-shop.card.owned,Owned: {count},Копий: {count},ShopPanel card row 4 owned count,{count} is integer
-shop.card.total_multiplier,Total bonus: x{multiplier},Суммарный бонус: x{multiplier},ShopPanel card row 5 total bonus,{multiplier} is integer
+shop.card.partner_dps_multiplier,Gives DPS x{multiplier},Даёт DPS x{multiplier},ShopPanel card effect row for partner DPS product,{multiplier} is integer
+shop.card.click_damage_multiplier,Gives Damage x{multiplier},Даёт Урон x{multiplier},ShopPanel card effect row for click damage product,{multiplier} is integer
+shop.card.gold_multiplier,Gives Gold x{multiplier},Даёт Золото x{multiplier},ShopPanel card effect row for gold multiplier product,{multiplier} is integer
+shop.card.owned,Owned: {count},Всего: {count},ShopPanel card row 4 owned count,{count} is integer
+shop.card.total_multiplier,Bonus: x{multiplier},Бонус: x{multiplier},ShopPanel card row 5 total bonus,{multiplier} is integer
 shop.rewarded_gems_ad.name,Watch Ad: +3 Gems,Реклама: +3 гема,Shop rewarded ad product name,
-shop.rewarded_gems_ad.description,Watch an ad to receive gems,Посмотрите рекламу чтобы получить гемы,Shop rewarded ad product description,
-shop.card.rewarded_gems,Gives +{amount} Gems,Даёт +{amount} гемов,ShopPanel card effect row for rewarded gems ad,{amount} is compact number
+shop.rewarded_gems_ad.description,Gems for AD,Гемы за рекламу,Shop rewarded ad product description,
+shop.card.rewarded_gems,+{amount} Gems,+{amount} Гемов,ShopPanel card effect row for rewarded gems ad,{amount} is compact number
 shop.button.watch_ad,Watch Ad,Смотреть,ShopPanel buy button for rewarded ad products,
 shop.button.open,Open,Открыть,ShopPanel buy button for donation_entry products,
 shop.gem_purchase_entry.name,Buy Gems,Купить гемы,ShopConfig gem_purchase_entry product name,
 shop.gem_purchase_entry.description,Purchase gems,Покупка гемов,ShopConfig gem_purchase_entry product description,
-shop.card.gem_purchase_entry,Opens gem purchase options,Открывает варианты покупки гемов,ShopPanel card effect row for gem_purchase_entry,
+shop.card.gem_purchase_entry,Buy Gems,Купить гемы,ShopPanel card effect row for gem_purchase_entry,
 shop.gem_purchase.title,Buy Gems,Купить гемы,GemPurchaseDialog title,
 shop.gem_purchase.invalid_product,Invalid gem product,Неверный товар,GemPurchaseDialog error status,
 shop.gem_purchase.success,+{amount} Gems!,+{amount} гемов!,GemPurchaseDialog success status,{amount} is integer
@@ -264,15 +264,15 @@ shop.gems_500.description,250 gems + 250 free for 250 ₽,250 гемов + 250 �
 shop.gems_1500.name,1500 Gems,1500 гемов,GemPurchaseConfig product name,
 shop.gems_1500.description,500 gems + 1000 free for 500 ₽,500 гемов + 1000 бесплатно за 500 ₽,GemPurchaseConfig product description,
 shop.rewarded_gems_ad.reward_status,+{amount} Gems!,+{amount} гемов!,Status text after rewarded ad grants gems,{amount} is integer
-task.manual_damage_500.title,Deal 500 manual damage,,TaskConfig task title,
-task.defeat_25_enemies.title,Defeat 25 enemies,,TaskConfig task title,
-task.defeat_2_elites.title,Defeat 2 elite enemies,,TaskConfig task title,
-task.defeat_1_boss.title,Defeat 1 boss,,TaskConfig task title,
-task.gain_10_hero_levels.title,Gain 10 Hero Levels,,TaskConfig task title,
-task.hire_10_partners.title,Hire 10 partners,,TaskConfig task title,
-task.build_5_buildings.title,Build 5 settlement buildings,,TaskConfig task title,
-task.activate_autoclick_1.title,Activate Autoclick 1 time,,TaskConfig task title,
-task.gain_10_game_levels.title,Reach 10 more levels,,TaskConfig task title,
+task.manual_damage_500.title,Deal 500 Damage,Нанести 500 Урона,TaskConfig task title,
+task.defeat_25_enemies.title,Defeat 25 enemies,Победить 25 врагов,TaskConfig task title,
+task.defeat_2_elites.title,Defeat 2 elite enemies,Победить 2 элитных врагов,TaskConfig task title,
+task.defeat_1_boss.title,Defeat 1 boss,Победить 1 босса,TaskConfig task title,
+task.gain_10_hero_levels.title,Buy 10 Levels,Купить 10 Уровней,TaskConfig task title,
+task.hire_10_partners.title,Hire 10 partners,Нанять 10 Партнеров,TaskConfig task title,
+task.build_5_buildings.title,Buy 5 buildings,Купить 5 Строений,TaskConfig task title,
+task.activate_autoclick_1.title,Activate Autoclick 1 time,Активировать Автоклик 1 раз,TaskConfig task title,
+task.gain_10_game_levels.title,Reach 10 more stages,Пройти 10 этапов,TaskConfig task title,
 ability.autoclick.name,Autoclick,Автоклик,UpgradePanel ability name,
 ability.gold_bonus.name,Gold Bonus,Бонус Золота,UpgradePanel ability name,
 ability.focus_burst.name,Focus Burst,Взрывной Урон,UpgradePanel ability name,

@@ -32,6 +32,8 @@ func _ready() -> void:
 	_desc_line2.text = L.tr_key("auto_transition.description.line_2")
 	_desc_line3.text = L.tr_key("auto_transition.description.line_3")
 	_desc_line4.text = L.tr_key("auto_transition.description.line_4")
+	for lbl in [_desc_line1, _desc_line2, _desc_line3, _desc_line4, _status_label]:
+		UiFontConfig.apply_label_font_size(lbl, UiFontConfig.AUTO_TRANSITION_POPUP_FONT_SIZE)
 
 
 func show_popup(state: ClickerState, anchor: Vector2, button_global_rect: Rect2 = Rect2()) -> void:

@@ -150,6 +150,11 @@ const ASSET_PATHS: Dictionary = {
 	"rewarded_ad.banner.all_damage": "res://assets/images/ui/rewarded_ads/banner_all_damage.png",
 	"rewarded_ad.banner.gems":       "res://assets/images/ui/rewarded_ads/banner_gems.png",
 	"rewarded_ad.banner.gold":       "res://assets/images/ui/rewarded_ads/banner_gold.png",
+
+	# Combat hit impact textures — displayed 0.1 s on manual character hit
+	"combat.hit_effect.1": "res://assets/images/combat/hit_effects/hit_01.png",
+	"combat.hit_effect.2": "res://assets/images/combat/hit_effects/hit_02.png",
+	"combat.hit_effect.3": "res://assets/images/combat/hit_effects/hit_03.png",
 }
 
 

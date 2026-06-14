@@ -91,6 +91,13 @@ const STAGE_NAV_SIDE_BUTTON_FONT_SIZE: int = 28
 const STAGE_NUMBER_FONT_SIZE: int = STAGE_NAV_STAGE_NUMBER_FONT_SIZE
 const STAGE_SIDE_BUTTON_FONT_SIZE: int = STAGE_NAV_SIDE_BUTTON_FONT_SIZE
 
+# Auto transition popup
+const AUTO_TRANSITION_POPUP_FONT_SIZE: int = 20
+
+# Settings window
+const SETTINGS_ACTION_BUTTON_FONT_SIZE: int = 20
+const SETTINGS_ROW_FONT_SIZE: int = 22
+
 
 static func apply_boss_timer_theme(label: Label) -> void:
 	if label == null:

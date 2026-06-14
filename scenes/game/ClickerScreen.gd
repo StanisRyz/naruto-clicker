@@ -39,6 +39,13 @@ var enemy_transition_token: int = 0
 const ENEMY_SPAWN_SMOKE_DURATION: float = 0.3
 const ENEMY_SPAWN_INVULNERABILITY_DURATION: float = 0.1
 const BOTTOM_TAB_BUTTON_FALLBACK_COLOR: Color = Color(1, 1, 1, 1)
+const HIT_EFFECT_ASSET_KEYS: Array[String] = [
+	"combat.hit_effect.1",
+	"combat.hit_effect.2",
+	"combat.hit_effect.3",
+]
+const HIT_EFFECT_SIZE: Vector2 = Vector2(128, 128)
+const HIT_EFFECT_DURATION_SEC: float = 0.1
 var _autosave_timer: float = 0.0
 const _AUTOSAVE_INTERVAL: float = 10.0
 var _rewarded_ad_reward_granted_for_current_request: bool = false
@@ -83,6 +90,7 @@ var _pending_shop_product_id: String = ""
 @onready var shop_button_image = $BottomBar/MarginContainer/HBoxContainer/ShopButton/ImageHolder
 @onready var bottom_tabs_backdrop = $BottomTabsBackdrop
 @onready var rewarded_ad_banner: Control = $RewardedAdBanner
+@onready var hit_effect_layer: Control = $HitEffectLayer
 
 
 func _ready() -> void:
@@ -290,6 +298,7 @@ func _on_attack_requested(click_global_position: Vector2) -> void:
 	_apply_attack_result(result, true, was_boss_level)
 	if damage_dealt > 0:
 		game_field.spawn_damage_number(damage_dealt, click_global_position)
+		_spawn_hit_effect(click_global_position)
 
 
 func _on_character_level_upgrade_requested(mode: String) -> void:
@@ -755,6 +764,34 @@ func _apply_attack_result(result: Dictionary, show_hit_feedback: bool, was_boss_
 	progress_info_panel.update_view(state)
 	game_field.update_view(state)
 	_sync_boss_timer()
+
+
+func _spawn_hit_effect(global_hit_position: Vector2 = Vector2.ZERO) -> void:
+	var effect := TextureRect.new()
+	effect.custom_minimum_size = HIT_EFFECT_SIZE
+	effect.size = HIT_EFFECT_SIZE
+	effect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	effect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	effect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var asset_key: String = HIT_EFFECT_ASSET_KEYS[randi() % HIT_EFFECT_ASSET_KEYS.size()]
+	effect.texture = GameAssetCatalog.load_texture(asset_key)
+	hit_effect_layer.add_child(effect)
+	var local_pos: Vector2
+	if global_hit_position != Vector2.ZERO:
+		local_pos = hit_effect_layer.get_global_transform().affine_inverse() * global_hit_position
+	else:
+		local_pos = _get_default_hit_effect_position()
+	effect.position = local_pos - HIT_EFFECT_SIZE * 0.5
+	await get_tree().create_timer(HIT_EFFECT_DURATION_SEC).timeout
+	if is_instance_valid(effect):
+		effect.queue_free()
+
+
+func _get_default_hit_effect_position() -> Vector2:
+	var enemy_rect: Rect2 = game_field.get_enemy_global_rect()
+	var center_global: Vector2 = enemy_rect.get_center()
+	var local: Vector2 = hit_effect_layer.get_global_transform().affine_inverse() * center_global
+	return local + Vector2(randf_range(-12.0, 12.0), randf_range(-12.0, 12.0))
 
 
 func _run_autoclick_attack() -> void:

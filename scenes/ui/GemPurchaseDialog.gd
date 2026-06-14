@@ -7,15 +7,12 @@ const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 
 const ICON_SIZE: Vector2 = Vector2(160, 160)
 const BUY_BUTTON_SIZE: Vector2 = Vector2(160, 52)
-const CELL_BG_COLOR: Color = Color(0.11, 0.115, 0.135, 1.0)
-const CELL_BORDER_COLOR: Color = Color(0.20, 0.21, 0.26, 1.0)
 
 var _product_cells: Array[Dictionary] = []
 var _payment_in_progress: bool = false
 
-@onready var _close_button: Button = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/TopBar/CloseButton
-@onready var _title_label: Label = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/TopBar/TitleLabel
-@onready var _products_grid: GridContainer = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ProductsGrid
+@onready var _close_button: Button = $CenterContainer/InnerPanel/ContentLayer/CloseButton
+@onready var _products_grid: GridContainer = $CenterContainer/InnerPanel/ContentLayer/GridCenterContainer/ProductsGrid
 @onready var _inner_panel: PanelContainer = $CenterContainer/InnerPanel
 
 
@@ -24,7 +21,6 @@ func _ready() -> void:
 	ButtonVisualUtils.setup_image_button(_close_button, "ui.sheet.close_button", Color.WHITE)
 	_close_button.pressed.connect(_on_close_pressed)
 	_build_product_cells()
-	_title_label.text = LocalizationManager.tr_key("shop.gem_purchase.title")
 	hide()
 
 
@@ -32,7 +28,6 @@ func show_dialog() -> void:
 	_payment_in_progress = false
 	_set_all_buy_buttons_disabled(false)
 	ButtonVisualUtils.set_image_button_asset(_close_button, "ui.sheet.close_button")
-	_title_label.text = LocalizationManager.tr_key("shop.gem_purchase.title")
 	show()
 	move_to_front()
 
@@ -43,7 +38,7 @@ func hide_dialog() -> void:
 
 
 func refresh_view() -> void:
-	_title_label.text = LocalizationManager.tr_key("shop.gem_purchase.title")
+	pass
 
 
 func set_payment_done() -> void:
@@ -71,30 +66,18 @@ func _build_product_cells() -> void:
 
 
 func _create_product_cell(product_id: String, product: Dictionary) -> Dictionary:
-	var cell_bg := PanelContainer.new()
+	var cell_bg := MarginContainer.new()
 	cell_bg.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	cell_bg.size_flags_vertical = Control.SIZE_EXPAND_FILL
-
-	var cell_style := StyleBoxFlat.new()
-	cell_style.bg_color = CELL_BG_COLOR
-	cell_style.border_width_left = 1
-	cell_style.border_width_top = 1
-	cell_style.border_width_right = 1
-	cell_style.border_width_bottom = 1
-	cell_style.border_color = CELL_BORDER_COLOR
-	cell_bg.add_theme_stylebox_override("panel", cell_style)
-
-	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 12)
-	margin.add_theme_constant_override("margin_top", 12)
-	margin.add_theme_constant_override("margin_right", 12)
-	margin.add_theme_constant_override("margin_bottom", 12)
-	cell_bg.add_child(margin)
+	cell_bg.add_theme_constant_override("margin_left", 12)
+	cell_bg.add_theme_constant_override("margin_top", 12)
+	cell_bg.add_theme_constant_override("margin_right", 12)
+	cell_bg.add_theme_constant_override("margin_bottom", 12)
 
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 10)
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	margin.add_child(vbox)
+	cell_bg.add_child(vbox)
 
 	var icon_key: String = String(product.get("icon_key", "shop.%s" % product_id))
 	var icon_holder := ImageSlotClass.new()

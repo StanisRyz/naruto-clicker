@@ -14,6 +14,8 @@ const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/HeaderMargin/Header/CloseButton
 @onready var sound_button: Button = $PanelContainer/MarginContainer/VBoxContainer/SoundMargin/SoundRow/SoundToggleButton
 @onready var music_button: Button = $PanelContainer/MarginContainer/VBoxContainer/MusicMargin/MusicRow/MusicToggleButton
+@onready var _sound_label: Label = $PanelContainer/MarginContainer/VBoxContainer/SoundMargin/SoundRow/SoundLabel
+@onready var _music_label: Label = $PanelContainer/MarginContainer/VBoxContainer/MusicMargin/MusicRow/MusicLabel
 @onready var save_button: Button = $PanelContainer/MarginContainer/VBoxContainer/SaveButton
 @onready var reset_button: Button = $PanelContainer/MarginContainer/VBoxContainer/ResetButton
 @onready var status_label: Label = $PanelContainer/MarginContainer/VBoxContainer/StatusLabel
@@ -31,6 +33,8 @@ var _language_button_label: Label = null
 
 var _sound_button_label: Label = null
 var _music_button_label: Label = null
+var _save_button_label: Label = null
+var _reset_button_label: Label = null
 
 var _reset_action_pending: bool = false
 
@@ -54,10 +58,16 @@ func _ready() -> void:
 	_make_image_icon_button(close_button, "ui.sheet.close_button")
 	_sound_button_label = _make_image_button_label(sound_button, "ui.popup.button.default", "")
 	_music_button_label = _make_image_button_label(music_button, "ui.popup.button.default", "")
-	_make_image_button_label(save_button, "ui.popup.button.default", "Save Now")
-	_make_image_button_label(reset_button, "ui.popup.button.danger", "Reset Progress")
+	_save_button_label = _make_image_button_label(save_button, "ui.popup.button.default", "Save Now")
+	_reset_button_label = _make_image_button_label(reset_button, "ui.popup.button.danger", "Reset Progress")
 	_make_image_button_label(reset_cancel_button, "ui.popup.button.default", "Cancel")
 	_make_image_button_label(reset_confirm_button, "ui.popup.button.danger", "Reset")
+	UiFontConfig.apply_label_font_size(_sound_label, UiFontConfig.SETTINGS_ROW_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(_music_label, UiFontConfig.SETTINGS_ROW_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(_sound_button_label, UiFontConfig.SETTINGS_ROW_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(_music_button_label, UiFontConfig.SETTINGS_ROW_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(_save_button_label, UiFontConfig.SETTINGS_ACTION_BUTTON_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(_reset_button_label, UiFontConfig.SETTINGS_ACTION_BUTTON_FONT_SIZE)
 	hide()
 
 
@@ -88,6 +98,8 @@ func _create_language_row() -> void:
 	vbox.move_child(lang_margin, save_button.get_index())
 
 	_language_button_label = _make_image_button_label(_language_button, "ui.popup.button.default", "")
+	UiFontConfig.apply_label_font_size(lang_label, UiFontConfig.SETTINGS_ROW_FONT_SIZE)
+	UiFontConfig.apply_label_font_size(_language_button_label, UiFontConfig.SETTINGS_ROW_FONT_SIZE)
 	_update_language_button()
 
 
