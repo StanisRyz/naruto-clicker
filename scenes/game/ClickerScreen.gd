@@ -91,6 +91,7 @@ var _pending_shop_product_id: String = ""
 @onready var bottom_tabs_backdrop = $BottomTabsBackdrop
 @onready var rewarded_ad_banner: Control = $RewardedAdBanner
 @onready var hit_effect_layer: Control = $HitEffectLayer
+@onready var offline_reward_dialog: OfflineRewardDialog = $OfflineRewardDialog
 
 
 func _ready() -> void:
@@ -142,6 +143,8 @@ func _ready() -> void:
 	YandexBridge.rewarded_ad_rewarded.connect(_on_rewarded_ad_rewarded)
 	YandexBridge.rewarded_ad_closed.connect(_on_rewarded_ad_closed)
 	YandexBridge.rewarded_ad_error.connect(_on_rewarded_ad_error)
+	offline_reward_dialog.claim_requested.connect(_on_offline_reward_claim_requested)
+	offline_reward_dialog.claim_ad_requested.connect(_on_offline_reward_claim_ad_requested)
 	LocalizationManager.language_changed.connect(_on_language_changed)
 	_apply_ui_font_sizes()
 	_apply_button_visual_cleanup()
@@ -1177,13 +1180,23 @@ func _load_game_on_start() -> void:
 
 	state.apply_save_data(data)
 
-	var previous_time: int = state.last_save_unix_time
-	if previous_time > 0 and now > previous_time:
-		state.apply_offline_gold_reward(now - previous_time)
+	if state.has_pending_offline_gold_reward():
+		# A previously-queued reward was not yet claimed — show it directly.
+		pass
+	else:
+		var previous_time: int = state.last_save_unix_time
+		if previous_time > 0 and now > previous_time:
+			state.queue_offline_gold_reward(now - previous_time)
 
 	state.last_save_unix_time = now
 	state.start_rewarded_ad_initial_cooldown_if_needed()
 	_save_game_now()
+
+	if state.has_pending_offline_gold_reward():
+		offline_reward_dialog.show_reward(
+			state.pending_offline_elapsed_seconds,
+			state.pending_offline_gold_reward
+		)
 
 
 func _sync_debug_visual_test_gems() -> void:
@@ -1204,6 +1217,13 @@ func _toggle_debug_visual_test_mode() -> void:
 	if enabled:
 		state.gems = DEBUG_VISUAL_TEST_GEMS
 		state.clear_rewarded_ad_banner_cooldown_for_debug()
+		state.clear_pending_offline_gold_reward()
+		state.queue_offline_gold_reward(3600)
+		if state.has_pending_offline_gold_reward():
+			offline_reward_dialog.show_reward(
+				state.pending_offline_elapsed_seconds,
+				state.pending_offline_gold_reward
+			)
 	else:
 		state.gems = _debug_visual_test_previous_gems
 
@@ -1342,6 +1362,28 @@ func _input(event: InputEvent) -> void:
 			_debug_visual_clear_level()
 
 
+func _on_offline_reward_claim_requested() -> void:
+	if not state.has_pending_offline_gold_reward():
+		offline_reward_dialog.hide_dialog()
+		return
+	state.claim_pending_offline_gold(1)
+	offline_reward_dialog.hide_dialog()
+	AudioManager.play_reward_received()
+	_update_ui()
+	_save_game_now()
+
+
+func _on_offline_reward_claim_ad_requested() -> void:
+	if not state.has_pending_offline_gold_reward():
+		offline_reward_dialog.hide_dialog()
+		return
+	_rewarded_ad_request_context = "offline_gold_x3"
+	_rewarded_ad_shop_product_id = ""
+	_rewarded_ad_reward_granted_for_current_request = false
+	offline_reward_dialog.set_buttons_loading(true)
+	YandexBridge.show_rewarded_ad()
+
+
 func _on_rewarded_ad_banner_pressed() -> void:
 	if not state.can_request_rewarded_ad():
 		rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.COOLDOWN)
@@ -1374,6 +1416,12 @@ func _on_rewarded_ad_rewarded() -> void:
 			state.refresh_derived_stats()
 			_update_ui()
 			_save_game_now()
+		"offline_gold_x3":
+			state.claim_pending_offline_gold(BalanceConfig.OFFLINE_GOLD_AD_MULTIPLIER)
+			offline_reward_dialog.hide_dialog()
+			AudioManager.play_reward_received()
+			_update_ui()
+			_save_game_now()
 		_:
 			pass
 
@@ -1381,6 +1429,8 @@ func _on_rewarded_ad_rewarded() -> void:
 func _on_rewarded_ad_closed(_was_shown: bool) -> void:
 	if _rewarded_ad_request_context == "shop_gems":
 		shop_sheet.set_product_buy_button_modal_pressed(_rewarded_ad_shop_product_id, false)
+	if _rewarded_ad_request_context == "offline_gold_x3" and not _rewarded_ad_reward_granted_for_current_request:
+		offline_reward_dialog.set_buttons_loading(false)
 	_rewarded_ad_request_context = ""
 	_rewarded_ad_shop_product_id = ""
 	_rewarded_ad_reward_granted_for_current_request = false
@@ -1390,6 +1440,8 @@ func _on_rewarded_ad_closed(_was_shown: bool) -> void:
 func _on_rewarded_ad_error(_message: String) -> void:
 	if _rewarded_ad_request_context == "shop_gems":
 		shop_sheet.set_product_buy_button_modal_pressed(_rewarded_ad_shop_product_id, false)
+	if _rewarded_ad_request_context == "offline_gold_x3":
+		offline_reward_dialog.set_buttons_loading(false)
 	_rewarded_ad_request_context = ""
 	_rewarded_ad_shop_product_id = ""
 	_rewarded_ad_reward_granted_for_current_request = false
@@ -1409,6 +1461,7 @@ func _is_main_screen_clear_for_rewarded_banner() -> bool:
 		and not prestige_confirm_dialog.visible
 		and not shop_purchase_confirm_dialog.visible
 		and not gem_purchase_dialog.visible
+		and not offline_reward_dialog.visible
 	)
 
 

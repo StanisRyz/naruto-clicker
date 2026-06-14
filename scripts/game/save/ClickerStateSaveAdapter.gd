@@ -61,6 +61,9 @@ static func build_save_data(state: ClickerState) -> Dictionary:
 		"rewarded_ad_gold_x2_expires_at": state.rewarded_ad_gold_x2_expires_at,
 		"rewarded_ad_banner_cooldown_until": state.rewarded_ad_banner_cooldown_until,
 		"rewarded_ad_current_reward_id": state.rewarded_ad_current_reward_id,
+		"pending_offline_gold_reward": state.pending_offline_gold_reward,
+		"pending_offline_elapsed_seconds": state.pending_offline_elapsed_seconds,
+		"pending_offline_created_at": state.pending_offline_created_at,
 	}
 
 
@@ -180,6 +183,9 @@ static func apply_save_data(state: ClickerState, data: Dictionary) -> bool:
 	state.rewarded_ad_gold_x2_expires_at = maxi(0, int(data.get("rewarded_ad_gold_x2_expires_at", 0)))
 	state.rewarded_ad_banner_cooldown_until = maxi(0, int(data.get("rewarded_ad_banner_cooldown_until", 0)))
 	state.rewarded_ad_current_reward_id = str(data.get("rewarded_ad_current_reward_id", ""))
+	state.pending_offline_gold_reward = maxi(0, int(data.get("pending_offline_gold_reward", 0)))
+	state.pending_offline_elapsed_seconds = maxi(0, int(data.get("pending_offline_elapsed_seconds", 0)))
+	state.pending_offline_created_at = maxi(0, int(data.get("pending_offline_created_at", 0)))
 
 	if not _try_restore_tasks(state, data):
 		state.initialize_tasks()

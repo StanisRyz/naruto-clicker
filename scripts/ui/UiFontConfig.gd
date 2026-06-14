@@ -98,6 +98,12 @@ const AUTO_TRANSITION_POPUP_FONT_SIZE: int = 20
 const SETTINGS_ACTION_BUTTON_FONT_SIZE: int = 20
 const SETTINGS_ROW_FONT_SIZE: int = 22
 
+# Offline reward dialog
+const OFFLINE_REWARD_TITLE_FONT_SIZE: int = 22
+const OFFLINE_REWARD_TIME_FONT_SIZE: int = 20
+const OFFLINE_REWARD_REWARD_FONT_SIZE: int = 20
+const OFFLINE_REWARD_BUTTON_FONT_SIZE: int = 20
+
 
 static func apply_boss_timer_theme(label: Label) -> void:
 	if label == null:

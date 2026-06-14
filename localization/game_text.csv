@@ -348,3 +348,9 @@ rewarded_ad.reward.all_damage,All damage x2 for 60 seconds!,Весь урон x2
 rewarded_ad.reward.gems,+5 Gems!,+5 гемов!,RewardedAdBanner reward notification,
 rewarded_ad.reward.gold,Gold x4 for 60 seconds!,Золото x4 на 60 секунд!,RewardedAdBanner reward notification,
 rewarded_ad.status.not_available,Reward unavailable,Награда недоступна,RewardedAdBanner fallback error,
+offline_reward.title,Welcome back!,С возвращением!,OfflineRewardDialog title,
+offline_reward.time,Away time: {time},Вне игры: {time},OfflineRewardDialog time label,{time} formatted duration
+offline_reward.reward,+ {gold} Gold,+ {gold} золота,OfflineRewardDialog reward label,{gold} formatted gold amount
+offline_reward.claim,Claim,Получить,OfflineRewardDialog claim button,
+offline_reward.claim_x3,Watch Ad x3,Реклама x3,OfflineRewardDialog claim x3 button,
+offline_reward.loading_ad,Loading ad...,Загрузка рекламы...,OfflineRewardDialog loading state,

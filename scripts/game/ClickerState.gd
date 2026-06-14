@@ -126,6 +126,7 @@ const DEBUG_PRESTIGE_REWARD: int = 999
 var last_save_unix_time: int = 0
 var pending_offline_gold_reward: int = 0
 var pending_offline_elapsed_seconds: int = 0
+var pending_offline_created_at: int = 0
 
 var prestige_points: int:
 	get:
@@ -2534,6 +2535,42 @@ func apply_offline_gold_reward(elapsed_seconds: int) -> Dictionary:
 		pending_offline_gold_reward = reward
 		pending_offline_elapsed_seconds = int(result.get("capped_elapsed_seconds", 0))
 	return result
+
+
+func has_pending_offline_gold_reward() -> bool:
+	return pending_offline_gold_reward > 0
+
+
+func queue_offline_gold_reward(elapsed_seconds: int) -> Dictionary:
+	var result: Dictionary = calculate_offline_gold_reward(elapsed_seconds)
+	var reward: int = int(result.get("reward_gold", 0))
+	if reward > 0:
+		pending_offline_gold_reward = reward
+		pending_offline_elapsed_seconds = int(result.get("capped_elapsed_seconds", 0))
+		pending_offline_created_at = int(Time.get_unix_time_from_system())
+	return result
+
+
+func claim_pending_offline_gold(multiplier: int = 1) -> Dictionary:
+	var base_reward: int = maxi(0, pending_offline_gold_reward)
+	var safe_multiplier: int = maxi(1, multiplier)
+	var final_reward: int = base_reward * safe_multiplier
+	if final_reward > 0:
+		gold += final_reward
+	var result: Dictionary = {
+		"base_reward_gold": base_reward,
+		"multiplier": safe_multiplier,
+		"reward_gold": final_reward,
+		"elapsed_seconds": pending_offline_elapsed_seconds,
+	}
+	clear_pending_offline_gold_reward()
+	return result
+
+
+func clear_pending_offline_gold_reward() -> void:
+	pending_offline_gold_reward = 0
+	pending_offline_elapsed_seconds = 0
+	pending_offline_created_at = 0
 
 
 func get_save_data() -> Dictionary:

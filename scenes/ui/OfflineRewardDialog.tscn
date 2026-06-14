@@ -1,0 +1,93 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/OfflineRewardDialog.gd" id="1_ord"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dialog_inner"]
+bg_color = Color(0.08, 0.085, 0.1, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.24, 0.25, 0.3, 1)
+
+[node name="OfflineRewardDialog" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_ord")
+
+[node name="DimOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0, 0, 0, 0.6)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="InnerPanel" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(560, 260)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_dialog_inner")
+
+[node name="MarginContainer" type="MarginContainer" parent="CenterContainer/InnerPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 28
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/InnerPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
+
+[node name="TimeLabel" type="Label" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
+
+[node name="RewardLabel" type="Label" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
+
+[node name="ButtonRow" type="HBoxContainer" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="ClaimButton" type="Button" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ButtonRow"]
+custom_minimum_size = Vector2(180, 62)
+layout_mode = 2
+size_flags_horizontal = 0
+text = ""
+
+[node name="ClaimAdButton" type="Button" parent="CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ButtonRow"]
+custom_minimum_size = Vector2(180, 62)
+layout_mode = 2
+size_flags_horizontal = 0
+text = ""

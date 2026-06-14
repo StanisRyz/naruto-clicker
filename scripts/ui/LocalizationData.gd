@@ -4,8 +4,8 @@ extends RefCounted
 # AUTO-GENERATED — do not edit by hand.
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
-# Generated key count: 349
-# Generated at: 1781416088
+# Generated key count: 355
+# Generated at: 1781424421
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -358,6 +358,12 @@ const TRANSLATIONS: Dictionary = {
 		"rewarded_ad.reward.gems": "+5 Gems!",
 		"rewarded_ad.reward.gold": "Gold x4 for 60 seconds!",
 		"rewarded_ad.status.not_available": "Reward unavailable",
+		"offline_reward.title": "Welcome back!",
+		"offline_reward.time": "Away time: {time}",
+		"offline_reward.reward": "+ {gold} Gold",
+		"offline_reward.claim": "Claim",
+		"offline_reward.claim_x3": "Watch Ad x3",
+		"offline_reward.loading_ad": "Loading ad...",
 	},
 	"ru": {
 		"ui.common.close": "Закрыть",
@@ -709,6 +715,12 @@ const TRANSLATIONS: Dictionary = {
 		"rewarded_ad.reward.gems": "+5 гемов!",
 		"rewarded_ad.reward.gold": "Золото x4 на 60 секунд!",
 		"rewarded_ad.status.not_available": "Награда недоступна",
+		"offline_reward.title": "С возвращением!",
+		"offline_reward.time": "Вне игры: {time}",
+		"offline_reward.reward": "+ {gold} золота",
+		"offline_reward.claim": "Получить",
+		"offline_reward.claim_x3": "Реклама x3",
+		"offline_reward.loading_ad": "Загрузка рекламы...",
 	},
 }
 

@@ -177,6 +177,7 @@ const TASK_REWARD_LAST_BOSS_MULTIPLIER: int = 3
 # One baseline boss reward is awarded every OFFLINE_GOLD_TICK_SECONDS offline.
 const OFFLINE_GOLD_TICK_SECONDS: float = 20.0
 const OFFLINE_GOLD_MAX_SECONDS: float = 86400.0   # 24-hour safety cap
+const OFFLINE_GOLD_AD_MULTIPLIER: int = 3
 
 
 # --- Shop gold packs — offline-time equivalent ---
