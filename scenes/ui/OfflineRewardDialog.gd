@@ -110,15 +110,15 @@ func _set_buttons_disabled(disabled: bool) -> void:
 func format_duration(seconds: int) -> String:
 	var s: int = maxi(0, seconds)
 	if s < 60:
-		return "%dс" % s
+		return LocalizationManager.format_key("common.duration.seconds", {"seconds": str(s)})
 	var minutes: int = int(s / 60.0)
 	var hours: int = int(minutes / 60.0)
 	var remaining_minutes: int = minutes % 60
 	if hours <= 0:
-		return "%dм" % minutes
+		return LocalizationManager.format_key("common.duration.minutes", {"minutes": str(minutes)})
 	if remaining_minutes <= 0:
-		return "%dч" % hours
-	return "%dч %dм" % [hours, remaining_minutes]
+		return LocalizationManager.format_key("common.duration.hours", {"hours": str(hours)})
+	return LocalizationManager.format_key("common.duration.hours_minutes", {"hours": str(hours), "minutes": str(remaining_minutes)})
 
 
 func _format_number(value: int) -> String:

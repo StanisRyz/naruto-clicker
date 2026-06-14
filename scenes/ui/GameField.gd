@@ -111,9 +111,9 @@ func play_defeat_feedback(level_up: bool, zone_changed: bool = false) -> void:
 
 	var feedback_text: String = ""
 	if zone_changed:
-		feedback_text = "New Zone!"
+		feedback_text = LocalizationManager.tr_key("ui.gameplay.new_zone")
 	elif level_up:
-		feedback_text = "Level Up!"
+		feedback_text = LocalizationManager.tr_key("ui.gameplay.level_up")
 
 	if feedback_text.is_empty():
 		defeat_feedback_label.modulate.a = 0.0

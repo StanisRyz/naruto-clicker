@@ -15,6 +15,7 @@ var _pending_anchor: Vector2 = Vector2.ZERO
 var _auto_button_global_rect: Rect2 = Rect2()
 
 @onready var _panel: PanelContainer = $PanelContainer
+@onready var _title_label: Label = $PanelContainer/MarginContainer/VBoxContainer/TitleRow/TitleLabel
 @onready var _desc_line1: Label = $PanelContainer/MarginContainer/VBoxContainer/DescriptionLine1Label
 @onready var _desc_line2: Label = $PanelContainer/MarginContainer/VBoxContainer/DescriptionLine2Label
 @onready var _desc_line3: Label = $PanelContainer/MarginContainer/VBoxContainer/DescriptionLine3Label
@@ -28,6 +29,7 @@ func _ready() -> void:
 	_add_background_image_holder(_panel, "PopupBackgroundImageHolder", "ui.popup.auto_transition.background")
 	_apply_fixed_panel_size()
 	var L := LocalizationManager
+	_title_label.text = L.tr_key("auto_transition.title")
 	_desc_line1.text = L.tr_key("auto_transition.description.line_1")
 	_desc_line2.text = L.tr_key("auto_transition.description.line_2")
 	_desc_line3.text = L.tr_key("auto_transition.description.line_3")

@@ -99,7 +99,7 @@ theme_override_constants/separation = 12
 [node name="TitleLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/HeaderMargin/Header"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Settings"
+text = ""
 
 [node name="CloseButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/HeaderMargin/Header"]
 custom_minimum_size = Vector2(56, 56)
@@ -118,7 +118,7 @@ theme_override_constants/separation = 18
 [node name="SoundLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/SoundMargin/SoundRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Sound"
+text = ""
 vertical_alignment = 1
 
 [node name="SoundToggleButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/SoundMargin/SoundRow"]
@@ -139,7 +139,7 @@ theme_override_constants/separation = 18
 [node name="MusicLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/MusicMargin/MusicRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Music"
+text = ""
 vertical_alignment = 1
 
 [node name="MusicToggleButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/MusicMargin/MusicRow"]
@@ -222,12 +222,12 @@ theme_override_constants/separation = 18
 
 [node name="TitleLabel" type="Label" parent="ResetConfirmDialog/PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
-text = "Reset all progress?"
+text = ""
 horizontal_alignment = 1
 
 [node name="DescriptionLabel" type="Label" parent="ResetConfirmDialog/PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
-text = "This will delete your save and start a new game."
+text = ""
 autowrap_mode = 3
 horizontal_alignment = 1
 

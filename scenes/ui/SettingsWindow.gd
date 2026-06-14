@@ -25,6 +25,9 @@ const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 @onready var reset_dialog_panel: PanelContainer = $ResetConfirmDialog/PanelContainer
 @onready var reset_cancel_button: Button = $ResetConfirmDialog/PanelContainer/MarginContainer/VBoxContainer/ButtonRow/CancelButton
 @onready var reset_confirm_button: Button = $ResetConfirmDialog/PanelContainer/MarginContainer/VBoxContainer/ButtonRow/ResetButton
+@onready var _title_label: Label = $PanelContainer/MarginContainer/VBoxContainer/HeaderMargin/Header/TitleLabel
+@onready var _reset_confirm_title_label: Label = $ResetConfirmDialog/PanelContainer/MarginContainer/VBoxContainer/TitleLabel
+@onready var _reset_confirm_desc_label: Label = $ResetConfirmDialog/PanelContainer/MarginContainer/VBoxContainer/DescriptionLabel
 
 var sound_enabled: bool = true
 var music_enabled: bool = true
@@ -35,6 +38,8 @@ var _sound_button_label: Label = null
 var _music_button_label: Label = null
 var _save_button_label: Label = null
 var _reset_button_label: Label = null
+var _reset_cancel_button_label: Label = null
+var _reset_confirm_button_label: Label = null
 
 var _reset_action_pending: bool = false
 
@@ -51,24 +56,43 @@ func _ready() -> void:
 	reset_button.pressed.connect(_on_reset_button_pressed)
 	reset_cancel_button.pressed.connect(_on_reset_cancel_pressed)
 	reset_confirm_button.pressed.connect(_on_reset_confirm_button_pressed)
-	version_label.text = "Version %s%s" % [BuildConfig.APP_VERSION, "-dev" if BuildConfig.IS_DEBUG_BUILD else ""]
+	var _version_str: String = BuildConfig.APP_VERSION + ("-dev" if BuildConfig.IS_DEBUG_BUILD else "")
+	version_label.text = LocalizationManager.format_key("settings.version", {"version": _version_str})
 	_create_language_row()
 	_add_background_image_holder(panel_container, "SettingsBackgroundImageHolder", "ui.window.settings.background")
 	_add_background_image_holder(reset_dialog_panel, "ResetConfirmBackgroundImageHolder", "ui.window.settings.reset_confirm_background")
 	_make_image_icon_button(close_button, "ui.sheet.close_button")
 	_sound_button_label = _make_image_button_label(sound_button, "ui.popup.button.default", "")
 	_music_button_label = _make_image_button_label(music_button, "ui.popup.button.default", "")
-	_save_button_label = _make_image_button_label(save_button, "ui.popup.button.default", "Save Now")
-	_reset_button_label = _make_image_button_label(reset_button, "ui.popup.button.danger", "Reset Progress")
-	_make_image_button_label(reset_cancel_button, "ui.popup.button.default", "Cancel")
-	_make_image_button_label(reset_confirm_button, "ui.popup.button.danger", "Reset")
+	_save_button_label = _make_image_button_label(save_button, "ui.popup.button.default", LocalizationManager.tr_key("settings.save_now"))
+	_reset_button_label = _make_image_button_label(reset_button, "ui.popup.button.danger", LocalizationManager.tr_key("settings.reset_progress"))
+	_reset_cancel_button_label = _make_image_button_label(reset_cancel_button, "ui.popup.button.default", LocalizationManager.tr_key("ui.common.cancel"))
+	_reset_confirm_button_label = _make_image_button_label(reset_confirm_button, "ui.popup.button.danger", LocalizationManager.tr_key("settings.reset"))
 	UiFontConfig.apply_label_font_size(_sound_label, UiFontConfig.SETTINGS_ROW_FONT_SIZE)
 	UiFontConfig.apply_label_font_size(_music_label, UiFontConfig.SETTINGS_ROW_FONT_SIZE)
 	UiFontConfig.apply_label_font_size(_sound_button_label, UiFontConfig.SETTINGS_ROW_FONT_SIZE)
 	UiFontConfig.apply_label_font_size(_music_button_label, UiFontConfig.SETTINGS_ROW_FONT_SIZE)
 	UiFontConfig.apply_label_font_size(_save_button_label, UiFontConfig.SETTINGS_ACTION_BUTTON_FONT_SIZE)
 	UiFontConfig.apply_label_font_size(_reset_button_label, UiFontConfig.SETTINGS_ACTION_BUTTON_FONT_SIZE)
+	LocalizationManager.language_changed.connect(_refresh_static_labels)
+	_refresh_static_labels()
 	hide()
+
+
+func _refresh_static_labels() -> void:
+	_title_label.text = LocalizationManager.tr_key("settings.title")
+	_sound_label.text = LocalizationManager.tr_key("settings.sound")
+	_music_label.text = LocalizationManager.tr_key("settings.music")
+	_reset_confirm_title_label.text = LocalizationManager.tr_key("settings.reset_confirm_title")
+	_reset_confirm_desc_label.text = LocalizationManager.tr_key("settings.reset_confirm_description")
+	if _save_button_label:
+		_save_button_label.text = LocalizationManager.tr_key("settings.save_now")
+	if _reset_button_label:
+		_reset_button_label.text = LocalizationManager.tr_key("settings.reset_progress")
+	if _reset_cancel_button_label:
+		_reset_cancel_button_label.text = LocalizationManager.tr_key("ui.common.cancel")
+	if _reset_confirm_button_label:
+		_reset_confirm_button_label.text = LocalizationManager.tr_key("settings.reset")
 
 
 func _create_language_row() -> void:

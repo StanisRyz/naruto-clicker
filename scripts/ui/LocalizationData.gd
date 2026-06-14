@@ -4,8 +4,8 @@ extends RefCounted
 # AUTO-GENERATED — do not edit by hand.
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
-# Generated key count: 355
-# Generated at: 1781424421
+# Generated key count: 369
+# Generated at: 1781426921
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -364,6 +364,20 @@ const TRANSLATIONS: Dictionary = {
 		"offline_reward.claim": "Claim",
 		"offline_reward.claim_x3": "Watch Ad x3",
 		"offline_reward.loading_ad": "Loading ad...",
+		"settings.sound": "Sound",
+		"settings.music": "Music",
+		"settings.save_now": "Save Now",
+		"settings.reset": "Reset",
+		"settings.reset_confirm_title": "Reset all progress?",
+		"settings.reset_confirm_description": "This will delete your save and start a new game.",
+		"settings.version": "Version {version}",
+		"auto_transition.title": "Auto-transition",
+		"ui.gameplay.new_zone": "New Zone!",
+		"ui.gameplay.level_up": "Level Up!",
+		"common.duration.seconds": "{seconds}s",
+		"common.duration.minutes": "{minutes}m",
+		"common.duration.hours": "{hours}h",
+		"common.duration.hours_minutes": "{hours}h {minutes}m",
 	},
 	"ru": {
 		"ui.common.close": "Закрыть",
@@ -721,6 +735,20 @@ const TRANSLATIONS: Dictionary = {
 		"offline_reward.claim": "Получить",
 		"offline_reward.claim_x3": "Реклама x3",
 		"offline_reward.loading_ad": "Загрузка рекламы...",
+		"settings.sound": "Звук",
+		"settings.music": "Музыка",
+		"settings.save_now": "Сохранить",
+		"settings.reset": "Сброс",
+		"settings.reset_confirm_title": "Сбросить весь прогресс?",
+		"settings.reset_confirm_description": "Это удалит прогресс и начнёт новую игру.",
+		"settings.version": "Версия {version}",
+		"auto_transition.title": "Авто-переход",
+		"ui.gameplay.new_zone": "Новая Зона!",
+		"ui.gameplay.level_up": "Новый Уровень!",
+		"common.duration.seconds": "{seconds}с",
+		"common.duration.minutes": "{minutes}м",
+		"common.duration.hours": "{hours}ч",
+		"common.duration.hours_minutes": "{hours}ч {minutes}м",
 	},
 }
 
