@@ -241,6 +241,23 @@ shop.rewarded_gems_ad.name,Watch Ad: +3 Gems,Реклама: +3 гема,Shop re
 shop.rewarded_gems_ad.description,Watch an ad to receive gems,Посмотрите рекламу чтобы получить гемы,Shop rewarded ad product description,
 shop.card.rewarded_gems,Gives +{amount} Gems,Даёт +{amount} гемов,ShopPanel card effect row for rewarded gems ad,{amount} is compact number
 shop.button.watch_ad,Watch Ad,Смотреть,ShopPanel buy button for rewarded ad products,
+shop.button.open,Open,Открыть,ShopPanel buy button for donation_entry products,
+shop.gem_purchase_entry.name,Buy Gems,Купить гемы,ShopConfig gem_purchase_entry product name,
+shop.gem_purchase_entry.description,Purchase gems,Покупка гемов,ShopConfig gem_purchase_entry product description,
+shop.card.gem_purchase_entry,Opens gem purchase options,Открывает варианты покупки гемов,ShopPanel card effect row for gem_purchase_entry,
+shop.gem_purchase.title,Buy Gems,Купить гемы,GemPurchaseDialog title,
+shop.gem_purchase.invalid_product,Invalid gem product,Неверный товар,GemPurchaseDialog error status,
+shop.gem_purchase.success,+{amount} Gems!,+{amount} гемов!,GemPurchaseDialog success status,{amount} is integer
+shop.gem_purchase.cancelled,Purchase cancelled,Покупка отменена,GemPurchaseDialog cancel status,
+shop.gem_purchase.error,Purchase failed,Ошибка покупки,GemPurchaseDialog error status,
+shop.gem_purchase.buy,Buy,Купить,GemPurchaseDialog buy button,
+shop.gem_purchase.amount,+{amount} Gems,+{amount} гемов,GemPurchaseDialog gem amount label,{amount} is integer
+shop.gems_small.name,Small Gem Pack,Малый набор гемов,GemPurchaseConfig product name,
+shop.gems_small.description,Get 50 gems,Получить 50 гемов,GemPurchaseConfig product description,
+shop.gems_medium.name,Medium Gem Pack,Средний набор гемов,GemPurchaseConfig product name,
+shop.gems_medium.description,Get 200 gems,Получить 200 гемов,GemPurchaseConfig product description,
+shop.gems_large.name,Large Gem Pack,Большой набор гемов,GemPurchaseConfig product name,
+shop.gems_large.description,Get 500 gems,Получить 500 гемов,GemPurchaseConfig product description,
 shop.rewarded_gems_ad.reward_status,+{amount} Gems!,+{amount} гемов!,Status text after rewarded ad grants gems,{amount} is integer
 task.manual_damage_500.title,Deal 500 manual damage,,TaskConfig task title,
 task.defeat_25_enemies.title,Defeat 25 enemies,,TaskConfig task title,

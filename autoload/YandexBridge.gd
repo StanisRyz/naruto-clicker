@@ -5,10 +5,16 @@ signal rewarded_ad_rewarded
 signal rewarded_ad_closed(was_shown: bool)
 signal rewarded_ad_error(message: String)
 
+signal payment_purchase_started(product_id: String)
+signal payment_purchase_success(product_id: String, purchase_token: String)
+signal payment_purchase_cancelled(product_id: String)
+signal payment_purchase_error(product_id: String, message: String)
+
 var is_web: bool = false
 var is_yandex_available: bool = false
 
 var _rewarded_ad_in_progress: bool = false
+var _payment_js_callbacks_setup: bool = false
 
 func _ready() -> void:
 	is_web = OS.has_feature("web")
@@ -139,3 +145,84 @@ func _simulate_rewarded_ad_debug() -> void:
 	await Engine.get_main_loop().create_timer(0.1).timeout
 	_rewarded_ad_in_progress = false
 	rewarded_ad_closed.emit(true)
+
+
+func purchase_product(yandex_product_id: String, local_product_id: String) -> void:
+	payment_purchase_started.emit(local_product_id)
+
+	if not is_web or not is_yandex_available:
+		if OS.is_debug_build():
+			_simulate_payment_debug(local_product_id)
+		else:
+			payment_purchase_error.emit(local_product_id, "Payments unavailable outside Yandex Games")
+		return
+
+	if not _payment_js_callbacks_setup:
+		_setup_payment_js_callbacks()
+
+	JavaScriptBridge.eval("""
+		(function() {
+			var localId = %s;
+			var yandexId = %s;
+			window.ysdk.getPayments({ signed: true }).then(function(payments) {
+				payments.purchase({ id: yandexId }).then(function(purchase) {
+					var token = purchase.purchaseToken || "";
+					if (window._godot_payment_success) window._godot_payment_success(localId, token);
+				}).catch(function(err) {
+					var msg = String(err);
+					if (msg.indexOf("cancel") !== -1 || msg.indexOf("Cancel") !== -1) {
+						if (window._godot_payment_cancelled) window._godot_payment_cancelled(localId);
+					} else {
+						if (window._godot_payment_error) window._godot_payment_error(localId, msg);
+					}
+				});
+			}).catch(function(err) {
+				if (window._godot_payment_error) window._godot_payment_error(localId, String(err));
+			});
+		})();
+	""" % [JSON.stringify(local_product_id), JSON.stringify(yandex_product_id)])
+
+
+func consume_purchase(purchase_token: String) -> void:
+	if not is_web or not is_yandex_available or purchase_token == "":
+		return
+
+	JavaScriptBridge.eval("""
+		(function() {
+			var token = %s;
+			window.ysdk.getPayments({ signed: true }).then(function(payments) {
+				payments.consumePurchase(token).catch(function(err) {
+					console.warn("YandexBridge: consumePurchase failed:", err);
+				});
+			}).catch(function(err) {
+				console.warn("YandexBridge: getPayments for consume failed:", err);
+			});
+		})();
+	""" % JSON.stringify(purchase_token))
+
+
+func _on_js_payment_success(local_product_id: String, purchase_token: String) -> void:
+	payment_purchase_success.emit(local_product_id, purchase_token)
+
+
+func _on_js_payment_cancelled(local_product_id: String) -> void:
+	payment_purchase_cancelled.emit(local_product_id)
+
+
+func _on_js_payment_error(local_product_id: String, message: String) -> void:
+	payment_purchase_error.emit(local_product_id, message)
+
+
+func _setup_payment_js_callbacks() -> void:
+	_payment_js_callbacks_setup = true
+	var success_cb := JavaScriptBridge.create_callback(func(args): _on_js_payment_success(str(args[0]), str(args[1])))
+	var cancel_cb := JavaScriptBridge.create_callback(func(args): _on_js_payment_cancelled(str(args[0])))
+	var error_cb := JavaScriptBridge.create_callback(func(args): _on_js_payment_error(str(args[0]), str(args[1])))
+	JavaScriptBridge.eval("window._godot_payment_success = %s;" % success_cb)
+	JavaScriptBridge.eval("window._godot_payment_cancelled = %s;" % cancel_cb)
+	JavaScriptBridge.eval("window._godot_payment_error = %s;" % error_cb)
+
+
+func _simulate_payment_debug(local_product_id: String) -> void:
+	await Engine.get_main_loop().create_timer(0.5).timeout
+	payment_purchase_success.emit(local_product_id, "debug_token")

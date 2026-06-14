@@ -4,8 +4,8 @@ extends RefCounted
 # AUTO-GENERATED — do not edit by hand.
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
-# Generated key count: 327
-# Generated at: 1781368286
+# Generated key count: 344
+# Generated at: 1781406730
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -251,6 +251,23 @@ const TRANSLATIONS: Dictionary = {
 		"shop.rewarded_gems_ad.description": "Watch an ad to receive gems",
 		"shop.card.rewarded_gems": "Gives +{amount} Gems",
 		"shop.button.watch_ad": "Watch Ad",
+		"shop.button.open": "Open",
+		"shop.gem_purchase_entry.name": "Buy Gems",
+		"shop.gem_purchase_entry.description": "Purchase gems",
+		"shop.card.gem_purchase_entry": "Opens gem purchase options",
+		"shop.gem_purchase.title": "Buy Gems",
+		"shop.gem_purchase.invalid_product": "Invalid gem product",
+		"shop.gem_purchase.success": "+{amount} Gems!",
+		"shop.gem_purchase.cancelled": "Purchase cancelled",
+		"shop.gem_purchase.error": "Purchase failed",
+		"shop.gem_purchase.buy": "Buy",
+		"shop.gem_purchase.amount": "+{amount} Gems",
+		"shop.gems_small.name": "Small Gem Pack",
+		"shop.gems_small.description": "Get 50 gems",
+		"shop.gems_medium.name": "Medium Gem Pack",
+		"shop.gems_medium.description": "Get 200 gems",
+		"shop.gems_large.name": "Large Gem Pack",
+		"shop.gems_large.description": "Get 500 gems",
 		"shop.rewarded_gems_ad.reward_status": "+{amount} Gems!",
 		"task.manual_damage_500.title": "Deal 500 manual damage",
 		"task.defeat_25_enemies.title": "Defeat 25 enemies",
@@ -580,6 +597,23 @@ const TRANSLATIONS: Dictionary = {
 		"shop.rewarded_gems_ad.description": "Посмотрите рекламу чтобы получить гемы",
 		"shop.card.rewarded_gems": "Даёт +{amount} гемов",
 		"shop.button.watch_ad": "Смотреть",
+		"shop.button.open": "Открыть",
+		"shop.gem_purchase_entry.name": "Купить гемы",
+		"shop.gem_purchase_entry.description": "Покупка гемов",
+		"shop.card.gem_purchase_entry": "Открывает варианты покупки гемов",
+		"shop.gem_purchase.title": "Купить гемы",
+		"shop.gem_purchase.invalid_product": "Неверный товар",
+		"shop.gem_purchase.success": "+{amount} гемов!",
+		"shop.gem_purchase.cancelled": "Покупка отменена",
+		"shop.gem_purchase.error": "Ошибка покупки",
+		"shop.gem_purchase.buy": "Купить",
+		"shop.gem_purchase.amount": "+{amount} гемов",
+		"shop.gems_small.name": "Малый набор гемов",
+		"shop.gems_small.description": "Получить 50 гемов",
+		"shop.gems_medium.name": "Средний набор гемов",
+		"shop.gems_medium.description": "Получить 200 гемов",
+		"shop.gems_large.name": "Большой набор гемов",
+		"shop.gems_large.description": "Получить 500 гемов",
 		"shop.rewarded_gems_ad.reward_status": "+{amount} гемов!",
 		"task.manual_damage_500.title": "",
 		"task.defeat_25_enemies.title": "",

@@ -1,5 +1,8 @@
 extends Control
 
+const GemPurchaseDialogClass = preload("res://scenes/ui/GemPurchaseDialog.gd")
+const GemPurchaseConfigClass = preload("res://scripts/game/config/GemPurchaseConfig.gd")
+
 const TASK_BUTTON_DEFAULT_ASSET_KEY: String = "task.window_button.default"
 const TASK_BUTTON_COMPLETED_ASSET_KEY: String = "task.window_button.completed"
 const DEBUG_VISUAL_TEST_GEMS: int = 999
@@ -72,6 +75,7 @@ var _pending_shop_product_id: String = ""
 @onready var shop_sheet: ShopSheet = $ShopSheet
 @onready var prestige_confirm_dialog: PrestigeConfirmDialog = $PrestigeConfirmDialog
 @onready var shop_purchase_confirm_dialog: ShopPurchaseConfirmDialog = $ShopPurchaseConfirmDialog
+@onready var gem_purchase_dialog: GemPurchaseDialogClass = $GemPurchaseDialog
 @onready var upgrades_button_image = $BottomBar/MarginContainer/HBoxContainer/UpgradesButton/ImageHolder
 @onready var partners_button_image = $BottomBar/MarginContainer/HBoxContainer/PartnersButton/ImageHolder
 @onready var settlement_button_image = $BottomBar/MarginContainer/HBoxContainer/SettlementButton/ImageHolder
@@ -115,6 +119,10 @@ func _ready() -> void:
 	shop_sheet.product_purchase_requested.connect(_on_shop_product_purchase_requested)
 	shop_purchase_confirm_dialog.confirmed.connect(_on_shop_purchase_confirmed)
 	shop_purchase_confirm_dialog.cancelled.connect(_on_shop_purchase_cancelled)
+	gem_purchase_dialog.gem_product_purchase_requested.connect(_on_gem_product_purchase_requested)
+	YandexBridge.payment_purchase_success.connect(_on_payment_purchase_success)
+	YandexBridge.payment_purchase_cancelled.connect(_on_payment_purchase_cancelled)
+	YandexBridge.payment_purchase_error.connect(_on_payment_purchase_error)
 	prestige_confirm_dialog.confirmed.connect(_on_prestige_confirmed)
 	prestige_confirm_dialog.cancelled.connect(_on_prestige_cancelled)
 	upgrade_sheet.closed.connect(_on_sheet_closed)
@@ -474,13 +482,42 @@ func _on_prestige_talent_purchase_requested(talent_index: int, mode: String) -> 
 
 func _on_shop_product_purchase_requested(product_id: String, mode: String) -> void:
 	var product: Dictionary = state.get_shop_product(product_id)
-	if String(product.get("product_type", "")) == "rewarded_ad":
+	var product_type: String = String(product.get("product_type", ""))
+	if product_type == "donation_entry":
+		gem_purchase_dialog.show_dialog()
+		return
+	if product_type == "rewarded_ad":
 		_request_shop_rewarded_gems_ad(product_id)
 		return
 	_pending_shop_product_id = product_id
 	shop_sheet.set_product_buy_button_modal_pressed(product_id, true)
 	var product_name: String = _get_shop_product_display_name(product_id)
 	shop_purchase_confirm_dialog.show_dialog(product_id, mode, product_name)
+
+
+func _on_gem_product_purchase_requested(product_id: String) -> void:
+	var product: Dictionary = GemPurchaseConfigClass.get_by_id(product_id)
+	if product.is_empty():
+		return
+	var yandex_product_id: String = String(product.get("yandex_product_id", ""))
+	YandexBridge.purchase_product(yandex_product_id, product_id)
+
+
+func _on_payment_purchase_success(local_product_id: String, purchase_token: String) -> void:
+	var result: Dictionary = state.grant_paid_gem_purchase(local_product_id)
+	_handle_status_text(result.get("status_text", ""))
+	_update_ui()
+	_save_game_now()
+	YandexBridge.consume_purchase(purchase_token)
+	gem_purchase_dialog.hide_dialog()
+
+
+func _on_payment_purchase_cancelled(_local_product_id: String) -> void:
+	_handle_status_text(LocalizationManager.tr_key("shop.gem_purchase.cancelled"))
+
+
+func _on_payment_purchase_error(_local_product_id: String, _message: String) -> void:
+	_handle_status_text(LocalizationManager.tr_key("shop.gem_purchase.error"))
 
 
 func _request_shop_rewarded_gems_ad(product_id: String) -> void:

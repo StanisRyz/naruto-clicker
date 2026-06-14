@@ -8,6 +8,7 @@ const EnemyCalc = preload("res://scripts/game/calculators/EnemyScalingCalculator
 const Presentation = preload("res://scripts/game/presentation/ClickerStatePresentation.gd")
 const TaskRT = preload("res://scripts/game/runtime/TaskRuntime.gd")
 const ShopRT = preload("res://scripts/game/runtime/ShopRuntime.gd")
+const GemPurchaseConfig = preload("res://scripts/game/config/GemPurchaseConfig.gd")
 
 
 var gold: int = 0
@@ -898,6 +899,36 @@ func grant_rewarded_ad_bonus(reward_id: String) -> Dictionary:
 		"reward_id": "",
 		"status_text": LocalizationManager.tr_key("rewarded_ad.status.not_available"),
 		"upgraded": false,
+	}
+
+
+func grant_paid_gem_purchase(product_id: String) -> Dictionary:
+	var product: Dictionary = GemPurchaseConfig.get_by_id(product_id)
+	if product.is_empty():
+		return _make_purchase_result(LocalizationManager.tr_key("shop.gem_purchase.invalid_product"))
+
+	var amount: int = maxi(0, int(product.get("amount_gems", 0)))
+	if amount <= 0:
+		return _make_purchase_result(LocalizationManager.tr_key("shop.gem_purchase.invalid_product"))
+
+	gems += amount
+
+	return {
+		"defeated": false,
+		"level_up": false,
+		"reward_gold": 0,
+		"damage_dealt": 0,
+		"target_hp_before": target_hp,
+		"target_hp_after": target_hp,
+		"upgraded": true,
+		"not_enough_gold": false,
+		"reward_gems": amount,
+		"status_text": LocalizationManager.format_key(
+			"shop.gem_purchase.success",
+			{"amount": str(amount)}
+		),
+		"zone_changed": false,
+		"zone_name": "",
 	}
 
 

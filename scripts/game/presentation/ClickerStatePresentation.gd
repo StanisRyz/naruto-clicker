@@ -286,6 +286,13 @@ static func get_shop_product_view_data(state: ClickerState, mode: String = "x1")
 					effect_key = ""
 			effect_params = {"multiplier": str(purchase_multiplier)}
 			can_buy = state.gems >= cost_gems and cost_gems > 0
+		elif product_type == "donation_entry":
+			cost_gems = 0
+			owned_count = -1
+			total_multiplier = -1
+			effect_key = "shop.card.gem_purchase_entry"
+			effect_params = {}
+			can_buy = true
 		elif product_type == "rewarded_ad":
 			cost_gems = 0
 			owned_count = -1

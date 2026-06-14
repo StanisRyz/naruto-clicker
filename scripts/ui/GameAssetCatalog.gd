@@ -74,6 +74,10 @@ const ASSET_PATHS: Dictionary = {
 	"shop.rewarded_gems_ad": "res://assets/images/shop/rewarded_gems_ad.png",
 	"shop.gold_pack_small": "res://assets/images/shop/gold_pack_small.png",
 	"shop.gold_pack_large": "res://assets/images/shop/gold_pack_large.png",
+	"shop.gem_purchase_entry": "res://assets/images/shop/gem_purchase_entry.png",
+	"shop.gems_small": "res://assets/images/shop/gems_small.png",
+	"shop.gems_medium": "res://assets/images/shop/gems_medium.png",
+	"shop.gems_large": "res://assets/images/shop/gems_large.png",
 
 	# Tasks
 	"task.manual_damage_500": "res://assets/images/tasks/manual_damage.png",
@@ -130,6 +134,7 @@ const ASSET_PATHS: Dictionary = {
 	"ui.dialog.prestige.background": "res://assets/images/ui/dialogs/prestige/background.png",
 	"ui.dialog.prestige.inner_background": "res://assets/images/ui/dialogs/prestige/inner_background.png",
 	"ui.popup.shop_confirm.background": "res://assets/images/ui/popups/shop_confirm/background.png",
+	"ui.dialog.gem_purchase.background": "res://assets/images/ui/dialogs/gem_purchase/background.png",
 
 	# Popup action buttons
 	"ui.popup.button.default": "res://assets/images/ui/popups/buttons/default.png",

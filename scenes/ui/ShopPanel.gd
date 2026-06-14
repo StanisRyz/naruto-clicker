@@ -255,7 +255,11 @@ func _update_product_row(product_data: Dictionary, row: Dictionary) -> void:
 
 	var can_buy: bool = bool(product_data.get("can_buy", false))
 	button.disabled = not can_buy
-	if product_type == "rewarded_ad":
+	if product_type == "donation_entry":
+		button_label.text = LocalizationManager.tr_key("shop.button.open")
+		owned_label.text = ""
+		total_bonus_label.text = ""
+	elif product_type == "rewarded_ad":
 		button_label.text = LocalizationManager.tr_key("shop.button.watch_ad")
 		owned_label.text = ""
 		total_bonus_label.text = ""

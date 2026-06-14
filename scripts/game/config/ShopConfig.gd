@@ -8,6 +8,15 @@ const PERMANENT_UPGRADE_MULTIPLIER_PER_LEVEL: float = 2.0
 
 const SHOP_PRODUCTS: Array = [
 	{
+		"id": "gem_purchase_entry",
+		"name": "Buy Gems",
+		"name_key": "shop.gem_purchase_entry.name",
+		"description": "Purchase gems",
+		"description_key": "shop.gem_purchase_entry.description",
+		"product_type": "donation_entry",
+		"cost_gems": 0,
+	},
+	{
 		"id": "rewarded_gems_ad",
 		"name": "Watch Ad: +3 Gems",
 		"name_key": "shop.rewarded_gems_ad.name",
