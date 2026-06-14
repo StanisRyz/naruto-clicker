@@ -1,7 +1,5 @@
 extends Node
 
-const AudioConfig = preload("res://scripts/audio/AudioConfig.gd")
-
 const _SFX_POOL_SIZE: int = 6
 
 var _sound_enabled: bool = true
