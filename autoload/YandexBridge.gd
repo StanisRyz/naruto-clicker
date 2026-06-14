@@ -10,6 +10,16 @@ signal payment_purchase_success(product_id: String, purchase_token: String)
 signal payment_purchase_cancelled(product_id: String)
 signal payment_purchase_error(product_id: String, message: String)
 
+signal cloud_save_loaded(data: Dictionary)
+signal cloud_save_load_error(message: String)
+signal cloud_save_completed
+signal cloud_save_error(message: String)
+signal cloud_save_deleted
+signal cloud_save_delete_error(message: String)
+
+const CLOUD_SAVE_KEY: String = "save_v1"
+const CLOUD_SAVE_SCHEMA_VERSION: int = 1
+
 var is_web: bool = false
 var is_yandex_available: bool = false
 
@@ -159,6 +169,7 @@ func _setup_js_callbacks() -> void:
 	JavaScriptBridge.eval("window._godot_rewarded_ad_rewarded = %s;" % reward_cb)
 	JavaScriptBridge.eval("window._godot_rewarded_ad_close = %s;" % close_cb)
 	JavaScriptBridge.eval("window._godot_rewarded_ad_error = %s;" % error_cb)
+	_setup_cloud_save_js_callbacks()
 
 
 func _simulate_rewarded_ad_debug() -> void:
@@ -249,3 +260,169 @@ func _setup_payment_js_callbacks() -> void:
 func _simulate_payment_debug(local_product_id: String) -> void:
 	await Engine.get_main_loop().create_timer(0.5).timeout
 	payment_purchase_success.emit(local_product_id, "debug_token")
+
+
+# ── Cloud save ────────────────────────────────────────────────────────────────
+
+func is_cloud_save_available() -> bool:
+	return is_web and is_yandex_available
+
+
+func load_cloud_save() -> void:
+	if not is_web or not is_yandex_available:
+		cloud_save_loaded.emit({})
+		return
+
+	var js_key: String = JSON.stringify(CLOUD_SAVE_KEY)
+	JavaScriptBridge.eval("""
+		(function() {
+			try {
+				window.ysdk.getPlayer({ scopes: false }).then(function(player) {
+					window._godot_yandex_player = player;
+					return player.getData([%s]);
+				}).then(function(data) {
+					var entry = data[%s];
+					var jsonStr = (entry && typeof entry === 'object') ? JSON.stringify(entry) : '{}';
+					if (window._godot_cloud_save_loaded) window._godot_cloud_save_loaded(jsonStr);
+				}).catch(function(err) {
+					console.warn("YandexBridge: cloud load error:", err);
+					if (window._godot_cloud_save_load_error) window._godot_cloud_save_load_error(String(err));
+				});
+			} catch(e) {
+				console.warn("YandexBridge: cloud load exception:", e);
+				if (window._godot_cloud_save_load_error) window._godot_cloud_save_load_error(String(e));
+			}
+		})();
+	""" % [js_key, js_key])
+
+
+func save_cloud_save(data: Dictionary, flush: bool = false) -> void:
+	if not is_web or not is_yandex_available:
+		return
+
+	var json_string: String = JSON.stringify(data)
+	var js_data_literal: String = JSON.stringify(json_string)
+	var js_flush: String = "true" if flush else "false"
+	var js_key: String = JSON.stringify(CLOUD_SAVE_KEY)
+
+	JavaScriptBridge.eval("""
+		(function() {
+			try {
+				var rawData = JSON.parse(%s);
+				var payload = {};
+				payload[%s] = rawData;
+				var doSave = function(player) {
+					player.setData(payload, %s).then(function() {
+						if (window._godot_cloud_save_completed) window._godot_cloud_save_completed();
+					}).catch(function(err) {
+						console.warn("YandexBridge: cloud save error:", err);
+						if (window._godot_cloud_save_error) window._godot_cloud_save_error(String(err));
+					});
+				};
+				if (window._godot_yandex_player) {
+					doSave(window._godot_yandex_player);
+				} else {
+					window.ysdk.getPlayer({ scopes: false }).then(function(player) {
+						window._godot_yandex_player = player;
+						doSave(player);
+					}).catch(function(err) {
+						console.warn("YandexBridge: getPlayer error on save:", err);
+						if (window._godot_cloud_save_error) window._godot_cloud_save_error(String(err));
+					});
+				}
+			} catch(e) {
+				console.warn("YandexBridge: cloud save exception:", e);
+				if (window._godot_cloud_save_error) window._godot_cloud_save_error(String(e));
+			}
+		})();
+	""" % [js_data_literal, js_key, js_flush])
+
+
+func delete_cloud_save() -> void:
+	if not is_web or not is_yandex_available:
+		cloud_save_deleted.emit()
+		return
+
+	var js_key: String = JSON.stringify(CLOUD_SAVE_KEY)
+
+	JavaScriptBridge.eval("""
+		(function() {
+			try {
+				var payload = {};
+				payload[%s] = {};
+				var doDelete = function(player) {
+					player.setData(payload, true).then(function() {
+						if (window._godot_cloud_save_deleted) window._godot_cloud_save_deleted();
+					}).catch(function(err) {
+						console.warn("YandexBridge: cloud delete error:", err);
+						if (window._godot_cloud_save_delete_error) window._godot_cloud_save_delete_error(String(err));
+					});
+				};
+				if (window._godot_yandex_player) {
+					doDelete(window._godot_yandex_player);
+				} else {
+					window.ysdk.getPlayer({ scopes: false }).then(function(player) {
+						window._godot_yandex_player = player;
+						doDelete(player);
+					}).catch(function(err) {
+						console.warn("YandexBridge: getPlayer error on delete:", err);
+						if (window._godot_cloud_save_delete_error) window._godot_cloud_save_delete_error(String(err));
+					});
+				}
+			} catch(e) {
+				console.warn("YandexBridge: cloud delete exception:", e);
+				if (window._godot_cloud_save_delete_error) window._godot_cloud_save_delete_error(String(e));
+			}
+		})();
+	""" % js_key)
+
+
+func _on_js_cloud_save_loaded(json_str: String) -> void:
+	if json_str == "" or json_str == "{}":
+		cloud_save_loaded.emit({})
+		return
+	var json: JSON = JSON.new()
+	var parse_err: int = json.parse(json_str)
+	if parse_err != OK or not json.data is Dictionary:
+		push_warning("YandexBridge: cloud save parse failed — %s" % json_str.left(120))
+		cloud_save_load_error.emit("Cloud save JSON parse failed")
+		return
+	cloud_save_loaded.emit(json.data)
+
+
+func _on_js_cloud_save_load_error(message: String) -> void:
+	push_warning("YandexBridge: cloud load error — %s" % message)
+	cloud_save_load_error.emit(message)
+
+
+func _on_js_cloud_save_completed() -> void:
+	cloud_save_completed.emit()
+
+
+func _on_js_cloud_save_error(message: String) -> void:
+	push_warning("YandexBridge: cloud save error — %s" % message)
+	cloud_save_error.emit(message)
+
+
+func _on_js_cloud_save_deleted() -> void:
+	cloud_save_deleted.emit()
+
+
+func _on_js_cloud_save_delete_error(message: String) -> void:
+	push_warning("YandexBridge: cloud delete error — %s" % message)
+	cloud_save_delete_error.emit(message)
+
+
+func _setup_cloud_save_js_callbacks() -> void:
+	var loaded_cb := JavaScriptBridge.create_callback(func(args): _on_js_cloud_save_loaded(str(args[0])))
+	var load_err_cb := JavaScriptBridge.create_callback(func(args): _on_js_cloud_save_load_error(str(args[0])))
+	var completed_cb := JavaScriptBridge.create_callback(_on_js_cloud_save_completed)
+	var save_err_cb := JavaScriptBridge.create_callback(func(args): _on_js_cloud_save_error(str(args[0])))
+	var deleted_cb := JavaScriptBridge.create_callback(_on_js_cloud_save_deleted)
+	var delete_err_cb := JavaScriptBridge.create_callback(func(args): _on_js_cloud_save_delete_error(str(args[0])))
+	JavaScriptBridge.eval("window._godot_cloud_save_loaded = %s;" % loaded_cb)
+	JavaScriptBridge.eval("window._godot_cloud_save_load_error = %s;" % load_err_cb)
+	JavaScriptBridge.eval("window._godot_cloud_save_completed = %s;" % completed_cb)
+	JavaScriptBridge.eval("window._godot_cloud_save_error = %s;" % save_err_cb)
+	JavaScriptBridge.eval("window._godot_cloud_save_deleted = %s;" % deleted_cb)
+	JavaScriptBridge.eval("window._godot_cloud_save_delete_error = %s;" % delete_err_cb)

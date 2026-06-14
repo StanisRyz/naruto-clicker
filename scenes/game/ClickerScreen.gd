@@ -153,7 +153,7 @@ func _ready() -> void:
 	_apply_ui_font_sizes()
 	_apply_button_visual_cleanup()
 	bottom_tabs_backdrop.set_asset_key("ui.bottom_tabs.backdrop", Color.TRANSPARENT)
-	_load_game_on_start()
+	await _load_game_on_start_async()
 	AudioManager.set_music_enabled(state.music_enabled)
 	AudioManager.set_sound_enabled(state.sound_enabled)
 	AudioManager.play_main_music()
@@ -418,6 +418,7 @@ func _on_settings_reset_confirmed() -> void:
 		balance_logger.start_session(state)
 		balance_logger.mark_enemy_spawned(state)
 	_save_game_now()
+	SaveManager.flush_cloud_save_now()
 
 
 func _on_tasks_button_pressed() -> void:
@@ -1204,20 +1205,40 @@ func _on_language_manually_changed(_language_code: String) -> void:
 	_save_game_now()
 
 
-func _load_game_on_start() -> void:
+func _load_game_on_start_async() -> void:
 	var now: int = int(Time.get_unix_time_from_system())
-	var data: Dictionary = SaveManager.load_data()
-	if data.is_empty():
+	var local_data: Dictionary = SaveManager.load_data()
+	var cloud_data: Dictionary = await SaveManager.load_cloud_data_async()
+
+	var local_valid: bool = not local_data.is_empty()
+	var cloud_valid: bool = not cloud_data.is_empty()
+
+	var chosen: Dictionary = {}
+
+	if local_valid and cloud_valid:
+		var local_time: int = int(local_data.get("last_save_unix_time", 0))
+		var cloud_time: int = int(cloud_data.get("last_save_unix_time", 0))
+		if cloud_time > local_time:
+			chosen = cloud_data
+			print("ClickerScreen: cloud save is newer (%d > %d), using cloud" % [cloud_time, local_time])
+		else:
+			chosen = local_data
+	elif local_valid:
+		chosen = local_data
+	elif cloud_valid:
+		chosen = cloud_data
+		print("ClickerScreen: no valid local save, using cloud save")
+
+	if chosen.is_empty():
 		state.last_save_unix_time = now
 		state.start_rewarded_ad_initial_cooldown_if_needed()
 		_save_game_now()
 		return
 
-	state.apply_save_data(data)
+	state.apply_save_data(chosen)
 	LocalizationManager.set_language(state.language)
 
 	if state.has_pending_offline_gold_reward():
-		# A previously-queued reward was not yet claimed — show it directly.
 		pass
 	else:
 		var previous_time: int = state.last_save_unix_time
