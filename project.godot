@@ -21,6 +21,7 @@ BuildConfig="*res://scripts/game/BuildConfig.gd"
 YandexBridge="*res://autoload/YandexBridge.gd"
 SaveManager="*res://autoload/SaveManager.gd"
 LocalizationManager="*res://scripts/ui/LocalizationManager.gd"
+AudioManager="*res://autoload/AudioManager.gd"
 
 [display]
 

@@ -147,6 +147,10 @@ func _ready() -> void:
 	_apply_button_visual_cleanup()
 	bottom_tabs_backdrop.set_asset_key("ui.bottom_tabs.backdrop", Color.TRANSPARENT)
 	_load_game_on_start()
+	AudioManager.set_music_enabled(state.music_enabled)
+	AudioManager.set_sound_enabled(state.sound_enabled)
+	AudioManager.play_main_music()
+	AudioManager.bind_buttons_in_tree(self)
 	LocalizationManager.set_language(state.language)
 	if not LocalizationManager.has_loaded_translations():
 		push_warning("No localization translations loaded. UI will display keys. " + LocalizationManager.get_localization_source_status())
@@ -309,6 +313,7 @@ func _on_character_level_upgrade_requested(mode: String) -> void:
 		balance_logger.log_purchase(state, "hero_level", "hero_level_x%s" % mode, gold_before - state.gold, result)
 	_update_ui()
 	if result.get("upgraded", false):
+		AudioManager.play_purchase_success()
 		upgrade_sheet.play_hero_purchase_feedback()
 		_save_game_now()
 
@@ -321,6 +326,7 @@ func _on_hero_skill_purchase_requested(skill_id: String) -> void:
 		balance_logger.log_purchase(state, "hero_skill", skill_id, gold_before - state.gold, result)
 	_update_ui()
 	if result.get("upgraded", false):
+		AudioManager.play_purchase_success()
 		_save_game_now()
 
 
@@ -332,6 +338,7 @@ func _on_ability_skill_purchase_requested(skill_id: String) -> void:
 		balance_logger.log_purchase(state, "ability_rank", skill_id, gold_before - state.gold, result)
 	_update_ui()
 	if result.get("upgraded", false):
+		AudioManager.play_purchase_success()
 		_save_game_now()
 
 
@@ -343,6 +350,7 @@ func _on_ability_unlock_requested(ability_id: String) -> void:
 		balance_logger.log_purchase(state, "ability_unlock", ability_id, gold_before - state.gold, result)
 	_update_ui()
 	if result.get("upgraded", false):
+		AudioManager.play_purchase_success()
 		upgrade_sheet.play_ability_purchase_feedback(ability_id)
 		_save_game_now()
 
@@ -354,12 +362,14 @@ func _on_settings_requested() -> void:
 
 func _on_settings_sound_toggled(enabled: bool) -> void:
 	state.sound_enabled = enabled
+	AudioManager.set_sound_enabled(enabled)
 	_save_game_now()
 	settings_window.refresh_view(state)
 
 
 func _on_settings_music_toggled(enabled: bool) -> void:
 	state.music_enabled = enabled
+	AudioManager.set_music_enabled(enabled)
 	_save_game_now()
 	settings_window.refresh_view(state)
 
@@ -422,6 +432,7 @@ func _on_partner_purchase_requested(partner_index: int, mode: String) -> void:
 		balance_logger.log_purchase(state, "partner", "partner_%d_x%s" % [partner_index, mode], gold_before - state.gold, result)
 	_update_ui()
 	if result.get("upgraded", false):
+		AudioManager.play_purchase_success()
 		partner_sheet.play_partner_purchase_feedback(partner_index)
 		_save_game_now()
 
@@ -434,6 +445,7 @@ func _on_partner_skill_purchase_requested(skill_id: String) -> void:
 		balance_logger.log_purchase(state, "partner_skill", skill_id, gold_before - state.gold, result)
 	_update_ui()
 	if result.get("upgraded", false):
+		AudioManager.play_purchase_success()
 		_save_game_now()
 
 
@@ -445,6 +457,7 @@ func _on_building_purchase_requested(building_index: int, mode: String) -> void:
 		balance_logger.log_purchase(state, "building", "building_%d_x%s" % [building_index, mode], gold_before - state.gold, result)
 	_update_ui()
 	if result.get("upgraded", false):
+		AudioManager.play_purchase_success()
 		settlement_sheet.play_building_purchase_feedback(building_index)
 		_save_game_now()
 
@@ -488,6 +501,7 @@ func _on_prestige_talent_purchase_requested(talent_index: int, mode: String) -> 
 		balance_logger.log_purchase(state, "prestige_talent", "talent_%d_x%s" % [talent_index, mode], pp_before - state.prestige_points_available, result)
 	_update_ui()
 	if result.get("upgraded", false):
+		AudioManager.play_purchase_success()
 		prestige_sheet.play_prestige_talent_purchase_feedback(talent_index)
 		_save_game_now()
 
@@ -520,6 +534,7 @@ func _on_gem_product_purchase_requested(product_id: String) -> void:
 func _on_payment_purchase_success(local_product_id: String, purchase_token: String) -> void:
 	var result: Dictionary = state.grant_paid_gem_purchase(local_product_id)
 	_handle_status_text(result.get("status_text", ""))
+	AudioManager.play_purchase_success()
 	_update_ui()
 	_save_game_now()
 	YandexBridge.consume_purchase(purchase_token)
@@ -563,6 +578,7 @@ func _execute_shop_product_purchase(product_id: String, mode: String) -> void:
 		balance_logger.log_purchase(state, "shop", product_id, gems_before - state.gems, result)
 	_update_ui()
 	if result.get("upgraded", false):
+		AudioManager.play_purchase_success()
 		shop_sheet.play_product_purchase_feedback(product_id)
 		_save_game_now()
 
@@ -767,6 +783,7 @@ func _apply_attack_result(result: Dictionary, show_hit_feedback: bool, was_boss_
 
 
 func _spawn_hit_effect(global_hit_position: Vector2 = Vector2.ZERO) -> void:
+	AudioManager.play_random_hit()
 	var effect := TextureRect.new()
 	effect.custom_minimum_size = HIT_EFFECT_SIZE
 	effect.size = HIT_EFFECT_SIZE
