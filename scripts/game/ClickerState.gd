@@ -90,6 +90,7 @@ var zone_reward_multiplier: float = 1.0
 var sound_enabled: bool = true
 var music_enabled: bool = true
 var language: String = "en"
+var language_manually_selected: bool = false
 
 var prestige_points_available: int = 0
 var prestige_points_total_earned: int = 0
@@ -506,6 +507,7 @@ func get_reset_progress_preserved_snapshot() -> Dictionary:
 		"sound_enabled": sound_enabled,
 		"music_enabled": music_enabled,
 		"language": language,
+		"language_manually_selected": language_manually_selected,
 	}
 
 
@@ -518,6 +520,7 @@ func apply_reset_progress_preserved_snapshot(snapshot: Dictionary) -> void:
 	music_enabled = bool(snapshot.get("music_enabled", true))
 	var snap_lang: String = str(snapshot.get("language", "en"))
 	language = snap_lang if snap_lang in ["en", "ru"] else "en"
+	language_manually_selected = bool(snapshot.get("language_manually_selected", false))
 	_update_character_state()
 
 

@@ -113,6 +113,7 @@ func _ready() -> void:
 	settings_window.music_toggled.connect(_on_settings_music_toggled)
 	settings_window.save_requested.connect(_on_settings_save_requested)
 	settings_window.reset_requested.connect(_on_settings_reset_confirmed)
+	settings_window.language_manually_changed.connect(_on_language_manually_changed)
 	upgrades_button.pressed.connect(_on_upgrades_button_pressed)
 	partners_button.pressed.connect(_on_partners_button_pressed)
 	settlement_button.pressed.connect(_on_settlement_button_pressed)
@@ -157,7 +158,7 @@ func _ready() -> void:
 	AudioManager.set_sound_enabled(state.sound_enabled)
 	AudioManager.play_main_music()
 	AudioManager.bind_buttons_in_tree(self)
-	LocalizationManager.set_language(state.language)
+	_apply_startup_language()
 	if not LocalizationManager.has_loaded_translations():
 		push_warning("No localization translations loaded. UI will display keys. " + LocalizationManager.get_localization_source_status())
 	_is_initialized = true
@@ -1186,6 +1187,21 @@ func _finish_enemy_transition_after_delay(transition_token: int) -> void:
 func _save_game_now() -> bool:
 	state.save_current_level_progress()
 	return SaveManager.save_data(state.get_save_data())
+
+
+func _apply_startup_language() -> void:
+	if not state.language_manually_selected:
+		var platform_lang: String = YandexBridge.get_yandex_language()
+		var resolved: String = LocalizationManager.normalize_supported_language(platform_lang)
+		if resolved != state.language:
+			state.language = resolved
+			_save_game_now()
+	LocalizationManager.set_language(state.language)
+
+
+func _on_language_manually_changed(_language_code: String) -> void:
+	state.language_manually_selected = true
+	_save_game_now()
 
 
 func _load_game_on_start() -> void:

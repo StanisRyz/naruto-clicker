@@ -27,6 +27,25 @@ func _ready() -> void:
 	_setup_js_callbacks()
 
 
+func get_yandex_language() -> String:
+	if not is_web:
+		return ""
+	var result = JavaScriptBridge.eval("""
+		(function() {
+			try {
+				if (!window.ysdk || !window.ysdk.environment || !window.ysdk.environment.i18n) return "";
+				var lang = window.ysdk.environment.i18n.lang;
+				return (typeof lang === "string") ? lang.toLowerCase() : "";
+			} catch(e) {
+				return "";
+			}
+		})();
+	""")
+	if result == null or not (result is String):
+		return ""
+	return str(result)
+
+
 func _check_yandex_sdk() -> void:
 	var result = JavaScriptBridge.eval("""
 		typeof YaGames !== 'undefined';

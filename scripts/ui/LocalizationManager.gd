@@ -144,6 +144,11 @@ func get_available_languages() -> Array[String]:
 	return SUPPORTED_LANGUAGES.duplicate()
 
 
+func normalize_supported_language(language_code: String) -> String:
+	var code: String = language_code.to_lower()
+	return code if code in SUPPORTED_LANGUAGES else DEFAULT_LANGUAGE
+
+
 func get_loaded_translation_count(language_code: String = DEFAULT_LANGUAGE) -> int:
 	if _translations.has(language_code):
 		return _translations[language_code].size()

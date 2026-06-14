@@ -6,6 +6,7 @@ signal music_toggled(enabled: bool)
 signal save_requested
 signal reset_requested
 signal reset_confirmed
+signal language_manually_changed(language_code: String)
 
 const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 
@@ -246,6 +247,7 @@ func _on_language_button_pressed() -> void:
 	var idx: int = langs.find(current)
 	var next_idx: int = (idx + 1) % langs.size()
 	LocalizationManager.set_language(langs[next_idx])
+	language_manually_changed.emit(langs[next_idx])
 
 
 func _hide_reset_confirm() -> void:

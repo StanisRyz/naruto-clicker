@@ -56,6 +56,7 @@ static func build_save_data(state: ClickerState) -> Dictionary:
 		"sound_enabled": state.sound_enabled,
 		"music_enabled": state.music_enabled,
 		"language": state.language,
+		"language_manually_selected": state.language_manually_selected,
 		"last_save_unix_time": int(Time.get_unix_time_from_system()),
 		"rewarded_ad_all_damage_x2_expires_at": state.rewarded_ad_all_damage_x2_expires_at,
 		"rewarded_ad_gold_x2_expires_at": state.rewarded_ad_gold_x2_expires_at,
@@ -81,6 +82,7 @@ static func apply_save_data(state: ClickerState, data: Dictionary) -> bool:
 	state.music_enabled = bool(data.get("music_enabled", true))
 	var saved_lang: String = str(data.get("language", "en"))
 	state.language = saved_lang if saved_lang in ["en", "ru"] else "en"
+	state.language_manually_selected = bool(data.get("language_manually_selected", false))
 
 	state.cleared_level_ids.clear()
 	var raw_cleared = data.get("cleared_level_ids", {})
