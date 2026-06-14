@@ -37,6 +37,7 @@ var task_rows_by_id: Dictionary = {}
 
 
 func _ready() -> void:
+	tasks_container.mouse_filter = Control.MOUSE_FILTER_PASS
 	outside_click_area.gui_input.connect(_on_outside_click_area_gui_input)
 	panel_container.gui_input.connect(_on_panel_container_gui_input)
 	close_button.pressed.connect(_on_close_button_pressed)
@@ -183,7 +184,7 @@ func _create_task_row(task_data: Dictionary) -> Control:
 	wrapper.custom_minimum_size = Vector2(0, TASK_CARD_OUTER_HEIGHT)
 	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	wrapper.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	wrapper.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	wrapper.mouse_filter = Control.MOUSE_FILTER_PASS
 
 	var row := Control.new()
 	row.custom_minimum_size = Vector2(TASK_CARD_WIDTH, TASK_CARD_OUTER_HEIGHT)
@@ -196,8 +197,7 @@ func _create_task_row(task_data: Dictionary) -> Control:
 	row.offset_right = TASK_CARD_WIDTH / 2.0 + TASK_CARD_HORIZONTAL_SHIFT
 	row.offset_bottom = TASK_CARD_OUTER_HEIGHT
 	row.clip_contents = true
-	row.mouse_filter = Control.MOUSE_FILTER_STOP
-	row.gui_input.connect(_on_panel_container_gui_input)
+	row.mouse_filter = Control.MOUSE_FILTER_PASS
 
 	var background = ImageSlotClass.new()
 	background.name = "TaskCardBackgroundImageHolder"
@@ -323,6 +323,7 @@ func _create_claim_button_slot(button: Button) -> Control:
 	slot.name = "ClaimButtonSlot"
 	slot.custom_minimum_size = TASK_CLAIM_BUTTON_SLOT_SIZE
 	slot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	slot.mouse_filter = Control.MOUSE_FILTER_PASS
 
 	button.custom_minimum_size = TASK_CLAIM_BUTTON_SIZE
 	button.anchor_left = 0.0

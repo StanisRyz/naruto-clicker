@@ -38,6 +38,11 @@ var latest_state: ClickerState = null
 @onready var products_container: VBoxContainer = $ProductsContainer
 
 
+func _ready() -> void:
+	mouse_filter = Control.MOUSE_FILTER_PASS
+	products_container.mouse_filter = Control.MOUSE_FILTER_PASS
+
+
 func set_selected_buy_mode(mode: String) -> void:
 	selected_buy_mode = mode
 	if latest_state != null:
@@ -72,6 +77,7 @@ func _create_product_row(product_id: String) -> Dictionary:
 	row.custom_minimum_size = Vector2(0, CARD_OUTER_HEIGHT)
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.clip_contents = true
+	row.mouse_filter = Control.MOUSE_FILTER_PASS
 	products_container.add_child(row)
 
 	var background := ImageSlotClass.new()
@@ -90,11 +96,13 @@ func _create_product_row(product_id: String) -> Dictionary:
 	margin.add_theme_constant_override("margin_top", CARD_MARGIN_TOP)
 	margin.add_theme_constant_override("margin_right", CARD_MARGIN_RIGHT)
 	margin.add_theme_constant_override("margin_bottom", CARD_MARGIN_BOTTOM)
+	margin.mouse_filter = Control.MOUSE_FILTER_PASS
 	row.add_child(margin)
 
 	var content := HBoxContainer.new()
 	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	content.add_theme_constant_override("separation", 12)
+	content.mouse_filter = Control.MOUSE_FILTER_PASS
 	margin.add_child(content)
 
 	var image_holder := ImageSlotClass.new()
@@ -103,6 +111,7 @@ func _create_product_row(product_id: String) -> Dictionary:
 	image_holder.show_fallback_behind_texture = false
 	image_holder.custom_minimum_size = SHOP_IMAGE_SIZE
 	image_holder.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	image_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.add_child(image_holder)
 	image_holder.set_asset_key(GameAssetCatalog.shop_product_icon_key(product_id))
 
@@ -111,6 +120,7 @@ func _create_product_row(product_id: String) -> Dictionary:
 	right_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	right_content.custom_minimum_size = Vector2(0, CARD_INNER_HEIGHT)
 	right_content.clip_contents = true
+	right_content.mouse_filter = Control.MOUSE_FILTER_PASS
 	content.add_child(right_content)
 
 	var name_label := Label.new()
@@ -118,6 +128,7 @@ func _create_product_row(product_id: String) -> Dictionary:
 	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	name_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_place_card_row(name_label, 0, CARD_ROW_1_HEIGHT)
 	right_content.add_child(name_label)
 	UiFontConfig.apply_label_font_size(name_label, UiFontConfig.UPGRADE_NAME_FONT_SIZE)
@@ -127,6 +138,7 @@ func _create_product_row(product_id: String) -> Dictionary:
 	description_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	description_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	description_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	description_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_place_card_row(description_label, CARD_ROW_1_HEIGHT + CARD_ROW_GAP, CARD_ROW_2_HEIGHT)
 	right_content.add_child(description_label)
 	UiFontConfig.apply_label_font_size(description_label, UiFontConfig.UPGRADE_GAIN_FONT_SIZE)
@@ -136,6 +148,7 @@ func _create_product_row(product_id: String) -> Dictionary:
 	effect_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	effect_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	effect_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	effect_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_place_card_row(effect_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_GAP * 2, CARD_ROW_3_HEIGHT)
 	right_content.add_child(effect_label)
 	UiFontConfig.apply_label_font_size(effect_label, UiFontConfig.UPGRADE_VALUE_FONT_SIZE)
@@ -145,6 +158,7 @@ func _create_product_row(product_id: String) -> Dictionary:
 	owned_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	owned_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	owned_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	owned_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_place_card_row(owned_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_3_HEIGHT + CARD_ROW_GAP * 3, CARD_ROW_4_HEIGHT)
 	right_content.add_child(owned_label)
 	UiFontConfig.apply_label_font_size(owned_label, UiFontConfig.UPGRADE_VALUE_FONT_SIZE)
@@ -154,6 +168,7 @@ func _create_product_row(product_id: String) -> Dictionary:
 	total_bonus_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	total_bonus_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	total_bonus_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	total_bonus_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_place_card_row(total_bonus_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_3_HEIGHT + CARD_ROW_4_HEIGHT + CARD_ROW_GAP * 4, CARD_ROW_5_HEIGHT)
 	right_content.add_child(total_bonus_label)
 	UiFontConfig.apply_label_font_size(total_bonus_label, UiFontConfig.UPGRADE_MILESTONE_FONT_SIZE)
@@ -192,6 +207,7 @@ func _create_product_row(product_id: String) -> Dictionary:
 	button_slot.name = "ButtonSlot"
 	button_slot.custom_minimum_size = CARD_BUTTON_SLOT_SIZE
 	button_slot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	button_slot.mouse_filter = Control.MOUSE_FILTER_PASS
 
 	button.anchor_left = 0.0
 	button.anchor_top = 0.0

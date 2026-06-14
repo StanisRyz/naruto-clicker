@@ -38,6 +38,11 @@ var building_rows: Array[Dictionary] = []
 @onready var rows_container: VBoxContainer = $RowsContainer
 
 
+func _ready() -> void:
+	mouse_filter = Control.MOUSE_FILTER_PASS
+	rows_container.mouse_filter = Control.MOUSE_FILTER_PASS
+
+
 func update_view(state: ClickerState) -> void:
 	current_state = state
 	_ensure_building_rows(state)
@@ -123,6 +128,7 @@ func _create_card_button_slot(button: Button) -> Control:
 	slot.name = "ButtonSlot"
 	slot.custom_minimum_size = BUILDING_BUTTON_SLOT_SIZE
 	slot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	slot.mouse_filter = Control.MOUSE_FILTER_PASS
 
 	button.custom_minimum_size = BUILDING_BUTTON_SIZE
 	button.anchor_left = 0.0
@@ -155,6 +161,7 @@ func _create_card_row(row_name: String) -> Control:
 	row.custom_minimum_size = Vector2(0, CARD_OUTER_HEIGHT)
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.clip_contents = true
+	row.mouse_filter = Control.MOUSE_FILTER_PASS
 
 	var background := ImageSlotClass.new()
 	background.name = "CardBackgroundImageHolder"
@@ -179,11 +186,13 @@ func _create_building_row(building_index: int) -> Dictionary:
 	margin.add_theme_constant_override("margin_top", CARD_MARGIN_TOP)
 	margin.add_theme_constant_override("margin_right", CARD_MARGIN_RIGHT)
 	margin.add_theme_constant_override("margin_bottom", CARD_MARGIN_BOTTOM)
+	margin.mouse_filter = Control.MOUSE_FILTER_PASS
 	row.add_child(margin)
 
 	var content := HBoxContainer.new()
 	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	content.add_theme_constant_override("separation", 12)
+	content.mouse_filter = Control.MOUSE_FILTER_PASS
 	margin.add_child(content)
 
 	var image_holder = ImageSlotClass.new()
@@ -191,6 +200,7 @@ func _create_building_row(building_index: int) -> Dictionary:
 	image_holder.fallback_color = Color.WHITE
 	image_holder.show_fallback_behind_texture = false
 	image_holder.custom_minimum_size = BUILDING_IMAGE_SIZE
+	image_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.add_child(image_holder)
 	image_holder.set_asset_key(GameAssetCatalog.building_icon_key(building_index))
 
@@ -199,6 +209,7 @@ func _create_building_row(building_index: int) -> Dictionary:
 	right_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	right_content.custom_minimum_size = Vector2(0, CARD_INNER_HEIGHT)
 	right_content.clip_contents = true
+	right_content.mouse_filter = Control.MOUSE_FILTER_PASS
 	content.add_child(right_content)
 
 	var building_name_label := Label.new()
@@ -206,6 +217,7 @@ func _create_building_row(building_index: int) -> Dictionary:
 	building_name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	building_name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	building_name_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	building_name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	UiFontConfig.apply_label_font_size(building_name_label, UiFontConfig.SETTLEMENT_NAME_FONT_SIZE)
 	_place_card_row(building_name_label, 0, CARD_ROW_1_HEIGHT)
 	right_content.add_child(building_name_label)
@@ -214,6 +226,7 @@ func _create_building_row(building_index: int) -> Dictionary:
 	building_count_label.name = "BuildingCountLabel"
 	building_count_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	building_count_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	building_count_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	UiFontConfig.apply_label_font_size(building_count_label, UiFontConfig.SETTLEMENT_COUNT_FONT_SIZE)
 	_place_card_row(building_count_label, CARD_ROW_1_HEIGHT + CARD_ROW_GAP, CARD_ROW_2_HEIGHT)
 	right_content.add_child(building_count_label)
@@ -222,6 +235,7 @@ func _create_building_row(building_index: int) -> Dictionary:
 	purchase_bonus_gain_label.name = "PurchaseBonusGainLabel"
 	purchase_bonus_gain_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	purchase_bonus_gain_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	purchase_bonus_gain_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	UiFontConfig.apply_label_font_size(purchase_bonus_gain_label, UiFontConfig.SETTLEMENT_PURCHASE_GAIN_FONT_SIZE)
 	_place_card_row(purchase_bonus_gain_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_GAP * 2, CARD_ROW_3_HEIGHT)
 	right_content.add_child(purchase_bonus_gain_label)
@@ -230,6 +244,7 @@ func _create_building_row(building_index: int) -> Dictionary:
 	total_bonus_label.name = "TotalBonusLabel"
 	total_bonus_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	total_bonus_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	total_bonus_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	UiFontConfig.apply_label_font_size(total_bonus_label, UiFontConfig.SETTLEMENT_TOTAL_BONUS_FONT_SIZE)
 	_place_card_row(total_bonus_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_3_HEIGHT + CARD_ROW_GAP * 3, CARD_ROW_4_HEIGHT)
 	right_content.add_child(total_bonus_label)
@@ -239,6 +254,7 @@ func _create_building_row(building_index: int) -> Dictionary:
 	milestone_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	milestone_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	milestone_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	milestone_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	UiFontConfig.apply_label_font_size(milestone_label, UiFontConfig.SETTLEMENT_MILESTONE_FONT_SIZE)
 	_place_card_row(milestone_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_3_HEIGHT + CARD_ROW_4_HEIGHT + CARD_ROW_GAP * 4, CARD_ROW_5_HEIGHT)
 	right_content.add_child(milestone_label)

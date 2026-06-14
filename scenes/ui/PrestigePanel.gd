@@ -40,6 +40,9 @@ var talent_rows: Array[Dictionary] = []
 
 
 func _ready() -> void:
+	mouse_filter = Control.MOUSE_FILTER_PASS
+	action_container.mouse_filter = Control.MOUSE_FILTER_PASS
+	talents_container.mouse_filter = Control.MOUSE_FILTER_PASS
 	prestige_action_row = _create_prestige_action_row()
 
 
@@ -136,6 +139,7 @@ func _create_card_button_slot(button: Button) -> Control:
 	slot.name = "ButtonSlot"
 	slot.custom_minimum_size = TALENT_BUTTON_SLOT_SIZE
 	slot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	slot.mouse_filter = Control.MOUSE_FILTER_PASS
 
 	button.custom_minimum_size = TALENT_BUTTON_SIZE
 	button.anchor_left = 0.0
@@ -168,6 +172,7 @@ func _create_card_row(row_name: String) -> Control:
 	row.custom_minimum_size = Vector2(0, CARD_OUTER_HEIGHT)
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.clip_contents = true
+	row.mouse_filter = Control.MOUSE_FILTER_PASS
 
 	var background := ImageSlotClass.new()
 	background.name = "CardBackgroundImageHolder"
@@ -192,11 +197,13 @@ func _create_prestige_action_row() -> Dictionary:
 	margin.add_theme_constant_override("margin_top", CARD_MARGIN_TOP)
 	margin.add_theme_constant_override("margin_right", CARD_MARGIN_RIGHT)
 	margin.add_theme_constant_override("margin_bottom", CARD_MARGIN_BOTTOM)
+	margin.mouse_filter = Control.MOUSE_FILTER_PASS
 	row.add_child(margin)
 
 	var content := HBoxContainer.new()
 	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	content.add_theme_constant_override("separation", 12)
+	content.mouse_filter = Control.MOUSE_FILTER_PASS
 	margin.add_child(content)
 
 	var image_holder = ImageSlotClass.new()
@@ -204,6 +211,7 @@ func _create_prestige_action_row() -> Dictionary:
 	image_holder.fallback_color = Color.WHITE
 	image_holder.show_fallback_behind_texture = false
 	image_holder.custom_minimum_size = TALENT_IMAGE_SIZE
+	image_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.add_child(image_holder)
 	image_holder.set_asset_key("prestige.action")
 
@@ -212,6 +220,7 @@ func _create_prestige_action_row() -> Dictionary:
 	right_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	right_content.custom_minimum_size = Vector2(0, CARD_INNER_HEIGHT)
 	right_content.clip_contents = true
+	right_content.mouse_filter = Control.MOUSE_FILTER_PASS
 	content.add_child(right_content)
 
 	var prestige_title_label := Label.new()
@@ -219,6 +228,7 @@ func _create_prestige_action_row() -> Dictionary:
 	prestige_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	prestige_title_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	prestige_title_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	prestige_title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	UiFontConfig.apply_label_font_size(prestige_title_label, UiFontConfig.PRESTIGE_ACTION_TITLE_FONT_SIZE)
 	_place_card_row(prestige_title_label, 0, CARD_ROW_1_HEIGHT)
 	right_content.add_child(prestige_title_label)
@@ -227,6 +237,7 @@ func _create_prestige_action_row() -> Dictionary:
 	prestige_reward_label.name = "PrestigeRewardLabel"
 	prestige_reward_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	prestige_reward_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	prestige_reward_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	UiFontConfig.apply_label_font_size(prestige_reward_label, UiFontConfig.PRESTIGE_ACTION_REWARD_FONT_SIZE)
 	_place_card_row(prestige_reward_label, CARD_ROW_1_HEIGHT + CARD_ROW_GAP, CARD_ROW_2_HEIGHT)
 	right_content.add_child(prestige_reward_label)
@@ -235,6 +246,7 @@ func _create_prestige_action_row() -> Dictionary:
 	reset_progress_label.name = "ResetProgressLabel"
 	reset_progress_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	reset_progress_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	reset_progress_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	UiFontConfig.apply_label_font_size(reset_progress_label, UiFontConfig.PRESTIGE_ACTION_RESET_FONT_SIZE)
 	_place_card_row(reset_progress_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_GAP * 2, CARD_ROW_3_HEIGHT)
 	right_content.add_child(reset_progress_label)
@@ -243,6 +255,7 @@ func _create_prestige_action_row() -> Dictionary:
 	get_points_label.name = "GetPointsLabel"
 	get_points_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	get_points_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	get_points_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	UiFontConfig.apply_label_font_size(get_points_label, UiFontConfig.PRESTIGE_ACTION_GET_POINTS_FONT_SIZE)
 	_place_card_row(get_points_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_3_HEIGHT + CARD_ROW_GAP * 3, CARD_ROW_4_HEIGHT)
 	right_content.add_child(get_points_label)
@@ -303,11 +316,13 @@ func _create_talent_row(talent_index: int, talent_id: String) -> Dictionary:
 	margin.add_theme_constant_override("margin_top", CARD_MARGIN_TOP)
 	margin.add_theme_constant_override("margin_right", CARD_MARGIN_RIGHT)
 	margin.add_theme_constant_override("margin_bottom", CARD_MARGIN_BOTTOM)
+	margin.mouse_filter = Control.MOUSE_FILTER_PASS
 	row.add_child(margin)
 
 	var content := HBoxContainer.new()
 	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	content.add_theme_constant_override("separation", 12)
+	content.mouse_filter = Control.MOUSE_FILTER_PASS
 	margin.add_child(content)
 
 	var image_holder = ImageSlotClass.new()
@@ -315,6 +330,7 @@ func _create_talent_row(talent_index: int, talent_id: String) -> Dictionary:
 	image_holder.fallback_color = Color.WHITE
 	image_holder.show_fallback_behind_texture = false
 	image_holder.custom_minimum_size = TALENT_IMAGE_SIZE
+	image_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.add_child(image_holder)
 	image_holder.set_asset_key(GameAssetCatalog.prestige_talent_icon_key(talent_id))
 
@@ -323,6 +339,7 @@ func _create_talent_row(talent_index: int, talent_id: String) -> Dictionary:
 	right_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	right_content.custom_minimum_size = Vector2(0, CARD_INNER_HEIGHT)
 	right_content.clip_contents = true
+	right_content.mouse_filter = Control.MOUSE_FILTER_PASS
 	content.add_child(right_content)
 
 	var talent_name_label := Label.new()
@@ -330,6 +347,7 @@ func _create_talent_row(talent_index: int, talent_id: String) -> Dictionary:
 	talent_name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	talent_name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	talent_name_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	talent_name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	UiFontConfig.apply_label_font_size(talent_name_label, UiFontConfig.PRESTIGE_NAME_FONT_SIZE)
 	_place_card_row(talent_name_label, 0, CARD_ROW_1_HEIGHT)
 	right_content.add_child(talent_name_label)
@@ -338,6 +356,7 @@ func _create_talent_row(talent_index: int, talent_id: String) -> Dictionary:
 	talent_count_label.name = "TalentCountLabel"
 	talent_count_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	talent_count_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	talent_count_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	UiFontConfig.apply_label_font_size(talent_count_label, UiFontConfig.PRESTIGE_COUNT_FONT_SIZE)
 	_place_card_row(talent_count_label, CARD_ROW_1_HEIGHT + CARD_ROW_GAP, CARD_ROW_2_HEIGHT)
 	right_content.add_child(talent_count_label)
@@ -346,6 +365,7 @@ func _create_talent_row(talent_index: int, talent_id: String) -> Dictionary:
 	purchase_bonus_gain_label.name = "PurchaseBonusGainLabel"
 	purchase_bonus_gain_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	purchase_bonus_gain_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	purchase_bonus_gain_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	UiFontConfig.apply_label_font_size(purchase_bonus_gain_label, UiFontConfig.PRESTIGE_PURCHASE_GAIN_FONT_SIZE)
 	_place_card_row(purchase_bonus_gain_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_GAP * 2, CARD_ROW_3_HEIGHT)
 	right_content.add_child(purchase_bonus_gain_label)
@@ -354,6 +374,7 @@ func _create_talent_row(talent_index: int, talent_id: String) -> Dictionary:
 	total_bonus_label.name = "TotalBonusLabel"
 	total_bonus_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	total_bonus_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	total_bonus_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	UiFontConfig.apply_label_font_size(total_bonus_label, UiFontConfig.PRESTIGE_TOTAL_BONUS_FONT_SIZE)
 	_place_card_row(total_bonus_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_3_HEIGHT + CARD_ROW_GAP * 3, CARD_ROW_4_HEIGHT)
 	right_content.add_child(total_bonus_label)
@@ -362,6 +383,7 @@ func _create_talent_row(talent_index: int, talent_id: String) -> Dictionary:
 	empty_row_label.name = "EmptyRowLabel"
 	empty_row_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	empty_row_label.text = " "
+	empty_row_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	UiFontConfig.apply_label_font_size(empty_row_label, UiFontConfig.PRESTIGE_EMPTY_ROW_FONT_SIZE)
 	_place_card_row(empty_row_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_3_HEIGHT + CARD_ROW_4_HEIGHT + CARD_ROW_GAP * 4, CARD_ROW_5_HEIGHT)
 	right_content.add_child(empty_row_label)

@@ -56,6 +56,8 @@ var ability_rows: Array[Dictionary] = []
 
 
 func _ready() -> void:
+	mouse_filter = Control.MOUSE_FILTER_PASS
+	rows_container.mouse_filter = Control.MOUSE_FILTER_PASS
 	hero_level_row = _create_hero_level_row()
 	for ability_index in range(ABILITIES.size()):
 		ability_rows.append(_create_ability_row(ability_index))
@@ -149,6 +151,7 @@ func _create_card_button_slot(button: Button) -> Control:
 	slot.name = "ButtonSlot"
 	slot.custom_minimum_size = CARD_BUTTON_SLOT_SIZE
 	slot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	slot.mouse_filter = Control.MOUSE_FILTER_PASS
 
 	button.custom_minimum_size = CARD_BUTTON_SIZE
 	button.anchor_left = 0.0
@@ -170,6 +173,7 @@ func _create_card_row(row_name: String) -> Control:
 	row.custom_minimum_size = Vector2(0, CARD_OUTER_HEIGHT)
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.clip_contents = true
+	row.mouse_filter = Control.MOUSE_FILTER_PASS
 
 	var background := ImageSlotClass.new()
 	background.name = "CardBackgroundImageHolder"
@@ -320,11 +324,13 @@ func _add_card_content(row: Control, button_name: String) -> Dictionary:
 	margin.add_theme_constant_override("margin_top", CARD_MARGIN_TOP)
 	margin.add_theme_constant_override("margin_right", CARD_MARGIN_RIGHT)
 	margin.add_theme_constant_override("margin_bottom", CARD_MARGIN_BOTTOM)
+	margin.mouse_filter = Control.MOUSE_FILTER_PASS
 	row.add_child(margin)
 
 	var content := HBoxContainer.new()
 	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	content.add_theme_constant_override("separation", 12)
+	content.mouse_filter = Control.MOUSE_FILTER_PASS
 	margin.add_child(content)
 
 	var image_holder = ImageSlotClass.new()
@@ -333,6 +339,7 @@ func _add_card_content(row: Control, button_name: String) -> Dictionary:
 	image_holder.show_fallback_behind_texture = false
 	image_holder.custom_minimum_size = UPGRADE_IMAGE_SIZE
 	image_holder.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	image_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.add_child(image_holder)
 
 	var right_content := Control.new()
@@ -340,6 +347,7 @@ func _add_card_content(row: Control, button_name: String) -> Dictionary:
 	right_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	right_content.custom_minimum_size = Vector2(0, CARD_INNER_HEIGHT)
 	right_content.clip_contents = true
+	right_content.mouse_filter = Control.MOUSE_FILTER_PASS
 	content.add_child(right_content)
 
 	var name_status_label := Label.new()
@@ -347,6 +355,7 @@ func _add_card_content(row: Control, button_name: String) -> Dictionary:
 	name_status_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	name_status_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	name_status_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	name_status_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_place_card_row(name_status_label, 0, CARD_ROW_1_HEIGHT)
 	right_content.add_child(name_status_label)
 
@@ -355,6 +364,7 @@ func _add_card_content(row: Control, button_name: String) -> Dictionary:
 	purchase_gain_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	purchase_gain_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	purchase_gain_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	purchase_gain_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_place_card_row(purchase_gain_label, CARD_ROW_1_HEIGHT + CARD_ROW_GAP, CARD_ROW_2_HEIGHT)
 	right_content.add_child(purchase_gain_label)
 
@@ -363,6 +373,7 @@ func _add_card_content(row: Control, button_name: String) -> Dictionary:
 	effect_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	effect_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	effect_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	effect_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_place_card_row(effect_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_GAP * 2, CARD_ROW_3_HEIGHT)
 	right_content.add_child(effect_label)
 
@@ -371,12 +382,14 @@ func _add_card_content(row: Control, button_name: String) -> Dictionary:
 	milestone_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	milestone_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	milestone_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	milestone_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_place_card_row(milestone_label, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_3_HEIGHT + CARD_ROW_GAP * 3, CARD_ROW_4_HEIGHT)
 	right_content.add_child(milestone_label)
 
 	var skill_row := HBoxContainer.new()
 	skill_row.name = "SkillRow"
 	skill_row.add_theme_constant_override("separation", 6)
+	skill_row.mouse_filter = Control.MOUSE_FILTER_PASS
 	_place_card_row(skill_row, CARD_ROW_1_HEIGHT + CARD_ROW_2_HEIGHT + CARD_ROW_3_HEIGHT + CARD_ROW_4_HEIGHT + CARD_ROW_GAP * 4, CARD_ROW_5_HEIGHT)
 	right_content.add_child(skill_row)
 
@@ -406,6 +419,7 @@ func _add_card_content(row: Control, button_name: String) -> Dictionary:
 	var skill_spacer := Control.new()
 	skill_spacer.name = "SkillSpacer"
 	skill_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	skill_spacer.mouse_filter = Control.MOUSE_FILTER_PASS
 	skill_row.add_child(skill_spacer)
 
 	var btn_dict := _create_image_card_button(button_name)
