@@ -393,10 +393,13 @@ func _on_settings_save_requested() -> void:
 
 
 func _on_settings_reset_confirmed() -> void:
-	var permanent_shop_snapshot: Dictionary = state.get_shop_permanent_upgrade_snapshot()
+	var preserved: Dictionary = state.get_reset_progress_preserved_snapshot()
 	SaveManager.delete_save()
 	state.reset_to_new_game()
-	state.apply_shop_permanent_upgrade_snapshot(permanent_shop_snapshot)
+	state.apply_reset_progress_preserved_snapshot(preserved)
+	AudioManager.set_sound_enabled(state.sound_enabled)
+	AudioManager.set_music_enabled(state.music_enabled)
+	LocalizationManager.set_language(state.language)
 	_reset_runtime_state_for_new_game()
 	_hide_all_bottom_sheets()
 	active_bottom_tab = ""

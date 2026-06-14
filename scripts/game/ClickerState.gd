@@ -497,6 +497,30 @@ func apply_shop_permanent_upgrade_snapshot(snapshot: Dictionary) -> void:
 	_update_character_state()
 
 
+func get_reset_progress_preserved_snapshot() -> Dictionary:
+	return {
+		"gems": gems,
+		"shop_permanent_partner_dps_x2_count": shop_permanent_partner_dps_x2_count,
+		"shop_permanent_click_damage_x2_count": shop_permanent_click_damage_x2_count,
+		"shop_permanent_gold_x2_count": shop_permanent_gold_x2_count,
+		"sound_enabled": sound_enabled,
+		"music_enabled": music_enabled,
+		"language": language,
+	}
+
+
+func apply_reset_progress_preserved_snapshot(snapshot: Dictionary) -> void:
+	gems = maxi(0, int(snapshot.get("gems", 0)))
+	shop_permanent_partner_dps_x2_count = maxi(0, int(snapshot.get("shop_permanent_partner_dps_x2_count", 0)))
+	shop_permanent_click_damage_x2_count = maxi(0, int(snapshot.get("shop_permanent_click_damage_x2_count", 0)))
+	shop_permanent_gold_x2_count = maxi(0, int(snapshot.get("shop_permanent_gold_x2_count", 0)))
+	sound_enabled = bool(snapshot.get("sound_enabled", true))
+	music_enabled = bool(snapshot.get("music_enabled", true))
+	var snap_lang: String = str(snapshot.get("language", "en"))
+	language = snap_lang if snap_lang in ["en", "ru"] else "en"
+	_update_character_state()
+
+
 func get_shop_product_view_data(mode: String = "x1") -> Array[Dictionary]:
 	return Presentation.get_shop_product_view_data(self, mode)
 
