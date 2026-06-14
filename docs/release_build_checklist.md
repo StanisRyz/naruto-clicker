@@ -24,11 +24,21 @@ Open: `http://localhost:8080`
 
 > Note: the game must be served over HTTP (not `file://`) for IndexedDB save and Wasm to work.
 
+## Layout targets
+
+| Platform | Viewport | How set |
+|---|---|---|
+| Android / editor default | 720×1600 (9:20) | `project.godot` default |
+| Web / Yandex Games | 720×1280 (9:16) | `window/size/viewport_height.web=1280` feature override |
+
+Stretch mode is `canvas_items` for both. No runtime viewport code involved.
+
 ## Manual validation checklist
 
 - [ ] No critical errors in browser console on startup
 - [ ] Game scene loads and renders correctly
-- [ ] UI scale correct on desktop (720×1600 portrait scaled to viewport)
+- [ ] Web build uses 720×1280 layout (9:16 — confirm by checking canvas size in browser DevTools)
+- [ ] Android/editor build uses 720×1600 layout (unchanged)
 - [ ] Touch / scroll works on mobile (test via local network IP)
 - [ ] Music starts after first user interaction (canvas click)
 - [ ] Sound effects play on button clicks

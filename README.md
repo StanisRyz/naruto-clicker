@@ -16,11 +16,22 @@ export and Yandex Games testing before public release.
 
 ## Display / resolution
 
-- Base virtual resolution: 720×1600
+Two layout targets are supported:
+
+| Platform | Viewport | Aspect |
+|---|---|---|
+| Android (default) | 720×1600 | 9:20 |
+| Web / Yandex Games | 720×1280 | 9:16 |
+
 - Stretch mode: `canvas_items`
 - Stretch aspect: `keep`
 - Scale mode: `fractional`
 - Orientation: portrait
+
+The Web viewport override is implemented as a Godot 4 feature-tag project
+setting override (`window/size/viewport_height.web=1280`) in `project.godot`.
+Android and the editor use the default 720×1600 value. No runtime code is
+involved.
 
 Do **not** switch to `viewport` stretch mode — it makes assets pixelated on
 high-DPI phones. Do not use `expand` or `ignore` aspect unless explicitly

@@ -28,13 +28,19 @@ Development rules for AI coding agents working on this repository.
 
 ## UI rules
 
-- Base layout is 720×1600.
+- Two layout targets: Android/default = 720×1600 (9:20); Web/Yandex = 720×1280 (9:16).
+- The Web viewport is set via the Godot 4 feature-tag override `window/size/viewport_height.web=1280`
+  in `project.godot`. Android and the editor use the default 1600 value. No runtime code involved.
 - Use `canvas_items` stretch mode + `keep` aspect + `fractional` scale.
 - Do not switch back to `viewport` stretch mode — it makes assets pixelated on high-DPI devices.
 - Do not use `expand` or `ignore` aspect unless explicitly requested.
 - UI must keep proportions at all supported window sizes.
 - Touch scrolling inside card lists must work by dragging over cards, not only scrollbars.
 - Control-based UI only; prefer containers and anchors over Node2D positioning.
+- Bottom-anchored nodes (BottomBar, BottomTabsBackdrop, bottom sheets) adjust automatically
+  to the shorter Web viewport — do not add per-platform offset hacks.
+- Background ImageSlot uses `stretch_mode = STRETCH_KEEP_ASPECT_COVERED` — vertical crop is
+  acceptable and expected on the 9:16 Web layout.
 
 ## Ads rules
 
