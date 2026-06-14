@@ -12,11 +12,11 @@ var _claim_holder = null
 var _claim_ad_holder = null
 var _action_pending: bool = false
 
-@onready var _title_label: Label = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/TitleLabel
-@onready var _time_label: Label = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/TimeLabel
-@onready var _reward_label: Label = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/RewardLabel
-@onready var _claim_button: Button = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ButtonRow/ClaimButton
-@onready var _claim_ad_button: Button = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ButtonRow/ClaimAdButton
+@onready var _title_label: Label = $CenterContainer/InnerPanel/MarginContainer/OuterVBox/LabelsVBox/TitleLabel
+@onready var _time_label: Label = $CenterContainer/InnerPanel/MarginContainer/OuterVBox/LabelsVBox/TimeLabel
+@onready var _reward_label: Label = $CenterContainer/InnerPanel/MarginContainer/OuterVBox/LabelsVBox/RewardLabel
+@onready var _claim_button: Button = $CenterContainer/InnerPanel/MarginContainer/OuterVBox/ButtonRow/ClaimButton
+@onready var _claim_ad_button: Button = $CenterContainer/InnerPanel/MarginContainer/OuterVBox/ButtonRow/ClaimAdButton
 
 
 func _ready() -> void:
