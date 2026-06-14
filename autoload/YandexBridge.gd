@@ -82,7 +82,11 @@ func show_rewarded_ad() -> void:
 	_rewarded_ad_in_progress = true
 
 	if not is_web or not is_yandex_available:
-		_simulate_rewarded_ad_debug()
+		if BuildConfig.is_debug_features_enabled():
+			_simulate_rewarded_ad_debug()
+		else:
+			_rewarded_ad_in_progress = false
+			rewarded_ad_error.emit("Rewarded ad unavailable outside Yandex Games")
 		return
 
 	JavaScriptBridge.eval("""
@@ -151,7 +155,7 @@ func purchase_product(yandex_product_id: String, local_product_id: String) -> vo
 	payment_purchase_started.emit(local_product_id)
 
 	if not is_web or not is_yandex_available:
-		if OS.is_debug_build():
+		if BuildConfig.is_debug_features_enabled():
 			_simulate_payment_debug(local_product_id)
 		else:
 			payment_purchase_error.emit(local_product_id, "Payments unavailable outside Yandex Games")

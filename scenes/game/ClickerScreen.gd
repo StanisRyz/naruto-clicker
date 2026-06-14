@@ -1466,7 +1466,7 @@ func _is_main_screen_clear_for_rewarded_banner() -> bool:
 
 
 func _can_show_rewarded_ad_banner_now() -> bool:
-	if state.is_debug_visual_test_mode_enabled():
+	if BuildConfig.is_debug_features_enabled() and state.is_debug_visual_test_mode_enabled():
 		return true
 	return state.can_request_rewarded_ad()
 
