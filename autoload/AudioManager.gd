@@ -1,5 +1,7 @@
 extends Node
 
+const AudioConfig = preload("res://scripts/audio/AudioConfig.gd")
+
 const _SFX_POOL_SIZE: int = 6
 
 var _sound_enabled: bool = true
@@ -8,10 +10,15 @@ var _music_enabled: bool = true
 var _music_player: AudioStreamPlayer = null
 var _sfx_players: Array[AudioStreamPlayer] = []
 
-var _music_stream: AudioStream = null
+var _music_streams: Array[AudioStream] = []
+var _current_music_index: int = 0
+
 var _hit_streams: Array[AudioStream] = []
 var _click_stream: AudioStream = null
 var _purchase_stream: AudioStream = null
+var _error_stream: AudioStream = null
+var _reward_stream: AudioStream = null
+var _gold_stream: AudioStream = null
 
 
 func _ready() -> void:
@@ -30,9 +37,16 @@ func _ready() -> void:
 
 
 func _load_streams() -> void:
-	_music_stream = _try_load(AudioConfig.MUSIC_MAIN_THEME)
+	_music_streams.clear()
+	for path: String in AudioConfig.MUSIC_TRACK_PATHS:
+		_music_streams.append(_try_load(path))
+
 	_click_stream = _try_load(AudioConfig.SFX_BUTTON_CLICK)
 	_purchase_stream = _try_load(AudioConfig.SFX_PURCHASE_SUCCESS)
+	_error_stream = _try_load(AudioConfig.SFX_PURCHASE_ERROR)
+	_reward_stream = _try_load(AudioConfig.SFX_REWARD_RECEIVED)
+	_gold_stream = _try_load(AudioConfig.SFX_GOLD_RECEIVED)
+
 	_hit_streams.clear()
 	for path: String in AudioConfig.SFX_HIT_PATHS:
 		var s: AudioStream = _try_load(path)
@@ -46,30 +60,70 @@ func _try_load(path: String) -> AudioStream:
 	return null
 
 
+# --- Settings ---
+
 func set_music_enabled(enabled: bool) -> void:
 	_music_enabled = enabled
 	if not enabled:
 		_music_player.stop()
 	elif not _music_player.playing:
-		_play_music_stream()
+		_play_track_at_index(_current_music_index)
 
 
 func set_sound_enabled(enabled: bool) -> void:
 	_sound_enabled = enabled
 
 
+# --- Music ---
+
 func play_main_music() -> void:
 	if _music_enabled:
-		_play_music_stream()
+		_current_music_index = 0
+		_play_track_at_index(_current_music_index)
+
+
+func play_music_track(index: int) -> void:
+	if index < 0 or index >= _music_streams.size():
+		return
+	_current_music_index = index
+	if _music_enabled:
+		_play_track_at_index(_current_music_index)
+
+
+func play_random_music_track() -> void:
+	var valid: Array[int] = []
+	for i: int in _music_streams.size():
+		if _music_streams[i] != null:
+			valid.append(i)
+	if valid.is_empty():
+		return
+	play_music_track(valid[randi() % valid.size()])
+
+
+func play_next_music_track() -> void:
+	var total: int = _music_streams.size()
+	if total == 0:
+		return
+	for _i: int in total:
+		_current_music_index = (_current_music_index + 1) % total
+		if _music_streams[_current_music_index] != null:
+			_play_track_at_index(_current_music_index)
+			return
 
 
 func stop_music() -> void:
 	_music_player.stop()
 
 
+# --- SFX ---
+
 func play_button_click() -> void:
 	if _sound_enabled:
 		_play_sfx(_click_stream)
+
+
+func play_popup_open() -> void:
+	play_button_click()
 
 
 func play_random_hit() -> void:
@@ -81,6 +135,23 @@ func play_purchase_success() -> void:
 	if _sound_enabled:
 		_play_sfx(_purchase_stream)
 
+
+func play_purchase_error() -> void:
+	if _sound_enabled:
+		_play_sfx(_error_stream)
+
+
+func play_reward_received() -> void:
+	if _sound_enabled:
+		_play_sfx(_reward_stream)
+
+
+func play_gold_received() -> void:
+	if _sound_enabled:
+		_play_sfx(_gold_stream)
+
+
+# --- Button binding ---
 
 func bind_button(button: Button) -> void:
 	if button.get_meta("audio_skip", false):
@@ -102,10 +173,16 @@ func _bind_buttons_recursive(node: Node) -> void:
 		_bind_buttons_recursive(child)
 
 
-func _play_music_stream() -> void:
-	if _music_stream == null:
+# --- Internal ---
+
+func _play_track_at_index(index: int) -> void:
+	if index < 0 or index >= _music_streams.size():
 		return
-	_music_player.stream = _music_stream
+	var stream: AudioStream = _music_streams[index]
+	if stream == null:
+		play_next_music_track()
+		return
+	_music_player.stream = stream
 	_music_player.play()
 
 
@@ -124,4 +201,4 @@ func _play_sfx(stream: AudioStream) -> void:
 
 func _on_music_finished() -> void:
 	if _music_enabled:
-		_music_player.play()
+		play_next_music_track()

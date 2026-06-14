@@ -316,6 +316,8 @@ func _on_character_level_upgrade_requested(mode: String) -> void:
 		AudioManager.play_purchase_success()
 		upgrade_sheet.play_hero_purchase_feedback()
 		_save_game_now()
+	else:
+		AudioManager.play_purchase_error()
 
 
 func _on_hero_skill_purchase_requested(skill_id: String) -> void:
@@ -328,6 +330,8 @@ func _on_hero_skill_purchase_requested(skill_id: String) -> void:
 	if result.get("upgraded", false):
 		AudioManager.play_purchase_success()
 		_save_game_now()
+	else:
+		AudioManager.play_purchase_error()
 
 
 func _on_ability_skill_purchase_requested(skill_id: String) -> void:
@@ -340,6 +344,8 @@ func _on_ability_skill_purchase_requested(skill_id: String) -> void:
 	if result.get("upgraded", false):
 		AudioManager.play_purchase_success()
 		_save_game_now()
+	else:
+		AudioManager.play_purchase_error()
 
 
 func _on_ability_unlock_requested(ability_id: String) -> void:
@@ -353,6 +359,8 @@ func _on_ability_unlock_requested(ability_id: String) -> void:
 		AudioManager.play_purchase_success()
 		upgrade_sheet.play_ability_purchase_feedback(ability_id)
 		_save_game_now()
+	else:
+		AudioManager.play_purchase_error()
 
 
 func _on_settings_requested() -> void:
@@ -421,6 +429,7 @@ func _on_task_claim_requested(task_id: String) -> void:
 	if tasks_window.visible:
 		tasks_window.request_full_rebuild(state)
 	if result.get("upgraded", false):
+		AudioManager.play_reward_received()
 		_save_game_now()
 
 
@@ -435,6 +444,8 @@ func _on_partner_purchase_requested(partner_index: int, mode: String) -> void:
 		AudioManager.play_purchase_success()
 		partner_sheet.play_partner_purchase_feedback(partner_index)
 		_save_game_now()
+	else:
+		AudioManager.play_purchase_error()
 
 
 func _on_partner_skill_purchase_requested(skill_id: String) -> void:
@@ -447,6 +458,8 @@ func _on_partner_skill_purchase_requested(skill_id: String) -> void:
 	if result.get("upgraded", false):
 		AudioManager.play_purchase_success()
 		_save_game_now()
+	else:
+		AudioManager.play_purchase_error()
 
 
 func _on_building_purchase_requested(building_index: int, mode: String) -> void:
@@ -460,6 +473,8 @@ func _on_building_purchase_requested(building_index: int, mode: String) -> void:
 		AudioManager.play_purchase_success()
 		settlement_sheet.play_building_purchase_feedback(building_index)
 		_save_game_now()
+	else:
+		AudioManager.play_purchase_error()
 
 
 func _on_upgrades_button_pressed() -> void:
@@ -504,6 +519,8 @@ func _on_prestige_talent_purchase_requested(talent_index: int, mode: String) -> 
 		AudioManager.play_purchase_success()
 		prestige_sheet.play_prestige_talent_purchase_feedback(talent_index)
 		_save_game_now()
+	else:
+		AudioManager.play_purchase_error()
 
 
 func _on_shop_product_purchase_requested(product_id: String, mode: String) -> void:
@@ -548,6 +565,7 @@ func _on_payment_purchase_cancelled(_local_product_id: String) -> void:
 
 func _on_payment_purchase_error(_local_product_id: String, _message: String) -> void:
 	gem_purchase_dialog.set_payment_done()
+	AudioManager.play_purchase_error()
 	_handle_status_text(LocalizationManager.tr_key("shop.gem_purchase.error"))
 
 
@@ -581,6 +599,8 @@ func _execute_shop_product_purchase(product_id: String, mode: String) -> void:
 		AudioManager.play_purchase_success()
 		shop_sheet.play_product_purchase_feedback(product_id)
 		_save_game_now()
+	else:
+		AudioManager.play_purchase_error()
 
 
 func _on_shop_purchase_confirmed(product_id: String, mode: String) -> void:
@@ -1017,6 +1037,7 @@ func _handle_defeat_result(result: Dictionary, was_boss_level: bool) -> void:
 		primary_stats_panel.get_gold_icon_global_center(),
 		reward_gold
 	)
+	AudioManager.play_gold_received()
 
 	if was_boss_level:
 		boss_timer_active = false
@@ -1341,6 +1362,7 @@ func _on_rewarded_ad_rewarded() -> void:
 			state.ensure_rewarded_ad_current_reward_selected()
 			var banner_result: Dictionary = state.grant_rewarded_ad_bonus(state.get_rewarded_ad_current_reward_id())
 			_handle_status_text(banner_result.get("status_text", ""))
+			AudioManager.play_reward_received()
 			state.refresh_derived_stats()
 			_update_ui()
 			_save_game_now()
@@ -1348,6 +1370,7 @@ func _on_rewarded_ad_rewarded() -> void:
 		"shop_gems":
 			var shop_result: Dictionary = state.grant_shop_rewarded_gems()
 			_handle_status_text(shop_result.get("status_text", ""))
+			AudioManager.play_reward_received()
 			state.refresh_derived_stats()
 			_update_ui()
 			_save_game_now()
