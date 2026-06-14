@@ -314,6 +314,8 @@ grow_vertical = 2
 
 [node name="RewardedAdBanner" parent="." instance=ExtResource("21_rad")]
 layout_mode = 1
+offset_top = 91.0
+offset_bottom = 191.0
 
 [node name="GemPurchaseDialog" parent="." instance=ExtResource("22_gpd")]
 layout_mode = 1

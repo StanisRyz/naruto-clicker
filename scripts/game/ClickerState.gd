@@ -481,6 +481,7 @@ func get_shop_gold_multiplier() -> float:
 
 func get_shop_permanent_upgrade_snapshot() -> Dictionary:
 	return {
+		"gems": gems,
 		"shop_permanent_partner_dps_x2_count": shop_permanent_partner_dps_x2_count,
 		"shop_permanent_click_damage_x2_count": shop_permanent_click_damage_x2_count,
 		"shop_permanent_gold_x2_count": shop_permanent_gold_x2_count,
@@ -488,6 +489,7 @@ func get_shop_permanent_upgrade_snapshot() -> Dictionary:
 
 
 func apply_shop_permanent_upgrade_snapshot(snapshot: Dictionary) -> void:
+	gems = maxi(0, int(snapshot.get("gems", 0)))
 	shop_permanent_partner_dps_x2_count = maxi(0, int(snapshot.get("shop_permanent_partner_dps_x2_count", 0)))
 	shop_permanent_click_damage_x2_count = maxi(0, int(snapshot.get("shop_permanent_click_damage_x2_count", 0)))
 	shop_permanent_gold_x2_count = maxi(0, int(snapshot.get("shop_permanent_gold_x2_count", 0)))
@@ -844,6 +846,12 @@ func get_rewarded_ad_gold_multiplier() -> float:
 
 func can_request_rewarded_ad() -> bool:
 	return int(Time.get_unix_time_from_system()) >= rewarded_ad_banner_cooldown_until
+
+
+func start_rewarded_ad_initial_cooldown_if_needed() -> void:
+	var now: int = int(Time.get_unix_time_from_system())
+	if rewarded_ad_banner_cooldown_until <= now:
+		rewarded_ad_banner_cooldown_until = now + BalanceConfig.REWARDED_AD_INITIAL_COOLDOWN_SECONDS
 
 
 func ensure_rewarded_ad_current_reward_selected() -> void:

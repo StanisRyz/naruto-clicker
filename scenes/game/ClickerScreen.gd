@@ -340,6 +340,7 @@ func _on_ability_unlock_requested(ability_id: String) -> void:
 
 func _on_settings_requested() -> void:
 	settings_window.show_window(state)
+	_update_rewarded_ad_banner()
 
 
 func _on_settings_sound_toggled(enabled: bool) -> void:
@@ -385,6 +386,7 @@ func _on_settings_reset_confirmed() -> void:
 func _on_tasks_button_pressed() -> void:
 	tasks_window.show_window(state)
 	tasks_button.release_focus()
+	_update_rewarded_ad_banner()
 
 
 func _on_task_claim_requested(task_id: String) -> void:
@@ -466,6 +468,7 @@ func _on_shop_button_pressed() -> void:
 func _on_prestige_requested() -> void:
 	prestige_sheet.set_prestige_button_modal_pressed(true)
 	prestige_confirm_dialog.show_dialog(state)
+	_update_rewarded_ad_banner()
 
 
 func _on_prestige_talent_purchase_requested(talent_index: int, mode: String) -> void:
@@ -485,6 +488,7 @@ func _on_shop_product_purchase_requested(product_id: String, mode: String) -> vo
 	var product_type: String = String(product.get("product_type", ""))
 	if product_type == "donation_entry":
 		gem_purchase_dialog.show_dialog()
+		_update_rewarded_ad_banner()
 		return
 	if product_type == "rewarded_ad":
 		_request_shop_rewarded_gems_ad(product_id)
@@ -493,6 +497,7 @@ func _on_shop_product_purchase_requested(product_id: String, mode: String) -> vo
 	shop_sheet.set_product_buy_button_modal_pressed(product_id, true)
 	var product_name: String = _get_shop_product_display_name(product_id)
 	shop_purchase_confirm_dialog.show_dialog(product_id, mode, product_name)
+	_update_rewarded_ad_banner()
 
 
 func _on_gem_product_purchase_requested(product_id: String) -> void:
@@ -513,10 +518,12 @@ func _on_payment_purchase_success(local_product_id: String, purchase_token: Stri
 
 
 func _on_payment_purchase_cancelled(_local_product_id: String) -> void:
+	gem_purchase_dialog.set_payment_done()
 	_handle_status_text(LocalizationManager.tr_key("shop.gem_purchase.cancelled"))
 
 
 func _on_payment_purchase_error(_local_product_id: String, _message: String) -> void:
+	gem_purchase_dialog.set_payment_done()
 	_handle_status_text(LocalizationManager.tr_key("shop.gem_purchase.error"))
 
 
@@ -560,6 +567,7 @@ func _on_shop_purchase_confirmed(product_id: String, mode: String) -> void:
 func _on_shop_purchase_cancelled() -> void:
 	shop_sheet.set_product_buy_button_modal_pressed(_pending_shop_product_id, false)
 	_pending_shop_product_id = ""
+	_update_rewarded_ad_banner()
 
 
 func _on_prestige_confirmed() -> void:
@@ -593,6 +601,7 @@ func _on_prestige_confirmed() -> void:
 func _on_prestige_cancelled() -> void:
 	prestige_sheet.set_prestige_button_modal_pressed(false)
 	prestige_confirm_dialog.hide()
+	_update_rewarded_ad_banner()
 
 
 func _reset_runtime_state_for_new_game() -> void:
@@ -673,6 +682,7 @@ func _toggle_bottom_sheet(tab_name: String) -> void:
 		_hide_all_bottom_sheets()
 		active_bottom_tab = ""
 		_update_bottom_bar_view()
+		_update_rewarded_ad_banner()
 		return
 
 	_hide_all_bottom_sheets()
@@ -691,6 +701,7 @@ func _toggle_bottom_sheet(tab_name: String) -> void:
 	active_bottom_tab = tab_name
 	_update_active_sheet()
 	_update_bottom_bar_view()
+	_update_rewarded_ad_banner()
 
 
 func _hide_all_bottom_sheets() -> void:
@@ -704,6 +715,7 @@ func _hide_all_bottom_sheets() -> void:
 func _on_sheet_closed() -> void:
 	active_bottom_tab = ""
 	_update_bottom_bar_view()
+	_update_rewarded_ad_banner()
 
 
 func _sync_boss_timer() -> void:
@@ -1084,6 +1096,8 @@ func _load_game_on_start() -> void:
 	var data: Dictionary = SaveManager.load_data()
 	if data.is_empty():
 		state.last_save_unix_time = now
+		state.start_rewarded_ad_initial_cooldown_if_needed()
+		_save_game_now()
 		return
 
 	state.apply_save_data(data)
@@ -1093,6 +1107,7 @@ func _load_game_on_start() -> void:
 		state.apply_offline_gold_reward(now - previous_time)
 
 	state.last_save_unix_time = now
+	state.start_rewarded_ad_initial_cooldown_if_needed()
 	_save_game_now()
 
 
@@ -1288,30 +1303,49 @@ func _on_rewarded_ad_rewarded() -> void:
 func _on_rewarded_ad_closed(_was_shown: bool) -> void:
 	if _rewarded_ad_request_context == "shop_gems":
 		shop_sheet.set_product_buy_button_modal_pressed(_rewarded_ad_shop_product_id, false)
-	elif _rewarded_ad_request_context == "bonus_banner":
-		if state.can_request_rewarded_ad():
-			rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.AVAILABLE)
-		else:
-			rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.COOLDOWN)
 	_rewarded_ad_request_context = ""
 	_rewarded_ad_shop_product_id = ""
 	_rewarded_ad_reward_granted_for_current_request = false
+	_update_rewarded_ad_banner()
 
 
 func _on_rewarded_ad_error(_message: String) -> void:
 	if _rewarded_ad_request_context == "shop_gems":
 		shop_sheet.set_product_buy_button_modal_pressed(_rewarded_ad_shop_product_id, false)
-	else:
-		rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.ERROR)
 	_rewarded_ad_request_context = ""
 	_rewarded_ad_shop_product_id = ""
 	_rewarded_ad_reward_granted_for_current_request = false
+	_update_rewarded_ad_banner()
+
+
+func _is_main_screen_clear_for_rewarded_banner() -> bool:
+	return (
+		not upgrade_sheet.visible
+		and not partner_sheet.visible
+		and not settlement_sheet.visible
+		and not prestige_sheet.visible
+		and not shop_sheet.visible
+		and not tasks_window.visible
+		and not settings_window.visible
+		and not auto_transition_popup.visible
+		and not prestige_confirm_dialog.visible
+		and not shop_purchase_confirm_dialog.visible
+		and not gem_purchase_dialog.visible
+	)
 
 
 func _update_rewarded_ad_banner() -> void:
+	if not _is_main_screen_clear_for_rewarded_banner():
+		rewarded_ad_banner.visible = false
+		rewarded_ad_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		return
+
 	if state.can_request_rewarded_ad():
+		rewarded_ad_banner.visible = true
+		rewarded_ad_banner.mouse_filter = Control.MOUSE_FILTER_STOP
 		state.ensure_rewarded_ad_current_reward_selected()
 		rewarded_ad_banner.set_reward_id(state.get_rewarded_ad_current_reward_id())
 		rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.AVAILABLE)
 	else:
-		rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.COOLDOWN)
+		rewarded_ad_banner.visible = false
+		rewarded_ad_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE

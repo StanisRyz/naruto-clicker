@@ -75,9 +75,10 @@ const ASSET_PATHS: Dictionary = {
 	"shop.gold_pack_small": "res://assets/images/shop/gold_pack_small.png",
 	"shop.gold_pack_large": "res://assets/images/shop/gold_pack_large.png",
 	"shop.gem_purchase_entry": "res://assets/images/shop/gem_purchase_entry.png",
-	"shop.gems_small": "res://assets/images/shop/gems_small.png",
-	"shop.gems_medium": "res://assets/images/shop/gems_medium.png",
-	"shop.gems_large": "res://assets/images/shop/gems_large.png",
+	"shop.gems_25": "res://assets/images/shop/gems_25.png",
+	"shop.gems_150": "res://assets/images/shop/gems_150.png",
+	"shop.gems_500": "res://assets/images/shop/gems_500.png",
+	"shop.gems_1500": "res://assets/images/shop/gems_1500.png",
 
 	# Tasks
 	"task.manual_damage_500": "res://assets/images/tasks/manual_damage.png",

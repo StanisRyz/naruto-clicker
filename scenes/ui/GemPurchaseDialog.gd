@@ -5,143 +5,117 @@ signal gem_product_purchase_requested(product_id: String)
 
 const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 
-const DIALOG_MIN_SIZE: Vector2 = Vector2(500, 360)
-const PANEL_BG_COLOR: Color = Color(0.08, 0.085, 0.1, 1)
-const PANEL_BORDER_COLOR: Color = Color(0.24, 0.25, 0.3, 1)
+const ICON_SIZE: Vector2 = Vector2(160, 160)
+const BUY_BUTTON_SIZE: Vector2 = Vector2(160, 52)
+const CELL_BG_COLOR: Color = Color(0.11, 0.115, 0.135, 1.0)
+const CELL_BORDER_COLOR: Color = Color(0.20, 0.21, 0.26, 1.0)
 
-const ROW_HEIGHT: int = 90
-const ROW_GAP: int = 8
-const ICON_SIZE: Vector2 = Vector2(72, 72)
+var _product_cells: Array[Dictionary] = []
+var _payment_in_progress: bool = false
 
-var _product_rows: Array[Dictionary] = []
-
-@onready var _products_container: VBoxContainer = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ProductsContainer
-@onready var _title_label: Label = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/TitleLabel
+@onready var _close_button: Button = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/TopBar/CloseButton
+@onready var _title_label: Label = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/TopBar/TitleLabel
+@onready var _products_grid: GridContainer = $CenterContainer/InnerPanel/MarginContainer/VBoxContainer/ProductsGrid
 @onready var _inner_panel: PanelContainer = $CenterContainer/InnerPanel
 
 
 func _ready() -> void:
 	_add_panel_background()
-	_build_product_rows()
-	_refresh_labels()
+	ButtonVisualUtils.setup_image_button(_close_button, "ui.sheet.close_button", Color.WHITE)
+	_close_button.pressed.connect(_on_close_pressed)
+	_build_product_cells()
+	_title_label.text = LocalizationManager.tr_key("shop.gem_purchase.title")
 	hide()
 
 
 func show_dialog() -> void:
-	_refresh_labels()
+	_payment_in_progress = false
+	_set_all_buy_buttons_disabled(false)
+	ButtonVisualUtils.set_image_button_asset(_close_button, "ui.sheet.close_button")
+	_title_label.text = LocalizationManager.tr_key("shop.gem_purchase.title")
 	show()
 	move_to_front()
 
 
 func hide_dialog() -> void:
+	_payment_in_progress = false
 	hide()
 
 
 func refresh_view() -> void:
-	_refresh_labels()
-
-
-func _refresh_labels() -> void:
 	_title_label.text = LocalizationManager.tr_key("shop.gem_purchase.title")
-	for row_data: Dictionary in _product_rows:
-		var product: Dictionary = GemPurchaseConfig.get_by_id(String(row_data.get("product_id", "")))
-		if product.is_empty():
-			continue
-		var name_label: Label = row_data.get("name_label")
-		var desc_label: Label = row_data.get("desc_label")
-		var amount_label: Label = row_data.get("amount_label")
-		var buy_label: Label = row_data.get("buy_label")
-		if name_label:
-			name_label.text = LocalizationManager.tr_key(String(product.get("name_key", "")))
-		if desc_label:
-			desc_label.text = LocalizationManager.tr_key(String(product.get("description_key", "")))
-		if amount_label:
-			var gems: int = int(product.get("amount_gems", 0))
-			amount_label.text = LocalizationManager.format_key("shop.gem_purchase.amount", {"amount": str(gems)})
-		if buy_label:
-			buy_label.text = LocalizationManager.tr_key("shop.gem_purchase.buy")
 
 
-func _build_product_rows() -> void:
+func set_payment_done() -> void:
+	_payment_in_progress = false
+	_set_all_buy_buttons_disabled(false)
+
+
+func _on_close_pressed() -> void:
+	ButtonVisualUtils.play_pressed_then_call(
+		_close_button,
+		Callable(self, "hide_dialog"),
+		"ui.sheet.close_button",
+		"ui.sheet.close_button.pressed",
+		0.2,
+		Color.WHITE
+	)
+
+
+func _build_product_cells() -> void:
 	for product: Dictionary in GemPurchaseConfig.GEM_PRODUCTS:
 		var product_id: String = String(product.get("id", ""))
 		if product_id == "":
 			continue
-
-		var row := _create_product_row(product_id, product)
-		_product_rows.append(row)
+		_product_cells.append(_create_product_cell(product_id, product))
 
 
-func _create_product_row(product_id: String, product: Dictionary) -> Dictionary:
-	var card := PanelContainer.new()
-	card.custom_minimum_size = Vector2(0, ROW_HEIGHT)
-	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+func _create_product_cell(product_id: String, product: Dictionary) -> Dictionary:
+	var cell_bg := PanelContainer.new()
+	cell_bg.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	cell_bg.size_flags_vertical = Control.SIZE_EXPAND_FILL
 
-	var card_style := StyleBoxFlat.new()
-	card_style.bg_color = Color(0.12, 0.125, 0.145, 1.0)
-	card_style.border_width_left = 1
-	card_style.border_width_top = 1
-	card_style.border_width_right = 1
-	card_style.border_width_bottom = 1
-	card_style.border_color = Color(0.20, 0.21, 0.26, 1.0)
-	card.add_theme_stylebox_override("panel", card_style)
+	var cell_style := StyleBoxFlat.new()
+	cell_style.bg_color = CELL_BG_COLOR
+	cell_style.border_width_left = 1
+	cell_style.border_width_top = 1
+	cell_style.border_width_right = 1
+	cell_style.border_width_bottom = 1
+	cell_style.border_color = CELL_BORDER_COLOR
+	cell_bg.add_theme_stylebox_override("panel", cell_style)
 
 	var margin := MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 12)
-	margin.add_theme_constant_override("margin_top", 8)
+	margin.add_theme_constant_override("margin_top", 12)
 	margin.add_theme_constant_override("margin_right", 12)
-	margin.add_theme_constant_override("margin_bottom", 8)
-	card.add_child(margin)
+	margin.add_theme_constant_override("margin_bottom", 12)
+	cell_bg.add_child(margin)
 
-	var hbox := HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 12)
-	margin.add_child(hbox)
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 10)
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	margin.add_child(vbox)
 
+	var icon_key: String = String(product.get("icon_key", "shop.%s" % product_id))
 	var icon_holder := ImageSlotClass.new()
-	icon_holder.fallback_color = Color.WHITE
+	icon_holder.fallback_color = Color(0.25, 0.27, 0.32, 1.0)
 	icon_holder.show_fallback_behind_texture = false
 	icon_holder.custom_minimum_size = ICON_SIZE
-	icon_holder.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	hbox.add_child(icon_holder)
-	icon_holder.set_asset_key(GameAssetCatalog.shop_product_icon_key(product_id))
+	icon_holder.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	vbox.add_child(icon_holder)
+	icon_holder.set_asset_key(icon_key)
 
-	var text_vbox := VBoxContainer.new()
-	text_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	text_vbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	text_vbox.add_theme_constant_override("separation", 2)
-	hbox.add_child(text_vbox)
-
-	var name_label := Label.new()
-	name_label.text = LocalizationManager.tr_key(String(product.get("name_key", "")))
-	name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	name_label.autowrap_mode = TextServer.AUTOWRAP_OFF
-	UiFontConfig.apply_label_font_size(name_label, UiFontConfig.UPGRADE_NAME_FONT_SIZE)
-	text_vbox.add_child(name_label)
-
-	var desc_label := Label.new()
-	desc_label.text = LocalizationManager.tr_key(String(product.get("description_key", "")))
-	desc_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	desc_label.autowrap_mode = TextServer.AUTOWRAP_OFF
-	UiFontConfig.apply_label_font_size(desc_label, UiFontConfig.UPGRADE_GAIN_FONT_SIZE)
-	text_vbox.add_child(desc_label)
-
-	var amount_label := Label.new()
-	var gems: int = int(product.get("amount_gems", 0))
-	amount_label.text = LocalizationManager.format_key("shop.gem_purchase.amount", {"amount": str(gems)})
-	amount_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	amount_label.autowrap_mode = TextServer.AUTOWRAP_OFF
-	UiFontConfig.apply_label_font_size(amount_label, UiFontConfig.UPGRADE_VALUE_FONT_SIZE)
-	text_vbox.add_child(amount_label)
+	var price_rub: int = int(product.get("price_rub", 0))
 
 	var buy_button := Button.new()
-	buy_button.custom_minimum_size = Vector2(100, 58)
-	buy_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	buy_button.custom_minimum_size = BUY_BUTTON_SIZE
+	buy_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	buy_button.focus_mode = Control.FOCUS_NONE
 	buy_button.text = ""
 	buy_button.flat = true
 	ButtonVisualUtils.clear_image_button_styles(buy_button)
-	buy_button.pressed.connect(func() -> void: gem_product_purchase_requested.emit(product_id))
-	hbox.add_child(buy_button)
+	buy_button.pressed.connect(func() -> void: _on_buy_pressed(product_id, buy_button))
+	vbox.add_child(buy_button)
 
 	var btn_bg := ImageSlotClass.new()
 	btn_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -153,26 +127,53 @@ func _create_product_row(product_id: String, product: Dictionary) -> Dictionary:
 	btn_bg.set_asset_key("ui.card.button.default", Color.WHITE)
 
 	var buy_label := Label.new()
-	buy_label.name = "ButtonTextLabel"
 	buy_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	buy_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	buy_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	buy_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	buy_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	buy_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	buy_label.text = LocalizationManager.tr_key("shop.gem_purchase.buy")
+	buy_label.text = "%d ₽" % price_rub
 	buy_button.add_child(buy_label)
 	UiFontConfig.apply_label_font_size(buy_label, UiFontConfig.UPGRADE_BUTTON_FONT_SIZE)
 
-	_products_container.add_child(card)
+	_products_grid.add_child(cell_bg)
 
 	return {
 		"product_id": product_id,
-		"name_label": name_label,
-		"desc_label": desc_label,
-		"amount_label": amount_label,
-		"buy_label": buy_label,
+		"buy_button": buy_button,
+		"btn_bg": btn_bg,
 	}
+
+
+func _on_buy_pressed(product_id: String, buy_button: Button) -> void:
+	if _payment_in_progress:
+		return
+	_payment_in_progress = true
+	_set_all_buy_buttons_disabled(true)
+	buy_button.disabled = false
+	var cell: Dictionary = _find_cell_by_product(product_id)
+	if not cell.is_empty() and cell.has("btn_bg"):
+		cell["btn_bg"].set_asset_key("ui.card.button.active", Color.WHITE)
+	gem_product_purchase_requested.emit(product_id)
+
+
+func _find_cell_by_product(product_id: String) -> Dictionary:
+	for cell: Dictionary in _product_cells:
+		if String(cell.get("product_id", "")) == product_id:
+			return cell
+	return {}
+
+
+func _set_all_buy_buttons_disabled(disabled: bool) -> void:
+	for cell: Dictionary in _product_cells:
+		var btn: Button = cell.get("buy_button")
+		var bg = cell.get("btn_bg")
+		if btn:
+			btn.disabled = disabled
+		if bg:
+			bg.set_asset_key("ui.card.button.default", Color.WHITE)
+			bg.modulate = Color(0.65, 0.65, 0.65, 1.0) if disabled else Color.WHITE
 
 
 func _add_panel_background() -> void:
@@ -190,6 +191,5 @@ func _add_panel_background() -> void:
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		var center_panel: PanelContainer = $CenterContainer/InnerPanel
-		if not center_panel.get_global_rect().has_point(event.global_position):
+		if not _inner_panel.get_global_rect().has_point(event.global_position):
 			hide_dialog()

@@ -211,5 +211,6 @@ const REWARDED_AD_DAMAGE_BUFF_DURATION_SECONDS: int = 60
 const REWARDED_AD_GOLD_BUFF_DURATION_SECONDS: int = 60
 const REWARDED_AD_GEMS_REWARD: int = 5
 const REWARDED_AD_BANNER_COOLDOWN_SECONDS: int = 300
+const REWARDED_AD_INITIAL_COOLDOWN_SECONDS: int = 300
 # Kept for BalanceAuditReport compile compatibility — new logic uses split duration constants above.
 const REWARDED_AD_BUFF_DURATION_SECONDS: int = 60

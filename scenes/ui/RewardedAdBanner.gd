@@ -25,6 +25,7 @@ var _current_reward_id: String = ""
 
 
 func _ready() -> void:
+	_label.visible = false
 	_button.pressed.connect(_on_button_pressed)
 	_refresh_view()
 
@@ -47,8 +48,6 @@ func _on_button_pressed() -> void:
 func _refresh_view() -> void:
 	match _current_state:
 		BannerState.AVAILABLE:
-			var label_key: String = _REWARD_BANNER_KEYS.get(_current_reward_id, "rewarded_ad.banner.available")
-			_label.text = LocalizationManager.tr_key(label_key)
 			var asset_key: String = _REWARD_ASSET_KEYS.get(_current_reward_id, "")
 			if asset_key != "":
 				_image.set_asset_key(asset_key, Color.TRANSPARENT)
@@ -57,14 +56,11 @@ func _refresh_view() -> void:
 			_button.disabled = false
 			modulate = Color(1.0, 1.0, 1.0, 1.0)
 		BannerState.LOADING:
-			_label.text = LocalizationManager.tr_key("rewarded_ad.banner.loading")
 			_button.disabled = true
 			modulate = Color(0.85, 0.85, 0.85, 1.0)
 		BannerState.COOLDOWN:
-			_label.text = LocalizationManager.tr_key("rewarded_ad.banner.cooldown")
 			_button.disabled = true
 			modulate = Color(0.7, 0.7, 0.7, 1.0)
 		BannerState.ERROR:
-			_label.text = LocalizationManager.tr_key("rewarded_ad.banner.error")
 			_button.disabled = true
 			modulate = Color(0.6, 0.6, 0.6, 1.0)
