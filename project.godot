@@ -28,7 +28,8 @@ AudioManager="*res://autoload/AudioManager.gd"
 window/size/viewport_width=720
 window/size/viewport_height=1600
 window/stretch/mode="canvas_items"
-window/stretch/aspect="expand"
+window/stretch/aspect="keep"
+window/stretch/scale_mode="fractional"
 window/handheld/orientation=1
 
 [editor_plugins]
