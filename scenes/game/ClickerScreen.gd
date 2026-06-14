@@ -1128,6 +1128,7 @@ func _toggle_debug_visual_test_mode() -> void:
 
 	if enabled:
 		state.gems = DEBUG_VISUAL_TEST_GEMS
+		state.clear_rewarded_ad_banner_cooldown_for_debug()
 	else:
 		state.gems = _debug_visual_test_previous_gems
 
@@ -1334,13 +1335,19 @@ func _is_main_screen_clear_for_rewarded_banner() -> bool:
 	)
 
 
+func _can_show_rewarded_ad_banner_now() -> bool:
+	if state.is_debug_visual_test_mode_enabled():
+		return true
+	return state.can_request_rewarded_ad()
+
+
 func _update_rewarded_ad_banner() -> void:
 	if not _is_main_screen_clear_for_rewarded_banner():
 		rewarded_ad_banner.visible = false
 		rewarded_ad_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		return
 
-	if state.can_request_rewarded_ad():
+	if _can_show_rewarded_ad_banner_now():
 		rewarded_ad_banner.visible = true
 		rewarded_ad_banner.mouse_filter = Control.MOUSE_FILTER_STOP
 		state.ensure_rewarded_ad_current_reward_selected()

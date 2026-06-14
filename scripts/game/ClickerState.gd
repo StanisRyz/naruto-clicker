@@ -848,6 +848,11 @@ func can_request_rewarded_ad() -> bool:
 	return int(Time.get_unix_time_from_system()) >= rewarded_ad_banner_cooldown_until
 
 
+func clear_rewarded_ad_banner_cooldown_for_debug() -> void:
+	rewarded_ad_banner_cooldown_until = 0
+	ensure_rewarded_ad_current_reward_selected()
+
+
 func start_rewarded_ad_initial_cooldown_if_needed() -> void:
 	var now: int = int(Time.get_unix_time_from_system())
 	if rewarded_ad_banner_cooldown_until <= now:
