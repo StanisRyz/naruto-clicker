@@ -31,6 +31,12 @@ static func compact(value: int) -> String:
 	return compact_float(float(value))
 
 
+static func compact_percent(value: float) -> String:
+	if abs(value) < 100.0:
+		return "%.1f" % value
+	return compact_float(value)
+
+
 static func compact_float(value: float) -> String:
 	var sign_str: String = "-" if value < 0.0 else ""
 	var scaled: float = abs(value)

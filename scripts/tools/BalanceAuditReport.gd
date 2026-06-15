@@ -1400,11 +1400,11 @@ func _section_progression_simulation() -> void:
 		if sim_building_counts[bi] > 0:
 			any_building_summary = true
 			var next_bc: int = state.get_building_bulk_display_cost(bi, "x1")
-			var bonus_pct: int = state.get_building_total_bonus_percent(bi)
+			var bonus_pct: float = state.get_building_total_bonus_percent(bi)
 			_csv_append(
 				"simulation_building_summary", bi + 1,
 				0, 0, next_bc, 0, 0, 0.0,
-				"building_name=building_%d owned_count=%d next_cost=%d bonus_percent=%d" % [
+				"building_name=building_%d owned_count=%d next_cost=%d bonus_percent=%.2f" % [
 					bi + 1, int(sim_building_counts[bi]), next_bc, bonus_pct,
 				]
 			)
@@ -3978,11 +3978,11 @@ func _sim_append_profile_building_summary(profile_id: String, state: _CS) -> voi
 		if state.building_counts[bi] > 0:
 			any_building_summary = true
 			var next_bc: int = state.get_building_bulk_display_cost(bi, "x1")
-			var bonus_pct: int = state.get_building_total_bonus_percent(bi)
+			var bonus_pct: float = state.get_building_total_bonus_percent(bi)
 			_csv_append(
 				"simulation_building_summary_%s" % profile_id, bi + 1,
 				0, 0, next_bc, 0, 0, 0.0,
-				"profile_id=%s building_name=%s owned_count=%d next_cost=%d bonus_percent=%d" % [
+				"profile_id=%s building_name=%s owned_count=%d next_cost=%d bonus_percent=%.2f" % [
 					profile_id, _building_name(bi), state.building_counts[bi], next_bc, bonus_pct,
 				]
 			)

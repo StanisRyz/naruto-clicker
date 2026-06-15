@@ -47,23 +47,35 @@ const HERO_SKILL_COST_MULTIPLIERS: Array = [4, 7, 11, 17, 26]
 
 
 # --- Partners ---
+# Formula: DPS[0]=4, DPS[i]=DPS[i-1]*12.  Cost[0]=35, Cost[i]=Cost[i-1]*11.
+# Exact formula values are representable as int64 up to:
+#   DPS  index 17  (4 * 12^17 = 8 874 444 426 961 747 968  <  INT64_MAX)
+#   Cost index 16  (35 * 11^16 = 1 608 240 545 225 025 635 <  INT64_MAX)
+# Indices beyond those limits would overflow int64.  Partners 18–28 (DPS) and
+# 17–28 (cost) are capped at 9 000 000 000 000 000 000 — players reach that era
+# only in extreme late game and the exact formula value cannot be stored safely.
 const PARTNER_DPS_VALUES: Array = [
-	4, 12, 30, 70, 150, 320, 680, 1450, 3100, 6600, 14000, 30000, 64000,
-	# Partners 14–28 use the accepted late_partner_curve_soft balance from BalanceAuditReport v14.
-	# Generated from partner 13 with approximately:
-	# DPS growth x2.15 and cost growth x2.10 between new partner tiers.
-	137600, 295840, 636056, 1367520, 2940169, 6321363, 13590931, 29220501,
-	62824076, 135071764, 290404294, 624369231, 1342393847, 2886146771, 6205215558,
+	4, 48, 576, 6912, 82944, 995328, 11943936, 143327232,
+	1719926784, 20639121408, 247669456896, 2972033482752,
+	35664401793024, 427972821516288, 5135673858195456,
+	61628086298345472, 739537035580145664, 8874444426961747968,
+	# Partners 19–28: formula overflows int64 — capped at safe maximum.
+	9000000000000000000, 9000000000000000000, 9000000000000000000,
+	9000000000000000000, 9000000000000000000, 9000000000000000000,
+	9000000000000000000, 9000000000000000000, 9000000000000000000,
+	9000000000000000000,
 ]
-# Partner 1 is a weak idle assistant; mid partners carry mid game; later partners are long-term goals.
 
 const PARTNER_BASE_COSTS: Array = [
-	35, 110, 300, 750, 1700, 3800, 8500, 19000, 43000, 96000, 215000, 480000, 1050000,
-	# Partners 14–28 use the accepted late_partner_curve_soft balance from BalanceAuditReport v14.
-	# Generated from partner 13 with approximately:
-	# DPS growth x2.15 and cost growth x2.10 between new partner tiers.
-	2205000, 4630500, 9724050, 20420505, 42883061, 90054427, 189114297, 397140023,
-	833994049, 1751387503, 3677913756, 7723618887, 16219599663, 34061159291, 71528434512,
+	35, 385, 4235, 46585, 512435, 5636785, 62004635, 682050985,
+	7502560835, 82528169185, 907809861035, 9985908471385,
+	109844993185235, 1208294925037585, 13291244175413435,
+	146203685929547785, 1608240545225025635,
+	# Partners 18–28: formula overflows int64 — capped at safe maximum.
+	9000000000000000000, 9000000000000000000, 9000000000000000000,
+	9000000000000000000, 9000000000000000000, 9000000000000000000,
+	9000000000000000000, 9000000000000000000, 9000000000000000000,
+	9000000000000000000, 9000000000000000000,
 ]
 
 # Segmented adaptive exponential cost by owned count:
@@ -134,7 +146,7 @@ const BUILDING_BASE_COSTS: Array = [
 	BUILDING_BASE_COST,
 ]
 const BUILDING_COST_GROWTH: float = 1.22
-const BUILDING_BONUS_PERCENT_PER_LEVEL: int = 1
+const BUILDING_BONUS_PERCENT_PER_LEVEL: float = 0.1
 # Positive effects (partner DPS, gold, click damage, boss gold): additive percent
 # Cooldown reduction uses diminishing returns: 100/(100+raw_percent)
 
@@ -144,7 +156,7 @@ const BUILDING_BONUS_PERCENT_PER_LEVEL: int = 1
 # reward(level) = ENEMY_REWARD_BASE * ENEMY_REWARD_GROWTH^(level-1)
 # HP grows faster than rewards to create increasing friction over time.
 const ENEMY_HP_BASE: float = 18.0
-const ENEMY_HP_GROWTH: float = 1.165
+const ENEMY_HP_GROWTH: float = 1.398
 
 const ENEMY_REWARD_BASE: float = 4.0
 const ENEMY_REWARD_GROWTH: float = 1.115

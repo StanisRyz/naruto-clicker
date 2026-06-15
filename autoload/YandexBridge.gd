@@ -5,6 +5,10 @@ signal rewarded_ad_rewarded
 signal rewarded_ad_closed(was_shown: bool)
 signal rewarded_ad_error(message: String)
 
+signal fullscreen_ad_opened
+signal fullscreen_ad_closed(was_shown: bool)
+signal fullscreen_ad_error(message: String)
+
 signal payment_purchase_started(product_id: String)
 signal payment_purchase_success(product_id: String, purchase_token: String)
 signal payment_purchase_cancelled(product_id: String)
@@ -24,6 +28,7 @@ var is_web: bool = false
 var is_yandex_available: bool = false
 
 var _rewarded_ad_in_progress: bool = false
+var _fullscreen_ad_in_progress: bool = false
 var _payment_js_callbacks_setup: bool = false
 
 func _ready() -> void:
@@ -169,6 +174,7 @@ func _setup_js_callbacks() -> void:
 	JavaScriptBridge.eval("window._godot_rewarded_ad_rewarded = %s;" % reward_cb)
 	JavaScriptBridge.eval("window._godot_rewarded_ad_close = %s;" % close_cb)
 	JavaScriptBridge.eval("window._godot_rewarded_ad_error = %s;" % error_cb)
+	_setup_fullscreen_ad_js_callbacks()
 	_setup_cloud_save_js_callbacks()
 
 
@@ -179,6 +185,60 @@ func _simulate_rewarded_ad_debug() -> void:
 	await Engine.get_main_loop().create_timer(0.1).timeout
 	_rewarded_ad_in_progress = false
 	rewarded_ad_closed.emit(true)
+
+
+# ── Fullscreen ad ─────────────────────────────────────────────────────────────
+
+func show_fullscreen_ad() -> void:
+	if _fullscreen_ad_in_progress:
+		return
+	_fullscreen_ad_in_progress = true
+
+	if not is_web or not is_yandex_available:
+		_fullscreen_ad_in_progress = false
+		fullscreen_ad_error.emit("Fullscreen ad unavailable outside Yandex Games")
+		return
+
+	JavaScriptBridge.eval("""
+		(function() {
+			window.ysdk.adv.showFullscreenAdv({
+				callbacks: {
+					onOpen: function() {
+						if (window._godot_fullscreen_ad_open) window._godot_fullscreen_ad_open();
+					},
+					onClose: function(wasShown) {
+						if (window._godot_fullscreen_ad_close) window._godot_fullscreen_ad_close(wasShown ? 1 : 0);
+					},
+					onError: function(err) {
+						if (window._godot_fullscreen_ad_error) window._godot_fullscreen_ad_error(String(err));
+					}
+				}
+			});
+		})();
+	""")
+
+
+func _on_js_fullscreen_ad_open() -> void:
+	fullscreen_ad_opened.emit()
+
+
+func _on_js_fullscreen_ad_close(was_shown_int: int) -> void:
+	_fullscreen_ad_in_progress = false
+	fullscreen_ad_closed.emit(was_shown_int != 0)
+
+
+func _on_js_fullscreen_ad_error(message: String) -> void:
+	_fullscreen_ad_in_progress = false
+	fullscreen_ad_error.emit(message)
+
+
+func _setup_fullscreen_ad_js_callbacks() -> void:
+	var open_cb := JavaScriptBridge.create_callback(_on_js_fullscreen_ad_open)
+	var close_cb := JavaScriptBridge.create_callback(func(args): _on_js_fullscreen_ad_close(int(args[0])))
+	var error_cb := JavaScriptBridge.create_callback(func(args): _on_js_fullscreen_ad_error(str(args[0])))
+	JavaScriptBridge.eval("window._godot_fullscreen_ad_open = %s;" % open_cb)
+	JavaScriptBridge.eval("window._godot_fullscreen_ad_close = %s;" % close_cb)
+	JavaScriptBridge.eval("window._godot_fullscreen_ad_error = %s;" % error_cb)
 
 
 func purchase_product(yandex_product_id: String, local_product_id: String) -> void:

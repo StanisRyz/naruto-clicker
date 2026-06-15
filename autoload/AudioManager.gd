@@ -7,6 +7,7 @@ var _sound_enabled: bool = true
 var _music_enabled: bool = true
 var _paused_for_ad: bool = false
 var _last_gold_received_time: float = -999.0
+var _audio_context_unlocked: bool = false
 
 var _music_player: AudioStreamPlayer = null
 var _sfx_players: Array[AudioStreamPlayer] = []
@@ -118,7 +119,24 @@ func stop_music() -> void:
 
 # --- SFX ---
 
+func unlock_audio_if_needed() -> void:
+	# Un-pause music if paused by NOTIFICATION_APPLICATION_FOCUS_OUT when FOCUS_IN never fired
+	# (common in Yandex Games iframe).
+	if _music_enabled and not _paused_for_ad and _music_player.stream_paused:
+		_music_player.stream_paused = false
+
+	if _audio_context_unlocked:
+		return
+	_audio_context_unlocked = true
+
+	# Re-attempt music start after first confirmed user gesture.
+	# On web, AudioContext may be suspended until the first interaction.
+	if _music_enabled and not _paused_for_ad and not _music_player.playing:
+		_play_track_at_index(_current_music_index)
+
+
 func play_button_click() -> void:
+	unlock_audio_if_needed()
 	if _sound_enabled:
 		_play_sfx(_click_stream)
 
@@ -128,6 +146,7 @@ func play_popup_open() -> void:
 
 
 func play_random_hit() -> void:
+	unlock_audio_if_needed()
 	if _sound_enabled and not _hit_streams.is_empty():
 		_play_sfx(_hit_streams[randi() % _hit_streams.size()])
 
@@ -182,7 +201,8 @@ func bind_button(button: Button) -> void:
 	if button.get_meta("audio_button_bound", false):
 		return
 	button.set_meta("audio_button_bound", true)
-	button.pressed.connect(play_button_click)
+	# button_down fires at press time, not at release — SFX plays immediately.
+	button.button_down.connect(play_button_click)
 
 
 func bind_buttons_in_tree(root: Node) -> void:

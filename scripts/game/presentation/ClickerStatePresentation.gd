@@ -11,25 +11,25 @@ static func get_building_short_effect_description(state: ClickerState, building_
 	if building_index < 0 or building_index >= SettlementConfig.BUILDING_NAMES.size():
 		return ""
 
-	var amount: int = state.building_bonus_percent_per_level
+	var amount: float = state.building_bonus_percent_per_level
 	if building_index >= SettlementConfig.BUILDING_BONUS_TYPES.size():
-		return "+%d%% Bonus" % amount
+		return "+%.1f%% Bonus" % amount
 
 	match SettlementConfig.BUILDING_BONUS_TYPES[building_index]:
 		"partner_dps":
-			return "+%d%% DPS" % amount
+			return "+%.1f%% DPS" % amount
 		"gold":
-			return "+%d%% Gold" % amount
+			return "+%.1f%% Gold" % amount
 		"click_damage":
-			return "+%d%% Click Damage" % amount
+			return "+%.1f%% Click Damage" % amount
 		"ability_duration":
-			return "+%d%% Focus/Rally Duration" % amount
+			return "+%.1f%% Focus/Rally Duration" % amount
 		"ability_cooldown":
-			return "+%d%% Cooldown Efficiency" % amount
+			return "+%.1f%% Cooldown Efficiency" % amount
 		"boss_gold":
-			return "+%d%% Boss Gold" % amount
+			return "+%.1f%% Boss Gold" % amount
 		_:
-			return "+%d%% Bonus" % amount
+			return "+%.1f%% Bonus" % amount
 
 
 # --- Localization helper (safe for headless/tool mode where autoload may be absent) ---
@@ -47,18 +47,18 @@ static func _fmt(key: String, params: Dictionary = {}) -> String:
 # --- Building card localized text helpers ---
 
 static func get_building_purchase_bonus_gain_text(state: ClickerState, building_index: int, mode: String) -> String:
-	var bonus: int = state.get_building_display_bulk_bonus_gain(building_index, mode)
+	var bonus: float = state.get_building_display_bulk_bonus_gain(building_index, mode)
 	return _fmt(
 		SettlementConfig.get_purchase_gain_key(building_index),
-		{"bonus": NumberFormatter.compact(bonus)}
+		{"bonus": NumberFormatter.compact_percent(bonus)}
 	)
 
 
 static func get_building_total_bonus_text(state: ClickerState, building_index: int) -> String:
-	var bonus: int = state.get_building_display_total_bonus_percent(building_index)
+	var bonus: float = state.get_building_display_total_bonus_percent(building_index)
 	return _fmt(
 		SettlementConfig.get_total_bonus_key(building_index),
-		{"bonus": NumberFormatter.compact(bonus)}
+		{"bonus": NumberFormatter.compact_percent(bonus)}
 	)
 
 

@@ -60,6 +60,13 @@ var _pending_shop_product_id: String = ""
 var _pending_payment_product_id: String = ""
 var _payment_reward_granted_for_current_request: bool = false
 
+const FULLSCREEN_AD_COOLDOWN_SECONDS: float = 300.0
+const FULLSCREEN_AD_INITIAL_COOLDOWN_SECONDS: float = 300.0
+const FULLSCREEN_AD_SAFE_INTERACTION_GAP_SECONDS: float = 2.5
+var _fullscreen_ad_cooldown_left: float = FULLSCREEN_AD_INITIAL_COOLDOWN_SECONDS
+var _last_user_interaction_time: float = -999.0
+var _fullscreen_ad_overlay: Control = null
+
 @onready var top_interface_image_holder = $TopInterfaceImageHolder
 @onready var combat_effects_layer: CombatEffectsLayer = $CombatEffectsLayer
 @onready var primary_stats_panel: PrimaryStatsPanel = $PrimaryStatsPanel
@@ -150,6 +157,10 @@ func _ready() -> void:
 	offline_reward_dialog.claim_requested.connect(_on_offline_reward_claim_requested)
 	offline_reward_dialog.claim_ad_requested.connect(_on_offline_reward_claim_ad_requested)
 	LocalizationManager.language_changed.connect(_on_language_changed)
+	YandexBridge.fullscreen_ad_opened.connect(_on_fullscreen_ad_opened)
+	YandexBridge.fullscreen_ad_closed.connect(_on_fullscreen_ad_closed)
+	YandexBridge.fullscreen_ad_error.connect(_on_fullscreen_ad_error)
+	_create_fullscreen_ad_overlay()
 	_apply_ui_font_sizes()
 	_apply_button_visual_cleanup()
 	bottom_tabs_backdrop.set_asset_key("ui.bottom_tabs.backdrop", Color.TRANSPARENT)
@@ -176,6 +187,11 @@ func _process(delta: float) -> void:
 	if _autosave_timer >= _AUTOSAVE_INTERVAL:
 		_autosave_timer = 0.0
 		_save_game_now()
+
+	if _fullscreen_ad_cooldown_left > 0.0:
+		_fullscreen_ad_cooldown_left = maxf(_fullscreen_ad_cooldown_left - delta, 0.0)
+	elif _is_initialized:
+		_try_show_fullscreen_ad_if_safe()
 
 	if boss_timer_active and not enemy_transition_locked:
 		if not state.is_debug_visual_test_mode_enabled():
@@ -290,6 +306,7 @@ func _update_settings_if_visible() -> void:
 
 
 func _on_attack_requested(click_global_position: Vector2) -> void:
+	_mark_user_interaction()
 	if tasks_window.visible:
 		return
 
@@ -1139,6 +1156,73 @@ func _toggle_auto_transition_and_show_popup(anchor: Vector2, button_global_rect:
 	_save_game_now()
 
 
+func _create_fullscreen_ad_overlay() -> void:
+	_fullscreen_ad_overlay = Control.new()
+	_fullscreen_ad_overlay.name = "FullscreenAdOverlay"
+	_fullscreen_ad_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_fullscreen_ad_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	_fullscreen_ad_overlay.visible = false
+	add_child(_fullscreen_ad_overlay)
+
+
+func _mark_user_interaction() -> void:
+	_last_user_interaction_time = Time.get_ticks_msec() / 1000.0
+
+
+func _is_safe_for_fullscreen_ad() -> bool:
+	if YandexBridge._rewarded_ad_in_progress:
+		return false
+	if YandexBridge._fullscreen_ad_in_progress:
+		return false
+	if _pending_payment_product_id != "":
+		return false
+	if _pending_shop_product_id != "":
+		return false
+	if _rewarded_ad_request_context != "":
+		return false
+	if prestige_confirm_dialog.visible:
+		return false
+	if shop_purchase_confirm_dialog.visible:
+		return false
+	if gem_purchase_dialog.visible:
+		return false
+	if offline_reward_dialog.visible:
+		return false
+	var now: float = Time.get_ticks_msec() / 1000.0
+	if now - _last_user_interaction_time < FULLSCREEN_AD_SAFE_INTERACTION_GAP_SECONDS:
+		return false
+	return true
+
+
+func _try_show_fullscreen_ad_if_safe() -> void:
+	if not _is_safe_for_fullscreen_ad():
+		return
+	_fullscreen_ad_cooldown_left = FULLSCREEN_AD_COOLDOWN_SECONDS
+	YandexBridge.show_fullscreen_ad()
+
+
+func _on_fullscreen_ad_opened() -> void:
+	if is_instance_valid(_fullscreen_ad_overlay):
+		_fullscreen_ad_overlay.visible = true
+	AudioManager.pause_for_ad()
+	YandexBridge.gameplay_stop()
+
+
+func _on_fullscreen_ad_closed(_was_shown: bool) -> void:
+	if is_instance_valid(_fullscreen_ad_overlay):
+		_fullscreen_ad_overlay.visible = false
+	AudioManager.resume_after_ad()
+	YandexBridge.gameplay_start()
+	_fullscreen_ad_cooldown_left = FULLSCREEN_AD_COOLDOWN_SECONDS
+
+
+func _on_fullscreen_ad_error(_message: String) -> void:
+	if is_instance_valid(_fullscreen_ad_overlay):
+		_fullscreen_ad_overlay.visible = false
+	AudioManager.resume_after_ad()
+	_fullscreen_ad_cooldown_left = FULLSCREEN_AD_COOLDOWN_SECONDS
+
+
 func _handle_status_text(_text: String) -> void:
 	pass
 
@@ -1368,6 +1452,10 @@ func _run_balance_simulation() -> void:
 
 
 func _input(event: InputEvent) -> void:
+	if event is InputEventMouseButton or event is InputEventScreenTouch:
+		_mark_user_interaction()
+		AudioManager.unlock_audio_if_needed()
+
 	if not BuildConfig.IS_DEBUG_BUILD:
 		return
 	if not (event is InputEventKey) or not event.pressed or event.echo:
