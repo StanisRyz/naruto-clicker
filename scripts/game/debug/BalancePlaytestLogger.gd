@@ -7,10 +7,10 @@ extends RefCounted
 var session_start_time_msec: int = 0
 var rows: Array[Dictionary] = []
 var level_start_time_msec: int = 0
-var current_level_start_gold: int = 0
+var current_level_start_gold = null
 var current_level_start_kill_count: int = 0
 var enemy_spawn_time_msec: int = 0
-var enemy_start_hp: int = 0
+var enemy_start_hp = null
 
 var _enemy_was_boss: bool = false
 var _enemy_was_elite: bool = false
@@ -32,10 +32,10 @@ func start_session(state: ClickerState) -> void:
 	_boss_ttk_samples.clear()
 	_enemy_ttk_samples.clear()
 	level_start_time_msec = session_start_time_msec
-	current_level_start_gold = state.gold
+	current_level_start_gold = state.gold.clone()
 	current_level_start_kill_count = state.total_enemies_defeated
 	enemy_spawn_time_msec = session_start_time_msec
-	enemy_start_hp = state.target_max_hp
+	enemy_start_hp = state.target_max_hp.clone()
 	_enemy_was_boss = state.is_boss_level
 	_enemy_was_elite = state.is_elite_enemy
 	rows.append(_base_row(state, "session_start"))
@@ -43,20 +43,21 @@ func start_session(state: ClickerState) -> void:
 
 func mark_level_started(state: ClickerState) -> void:
 	level_start_time_msec = Time.get_ticks_msec()
-	current_level_start_gold = state.gold
+	current_level_start_gold = state.gold.clone()
 	current_level_start_kill_count = state.total_enemies_defeated
 
 
 func mark_enemy_spawned(state: ClickerState) -> void:
 	enemy_spawn_time_msec = Time.get_ticks_msec()
-	enemy_start_hp = state.target_max_hp
+	enemy_start_hp = state.target_max_hp.clone()
 	_enemy_was_boss = state.is_boss_level
 	_enemy_was_elite = state.is_elite_enemy
 
 
 func log_enemy_defeated(state: ClickerState, result: Dictionary) -> void:
 	var ttk_sec: float = float(Time.get_ticks_msec() - enemy_spawn_time_msec) / 1000.0
-	var reward: int = result.get("reward_gold", 0)
+	var reward_raw = result.get("reward_gold", 0)
+	var reward: int = reward_raw.floor_to_int_safe() if reward_raw is BigNumber else int(reward_raw)
 	_total_gold_from_kills += reward
 	if _enemy_was_boss:
 		_boss_ttk_samples.append(ttk_sec)
@@ -64,7 +65,7 @@ func log_enemy_defeated(state: ClickerState, result: Dictionary) -> void:
 		_enemy_ttk_samples.append(ttk_sec)
 	var row: Dictionary = _base_row(state, "enemy_defeated")
 	row["defeated_on_level"] = result.get("defeated_on_level", state.current_level)
-	row["enemy_start_hp"] = enemy_start_hp
+	row["enemy_start_hp"] = enemy_start_hp.to_debug_string() if enemy_start_hp != null else "0"
 	row["enemy_reward_gold"] = reward
 	row["enemy_ttk_sec"] = "%.3f" % ttk_sec
 	row["was_boss"] = _enemy_was_boss
@@ -79,8 +80,8 @@ func log_enemy_defeated(state: ClickerState, result: Dictionary) -> void:
 func log_boss_failed(state: ClickerState) -> void:
 	var retry_available: bool = state.boss_retry_tokens > 0
 	var row: Dictionary = _base_row(state, "boss_failed")
-	row["boss_hp_remaining"] = state.target_hp
-	row["boss_max_hp"] = state.target_max_hp
+	row["boss_hp_remaining"] = state.target_hp.to_debug_string()
+	row["boss_max_hp"] = state.target_max_hp.to_debug_string()
 	row["boss_retry_tokens"] = state.boss_retry_tokens
 	row["retry_will_be_used"] = retry_available
 	row["returned_to_level"] = state.current_level if retry_available else maxi(1, state.current_level - 1)
@@ -91,7 +92,8 @@ func log_purchase(state: ClickerState, category: String, item_id: String, cost: 
 	var success: bool = result.get("upgraded", false)
 	if success:
 		if category == "shop":
-			_total_shop_rewards += result.get("reward_gold", 0)
+			var shop_reward_raw = result.get("reward_gold", 0)
+			_total_shop_rewards += shop_reward_raw.floor_to_int_safe() if shop_reward_raw is BigNumber else int(shop_reward_raw)
 		elif category != "prestige_talent":
 			_total_gold_spent += cost
 	var row: Dictionary = _base_row(state, "purchase")
@@ -104,7 +106,8 @@ func log_purchase(state: ClickerState, category: String, item_id: String, cost: 
 
 
 func log_task_claimed(state: ClickerState, task_id: String, result: Dictionary) -> void:
-	var reward: int = result.get("reward_gold", 0)
+	var reward_raw = result.get("reward_gold", 0)
+	var reward: int = reward_raw.floor_to_int_safe() if reward_raw is BigNumber else int(reward_raw)
 	_total_task_rewards += reward
 	var row: Dictionary = _base_row(state, "task_claimed")
 	row["task_id"] = task_id
@@ -124,7 +127,8 @@ func log_level_changed(state: ClickerState, previous_level: int, new_level: int)
 	row["previous_level"] = previous_level
 	row["new_level"] = new_level
 	row["level_time_sec"] = "%.2f" % (float(Time.get_ticks_msec() - level_start_time_msec) / 1000.0)
-	row["gold_earned_on_level"] = state.gold - current_level_start_gold
+	var gold_earned: int = state.gold.subtract(current_level_start_gold if current_level_start_gold != null else BigNumber.zero()).floor_to_int_safe()
+	row["gold_earned_on_level"] = gold_earned
 	row["kills_on_level"] = state.total_enemies_defeated - current_level_start_kill_count
 	rows.append(row)
 	mark_level_started(state)
@@ -233,11 +237,11 @@ func _base_row(state: ClickerState, event_type: String) -> Dictionary:
 		"current_zone_index": state.current_zone_index,
 		"enemy_type": state.get_current_enemy_type(),
 		"enemy_name": state.enemy_name,
-		"gold": state.gold,
+		"gold": state.gold.to_debug_string(),
 		"gems": state.gems,
 		"character_level": state.character_level,
-		"click_damage": state.get_current_click_damage(),
-		"partner_dps": state.get_final_partner_dps(),
+		"click_damage": state.get_current_click_damage().to_debug_string(),
+		"partner_dps": state.get_final_partner_dps().to_debug_string(),
 		"auto_transition_enabled": state.auto_stage_advance_enabled,
 	}
 

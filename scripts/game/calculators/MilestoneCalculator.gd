@@ -33,3 +33,9 @@ static func get_next_milestone(value: int, milestones: Array) -> int:
 		if value < milestone:
 			return milestone
 	return 0
+
+
+static func apply_milestone_cost_multiplier_bn(cost: BigNumber, target: int, milestones: Array, cost_multiplier: int) -> BigNumber:
+	if is_milestone_target(target, milestones):
+		return cost.multiply_int(cost_multiplier)
+	return cost

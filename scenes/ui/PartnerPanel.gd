@@ -342,8 +342,8 @@ func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionar
 	var skill_image_holders: Array = row["skill_image_holders"]
 	var partner_name: String = LocalizationManager.tr_key(PartnerConfig.get_name_key(partner_index))
 	var partner_count: int = state.partner_counts[partner_index]
-	var tier_total_dps: int = state.get_partner_tier_total_dps(partner_index)
-	var dps_gain: int = state.get_partner_bulk_dps_gain(partner_index, selected_buy_mode)
+	var tier_total_dps: BigNumber = state.get_partner_tier_total_dps(partner_index)
+	var dps_gain: BigNumber = state.get_partner_bulk_dps_gain(partner_index, selected_buy_mode)
 	var next_milestone: int = state.get_next_milestone(partner_count)
 	partner_name_label.text = LocalizationManager.format_key("partner.card.name", {
 		"name": partner_name,
@@ -376,7 +376,7 @@ func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionar
 			_apply_skill_icon_visual(skill_image_holder, skill_state)
 
 	var bulk_count: int = state.get_partner_bulk_display_count(partner_index, selected_buy_mode)
-	var bulk_cost: int = state.get_partner_bulk_display_cost(partner_index, selected_buy_mode)
+	var bulk_cost: BigNumber = state.get_partner_bulk_display_cost(partner_index, selected_buy_mode)
 	var can_afford: bool = state.can_afford_partner_bulk(partner_index, selected_buy_mode)
 	row["button_label"].text = LocalizationManager.format_key("partner.hire_button", {
 		"count": bulk_count,

@@ -13,7 +13,7 @@ var _claim_ad_holder = null
 var _action_pending: bool = false
 
 var _last_elapsed_seconds: int = 0
-var _last_reward_gold: int = 0
+var _last_reward_gold = null
 var _has_reward_data: bool = false
 
 @onready var _title_label: Label = $CenterContainer/InnerPanel/MarginContainer/OuterVBox/LabelsVBox/TitleLabel
@@ -43,7 +43,7 @@ func _ready() -> void:
 	hide()
 
 
-func show_reward(elapsed_seconds: int, reward_gold: int) -> void:
+func show_reward(elapsed_seconds: int, reward_gold) -> void:
 	_action_pending = false
 	_reset_button_visuals()
 	_set_buttons_disabled(false)
@@ -74,7 +74,7 @@ func _refresh_all_text() -> void:
 	if _has_reward_data:
 		_title_label.text = LocalizationManager.tr_key("offline_reward.title")
 		_time_label.text = LocalizationManager.format_key("offline_reward.time", {"time": format_duration(_last_elapsed_seconds)})
-		_reward_label.text = LocalizationManager.format_key("offline_reward.reward", {"gold": _format_number(_last_reward_gold)})
+		_reward_label.text = LocalizationManager.format_key("offline_reward.reward", {"gold": NumberFormatter.compact(_last_reward_gold) if _last_reward_gold != null else "0"})
 	if _claim_label:
 		_claim_label.text = LocalizationManager.tr_key("offline_reward.claim")
 	if _claim_ad_label:
@@ -135,15 +135,6 @@ func format_duration(seconds: int) -> String:
 		return LocalizationManager.format_key("common.duration.hours", {"hours": str(hours)})
 	return LocalizationManager.format_key("common.duration.hours_minutes", {"hours": str(hours), "minutes": str(remaining_minutes)})
 
-
-func _format_number(value: int) -> String:
-	if value >= 1_000_000_000:
-		return "%.1fB" % (float(value) / 1_000_000_000.0)
-	if value >= 1_000_000:
-		return "%.1fM" % (float(value) / 1_000_000.0)
-	if value >= 1_000:
-		return "%.1fK" % (float(value) / 1_000.0)
-	return str(value)
 
 
 func _add_background_image_holder(container: Control, holder_name: String, asset_key: String) -> void:

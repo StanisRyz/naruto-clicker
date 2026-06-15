@@ -9,13 +9,14 @@ const Presentation = preload("res://scripts/game/presentation/ClickerStatePresen
 const TaskRT = preload("res://scripts/game/runtime/TaskRuntime.gd")
 const ShopRT = preload("res://scripts/game/runtime/ShopRuntime.gd")
 const GemPurchaseConfigData = preload("res://scripts/game/config/GemPurchaseConfig.gd")
+const NumberFmt = preload("res://scripts/ui/NumberFormatter.gd")
 
 
-var gold: int = 0
+var gold: BigNumber
 var gems: int = 0
-var click_damage: int = 1
+var click_damage: BigNumber
 var character_level: int = 1
-var character_level_upgrade_cost: int = 5
+var character_level_upgrade_cost: BigNumber
 var current_level: int = 1
 var max_unlocked_level: int = 1
 var auto_stage_advance_enabled: bool =	 true
@@ -23,9 +24,9 @@ var cleared_level_ids: Dictionary = {}
 var level_enemy_progress: Dictionary = {}
 var enemies_defeated_on_level: int = 0
 var enemies_required_per_level: int = 10
-var target_hp: int = 10
-var target_max_hp: int = 10
-var reward_gold: int = 5
+var target_hp: BigNumber
+var target_max_hp: BigNumber
+var reward_gold: BigNumber
 var is_boss_level: bool = false
 var is_elite_enemy: bool = false
 var elite_spawn_chance: float = BalanceConfig.ELITE_SPAWN_CHANCE
@@ -61,7 +62,7 @@ var focus_burst_purchase_cost: int = BalanceConfig.FOCUS_BURST_PURCHASE_COST
 var rally_purchase_cost: int = BalanceConfig.RALLY_PURCHASE_COST
 var gold_bonus_multiplier: int = 2  # kept literal; see BalanceConfig for rank-based formula
 var partner_counts: Array[int] = []
-var partner_purchase_costs: Array[int] = []
+var partner_purchase_costs: Array = []
 const INITIAL_VISIBLE_PARTNER_COUNT: int = 2
 var visible_partner_count: int = INITIAL_VISIBLE_PARTNER_COUNT
 var purchased_partner_skill_ids: Array[String] = []
@@ -71,7 +72,7 @@ var milestone_multiplier_per_reached: int = BalanceConfig.MILESTONE_MULTIPLIER_P
 var milestone_cost_multiplier: int = BalanceConfig.MILESTONE_COST_MULTIPLIER
 var building_counts: Array[int] = []
 var building_bonus_percent_per_level: float = BalanceConfig.BUILDING_BONUS_PERCENT_PER_LEVEL
-var building_purchase_costs: Array[int] = []
+var building_purchase_costs: Array = []
 var boss_retry_tokens: int = 0
 var task_reward_boost_multiplier: float = 1.0
 
@@ -125,7 +126,7 @@ const DEBUG_PURCHASE_MAX_BULK: int = 100
 const DEBUG_PRESTIGE_REWARD: int = 999
 
 var last_save_unix_time: int = 0
-var pending_offline_gold_reward: int = 0
+var pending_offline_gold_reward: BigNumber
 var pending_offline_elapsed_seconds: int = 0
 var pending_offline_created_at: int = 0
 
@@ -138,6 +139,13 @@ var prestige_points: int:
 
 
 func _init() -> void:
+	gold = BigNumber.zero()
+	click_damage = BigNumber.one()
+	character_level_upgrade_cost = BigNumber.from_int(5)
+	target_hp = BigNumber.from_int(10)
+	target_max_hp = BigNumber.from_int(10)
+	reward_gold = BigNumber.from_int(5)
+	pending_offline_gold_reward = BigNumber.zero()
 	rng.randomize()
 	initialize_tasks()
 	_reset_partner_state()
@@ -186,11 +194,11 @@ func get_task_target(task_id: String) -> int:
 	return TaskRT.get_task_target(self, task_id)
 
 
-func get_current_task_reward_unit() -> int:
+func get_current_task_reward_unit() -> BigNumber:
 	return TaskRT.get_current_task_reward_unit(self)
 
 
-func get_task_reward_gold(task_id: String) -> int:
+func get_task_reward_gold(task_id: String) -> BigNumber:
 	return TaskRT.get_task_reward_gold(self, task_id)
 
 
@@ -550,7 +558,7 @@ func perform_prestige() -> Dictionary:
 	prestige_points_total_earned += reward
 	total_prestiges += 1
 
-	gold = 0
+	gold = BigNumber.zero()
 	character_level = 1
 	current_level = 1
 	max_unlocked_level = 1
@@ -602,16 +610,17 @@ func attack() -> Dictionary:
 	return attack_with_damage(get_current_click_damage())
 
 
-func attack_with_damage(damage: int) -> Dictionary:
-	if damage <= 0:
-		return _make_attack_result(false, false, 0, 0, target_hp, target_hp, "Tap the field to attack!")
+func attack_with_damage(damage) -> Dictionary:
+	var damage_bn: BigNumber = damage if damage is BigNumber else BigNumber.from_int(int(damage))
+	if not damage_bn.is_positive():
+		return _make_attack_result(false, false, BigNumber.zero(), BigNumber.zero(), target_hp.clone(), target_hp.clone(), "Tap the field to attack!")
 
-	var target_hp_before: int = target_hp
-	target_hp = maxi(target_hp - damage, 0)
-	var damage_dealt: int = target_hp_before - target_hp
+	var target_hp_before: BigNumber = target_hp.clone()
+	target_hp = target_hp.subtract(damage_bn)
+	var damage_dealt: BigNumber = target_hp_before.subtract(target_hp)
 
-	if target_hp > 0:
-		return _make_attack_result(false, false, 0, damage_dealt, target_hp_before, target_hp, "Tap the field to attack!")
+	if target_hp.is_positive():
+		return _make_attack_result(false, false, BigNumber.zero(), damage_dealt, target_hp_before, target_hp.clone(), "Tap the field to attack!")
 
 	var did_level_up: bool = enemies_defeated_on_level + 1 >= enemies_required_per_level
 	var zone_changed: bool = false
@@ -624,39 +633,39 @@ func attack_with_damage(damage: int) -> Dictionary:
 			var next_zone: Dictionary = ZoneConfig.ZONE_DATA[next_zone_index]
 			new_zone_name = next_zone.name
 
-	return _make_attack_result(true, did_level_up, 0, damage_dealt, target_hp_before, 0, "Enemy defeated!", zone_changed, new_zone_name)
+	return _make_attack_result(true, did_level_up, BigNumber.zero(), damage_dealt, target_hp_before, BigNumber.zero(), "Enemy defeated!", zone_changed, new_zone_name)
 
 
-func get_current_target_reward_gold_preview() -> int:
-	if target_hp > 0:
-		return 0
-	var source_reward: int = reward_gold
+func get_current_target_reward_gold_preview() -> BigNumber:
+	if not target_hp.is_zero():
+		return BigNumber.zero()
+	var source_reward: BigNumber = reward_gold.clone()
 	if is_boss_level:
-		source_reward = int(source_reward * get_boss_reward_multiplier())
+		source_reward = source_reward.multiply_float(get_boss_reward_multiplier())
 	if is_elite_enemy:
-		source_reward = int(source_reward * get_partner_skill_bonus_multiplier("elite_reward"))
-	var talent_gold: int = int(
-		source_reward
-		* get_trade_routes_multiplier()
+		source_reward = source_reward.multiply_float(get_partner_skill_bonus_multiplier("elite_reward"))
+	var gold_mult: float = (
+		get_trade_routes_multiplier()
 		* get_partner_skill_gold_multiplier()
 		* get_hero_skill_bonus_multiplier("gold")
+		* get_settlement_gold_multiplier()
 	)
-	var settlement_gold: int = int(talent_gold * get_settlement_gold_multiplier())
-	var pre_shop_gold: int = int(settlement_gold * get_gold_bonus_multiplier()) if gold_bonus_active else settlement_gold
-	var shop_gold: int = int(pre_shop_gold * get_shop_gold_multiplier())
-	return int(shop_gold * get_rewarded_ad_gold_multiplier())
+	var pre_shop: BigNumber = source_reward.multiply_float(gold_mult)
+	if gold_bonus_active:
+		pre_shop = pre_shop.multiply_float(get_gold_bonus_multiplier())
+	return pre_shop.multiply_float(get_shop_gold_multiplier()).multiply_float(get_rewarded_ad_gold_multiplier())
 
 
 func resolve_defeated_target() -> Dictionary:
-	if target_hp > 0:
-		return _make_attack_result(false, false, 0, 0, target_hp, target_hp, "")
+	if not target_hp.is_zero():
+		return _make_attack_result(false, false, BigNumber.zero(), BigNumber.zero(), target_hp.clone(), target_hp.clone(), "")
 
-	var target_hp_before: int = target_hp
-	var damage_dealt: int = 0
+	var target_hp_before: BigNumber = target_hp.clone()
+	var damage_dealt: BigNumber = BigNumber.zero()
 	var defeated_boss: bool = is_boss_level
 	var defeated_elite: bool = is_elite_enemy
-	var earned_gold: int = get_current_target_reward_gold_preview()
-	gold += earned_gold
+	var earned_gold: BigNumber = get_current_target_reward_gold_preview()
+	gold = gold.add(earned_gold)
 	enemies_defeated_on_level += 1
 	total_enemies_defeated += 1
 	if defeated_elite:
@@ -665,7 +674,8 @@ func resolve_defeated_target() -> Dictionary:
 		total_bosses_defeated += 1
 
 	var did_level_up: bool = enemies_defeated_on_level >= enemies_required_per_level
-	var status_text: String = "Enemy defeated! +%d gold" % earned_gold
+	var gold_str: String = NumberFmt.compact(earned_gold)
+	var status_text: String = "Enemy defeated! +%s gold" % gold_str
 	var zone_changed: bool = false
 	var new_zone_name: String = ""
 	var advanced_to_next_level: bool = false
@@ -673,9 +683,7 @@ func resolve_defeated_target() -> Dictionary:
 	var unlocked_level: int = max_unlocked_level
 
 	if is_level_cleared(current_level):
-		# Farming a previously cleared level
 		if auto_stage_advance_enabled:
-			# Auto ON: advance to current_level + 1 on this kill
 			save_current_level_progress()
 			var old_zone_index: int = current_zone_index
 			current_level += 1
@@ -687,18 +695,17 @@ func resolve_defeated_target() -> Dictionary:
 			if zone_changed:
 				status_text = "New zone: %s" % zone_name
 			elif defeated_boss:
-				status_text = "Boss defeated! +%d gold. Level %d" % [earned_gold, current_level]
+				status_text = "Boss defeated! +%s gold. Level %d" % [gold_str, current_level]
 			else:
 				status_text = "Level up! Level %d" % current_level
 		else:
-			# Stay farming; no new stage unlock
 			enemies_defeated_on_level = enemies_required_per_level
 			reset_target()
 			save_current_level_progress()
 			if defeated_boss:
-				status_text = "Boss defeated! +%d gold. Farming stage %d." % [earned_gold, current_level]
+				status_text = "Boss defeated! +%s gold. Farming stage %d." % [gold_str, current_level]
 			else:
-				status_text = "+%d gold. Farming stage %d." % [earned_gold, current_level]
+				status_text = "+%s gold. Farming stage %d." % [gold_str, current_level]
 	elif did_level_up:
 		mark_level_cleared(current_level)
 		var next_level: int = current_level + 1
@@ -718,7 +725,7 @@ func resolve_defeated_target() -> Dictionary:
 			if zone_changed:
 				status_text = "New zone: %s" % zone_name
 			elif defeated_boss:
-				status_text = "Boss defeated! +%d gold. Level %d" % [earned_gold, current_level]
+				status_text = "Boss defeated! +%s gold. Level %d" % [gold_str, current_level]
 			else:
 				status_text = "Level up! Level %d" % current_level
 		else:
@@ -726,14 +733,14 @@ func resolve_defeated_target() -> Dictionary:
 			reset_target()
 			save_current_level_progress()
 			if defeated_boss:
-				status_text = "Boss defeated! +%d gold. Stage %d unlocked." % [earned_gold, next_level]
+				status_text = "Boss defeated! +%s gold. Stage %d unlocked." % [gold_str, next_level]
 			else:
-				status_text = "+%d gold. Stage %d unlocked." % [earned_gold, next_level]
+				status_text = "+%s gold. Stage %d unlocked." % [gold_str, next_level]
 	else:
 		reset_target()
 		save_current_level_progress()
 
-	var base_result: Dictionary = _make_attack_result(true, did_level_up, earned_gold, damage_dealt, target_hp_before, 0, status_text, zone_changed, new_zone_name)
+	var base_result: Dictionary = _make_attack_result(true, did_level_up, earned_gold, damage_dealt, target_hp_before, BigNumber.zero(), status_text, zone_changed, new_zone_name)
 	base_result["advanced_to_next_level"] = advanced_to_next_level
 	base_result["level_unlocked"] = level_unlocked
 	base_result["unlocked_level"] = unlocked_level
@@ -746,12 +753,12 @@ func buy_character_level_upgrade() -> Dictionary:
 
 func buy_character_level_upgrades(mode: String) -> Dictionary:
 	var bought: int = get_character_level_bulk_count(mode)
-	var total_cost: int = get_character_level_bulk_cost(mode)
+	var total_cost: BigNumber = get_character_level_bulk_cost(mode)
 
-	if bought <= 0 or total_cost <= 0 or gold < total_cost:
+	if bought <= 0 or total_cost.is_zero() or gold.compare_to(total_cost) < 0:
 		return _make_purchase_result("Not enough gold", true)
 
-	gold -= total_cost
+	gold = gold.subtract(total_cost)
 	character_level += bought
 	recalculate_character_level_cost()
 	_update_character_state()
@@ -760,23 +767,24 @@ func buy_character_level_upgrades(mode: String) -> Dictionary:
 
 func get_character_level_bulk_count(mode: String) -> int:
 	if is_debug_purchase_override_enabled():
+		var dbg_cost: BigNumber = BigNumber.from_int(DEBUG_PURCHASE_COST)
 		if mode == "max":
-			return DEBUG_PURCHASE_MAX_BULK if gold >= DEBUG_PURCHASE_COST else 0
+			return DEBUG_PURCHASE_MAX_BULK if gold.compare_to(dbg_cost) >= 0 else 0
 		var dbg_fixed: int = _get_fixed_buy_count(mode)
-		return dbg_fixed if gold >= DEBUG_PURCHASE_COST else 0
+		return dbg_fixed if gold.compare_to(dbg_cost) >= 0 else 0
 
 	var fixed_count: int = _get_fixed_buy_count(mode)
 	if fixed_count > 0:
-		var fixed_cost: int = _get_character_level_bulk_cost_for_count(fixed_count)
-		return fixed_count if gold >= fixed_cost else 0
+		var fixed_cost: BigNumber = _get_character_level_bulk_cost_for_count(fixed_count)
+		return fixed_count if gold.compare_to(fixed_cost) >= 0 else 0
 
-	var simulated_gold: int = gold
+	var simulated_gold: BigNumber = gold.clone()
 	var simulated_level: int = character_level
-	var simulated_cost: int = character_level_upgrade_cost
+	var simulated_cost: BigNumber = character_level_upgrade_cost.clone()
 	var count: int = 0
 
-	while simulated_gold >= simulated_cost:
-		simulated_gold -= simulated_cost
+	while simulated_gold.compare_to(simulated_cost) >= 0:
+		simulated_gold = simulated_gold.subtract(simulated_cost)
 		simulated_level += 1
 		count += 1
 		simulated_cost = _get_character_level_cost_for_level(simulated_level)
@@ -784,13 +792,13 @@ func get_character_level_bulk_count(mode: String) -> int:
 	return count
 
 
-func get_character_level_bulk_cost(mode: String) -> int:
+func get_character_level_bulk_cost(mode: String) -> BigNumber:
 	var count: int = get_character_level_bulk_count(mode)
 	if count <= 0:
-		return 0
+		return BigNumber.zero()
 
 	if is_debug_purchase_override_enabled():
-		return DEBUG_PURCHASE_COST
+		return BigNumber.from_int(DEBUG_PURCHASE_COST)
 
 	return _get_character_level_bulk_cost_for_count(count)
 
@@ -806,15 +814,15 @@ func get_character_level_bulk_display_count(mode: String) -> int:
 	return _get_fixed_buy_count(mode)
 
 
-func get_character_level_bulk_display_cost(mode: String) -> int:
+func get_character_level_bulk_display_cost(mode: String) -> BigNumber:
 	if is_debug_purchase_override_enabled():
-		return DEBUG_PURCHASE_COST
+		return BigNumber.from_int(DEBUG_PURCHASE_COST)
 
 	var display_count: int = get_character_level_bulk_display_count(mode)
 	if display_count > 0:
 		return _get_character_level_bulk_cost_for_count(display_count)
 
-	return character_level_upgrade_cost
+	return character_level_upgrade_cost.clone()
 
 
 func get_partner_dps_click_damage_bonus_percent() -> float:
@@ -828,32 +836,27 @@ func get_partner_dps_click_damage_bonus_percent() -> float:
 	return total_bonus
 
 
-func get_partner_dps_click_damage_bonus() -> int:
+func get_partner_dps_click_damage_bonus() -> BigNumber:
 	var bonus_percent: float = get_partner_dps_click_damage_bonus_percent()
 	if bonus_percent <= 0.0:
-		return 0
-	var partner_dps_for_click_bonus: int = get_final_partner_dps(false)
-	return maxi(0, int(float(partner_dps_for_click_bonus) * bonus_percent))
+		return BigNumber.zero()
+	return get_final_partner_dps(false).multiply_float(bonus_percent)
 
 
-func get_click_damage_for_character_level(level: int) -> int:
-	var base_damage: int = int(BalanceConfig.HERO_BASE_DAMAGE + float(level) * BalanceConfig.HERO_DAMAGE_PER_LEVEL) * get_milestone_multiplier(level)
-	var hero_click_damage: int = maxi(
-		1,
-		int(
-			base_damage
-			* get_focus_training_multiplier()
-			* get_partner_skill_bonus_multiplier("click_damage")
-			* get_hero_skill_bonus_multiplier("click_damage")
-			* get_partner_skill_bonus_multiplier("all_damage")
-			* get_focus_burst_multiplier()
-			* get_settlement_click_damage_multiplier()
-			* get_shop_click_damage_multiplier()
-		)
+func get_click_damage_for_character_level(level: int) -> BigNumber:
+	var base_val: float = (BalanceConfig.HERO_BASE_DAMAGE + float(level) * BalanceConfig.HERO_DAMAGE_PER_LEVEL) * float(get_milestone_multiplier(level))
+	var hero_mult: float = (
+		get_focus_training_multiplier()
+		* get_partner_skill_bonus_multiplier("click_damage")
+		* get_hero_skill_bonus_multiplier("click_damage")
+		* get_partner_skill_bonus_multiplier("all_damage")
+		* get_focus_burst_multiplier()
+		* get_settlement_click_damage_multiplier()
+		* get_shop_click_damage_multiplier()
 	)
-	var partner_dps_click_bonus: int = get_partner_dps_click_damage_bonus()
-	var combined: int = maxi(1, hero_click_damage + partner_dps_click_bonus)
-	return maxi(1, int(float(combined) * get_rewarded_ad_all_damage_multiplier()))
+	var hero_dmg: BigNumber = BigNumber.from_float(maxf(1.0, base_val * hero_mult))
+	var combined: BigNumber = hero_dmg.add(get_partner_dps_click_damage_bonus())
+	return combined.multiply_float(get_rewarded_ad_all_damage_multiplier())
 
 
 func is_rewarded_ad_all_damage_active() -> bool:
@@ -986,12 +989,12 @@ func grant_shop_rewarded_gems() -> Dictionary:
 	}
 
 
-func get_character_level_bulk_damage_gain(mode: String) -> int:
+func get_character_level_bulk_damage_gain(mode: String) -> BigNumber:
 	var count: int = get_character_level_bulk_display_count(mode)
 	if count <= 0:
-		return 0
-	var future_damage: int = get_click_damage_for_character_level(character_level + count)
-	return maxi(future_damage - click_damage, 0)
+		return BigNumber.zero()
+	var future_damage: BigNumber = get_click_damage_for_character_level(character_level + count)
+	return future_damage.subtract(click_damage)
 
 
 func buy_autoclick_ability() -> Dictionary:
@@ -1010,27 +1013,24 @@ func buy_rally_ability() -> Dictionary:
 	return buy_ability_unlock("rally")
 
 
-func get_base_partner_dps() -> int:
-	var total_dps: int = 0
-
+func get_base_partner_dps() -> BigNumber:
+	var total_dps: BigNumber = BigNumber.zero()
 	for index in range(partner_counts.size()):
-		total_dps += get_partner_tier_total_dps(index)
-
+		total_dps = total_dps.add(get_partner_tier_total_dps(index))
 	return total_dps
 
 
-func get_total_partner_dps() -> int:
+func get_total_partner_dps() -> BigNumber:
 	return get_base_partner_dps()
 
 
-func get_final_partner_dps(include_contextual_boss_multiplier: bool = false) -> int:
-	var base_dps: int = get_base_partner_dps()
-	if base_dps <= 0:
-		return 0
+func get_final_partner_dps(include_contextual_boss_multiplier: bool = false) -> BigNumber:
+	var base_dps: BigNumber = get_base_partner_dps()
+	if not base_dps.is_positive():
+		return BigNumber.zero()
 
-	var final_dps: int = int(
-		base_dps
-		* get_command_aura_multiplier()
+	var multiplier: float = (
+		get_command_aura_multiplier()
 		* get_settlement_partner_dps_multiplier()
 		* get_partner_skill_bonus_multiplier("partner_dps")
 		* get_hero_skill_bonus_multiplier("partner_dps")
@@ -1039,24 +1039,26 @@ func get_final_partner_dps(include_contextual_boss_multiplier: bool = false) -> 
 		* get_shop_partner_dps_multiplier()
 		* get_rewarded_ad_all_damage_multiplier()
 	)
+	var final_dps: BigNumber = base_dps.multiply_float(multiplier)
 
 	if include_contextual_boss_multiplier:
-		final_dps = int(final_dps * get_boss_damage_multiplier())
+		final_dps = final_dps.multiply_float(get_boss_damage_multiplier())
 
 	return final_dps
 
 
-func get_partner_tick_damage() -> int:
-	var final_dps: int = get_final_partner_dps(true)
-	if final_dps <= 0:
-		return 0
+func get_partner_tick_damage() -> BigNumber:
+	var final_dps: BigNumber = get_final_partner_dps(true)
+	if not final_dps.is_positive():
+		return BigNumber.zero()
+	var tick: BigNumber = final_dps.divide_float(10.0)
+	if tick.is_zero():
+		return BigNumber.one()
+	return tick
 
-	var final_tick: int = int(final_dps / 10.0)
-	return maxi(1, final_tick)
 
-
-func get_autoclick_damage() -> int:
-	return maxi(1, int(get_current_click_damage() * get_partner_skill_bonus_multiplier("autoclick_damage")))
+func get_autoclick_damage() -> BigNumber:
+	return get_current_click_damage().multiply_float(get_partner_skill_bonus_multiplier("autoclick_damage"))
 
 
 func buy_partner(partner_index: int) -> Dictionary:
@@ -1068,12 +1070,12 @@ func buy_partners(partner_index: int, mode: String) -> Dictionary:
 		return _make_purchase_result("Invalid partner")
 
 	var bought: int = get_partner_bulk_count(partner_index, mode)
-	var total_cost: int = get_partner_bulk_cost(partner_index, mode)
+	var total_cost: BigNumber = get_partner_bulk_cost(partner_index, mode)
 
-	if bought <= 0 or total_cost <= 0 or gold < total_cost:
+	if bought <= 0 or total_cost.is_zero() or gold.compare_to(total_cost) < 0:
 		return _make_purchase_result("Not enough gold", true)
 
-	gold -= total_cost
+	gold = gold.subtract(total_cost)
 	partner_counts[partner_index] += bought
 	recalculate_partner_cost(partner_index)
 	_update_character_state()
@@ -1086,23 +1088,24 @@ func get_partner_bulk_count(partner_index: int, mode: String) -> int:
 		return 0
 
 	if is_debug_purchase_override_enabled():
+		var dbg_cost: BigNumber = BigNumber.from_int(DEBUG_PURCHASE_COST)
 		if mode == "max":
-			return DEBUG_PURCHASE_MAX_BULK if gold >= DEBUG_PURCHASE_COST else 0
+			return DEBUG_PURCHASE_MAX_BULK if gold.compare_to(dbg_cost) >= 0 else 0
 		var dbg_fixed: int = _get_fixed_buy_count(mode)
-		return dbg_fixed if gold >= DEBUG_PURCHASE_COST else 0
+		return dbg_fixed if gold.compare_to(dbg_cost) >= 0 else 0
 
 	var fixed_count: int = _get_fixed_buy_count(mode)
 	if fixed_count > 0:
-		var fixed_cost: int = _get_partner_bulk_cost_for_count(partner_index, fixed_count)
-		return fixed_count if gold >= fixed_cost else 0
+		var fixed_cost: BigNumber = _get_partner_bulk_cost_for_count(partner_index, fixed_count)
+		return fixed_count if gold.compare_to(fixed_cost) >= 0 else 0
 
-	var simulated_gold: int = gold
+	var simulated_gold: BigNumber = gold.clone()
 	var simulated_count: int = partner_counts[partner_index]
 	var count: int = 0
-	var simulated_cost: int = partner_purchase_costs[partner_index]
+	var simulated_cost: BigNumber = (partner_purchase_costs[partner_index] as BigNumber).clone()
 
-	while simulated_gold >= simulated_cost:
-		simulated_gold -= simulated_cost
+	while simulated_gold.compare_to(simulated_cost) >= 0:
+		simulated_gold = simulated_gold.subtract(simulated_cost)
 		simulated_count += 1
 		count += 1
 		simulated_cost = _get_partner_cost_for_count(partner_index, simulated_count)
@@ -1110,13 +1113,13 @@ func get_partner_bulk_count(partner_index: int, mode: String) -> int:
 	return count
 
 
-func get_partner_bulk_cost(partner_index: int, mode: String) -> int:
+func get_partner_bulk_cost(partner_index: int, mode: String) -> BigNumber:
 	var count: int = get_partner_bulk_count(partner_index, mode)
 	if count <= 0:
-		return 0
+		return BigNumber.zero()
 
 	if is_debug_purchase_override_enabled():
-		return DEBUG_PURCHASE_COST
+		return BigNumber.from_int(DEBUG_PURCHASE_COST)
 
 	return _get_partner_bulk_cost_for_count(partner_index, count)
 
@@ -1131,18 +1134,18 @@ func get_partner_bulk_display_count(partner_index: int, mode: String) -> int:
 	return _get_fixed_buy_count(mode)
 
 
-func get_partner_bulk_display_cost(partner_index: int, mode: String) -> int:
+func get_partner_bulk_display_cost(partner_index: int, mode: String) -> BigNumber:
 	if partner_index < 0 or partner_index >= partner_counts.size():
-		return 0
+		return BigNumber.zero()
 
 	if is_debug_purchase_override_enabled():
-		return DEBUG_PURCHASE_COST
+		return BigNumber.from_int(DEBUG_PURCHASE_COST)
 
 	var display_count: int = get_partner_bulk_display_count(partner_index, mode)
 	if display_count > 0:
 		return _get_partner_bulk_cost_for_count(partner_index, display_count)
 
-	return partner_purchase_costs[partner_index]
+	return (partner_purchase_costs[partner_index] as BigNumber).clone()
 
 
 func can_buy_building(building_index: int) -> bool:
@@ -1158,12 +1161,12 @@ func buy_buildings(building_index: int, mode: String) -> Dictionary:
 		return _make_purchase_result("Invalid building")
 
 	var bought: int = get_building_bulk_count(building_index, mode)
-	var total_cost: int = get_building_bulk_cost(building_index, mode)
+	var total_cost: BigNumber = get_building_bulk_cost(building_index, mode)
 
-	if bought <= 0 or total_cost <= 0 or gold < total_cost:
+	if bought <= 0 or total_cost.is_zero() or gold.compare_to(total_cost) < 0:
 		return _make_purchase_result("Not enough gold", true)
 
-	gold -= total_cost
+	gold = gold.subtract(total_cost)
 	building_counts[building_index] += bought
 	recalculate_building_cost(building_index)
 	_update_character_state()
@@ -1178,23 +1181,24 @@ func get_building_bulk_count(building_index: int, mode: String) -> int:
 		return 0
 
 	if is_debug_purchase_override_enabled():
+		var dbg_cost: BigNumber = BigNumber.from_int(DEBUG_PURCHASE_COST)
 		if mode == "max":
-			return DEBUG_PURCHASE_MAX_BULK if gold >= DEBUG_PURCHASE_COST else 0
+			return DEBUG_PURCHASE_MAX_BULK if gold.compare_to(dbg_cost) >= 0 else 0
 		var dbg_fixed: int = _get_fixed_buy_count(mode)
-		return dbg_fixed if gold >= DEBUG_PURCHASE_COST else 0
+		return dbg_fixed if gold.compare_to(dbg_cost) >= 0 else 0
 
 	var fixed_count: int = _get_fixed_buy_count(mode)
 	if fixed_count > 0:
-		var fixed_cost: int = _get_building_bulk_cost_for_count(building_index, fixed_count)
-		return fixed_count if gold >= fixed_cost else 0
+		var fixed_cost: BigNumber = _get_building_bulk_cost_for_count(building_index, fixed_count)
+		return fixed_count if gold.compare_to(fixed_cost) >= 0 else 0
 
-	var simulated_gold: int = gold
+	var simulated_gold: BigNumber = gold.clone()
 	var simulated_count: int = building_counts[building_index]
 	var count: int = 0
-	var simulated_cost: int = building_purchase_costs[building_index]
+	var simulated_cost: BigNumber = (building_purchase_costs[building_index] as BigNumber).clone()
 
-	while simulated_gold >= simulated_cost:
-		simulated_gold -= simulated_cost
+	while simulated_gold.compare_to(simulated_cost) >= 0:
+		simulated_gold = simulated_gold.subtract(simulated_cost)
 		simulated_count += 1
 		count += 1
 		simulated_cost = _get_building_cost_for_count(building_index, simulated_count)
@@ -1202,13 +1206,13 @@ func get_building_bulk_count(building_index: int, mode: String) -> int:
 	return count
 
 
-func get_building_bulk_cost(building_index: int, mode: String) -> int:
+func get_building_bulk_cost(building_index: int, mode: String) -> BigNumber:
 	var count: int = get_building_bulk_count(building_index, mode)
 	if count <= 0:
-		return 0
+		return BigNumber.zero()
 
 	if is_debug_purchase_override_enabled():
-		return DEBUG_PURCHASE_COST
+		return BigNumber.from_int(DEBUG_PURCHASE_COST)
 
 	return _get_building_bulk_cost_for_count(building_index, count)
 
@@ -1226,21 +1230,21 @@ func get_building_bulk_display_count(building_index: int, mode: String) -> int:
 	return _get_fixed_buy_count(mode)
 
 
-func get_building_bulk_display_cost(building_index: int, mode: String) -> int:
+func get_building_bulk_display_cost(building_index: int, mode: String) -> BigNumber:
 	if building_index < 0 or building_index >= building_counts.size():
-		return 0
+		return BigNumber.zero()
 
 	if not can_buy_building(building_index):
-		return 0
+		return BigNumber.zero()
 
 	if is_debug_purchase_override_enabled():
-		return DEBUG_PURCHASE_COST
+		return BigNumber.from_int(DEBUG_PURCHASE_COST)
 
 	var display_count: int = get_building_bulk_display_count(building_index, mode)
 	if display_count > 0:
 		return _get_building_bulk_cost_for_count(building_index, display_count)
 
-	return building_purchase_costs[building_index]
+	return (building_purchase_costs[building_index] as BigNumber).clone()
 
 
 func get_building_effect_description(building_index: int) -> String:
@@ -1328,26 +1332,26 @@ func is_hero_skill_purchased(skill_id: String) -> bool:
 func can_buy_hero_skill(skill_id: String) -> bool:
 	if is_hero_skill_purchased(skill_id) or not is_hero_skill_unlocked(skill_id):
 		return false
-	var cost: int = get_hero_skill_cost(skill_id)
-	return cost > 0 and gold >= cost
+	var cost: BigNumber = get_hero_skill_cost(skill_id)
+	return cost.is_positive() and gold.compare_to(cost) >= 0
 
 
 func get_hero_skill_state(skill_id: String) -> String:
 	return Presentation.get_hero_skill_state(self, skill_id)
 
 
-func get_hero_skill_cost(skill_id: String) -> int:
+func get_hero_skill_cost(skill_id: String) -> BigNumber:
 	var skill: Dictionary = get_hero_skill(skill_id)
 	if skill.is_empty():
-		return 0
+		return BigNumber.zero()
 	if is_debug_purchase_override_enabled():
-		return DEBUG_PURCHASE_COST
+		return BigNumber.from_int(DEBUG_PURCHASE_COST)
 	var skill_level: int = int(skill.get("skill_level", 0))
 	var unlock_level: int = int(skill.get("unlock_character_level", 0))
 	if skill_level < 1 or skill_level > BalanceConfig.HERO_SKILL_COST_MULTIPLIERS.size() or unlock_level <= 1:
-		return 0
-	var base_cost: int = _get_character_level_cost_for_level(unlock_level - 1)
-	return base_cost * BalanceConfig.HERO_SKILL_COST_MULTIPLIERS[skill_level - 1]
+		return BigNumber.zero()
+	var base_cost: BigNumber = _get_character_level_cost_for_level(unlock_level - 1)
+	return base_cost.multiply_int(BalanceConfig.HERO_SKILL_COST_MULTIPLIERS[skill_level - 1])
 
 
 func buy_hero_skill(skill_id: String) -> Dictionary:
@@ -1358,10 +1362,10 @@ func buy_hero_skill(skill_id: String) -> Dictionary:
 		return _make_purchase_result("Hero skill already purchased")
 	if not is_hero_skill_unlocked(skill_id):
 		return _make_purchase_result("Requires Hero Level %d" % int(skill.get("unlock_character_level", 0)))
-	var cost: int = get_hero_skill_cost(skill_id)
-	if cost <= 0 or gold < cost:
+	var cost: BigNumber = get_hero_skill_cost(skill_id)
+	if not cost.is_positive() or gold.compare_to(cost) < 0:
 		return _make_purchase_result("Not enough gold", true)
-	gold -= cost
+	gold = gold.subtract(cost)
 	purchased_hero_skill_ids.append(skill_id)
 	_update_character_state()
 	return _make_purchase_result("%s purchased!" % String(skill.get("name", "Hero skill")), false, true)
@@ -1398,25 +1402,25 @@ func is_ability_skill_purchased(skill_id: String) -> bool:
 func can_buy_ability_skill(skill_id: String) -> bool:
 	if is_ability_skill_purchased(skill_id) or not is_ability_skill_unlocked(skill_id):
 		return false
-	var cost: int = get_ability_skill_cost(skill_id)
-	return cost > 0 and gold >= cost
+	var cost: BigNumber = get_ability_skill_cost(skill_id)
+	return cost.is_positive() and gold.compare_to(cost) >= 0
 
 
 func get_ability_skill_state(skill_id: String) -> String:
 	return Presentation.get_ability_skill_state(self, skill_id)
 
 
-func get_ability_skill_cost(skill_id: String) -> int:
+func get_ability_skill_cost(skill_id: String) -> BigNumber:
 	var skill: Dictionary = get_ability_skill(skill_id)
 	if skill.is_empty():
-		return 0
+		return BigNumber.zero()
 	if is_debug_purchase_override_enabled():
-		return DEBUG_PURCHASE_COST
+		return BigNumber.from_int(DEBUG_PURCHASE_COST)
 	var skill_level: int = int(skill.get("skill_level", 0))
 	if skill_level < 1 or skill_level > BalanceConfig.ABILITY_SKILL_COST_MULTIPLIERS.size():
-		return 0
+		return BigNumber.zero()
 	var base_cost: int = _get_ability_base_cost(String(skill.get("ability_id", "")))
-	return base_cost * BalanceConfig.ABILITY_SKILL_COST_MULTIPLIERS[skill_level - 1]
+	return BigNumber.from_int(base_cost * BalanceConfig.ABILITY_SKILL_COST_MULTIPLIERS[skill_level - 1])
 
 
 func buy_ability_skill(skill_id: String) -> Dictionary:
@@ -1430,10 +1434,10 @@ func buy_ability_skill(skill_id: String) -> Dictionary:
 		return _make_purchase_result("Requires buying %s first" % _get_ability_display_name(ability_id))
 	if not is_ability_skill_unlocked(skill_id):
 		return _make_purchase_result("Requires Hero Level %d" % int(skill.get("unlock_character_level", 0)))
-	var cost: int = get_ability_skill_cost(skill_id)
-	if cost <= 0 or gold < cost:
+	var cost: BigNumber = get_ability_skill_cost(skill_id)
+	if not cost.is_positive() or gold.compare_to(cost) < 0:
 		return _make_purchase_result("Not enough gold", true)
-	gold -= cost
+	gold = gold.subtract(cost)
 	purchased_ability_skill_ids.append(skill_id)
 	_sync_ability_rank_fields()
 	_update_character_state()
@@ -1451,24 +1455,24 @@ func get_hero_skill_bonus_multiplier(bonus_type: String) -> float:
 	return 1.0 + total_bonus
 
 
-func get_partner_skill_cost(skill_id: String) -> int:
+func get_partner_skill_cost(skill_id: String) -> BigNumber:
 	var skill: Dictionary = get_partner_skill(skill_id)
 	if skill.is_empty():
-		return 0
+		return BigNumber.zero()
 
 	if is_debug_purchase_override_enabled():
-		return DEBUG_PURCHASE_COST
+		return BigNumber.from_int(DEBUG_PURCHASE_COST)
 
 	var partner_index: int = int(skill.get("partner_index", -1))
 	var unlock_count: int = int(skill.get("unlock_count", 0))
 	var skill_level: int = int(skill.get("skill_level", 1))
-	if partner_index < 0 or partner_index >= BalanceConfig.PARTNER_BASE_COSTS.size() or unlock_count <= 0:
-		return 0
+	if partner_index < 0 or partner_index >= BalanceConfig.PARTNER_COUNT or unlock_count <= 0:
+		return BigNumber.zero()
 	if skill_level < 1 or skill_level > BalanceConfig.PARTNER_SKILL_COST_MULTIPLIERS.size():
-		return 0
+		return BigNumber.zero()
 
-	var base_milestone_cost: int = _get_partner_cost_for_count(partner_index, unlock_count - 1)
-	return base_milestone_cost * BalanceConfig.PARTNER_SKILL_COST_MULTIPLIERS[skill_level - 1]
+	var base_cost: BigNumber = _get_partner_cost_for_count(partner_index, unlock_count - 1)
+	return base_cost.multiply_int(BalanceConfig.PARTNER_SKILL_COST_MULTIPLIERS[skill_level - 1])
 
 
 func is_partner_skill_unlocked(skill_id: String) -> bool:
@@ -1494,8 +1498,8 @@ func can_buy_partner_skill(skill_id: String) -> bool:
 	if is_partner_skill_purchased(skill_id) or not is_partner_skill_unlocked(skill_id):
 		return false
 
-	var cost: int = get_partner_skill_cost(skill_id)
-	return cost > 0 and gold >= cost
+	var cost: BigNumber = get_partner_skill_cost(skill_id)
+	return cost.is_positive() and gold.compare_to(cost) >= 0
 
 
 func get_partner_skill_state(skill_id: String) -> String:
@@ -1520,11 +1524,11 @@ func buy_partner_skill(skill_id: String) -> Dictionary:
 			int(skill.get("unlock_count", 0)),
 		])
 
-	var cost: int = get_partner_skill_cost(skill_id)
-	if cost <= 0 or gold < cost:
+	var cost: BigNumber = get_partner_skill_cost(skill_id)
+	if not cost.is_positive() or gold.compare_to(cost) < 0:
 		return _make_purchase_result("Not enough gold", true)
 
-	gold -= cost
+	gold = gold.subtract(cost)
 	purchased_partner_skill_ids.append(skill_id)
 	_update_character_state()
 	return _make_purchase_result("%s purchased!" % String(skill.get("name", "Partner skill")), false, true)
@@ -1552,36 +1556,30 @@ func get_own_partner_skill_multiplier(partner_index: int) -> float:
 	return 1.0 + total_bonus
 
 
-func get_partner_tier_total_dps(partner_index: int) -> int:
-	if partner_index < 0 or partner_index >= partner_counts.size() or partner_index >= BalanceConfig.PARTNER_DPS_VALUES.size():
-		return 0
-
-	return int(
-		partner_counts[partner_index]
-		* BalanceConfig.PARTNER_DPS_VALUES[partner_index]
-		* get_partner_milestone_multiplier(partner_index)
-		* get_own_partner_skill_multiplier(partner_index)
-	)
+func get_partner_tier_total_dps(partner_index: int) -> BigNumber:
+	if partner_index < 0 or partner_index >= partner_counts.size():
+		return BigNumber.zero()
+	var count: int = partner_counts[partner_index]
+	if count <= 0:
+		return BigNumber.zero()
+	var base_dps: BigNumber = BalanceConfig.get_partner_dps_bignum(partner_index)
+	return base_dps.multiply_int(count).multiply_int(get_partner_milestone_multiplier(partner_index)).multiply_float(get_own_partner_skill_multiplier(partner_index))
 
 
-func get_partner_tier_total_dps_for_count(partner_index: int, count: int) -> int:
-	if partner_index < 0 or partner_index >= BalanceConfig.PARTNER_DPS_VALUES.size():
-		return 0
-	return int(
-		count
-		* BalanceConfig.PARTNER_DPS_VALUES[partner_index]
-		* get_milestone_multiplier(count)
-		* get_own_partner_skill_multiplier(partner_index)
-	)
+func get_partner_tier_total_dps_for_count(partner_index: int, count: int) -> BigNumber:
+	if partner_index < 0 or count <= 0:
+		return BigNumber.zero()
+	var base_dps: BigNumber = BalanceConfig.get_partner_dps_bignum(partner_index)
+	return base_dps.multiply_int(count).multiply_int(get_milestone_multiplier(count)).multiply_float(get_own_partner_skill_multiplier(partner_index))
 
 
-func get_partner_bulk_dps_gain(partner_index: int, mode: String) -> int:
+func get_partner_bulk_dps_gain(partner_index: int, mode: String) -> BigNumber:
 	var count: int = get_partner_bulk_display_count(partner_index, mode)
 	if count <= 0:
-		return 0
-	var current_dps: int = get_partner_tier_total_dps(partner_index)
-	var future_dps: int = get_partner_tier_total_dps_for_count(partner_index, partner_counts[partner_index] + count)
-	return maxi(future_dps - current_dps, 0)
+		return BigNumber.zero()
+	var current_dps: BigNumber = get_partner_tier_total_dps(partner_index)
+	var future_dps: BigNumber = get_partner_tier_total_dps_for_count(partner_index, partner_counts[partner_index] + count)
+	return future_dps.subtract(current_dps)
 
 
 func _get_partner_skill_total_bonus(bonus_type: String) -> float:
@@ -1642,10 +1640,10 @@ func get_ability_unlock_level(ability_id: String) -> int:
 	return 0
 
 
-func get_ability_unlock_cost(ability_id: String) -> int:
+func get_ability_unlock_cost(ability_id: String) -> BigNumber:
 	if is_debug_purchase_override_enabled():
-		return DEBUG_PURCHASE_COST
-	return _get_ability_base_cost(ability_id)
+		return BigNumber.from_int(DEBUG_PURCHASE_COST)
+	return BigNumber.from_int(_get_ability_base_cost(ability_id))
 
 
 func can_buy_ability_unlock(ability_id: String) -> bool:
@@ -1653,8 +1651,8 @@ func can_buy_ability_unlock(ability_id: String) -> bool:
 		return false
 	if not is_ability_unlocked(ability_id):
 		return false
-	var cost: int = get_ability_unlock_cost(ability_id)
-	return cost > 0 and gold >= cost
+	var cost: BigNumber = get_ability_unlock_cost(ability_id)
+	return cost.is_positive() and gold.compare_to(cost) >= 0
 
 
 func buy_ability_unlock(ability_id: String) -> Dictionary:
@@ -1662,10 +1660,10 @@ func buy_ability_unlock(ability_id: String) -> Dictionary:
 		return _make_purchase_result("Already purchased")
 	if not is_ability_unlocked(ability_id):
 		return _make_purchase_result("Requires Hero Level %d" % get_ability_unlock_level(ability_id))
-	var cost: int = get_ability_unlock_cost(ability_id)
-	if cost <= 0 or gold < cost:
+	var cost: BigNumber = get_ability_unlock_cost(ability_id)
+	if not cost.is_positive() or gold.compare_to(cost) < 0:
 		return _make_purchase_result("Not enough gold", true)
-	gold -= cost
+	gold = gold.subtract(cost)
 	match ability_id:
 		"autoclick":
 			autoclick_purchased = true
@@ -1699,14 +1697,14 @@ func can_upgrade_ability(ability_id: String) -> bool:
 	return false
 
 
-func get_ability_upgrade_cost(ability_id: String) -> int:
+func get_ability_upgrade_cost(ability_id: String) -> BigNumber:
 	if not is_ability_purchased(ability_id):
 		return get_ability_unlock_cost(ability_id)
 	for skill: Dictionary in get_ability_skills(ability_id):
 		var skill_id: String = String(skill.get("id", ""))
 		if not is_ability_skill_purchased(skill_id):
 			return get_ability_skill_cost(skill_id)
-	return 0
+	return BigNumber.zero()
 
 
 func _get_ability_base_cost(ability_id: String) -> int:
@@ -1739,8 +1737,7 @@ func get_prestige_talent_description(talent_index: int) -> String:
 
 func recalculate_building_cost(building_index: int) -> void:
 	building_purchase_costs[building_index] = _get_building_cost_for_count(
-		building_index,
-		building_counts[building_index]
+		building_index, building_counts[building_index]
 	)
 
 
@@ -1877,10 +1874,8 @@ func recalculate_character_level_cost() -> void:
 func recalculate_partner_cost(partner_index: int) -> void:
 	if partner_index < 0 or partner_index >= partner_purchase_costs.size():
 		return
-
 	partner_purchase_costs[partner_index] = _get_partner_cost_for_count(
-		partner_index,
-		partner_counts[partner_index]
+		partner_index, partner_counts[partner_index]
 	)
 
 
@@ -1898,10 +1893,10 @@ func is_partner_visible(partner_index: int) -> bool:
 	return is_partner_index_valid(partner_index) and partner_index < visible_partner_count
 
 
-func get_partner_visibility_unlock_cost(partner_index: int) -> int:
+func get_partner_visibility_unlock_cost(partner_index: int) -> BigNumber:
 	if not is_partner_index_valid(partner_index):
-		return 0
-	return partner_purchase_costs[partner_index]
+		return BigNumber.zero()
+	return (partner_purchase_costs[partner_index] as BigNumber).clone()
 
 
 func refresh_partner_visibility_unlocks() -> void:
@@ -1917,10 +1912,10 @@ func refresh_partner_visibility_unlocks() -> void:
 
 	while visible_partner_count < partner_counts.size():
 		var last_visible_index: int = visible_partner_count - 1
-		var unlock_cost: int = get_partner_visibility_unlock_cost(last_visible_index)
-		if unlock_cost <= 0:
+		var unlock_cost: BigNumber = get_partner_visibility_unlock_cost(last_visible_index)
+		if not unlock_cost.is_positive():
 			break
-		if gold < unlock_cost:
+		if gold.compare_to(unlock_cost) < 0:
 			break
 		visible_partner_count += 1
 
@@ -1942,20 +1937,20 @@ func _get_fixed_buy_count(mode: String) -> int:
 	return 1
 
 
-func _get_character_level_bulk_cost_for_count(count: int) -> int:
+func _get_character_level_bulk_cost_for_count(count: int) -> BigNumber:
 	var simulated_level: int = character_level
-	var simulated_cost: int = character_level_upgrade_cost
-	var total_cost: int = 0
+	var simulated_cost: BigNumber = character_level_upgrade_cost.clone()
+	var total_cost: BigNumber = BigNumber.zero()
 
 	for i in range(count):
-		total_cost += simulated_cost
+		total_cost = total_cost.add(simulated_cost)
 		simulated_level += 1
 		simulated_cost = _get_character_level_cost_for_level(simulated_level)
 
 	return total_cost
 
 
-func _get_character_level_cost_for_level(level: int) -> int:
+func _get_character_level_cost_for_level(level: int) -> BigNumber:
 	return CostCalc.get_hero_level_cost(
 		level,
 		BalanceConfig.HERO_BASE_COST,
@@ -1969,20 +1964,20 @@ func _get_character_level_cost_for_level(level: int) -> int:
 	)
 
 
-func _get_partner_bulk_cost_for_count(partner_index: int, count: int) -> int:
+func _get_partner_bulk_cost_for_count(partner_index: int, count: int) -> BigNumber:
 	var simulated_count: int = partner_counts[partner_index]
-	var simulated_cost: int = partner_purchase_costs[partner_index]
-	var total_cost: int = 0
+	var simulated_cost: BigNumber = (partner_purchase_costs[partner_index] as BigNumber).clone()
+	var total_cost: BigNumber = BigNumber.zero()
 
 	for i in range(count):
-		total_cost += simulated_cost
+		total_cost = total_cost.add(simulated_cost)
 		simulated_count += 1
 		simulated_cost = _get_partner_cost_for_count(partner_index, simulated_count)
 
 	return total_cost
 
 
-func _get_partner_cost_for_count(partner_index: int, count: int) -> int:
+func _get_partner_cost_for_count(partner_index: int, count: int) -> BigNumber:
 	return CostCalc.get_partner_cost(
 		partner_index,
 		count,
@@ -2013,20 +2008,20 @@ func _get_total_building_count() -> int:
 	return total_count
 
 
-func _get_building_bulk_cost_for_count(building_index: int, count: int) -> int:
+func _get_building_bulk_cost_for_count(building_index: int, count: int) -> BigNumber:
 	var simulated_count: int = building_counts[building_index]
-	var simulated_cost: int = building_purchase_costs[building_index]
-	var total_cost: int = 0
+	var simulated_cost: BigNumber = (building_purchase_costs[building_index] as BigNumber).clone()
+	var total_cost: BigNumber = BigNumber.zero()
 
 	for i in range(count):
-		total_cost += simulated_cost
+		total_cost = total_cost.add(simulated_cost)
 		simulated_count += 1
 		simulated_cost = _get_building_cost_for_count(building_index, simulated_count)
 
 	return total_cost
 
 
-func _get_building_cost_for_count(building_index: int, count: int) -> int:
+func _get_building_cost_for_count(building_index: int, count: int) -> BigNumber:
 	return CostCalc.get_building_cost(
 		building_index,
 		count,
@@ -2039,9 +2034,9 @@ func _reset_partner_state() -> void:
 	partner_counts.clear()
 	partner_purchase_costs.clear()
 	visible_partner_count = INITIAL_VISIBLE_PARTNER_COUNT
-	for i in range(BalanceConfig.PARTNER_BASE_COSTS.size()):
+	for i in range(BalanceConfig.PARTNER_COUNT):
 		partner_counts.append(0)
-		partner_purchase_costs.append(BalanceConfig.PARTNER_BASE_COSTS[i])
+		partner_purchase_costs.append(BalanceConfig.get_partner_cost_bignum(i))
 
 
 func _reset_building_state() -> void:
@@ -2049,7 +2044,7 @@ func _reset_building_state() -> void:
 	building_purchase_costs.clear()
 	for i in range(BalanceConfig.BUILDING_BASE_COSTS.size()):
 		building_counts.append(0)
-		building_purchase_costs.append(BalanceConfig.BUILDING_BASE_COSTS[i])
+		building_purchase_costs.append(_get_building_cost_for_count(i, 0))
 
 
 func is_current_level_boss() -> bool:
@@ -2260,8 +2255,8 @@ func choose_enemy_for_current_level() -> void:
 
 
 func recalculate_level_values() -> void:
-	var base_hp: int = get_base_enemy_hp_for_level(current_level)
-	var base_reward: int = get_base_enemy_reward_for_level(current_level)
+	var base_hp: BigNumber = get_base_enemy_hp_for_level(current_level)
+	var base_reward: BigNumber = get_base_enemy_reward_for_level(current_level)
 	var hp_multiplier: float = ZoneConfig.get_effective_hp_multiplier_for_level(
 		current_level, BalanceConfig.ZONE_CYCLE_HP_MULTIPLIER
 	)
@@ -2272,11 +2267,11 @@ func recalculate_level_values() -> void:
 	reward_gold = EnemyCalc.get_scaled_reward(base_reward, reward_multiplier, is_boss_level, is_elite_enemy, BalanceConfig.BOSS_REWARD_MULTIPLIER, elite_reward_multiplier)
 
 
-func get_base_enemy_hp_for_level(level: int) -> int:
+func get_base_enemy_hp_for_level(level: int) -> BigNumber:
 	return EnemyCalc.get_base_hp(level, BalanceConfig.ENEMY_HP_BASE, BalanceConfig.ENEMY_HP_GROWTH)
 
 
-func get_base_enemy_reward_for_level(level: int) -> int:
+func get_base_enemy_reward_for_level(level: int) -> BigNumber:
 	return EnemyCalc.get_base_reward(level, BalanceConfig.ENEMY_REWARD_BASE, BalanceConfig.ENEMY_REWARD_GROWTH)
 
 
@@ -2311,28 +2306,28 @@ func get_debug_purchase_cost(normal_cost: int) -> int:
 
 func can_afford_debug_or_normal_gold_cost(normal_cost: int) -> bool:
 	var actual_cost: int = get_debug_purchase_cost(normal_cost)
-	return actual_cost > 0 and gold >= actual_cost
+	return actual_cost > 0 and gold.compare_to(BigNumber.from_int(actual_cost)) >= 0
 
 
 func debug_damage_current_target_by_percent(percent: float) -> Dictionary:
 	if not debug_visual_test_mode_enabled:
-		return _make_attack_result(false, false, 0, 0, target_hp, target_hp, "Debug visual mode is OFF")
-	if target_hp <= 0:
-		return _make_attack_result(false, false, 0, 0, target_hp, target_hp, "Target already defeated")
+		return _make_attack_result(false, false, BigNumber.zero(), BigNumber.zero(), target_hp.clone(), target_hp.clone(), "Debug visual mode is OFF")
+	if target_hp.is_zero():
+		return _make_attack_result(false, false, BigNumber.zero(), BigNumber.zero(), target_hp.clone(), target_hp.clone(), "Target already defeated")
 
-	var target_hp_before: int = target_hp
-	var damage: int = maxi(1, int(ceil(float(target_max_hp) * percent)))
-	target_hp = maxi(target_hp - damage, 0)
-	var damage_dealt: int = target_hp_before - target_hp
+	var target_hp_before: BigNumber = target_hp.clone()
+	var damage: BigNumber = BigNumber.from_float(maxf(1.0, target_max_hp.to_float_approx() * percent))
+	target_hp = target_hp.subtract(damage)
+	var damage_dealt: BigNumber = target_hp_before.subtract(target_hp)
 
 	return _make_attack_result(
-		target_hp <= 0,
+		target_hp.is_zero(),
 		false,
-		0,
+		BigNumber.zero(),
 		damage_dealt,
 		target_hp_before,
-		target_hp,
-		"Debug damage: -%d HP" % damage_dealt
+		target_hp.clone(),
+		"Debug damage: -%s HP" % NumberFmt.compact(damage_dealt)
 	)
 
 
@@ -2370,8 +2365,8 @@ func debug_clear_current_level_for_visual_test() -> Dictionary:
 func _apply_debug_visual_test_hp_to_current_target() -> void:
 	if not debug_visual_test_mode_enabled:
 		return
-	target_max_hp = DEBUG_VISUAL_TEST_HP
-	target_hp = DEBUG_VISUAL_TEST_HP
+	target_max_hp = BigNumber.from_int(DEBUG_VISUAL_TEST_HP)
+	target_hp = BigNumber.from_int(DEBUG_VISUAL_TEST_HP)
 
 
 func _get_zone_index_for_level(level: int) -> int:
@@ -2390,38 +2385,35 @@ func _update_zone() -> void:
 
 
 func _update_character_state() -> void:
-	var base_damage: int = int(BalanceConfig.HERO_BASE_DAMAGE + float(character_level) * BalanceConfig.HERO_DAMAGE_PER_LEVEL) * get_character_milestone_multiplier()
-	var hero_click_damage: int = maxi(
-		1,
-		int(
-			base_damage
-			* get_focus_training_multiplier()
-			* get_partner_skill_bonus_multiplier("click_damage")
-			* get_hero_skill_bonus_multiplier("click_damage")
-			* get_partner_skill_bonus_multiplier("all_damage")
-			* get_focus_burst_multiplier()
-			* get_settlement_click_damage_multiplier()
-			* get_shop_click_damage_multiplier()
-		)
+	var base_val: float = (BalanceConfig.HERO_BASE_DAMAGE + float(character_level) * BalanceConfig.HERO_DAMAGE_PER_LEVEL) * float(get_character_milestone_multiplier())
+	var hero_mult: float = (
+		get_focus_training_multiplier()
+		* get_partner_skill_bonus_multiplier("click_damage")
+		* get_hero_skill_bonus_multiplier("click_damage")
+		* get_partner_skill_bonus_multiplier("all_damage")
+		* get_focus_burst_multiplier()
+		* get_settlement_click_damage_multiplier()
+		* get_shop_click_damage_multiplier()
+		* get_rewarded_ad_all_damage_multiplier()
 	)
-	var combined_click_damage: int = hero_click_damage + get_partner_dps_click_damage_bonus()
-	click_damage = maxi(1, int(float(combined_click_damage) * get_rewarded_ad_all_damage_multiplier()))
+	var hero_dmg: BigNumber = BigNumber.from_float(maxf(1.0, base_val * hero_mult))
+	click_damage = hero_dmg.add(get_partner_dps_click_damage_bonus())
+	if not click_damage.is_positive():
+		click_damage = BigNumber.one()
 	update_ability_unlocks()
 
 
-func get_current_click_damage() -> int:
-	var base_damage: int = click_damage
-	if base_damage <= 0:
-		return 0
-
-	return maxi(1, int(base_damage * get_boss_damage_multiplier()))
+func get_current_click_damage() -> BigNumber:
+	if not click_damage.is_positive():
+		return BigNumber.zero()
+	return click_damage.multiply_float(get_boss_damage_multiplier())
 
 
-func get_current_display_click_damage() -> int:
+func get_current_display_click_damage() -> BigNumber:
 	return get_current_click_damage()
 
 
-func get_current_display_partner_dps() -> int:
+func get_current_display_partner_dps() -> BigNumber:
 	return get_final_partner_dps(true)
 
 
@@ -2452,10 +2444,10 @@ func _make_purchase_result(status_text: String, not_enough_gold: bool = false, u
 func _make_attack_result(
 	defeated: bool,
 	level_up: bool,
-	earned_gold: int,
-	damage_dealt: int,
-	target_hp_before: int,
-	target_hp_after: int,
+	earned_gold,
+	damage_dealt,
+	target_hp_before,
+	target_hp_after,
 	status_text: String,
 	zone_changed: bool = false,
 	new_zone_name: String = ""
@@ -2490,10 +2482,10 @@ func get_last_cleared_boss_level_in_current_run() -> int:
 	return best_boss_level
 
 
-func get_enemy_reward_for_level_preview(level: int, as_boss: bool = false, as_elite: bool = false) -> int:
+func get_enemy_reward_for_level_preview(level: int, as_boss: bool = false, as_elite: bool = false) -> BigNumber:
 	if level <= 0:
-		return 0
-	var base_reward: int = get_base_enemy_reward_for_level(level)
+		return BigNumber.zero()
+	var base_reward: BigNumber = get_base_enemy_reward_for_level(level)
 	var reward_multiplier: float = ZoneConfig.get_effective_reward_multiplier_for_level(
 		level,
 		BalanceConfig.ZONE_CYCLE_REWARD_MULTIPLIER
@@ -2508,26 +2500,26 @@ func get_enemy_reward_for_level_preview(level: int, as_boss: bool = false, as_el
 	)
 
 
-func get_boss_gold_reward_preview(boss_level: int) -> int:
+func get_boss_gold_reward_preview(boss_level: int) -> BigNumber:
 	if boss_level <= 0:
-		return 0
+		return BigNumber.zero()
 	return get_enemy_reward_for_level_preview(boss_level, true, false)
 
 
-func get_first_boss_gold_reward() -> int:
+func get_first_boss_gold_reward() -> BigNumber:
 	return get_boss_gold_reward_preview(get_first_boss_level())
 
 
-func get_last_cleared_boss_gold_reward() -> int:
+func get_last_cleared_boss_gold_reward() -> BigNumber:
 	var boss_level: int = get_last_cleared_boss_level_in_current_run()
 	if boss_level <= 0:
-		return 0
+		return BigNumber.zero()
 	return get_boss_gold_reward_preview(boss_level)
 
 
-func get_gold_reward_baseline_for_idle_systems() -> int:
-	var last_boss_reward: int = get_last_cleared_boss_gold_reward()
-	if last_boss_reward > 0:
+func get_gold_reward_baseline_for_idle_systems() -> BigNumber:
+	var last_boss_reward: BigNumber = get_last_cleared_boss_gold_reward()
+	if last_boss_reward.is_positive():
 		return last_boss_reward
 	return get_first_boss_gold_reward()
 
@@ -2540,9 +2532,9 @@ func calculate_offline_gold_reward(elapsed_seconds: int) -> Dictionary:
 	if BalanceConfig.OFFLINE_GOLD_MAX_SECONDS > 0:
 		capped_elapsed = mini(capped_elapsed, int(BalanceConfig.OFFLINE_GOLD_MAX_SECONDS))
 
-	var baseline: int = get_gold_reward_baseline_for_idle_systems()
+	var baseline: BigNumber = get_gold_reward_baseline_for_idle_systems()
 	var ticks: int = int(float(capped_elapsed) / BalanceConfig.OFFLINE_GOLD_TICK_SECONDS)
-	var reward: int = maxi(0, ticks * baseline)
+	var reward: BigNumber = baseline.multiply_int(ticks) if ticks > 0 else BigNumber.zero()
 
 	return {
 		"elapsed_seconds": safe_elapsed,
@@ -2555,34 +2547,34 @@ func calculate_offline_gold_reward(elapsed_seconds: int) -> Dictionary:
 
 func apply_offline_gold_reward(elapsed_seconds: int) -> Dictionary:
 	var result: Dictionary = calculate_offline_gold_reward(elapsed_seconds)
-	var reward: int = int(result.get("reward_gold", 0))
-	if reward > 0:
-		gold += reward
-		pending_offline_gold_reward = reward
+	var reward = result.get("reward_gold", null)
+	if reward is BigNumber and reward.is_positive():
+		gold = gold.add(reward)
+		pending_offline_gold_reward = reward.clone()
 		pending_offline_elapsed_seconds = int(result.get("capped_elapsed_seconds", 0))
 	return result
 
 
 func has_pending_offline_gold_reward() -> bool:
-	return pending_offline_gold_reward > 0
+	return pending_offline_gold_reward != null and pending_offline_gold_reward.is_positive()
 
 
 func queue_offline_gold_reward(elapsed_seconds: int) -> Dictionary:
 	var result: Dictionary = calculate_offline_gold_reward(elapsed_seconds)
-	var reward: int = int(result.get("reward_gold", 0))
-	if reward > 0:
-		pending_offline_gold_reward = reward
+	var reward = result.get("reward_gold", null)
+	if reward is BigNumber and reward.is_positive():
+		pending_offline_gold_reward = reward.clone()
 		pending_offline_elapsed_seconds = int(result.get("capped_elapsed_seconds", 0))
 		pending_offline_created_at = int(Time.get_unix_time_from_system())
 	return result
 
 
 func claim_pending_offline_gold(multiplier: int = 1) -> Dictionary:
-	var base_reward: int = maxi(0, pending_offline_gold_reward)
+	var base_reward: BigNumber = pending_offline_gold_reward.clone() if pending_offline_gold_reward != null else BigNumber.zero()
 	var safe_multiplier: int = maxi(1, multiplier)
-	var final_reward: int = base_reward * safe_multiplier
-	if final_reward > 0:
-		gold += final_reward
+	var final_reward: BigNumber = base_reward.multiply_int(safe_multiplier)
+	if final_reward.is_positive():
+		gold = gold.add(final_reward)
 	var result: Dictionary = {
 		"base_reward_gold": base_reward,
 		"multiplier": safe_multiplier,
@@ -2594,7 +2586,7 @@ func claim_pending_offline_gold(multiplier: int = 1) -> Dictionary:
 
 
 func clear_pending_offline_gold_reward() -> void:
-	pending_offline_gold_reward = 0
+	pending_offline_gold_reward = BigNumber.zero()
 	pending_offline_elapsed_seconds = 0
 	pending_offline_created_at = 0
 
@@ -2608,7 +2600,7 @@ func apply_save_data(data: Dictionary) -> bool:
 
 
 func reset_to_new_game() -> void:
-	gold = 0
+	gold = BigNumber.zero()
 	gems = 0
 	sound_enabled = true
 	music_enabled = true

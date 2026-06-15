@@ -15,8 +15,9 @@ func _ready() -> void:
 	set_anchors_preset(PRESET_FULL_RECT)
 
 
-func play_gold_reward_effect(enemy_global_rect: Rect2, target_global: Vector2, amount: int) -> void:
-	if amount <= 0:
+func play_gold_reward_effect(enemy_global_rect: Rect2, target_global: Vector2, amount) -> void:
+	var has_amount: bool = (amount is BigNumber and amount.is_positive()) or (not amount is BigNumber and amount > 0)
+	if not has_amount:
 		return
 	var text_origin: Vector2 = enemy_global_rect.get_center() + Vector2(10.0, -enemy_global_rect.size.y * 0.20)
 	_spawn_gold_text(text_origin, amount)
@@ -31,7 +32,7 @@ func play_spawn_smoke_effect(enemy_global_rect: Rect2, duration: float = 0.3) ->
 		_spawn_smoke_puff(center, enemy_global_rect.size, rng, duration)
 
 
-func _spawn_gold_text(origin_global: Vector2, amount: int) -> void:
+func _spawn_gold_text(origin_global: Vector2, amount) -> void:
 	var label := Label.new()
 	var amount_str: String = NumberFormatter.compact(amount)
 	label.text = LocalizationManager.format_key("ui.combat.gold_reward", {"amount": amount_str})

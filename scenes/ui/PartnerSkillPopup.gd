@@ -79,7 +79,7 @@ func _update_view(state: ClickerState) -> void:
 	if partner_index >= 0 and partner_index < state.partner_counts.size():
 		current_count = state.partner_counts[partner_index]
 
-	var cost: int = state.get_partner_skill_cost(current_skill_id)
+	var cost: BigNumber = state.get_partner_skill_cost(current_skill_id)
 	var skill_state: String = state.get_partner_skill_state(current_skill_id)
 
 	var L := LocalizationManager

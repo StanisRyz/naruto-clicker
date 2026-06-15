@@ -21,7 +21,7 @@ func run() -> void:
 func _check_save_roundtrip() -> void:
 	print("-- save/load roundtrip --")
 	var state := ClickerState.new()
-	state.gold = 12345
+	state.gold = BigNumber.from_int(12345)
 	state.gems = 77
 	state.character_level = 10
 	state.current_level = 5
@@ -36,7 +36,7 @@ func _check_save_roundtrip() -> void:
 	state.rewarded_ad_gold_x2_expires_at = 8888888
 	state.rewarded_ad_banner_cooldown_until = 7777777
 	state.rewarded_ad_current_reward_id = "gems_5"
-	state.pending_offline_gold_reward = 5000
+	state.pending_offline_gold_reward = BigNumber.from_int(5000)
 	state.pending_offline_elapsed_seconds = 3600
 	state.pending_offline_created_at = 1000000
 
@@ -44,7 +44,7 @@ func _check_save_roundtrip() -> void:
 	var state2 := ClickerState.new()
 	SaveAdapter.apply_save_data(state2, data)
 
-	_assert_eq("gold", state2.gold, 12345)
+	_assert_bn_int("gold", state2.gold, 12345)
 	_assert_eq("gems", state2.gems, 77)
 	_assert_eq("character_level", state2.character_level, 10)
 	_assert_eq("current_level", state2.current_level, 5)
@@ -59,7 +59,7 @@ func _check_save_roundtrip() -> void:
 	_assert_eq("rewarded_ad_gold_x2_expires_at", state2.rewarded_ad_gold_x2_expires_at, 8888888)
 	_assert_eq("rewarded_ad_banner_cooldown_until", state2.rewarded_ad_banner_cooldown_until, 7777777)
 	_assert_str("rewarded_ad_current_reward_id", state2.rewarded_ad_current_reward_id, "gems_5")
-	_assert_eq("pending_offline_gold_reward", state2.pending_offline_gold_reward, 5000)
+	_assert_bn_int("pending_offline_gold_reward", state2.pending_offline_gold_reward, 5000)
 	_assert_eq("pending_offline_elapsed_seconds", state2.pending_offline_elapsed_seconds, 3600)
 	_assert_eq("pending_offline_created_at", state2.pending_offline_created_at, 1000000)
 
@@ -67,7 +67,7 @@ func _check_save_roundtrip() -> void:
 func _check_reset_preserved() -> void:
 	print("-- reset progress preservation --")
 	var state := ClickerState.new()
-	state.gold = 99999
+	state.gold = BigNumber.from_int(99999)
 	state.gems = 50
 	state.shop_permanent_partner_dps_x2_count = 2
 	state.shop_permanent_click_damage_x2_count = 1
@@ -89,7 +89,7 @@ func _check_reset_preserved() -> void:
 	_assert_bool("reset: sound_enabled preserved", state.sound_enabled, false)
 	_assert_bool("reset: music_enabled preserved", state.music_enabled, false)
 	_assert_str("reset: language preserved", state.language, "ru")
-	_assert_eq("reset: gold cleared", state.gold, 0)
+	_assert_bn_zero("reset: gold cleared", state.gold)
 	_assert_eq("reset: character_level cleared", state.character_level, 1)
 	_assert_eq("reset: current_level cleared", state.current_level, 1)
 	_assert_eq("reset: prestige_points cleared", state.prestige_points_available, 0)
@@ -109,12 +109,10 @@ func _check_prestige_preserved() -> void:
 	state.prestige_points_available = 10
 	state.prestige_points_total_earned = 10
 	state.total_prestiges = 1
-	state.gold = 99999
+	state.gold = BigNumber.from_int(99999)
 	state.character_level = 50
 	state.current_level = 100
 
-	# Simulate prestige by checking perform_prestige preserves the right fields.
-	# Prestige requires progression — bypass by checking field semantics directly.
 	var gems_before: int = state.gems
 	var shop_pdps: int = state.shop_permanent_partner_dps_x2_count
 	var shop_click: int = state.shop_permanent_click_damage_x2_count
@@ -124,12 +122,11 @@ func _check_prestige_preserved() -> void:
 	var music_b: bool = state.music_enabled
 	var lang_b: String = state.language
 
-	# Manually trigger prestige internals (bypassing reward gate)
 	var reward: int = 5
 	state.prestige_points_available += reward
 	state.prestige_points_total_earned += reward
 	state.total_prestiges += 1
-	state.gold = 0
+	state.gold = BigNumber.zero()
 	state.character_level = 1
 	state.current_level = 1
 	state.max_unlocked_level = 1
@@ -149,7 +146,7 @@ func _check_prestige_preserved() -> void:
 	_assert_bool("prestige: sound_enabled preserved", state.sound_enabled, sound_b)
 	_assert_bool("prestige: music_enabled preserved", state.music_enabled, music_b)
 	_assert_str("prestige: language preserved", state.language, lang_b)
-	_assert_eq("prestige: gold cleared", state.gold, 0)
+	_assert_bn_zero("prestige: gold cleared", state.gold)
 	_assert_eq("prestige: character_level cleared", state.character_level, 1)
 
 
@@ -158,30 +155,26 @@ func _check_offline_reward_safety() -> void:
 	var state := ClickerState.new()
 	state.last_save_unix_time = int(Time.get_unix_time_from_system()) - 7200
 
-	# Simulate load: no pending reward → calculate new
 	var elapsed: int = int(Time.get_unix_time_from_system()) - state.last_save_unix_time
 	state.queue_offline_gold_reward(elapsed)
-	var queued_reward: int = state.pending_offline_gold_reward
+	var queued_reward: BigNumber = state.pending_offline_gold_reward.clone()
 
-	# Simulate restart: pending reward already exists → must NOT recalculate
 	var state2 := ClickerState.new()
-	state2.pending_offline_gold_reward = queued_reward
+	state2.pending_offline_gold_reward = queued_reward.clone()
 	state2.pending_offline_elapsed_seconds = state.pending_offline_elapsed_seconds
 
 	var had_pending: bool = state2.has_pending_offline_gold_reward()
 	_assert_bool("offline: pending detected on restart", had_pending, true)
-	_assert_eq("offline: pending reward unchanged on restart", state2.pending_offline_gold_reward, queued_reward)
+	_assert_bn_eq("offline: pending reward unchanged on restart", state2.pending_offline_gold_reward, queued_reward)
 
-	# Claim x1 — reward added, pending cleared
-	var gold_before: int = state2.gold
+	var gold_before: BigNumber = state2.gold.clone()
 	state2.claim_pending_offline_gold(1)
-	_assert_eq("offline: gold added after claim", state2.gold, gold_before + queued_reward)
+	_assert_bn_eq("offline: gold added after claim", state2.gold, gold_before.add(queued_reward))
 	_assert_bool("offline: pending cleared after claim", state2.has_pending_offline_gold_reward(), false)
 
-	# No double-claim possible — second claim returns 0
-	var gold_after_first: int = state2.gold
+	var gold_after_first: BigNumber = state2.gold.clone()
 	state2.claim_pending_offline_gold(1)
-	_assert_eq("offline: no double-claim", state2.gold, gold_after_first)
+	_assert_bn_eq("offline: no double-claim", state2.gold, gold_after_first)
 
 
 func _assert_eq(label: String, actual: int, expected: int) -> void:
@@ -190,6 +183,34 @@ func _assert_eq(label: String, actual: int, expected: int) -> void:
 		_pass_count += 1
 	else:
 		print("  FAIL: %s expected %d, got %d" % [label, expected, actual])
+		_fail_count += 1
+
+
+func _assert_bn_int(label: String, actual: BigNumber, expected: int) -> void:
+	var actual_int: int = actual.floor_to_int_safe()
+	if actual_int == expected:
+		print("  PASS: %s = %d" % [label, actual_int])
+		_pass_count += 1
+	else:
+		print("  FAIL: %s expected %d, got %s" % [label, expected, actual.to_debug_string()])
+		_fail_count += 1
+
+
+func _assert_bn_zero(label: String, actual: BigNumber) -> void:
+	if actual.is_zero():
+		print("  PASS: %s = 0" % label)
+		_pass_count += 1
+	else:
+		print("  FAIL: %s expected 0, got %s" % [label, actual.to_debug_string()])
+		_fail_count += 1
+
+
+func _assert_bn_eq(label: String, actual: BigNumber, expected: BigNumber) -> void:
+	if actual.compare_to(expected) == 0:
+		print("  PASS: %s = %s" % [label, actual.to_debug_string()])
+		_pass_count += 1
+	else:
+		print("  FAIL: %s expected %s, got %s" % [label, expected.to_debug_string(), actual.to_debug_string()])
 		_fail_count += 1
 
 

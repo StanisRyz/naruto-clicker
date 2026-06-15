@@ -109,17 +109,17 @@ static func is_task_completed(state: ClickerState, task_id: String) -> bool:
 
 # --- Reward helpers ---
 
-static func get_current_task_reward_unit(state: ClickerState) -> int:
+static func get_current_task_reward_unit(state: ClickerState) -> BigNumber:
 	return state.get_gold_reward_baseline_for_idle_systems()
 
 
-static func get_task_reward_gold(state: ClickerState, task_id: String) -> int:
+static func get_task_reward_gold(state: ClickerState, task_id: String) -> BigNumber:
 	var task: Dictionary = TaskConfig.get_by_id(task_id)
 	if task.is_empty():
-		return 0
-	var baseline: int = state.get_gold_reward_baseline_for_idle_systems()
-	var reward: int = baseline * BalanceConfig.TASK_REWARD_LAST_BOSS_MULTIPLIER
-	return maxi(1, int(float(reward) * state.get_partner_skill_bonus_multiplier("task_reward")))
+		return BigNumber.zero()
+	var baseline: BigNumber = state.get_gold_reward_baseline_for_idle_systems()
+	var reward: BigNumber = baseline.multiply_int(BalanceConfig.TASK_REWARD_LAST_BOSS_MULTIPLIER)
+	return reward.multiply_float(state.get_partner_skill_bonus_multiplier("task_reward"))
 
 
 # --- Claim / rotation ---
@@ -131,18 +131,19 @@ static func claim_task_reward(state: ClickerState, task_id: String) -> Dictionar
 	if not is_task_completed(state, task_id):
 		return state._make_purchase_result("Task is not complete")
 
-	var reward: int = get_task_reward_gold(state, task_id)
+	var reward: BigNumber = get_task_reward_gold(state, task_id)
 	if state.task_reward_boost_multiplier > 1.0:
-		reward = int(reward * state.task_reward_boost_multiplier)
+		reward = reward.multiply_float(state.task_reward_boost_multiplier)
 		state.task_reward_boost_multiplier = 1.0
 
-	state.gold += reward
+	state.gold = state.gold.add(reward)
 	state.active_task_ids.erase(task_id)
 	state.active_task_states.erase(task_id)
 
+	var reward_str: String = NumberFormatter.compact(reward)
 	if state.inactive_task_ids.is_empty():
 		state.inactive_task_ids.append(task_id)
-		return state._make_purchase_result("Task complete! +%d gold" % reward, false, true)
+		return state._make_purchase_result("Task complete! +%s gold" % reward_str, false, true)
 
 	var replacement_index: int = state.rng.randi_range(0, state.inactive_task_ids.size() - 1)
 	var replacement_id: String = state.inactive_task_ids[replacement_index]
@@ -151,7 +152,7 @@ static func claim_task_reward(state: ClickerState, task_id: String) -> Dictionar
 	_initialize_active_task_state(state, replacement_id)
 	state.inactive_task_ids.append(task_id)
 
-	return state._make_purchase_result("Task complete! +%d gold" % reward, false, true)
+	return state._make_purchase_result("Task complete! +%s gold" % reward_str, false, true)
 
 
 # --- Validation ---

@@ -81,8 +81,9 @@ func update_enemy_visual_state(state: ClickerState) -> void:
 	enemy_image_holder.set_direct_texture(_current_tex, current_health_color, false)
 
 
-func play_hit_feedback(damage: int) -> void:
-	if damage <= 0 or enemy_transition_locked:
+func play_hit_feedback(damage) -> void:
+	var has_damage: bool = (damage is BigNumber and damage.is_positive()) or (not damage is BigNumber and damage > 0)
+	if not has_damage or enemy_transition_locked:
 		return
 
 	if hit_tween != null:
@@ -172,23 +173,24 @@ func _load_enemy_tex_with_fallback(zone_index: int, enemy_slot: String, state: S
 
 
 func _get_health_color(state: ClickerState) -> Color:
-	if state.target_hp <= 0:
+	if state.target_hp.is_zero():
 		return DEFEATED_COLOR
 
-	var hp_ratio: float = float(state.target_hp) / maxf(float(state.target_max_hp), 1.0)
+	var hp_ratio: float = state.target_hp.to_float_approx() / maxf(state.target_max_hp.to_float_approx(), 1.0)
 	return WOUNDED_COLOR if hp_ratio <= 0.5 else HEALTHY_COLOR
 
 
 func _get_health_asset_key(state: ClickerState) -> String:
-	if state.target_hp <= 0:
+	if state.target_hp.is_zero():
 		return "enemy.default.defeated"
 
-	var hp_ratio: float = float(state.target_hp) / maxf(float(state.target_max_hp), 1.0)
+	var hp_ratio: float = state.target_hp.to_float_approx() / maxf(state.target_max_hp.to_float_approx(), 1.0)
 	return "enemy.default.wounded" if hp_ratio <= 0.5 else "enemy.default.healthy"
 
 
-func spawn_damage_number(damage: int, click_global_position: Vector2) -> void:
-	if damage <= 0:
+func spawn_damage_number(damage, click_global_position: Vector2) -> void:
+	var has_damage: bool = (damage is BigNumber and damage.is_positive()) or (not damage is BigNumber and damage > 0)
+	if not has_damage:
 		return
 
 	if floating_damage_layer.get_child_count() >= MAX_FLOATING_DAMAGE_LABELS:

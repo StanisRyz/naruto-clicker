@@ -218,8 +218,8 @@ func _update_hero_level_row(state: ClickerState) -> void:
 	var skill_buttons: Array = hero_level_row["skill_buttons"]
 	var skill_image_holders: Array = hero_level_row["skill_image_holders"]
 	var bulk_count: int = state.get_character_level_bulk_display_count(selected_buy_mode)
-	var bulk_cost: int = state.get_character_level_bulk_display_cost(selected_buy_mode)
-	var damage_gain: int = state.get_character_level_bulk_damage_gain(selected_buy_mode)
+	var bulk_cost: BigNumber = state.get_character_level_bulk_display_cost(selected_buy_mode)
+	var damage_gain: BigNumber = state.get_character_level_bulk_damage_gain(selected_buy_mode)
 	var next_milestone: int = state.get_next_milestone(state.character_level)
 
 	name_status_label.text = LocalizationManager.tr_key("upgrade.hero.card.name")
@@ -452,7 +452,7 @@ func _add_card_content(row: Control, button_name: String) -> Dictionary:
 
 func _update_ability_unlock_button(state: ClickerState, ability_id: String, row: Dictionary) -> void:
 	var button_label: Label = row["button_label"]
-	var cost: int = state.get_ability_unlock_cost(ability_id)
+	var cost: BigNumber = state.get_ability_unlock_cost(ability_id)
 	if state.is_ability_purchased(ability_id):
 		button_label.text = LocalizationManager.tr_key("upgrade.ability.purchased")
 		_set_card_button_state(row, false)

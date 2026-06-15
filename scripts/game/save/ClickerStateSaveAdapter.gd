@@ -17,7 +17,7 @@ static func build_save_data(state: ClickerState) -> Dictionary:
 		progress_str[str(k)] = state.level_enemy_progress[k]
 
 	return {
-		"gold": state.gold,
+		"gold": state.gold.to_save_dict(),
 		"gems": state.gems,
 		"character_level": state.character_level,
 		"current_level": state.current_level,
@@ -62,7 +62,7 @@ static func build_save_data(state: ClickerState) -> Dictionary:
 		"rewarded_ad_gold_x2_expires_at": state.rewarded_ad_gold_x2_expires_at,
 		"rewarded_ad_banner_cooldown_until": state.rewarded_ad_banner_cooldown_until,
 		"rewarded_ad_current_reward_id": state.rewarded_ad_current_reward_id,
-		"pending_offline_gold_reward": state.pending_offline_gold_reward,
+		"pending_offline_gold_reward": state.pending_offline_gold_reward.to_save_dict(),
 		"pending_offline_elapsed_seconds": state.pending_offline_elapsed_seconds,
 		"pending_offline_created_at": state.pending_offline_created_at,
 	}
@@ -72,7 +72,7 @@ static func apply_save_data(state: ClickerState, data: Dictionary) -> bool:
 	if data.is_empty():
 		return false
 
-	state.gold = maxi(0, int(data.get("gold", 0)))
+	state.gold = BigNumber.from_save_dict(data.get("gold", 0))
 	state.gems = maxi(0, int(data.get("gems", 0)))
 	state.character_level = maxi(1, int(data.get("character_level", 1)))
 	state.current_level = maxi(1, int(data.get("current_level", 1)))
@@ -185,7 +185,7 @@ static func apply_save_data(state: ClickerState, data: Dictionary) -> bool:
 	state.rewarded_ad_gold_x2_expires_at = maxi(0, int(data.get("rewarded_ad_gold_x2_expires_at", 0)))
 	state.rewarded_ad_banner_cooldown_until = maxi(0, int(data.get("rewarded_ad_banner_cooldown_until", 0)))
 	state.rewarded_ad_current_reward_id = str(data.get("rewarded_ad_current_reward_id", ""))
-	state.pending_offline_gold_reward = maxi(0, int(data.get("pending_offline_gold_reward", 0)))
+	state.pending_offline_gold_reward = BigNumber.from_save_dict(data.get("pending_offline_gold_reward", 0))
 	state.pending_offline_elapsed_seconds = maxi(0, int(data.get("pending_offline_elapsed_seconds", 0)))
 	state.pending_offline_created_at = maxi(0, int(data.get("pending_offline_created_at", 0)))
 

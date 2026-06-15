@@ -47,23 +47,23 @@ const HERO_SKILL_COST_MULTIPLIERS: Array = [4, 7, 11, 17, 26]
 
 
 # --- Partners ---
-# Formula: DPS[0]=4, DPS[i]=DPS[i-1]*12.  Cost[0]=35, Cost[i]=Cost[i-1]*11.
-# Exact formula values are representable as int64 up to:
-#   DPS  index 17  (4 * 12^17 = 8 874 444 426 961 747 968  <  INT64_MAX)
-#   Cost index 16  (35 * 11^16 = 1 608 240 545 225 025 635 <  INT64_MAX)
-# Indices beyond those limits would overflow int64.  Partners 18–28 (DPS) and
-# 17–28 (cost) are capped at 9 000 000 000 000 000 000 — players reach that era
-# only in extreme late game and the exact formula value cannot be stored safely.
+# Formula: DPS[i] = PARTNER_DPS_BASE * PARTNER_DPS_MULT^i
+#          Cost[i] = PARTNER_COST_BASE * PARTNER_COST_MULT^i
+# These produce values that exceed int64 for high indices; BigNumber is used instead
+# of storing overflowing literals. See get_partner_dps_bignum() / get_partner_cost_bignum().
+const PARTNER_COUNT: int = 28
+const PARTNER_DPS_BASE: int = 4
+const PARTNER_DPS_MULT: int = 12
+const PARTNER_COST_BASE: int = 35
+const PARTNER_COST_MULT: int = 11
+
+# Compact int representation for the first indices that fit in int64 safely (indices 0–16).
+# Used only for backward-compat references; prefer the BigNumber getters below.
 const PARTNER_DPS_VALUES: Array = [
 	4, 48, 576, 6912, 82944, 995328, 11943936, 143327232,
 	1719926784, 20639121408, 247669456896, 2972033482752,
 	35664401793024, 427972821516288, 5135673858195456,
-	61628086298345472, 739537035580145664, 8874444426961747968,
-	# Partners 19–28: formula overflows int64 — capped at safe maximum.
-	9000000000000000000, 9000000000000000000, 9000000000000000000,
-	9000000000000000000, 9000000000000000000, 9000000000000000000,
-	9000000000000000000, 9000000000000000000, 9000000000000000000,
-	9000000000000000000,
+	61628086298345472, 739537035580145664,
 ]
 
 const PARTNER_BASE_COSTS: Array = [
@@ -71,11 +71,6 @@ const PARTNER_BASE_COSTS: Array = [
 	7502560835, 82528169185, 907809861035, 9985908471385,
 	109844993185235, 1208294925037585, 13291244175413435,
 	146203685929547785, 1608240545225025635,
-	# Partners 18–28: formula overflows int64 — capped at safe maximum.
-	9000000000000000000, 9000000000000000000, 9000000000000000000,
-	9000000000000000000, 9000000000000000000, 9000000000000000000,
-	9000000000000000000, 9000000000000000000, 9000000000000000000,
-	9000000000000000000, 9000000000000000000,
 ]
 
 # Segmented adaptive exponential cost by owned count:
@@ -89,6 +84,23 @@ const PARTNER_COST_LATE_START_COUNT: int = 250
 const PARTNER_SKILL_UNLOCK_COUNTS: Array = [10, 25, 50, 100, 250]
 # Partner skill cost = partner_cost_at_unlock_count * multiplier_at_skill_index
 const PARTNER_SKILL_COST_MULTIPLIERS: Array = [4, 6, 9, 14, 22]
+
+
+# --- BigNumber partner helpers ---
+# Use these instead of indexing PARTNER_DPS_VALUES / PARTNER_BASE_COSTS for indices ≥ 17.
+
+static func get_partner_dps_bignum(index: int) -> BigNumber:
+	if index < 0 or index >= PARTNER_COUNT:
+		return BigNumber.zero()
+	# DPS[i] = 4 * 12^i
+	return BigNumber.pow_float(float(PARTNER_DPS_MULT), index).multiply_int(PARTNER_DPS_BASE)
+
+
+static func get_partner_cost_bignum(index: int) -> BigNumber:
+	if index < 0 or index >= PARTNER_COUNT:
+		return BigNumber.zero()
+	# Cost[i] = 35 * 11^i
+	return BigNumber.pow_float(float(PARTNER_COST_MULT), index).multiply_int(PARTNER_COST_BASE)
 
 
 # --- Abilities ---

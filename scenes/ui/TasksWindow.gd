@@ -296,6 +296,8 @@ func _create_task_row(task_data: Dictionary) -> Control:
 		claim_button_image_holder.set_asset_key(TASK_CLAIM_BUTTON_PRESSED_ASSET_KEY, TASK_CLAIM_BUTTON_FALLBACK_COLOR)
 		task_claim_requested.emit(task_id)
 		await claim_button.get_tree().create_timer(0.2).timeout
+		if not is_instance_valid(claim_button_image_holder):
+			return
 		claim_button_image_holder.set_asset_key(TASK_CLAIM_BUTTON_ASSET_KEY, TASK_CLAIM_BUTTON_FALLBACK_COLOR)
 		claim_button_label.text = LocalizationManager.tr_key("task.claimed")
 		claim_button_image_holder.modulate = Color(0.65, 0.65, 0.65, 1.0)
@@ -407,7 +409,7 @@ func _format_progress_text(task_data: Dictionary) -> String:
 
 func _format_reward_text(task_data: Dictionary) -> String:
 	return LocalizationManager.format_key("task.reward", {
-		"reward": NumberFormatter.compact(int(task_data.get("reward_gold", 0))),
+		"reward": NumberFormatter.compact(task_data.get("reward_gold", 0)),
 	})
 
 

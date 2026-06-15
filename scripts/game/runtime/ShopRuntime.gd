@@ -39,13 +39,13 @@ static func get_shop_product(product_id: String) -> Dictionary:
 	return {}
 
 
-static func get_offline_gold_reward_for_seconds(state: ClickerState, seconds: float) -> int:
-	var baseline: int = state.get_gold_reward_baseline_for_idle_systems()
+static func get_offline_gold_reward_for_seconds(state: ClickerState, seconds: float) -> BigNumber:
+	var baseline: BigNumber = state.get_gold_reward_baseline_for_idle_systems()
 	var ticks: int = int(seconds / BalanceConfig.OFFLINE_GOLD_TICK_SECONDS)
-	return maxi(0, baseline * ticks)
+	return baseline.multiply_int(ticks) if ticks > 0 else BigNumber.zero()
 
 
-static func get_gold_pack_reward_for_count(state: ClickerState, product_id: String, count: int) -> int:
+static func get_gold_pack_reward_for_count(state: ClickerState, product_id: String, count: int) -> BigNumber:
 	var seconds: float = 0.0
 	match product_id:
 		"gold_pack_small":
@@ -53,8 +53,11 @@ static func get_gold_pack_reward_for_count(state: ClickerState, product_id: Stri
 		"gold_pack_large":
 			seconds = BalanceConfig.SHOP_LARGE_GOLD_OFFLINE_SECONDS
 		_:
-			return 0
-	return maxi(1, get_offline_gold_reward_for_seconds(state, seconds)) * count
+			return BigNumber.zero()
+	var per_pack: BigNumber = get_offline_gold_reward_for_seconds(state, seconds)
+	if not per_pack.is_positive():
+		per_pack = BigNumber.one()
+	return per_pack.multiply_int(count)
 
 
 static func buy_shop_products(state: ClickerState, product_id: String, mode: String) -> Dictionary:
@@ -97,10 +100,10 @@ static func buy_shop_products(state: ClickerState, product_id: String, mode: Str
 
 	match reward_type:
 		"gold":
-			var shop_gold: int = get_gold_pack_reward_for_count(state, product_id, count)
-			state.gold += shop_gold
+			var shop_gold: BigNumber = get_gold_pack_reward_for_count(state, product_id, count)
+			state.gold = state.gold.add(shop_gold)
 			result["reward_gold"] = shop_gold
-			result["status_text"] = "%s x%d purchased! +%d gold" % [product_name, count, shop_gold]
+			result["status_text"] = "%s x%d purchased! +%s gold" % [product_name, count, NumberFormatter.compact(shop_gold)]
 		_:
 			result["status_text"] = "Unknown shop reward"
 

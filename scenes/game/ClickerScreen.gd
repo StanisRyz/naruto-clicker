@@ -215,7 +215,7 @@ func _process(delta: float) -> void:
 	else:
 		autoclick_accumulator = 0.0
 
-	if state.get_base_partner_dps() > 0:
+	if state.get_base_partner_dps().is_positive():
 		partner_damage_accumulator += delta
 
 		while partner_damage_accumulator + partner_damage_interval_epsilon >= partner_damage_interval:
@@ -316,25 +316,28 @@ func _on_attack_requested(click_global_position: Vector2) -> void:
 	if enemy_transition_locked:
 		return
 
-	var manual_damage: int = maxi(1, state.get_current_click_damage())
+	var manual_damage: BigNumber = state.get_current_click_damage()
+	if manual_damage.is_zero():
+		manual_damage = BigNumber.one()
 	if state.rng.randf() < state.get_partner_skill_additive_bonus("critical_manual"):
-		manual_damage *= 2
+		manual_damage = manual_damage.multiply_int(2)
 	var was_boss_level: bool = state.is_boss_level
 	var result: Dictionary = state.attack_with_damage(manual_damage)
-	var damage_dealt: int = int(result.get("damage_dealt", 0))
-	state.total_manual_click_damage_dealt += damage_dealt
+	var damage_dealt_val = result.get("damage_dealt", 0)
+	var damage_dealt: BigNumber = damage_dealt_val if damage_dealt_val is BigNumber else BigNumber.zero()
+	state.total_manual_click_damage_dealt += damage_dealt.floor_to_int_safe()
 	_apply_attack_result(result, true, was_boss_level)
-	if damage_dealt > 0:
+	if damage_dealt.is_positive():
 		game_field.spawn_damage_number(damage_dealt, click_global_position)
 		_spawn_hit_effect(click_global_position)
 
 
 func _on_character_level_upgrade_requested(mode: String) -> void:
-	var gold_before: int = state.gold
+	var gold_before: BigNumber = state.gold.clone()
 	var result: Dictionary = state.buy_character_level_upgrades(mode)
 	_handle_status_text(result.get("status_text", ""))
 	if balance_logger:
-		balance_logger.log_purchase(state, "hero_level", "hero_level_x%s" % mode, gold_before - state.gold, result)
+		balance_logger.log_purchase(state, "hero_level", "hero_level_x%s" % mode, gold_before.subtract(state.gold).floor_to_int_safe(), result)
 	_update_ui()
 	if result.get("upgraded", false):
 		AudioManager.play_purchase_success()
@@ -345,11 +348,11 @@ func _on_character_level_upgrade_requested(mode: String) -> void:
 
 
 func _on_hero_skill_purchase_requested(skill_id: String) -> void:
-	var gold_before: int = state.gold
+	var gold_before: BigNumber = state.gold.clone()
 	var result: Dictionary = state.buy_hero_skill(skill_id)
 	_handle_status_text(result.get("status_text", ""))
 	if balance_logger:
-		balance_logger.log_purchase(state, "hero_skill", skill_id, gold_before - state.gold, result)
+		balance_logger.log_purchase(state, "hero_skill", skill_id, gold_before.subtract(state.gold).floor_to_int_safe(), result)
 	_update_ui()
 	if result.get("upgraded", false):
 		AudioManager.play_purchase_success()
@@ -359,11 +362,11 @@ func _on_hero_skill_purchase_requested(skill_id: String) -> void:
 
 
 func _on_ability_skill_purchase_requested(skill_id: String) -> void:
-	var gold_before: int = state.gold
+	var gold_before: BigNumber = state.gold.clone()
 	var result: Dictionary = state.buy_ability_skill(skill_id)
 	_handle_status_text(result.get("status_text", ""))
 	if balance_logger:
-		balance_logger.log_purchase(state, "ability_rank", skill_id, gold_before - state.gold, result)
+		balance_logger.log_purchase(state, "ability_rank", skill_id, gold_before.subtract(state.gold).floor_to_int_safe(), result)
 	_update_ui()
 	if result.get("upgraded", false):
 		AudioManager.play_purchase_success()
@@ -373,11 +376,11 @@ func _on_ability_skill_purchase_requested(skill_id: String) -> void:
 
 
 func _on_ability_unlock_requested(ability_id: String) -> void:
-	var gold_before: int = state.gold
+	var gold_before: BigNumber = state.gold.clone()
 	var result: Dictionary = state.buy_ability_unlock(ability_id)
 	_handle_status_text(result.get("status_text", ""))
 	if balance_logger:
-		balance_logger.log_purchase(state, "ability_unlock", ability_id, gold_before - state.gold, result)
+		balance_logger.log_purchase(state, "ability_unlock", ability_id, gold_before.subtract(state.gold).floor_to_int_safe(), result)
 	_update_ui()
 	if result.get("upgraded", false):
 		AudioManager.play_purchase_success()
@@ -445,13 +448,13 @@ func _on_tasks_button_pressed() -> void:
 
 
 func _on_task_claim_requested(task_id: String) -> void:
-	var reward_gold: int = 0
+	var reward_gold: BigNumber = BigNumber.zero()
 	if balance_logger and state.is_task_completed(task_id):
 		reward_gold = state.get_task_reward_gold(task_id)
 	var result: Dictionary = state.claim_task_reward(task_id)
 	_handle_status_text(result.get("status_text", ""))
 	if balance_logger and result.get("upgraded", false):
-		var log_result: Dictionary = {"reward_gold": reward_gold}
+		var log_result: Dictionary = {"reward_gold": reward_gold.floor_to_int_safe()}
 		balance_logger.log_task_claimed(state, task_id, log_result)
 	_update_ui()
 	if tasks_window.visible:
@@ -462,11 +465,11 @@ func _on_task_claim_requested(task_id: String) -> void:
 
 
 func _on_partner_purchase_requested(partner_index: int, mode: String) -> void:
-	var gold_before: int = state.gold
+	var gold_before: BigNumber = state.gold.clone()
 	var result: Dictionary = state.buy_partners(partner_index, mode)
 	_handle_status_text(result.get("status_text", ""))
 	if balance_logger:
-		balance_logger.log_purchase(state, "partner", "partner_%d_x%s" % [partner_index, mode], gold_before - state.gold, result)
+		balance_logger.log_purchase(state, "partner", "partner_%d_x%s" % [partner_index, mode], gold_before.subtract(state.gold).floor_to_int_safe(), result)
 	_update_ui()
 	if result.get("upgraded", false):
 		AudioManager.play_purchase_success()
@@ -477,11 +480,11 @@ func _on_partner_purchase_requested(partner_index: int, mode: String) -> void:
 
 
 func _on_partner_skill_purchase_requested(skill_id: String) -> void:
-	var gold_before: int = state.gold
+	var gold_before: BigNumber = state.gold.clone()
 	var result: Dictionary = state.buy_partner_skill(skill_id)
 	_handle_status_text(result.get("status_text", ""))
 	if balance_logger:
-		balance_logger.log_purchase(state, "partner_skill", skill_id, gold_before - state.gold, result)
+		balance_logger.log_purchase(state, "partner_skill", skill_id, gold_before.subtract(state.gold).floor_to_int_safe(), result)
 	_update_ui()
 	if result.get("upgraded", false):
 		AudioManager.play_purchase_success()
@@ -491,11 +494,11 @@ func _on_partner_skill_purchase_requested(skill_id: String) -> void:
 
 
 func _on_building_purchase_requested(building_index: int, mode: String) -> void:
-	var gold_before: int = state.gold
+	var gold_before: BigNumber = state.gold.clone()
 	var result: Dictionary = state.buy_buildings(building_index, mode)
 	_handle_status_text(result.get("status_text", ""))
 	if balance_logger:
-		balance_logger.log_purchase(state, "building", "building_%d_x%s" % [building_index, mode], gold_before - state.gold, result)
+		balance_logger.log_purchase(state, "building", "building_%d_x%s" % [building_index, mode], gold_before.subtract(state.gold).floor_to_int_safe(), result)
 	_update_ui()
 	if result.get("upgraded", false):
 		AudioManager.play_purchase_success()
@@ -885,8 +888,8 @@ func _run_partner_damage_tick() -> void:
 	if enemy_transition_locked:
 		return
 
-	var tick_damage: int = state.get_partner_tick_damage()
-	if tick_damage <= 0:
+	var tick_damage: BigNumber = state.get_partner_tick_damage()
+	if not tick_damage.is_positive():
 		return
 
 	var was_boss_level: bool = state.is_boss_level
@@ -1072,7 +1075,7 @@ func _handle_defeat_result(result: Dictionary, was_boss_level: bool) -> void:
 	game_field.play_defeat_feedback(result.get("level_up", false), result.get("zone_changed", false))
 	_handle_status_text(result.get("status_text", ""))
 
-	var reward_gold: int = state.get_current_target_reward_gold_preview()
+	var reward_gold: BigNumber = state.get_current_target_reward_gold_preview()
 	combat_effects_layer.play_gold_reward_effect(
 		game_field.get_enemy_global_rect(),
 		primary_stats_panel.get_gold_icon_global_center(),
@@ -1390,7 +1393,7 @@ func _debug_visual_damage_51_percent() -> void:
 	var result: Dictionary = state.debug_damage_current_target_by_percent(0.51)
 	_apply_attack_result(result, true, was_boss_level)
 	_update_ui()
-	print("Debug visual damage: current HP %d/%d" % [state.target_hp, state.target_max_hp])
+	print("Debug visual damage: current HP %s/%s" % [state.target_hp.to_debug_string(), state.target_max_hp.to_debug_string()])
 
 
 func _debug_visual_clear_level() -> void:

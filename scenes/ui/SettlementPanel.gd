@@ -306,7 +306,7 @@ func _update_building_row(state: ClickerState, building_index: int, row: Diction
 		milestone_label.text = LocalizationManager.tr_key("settlement.card.milestone_max")
 
 	var bulk_count: int = state.get_building_bulk_display_count(building_index, selected_buy_mode)
-	var bulk_cost: int = state.get_building_bulk_display_cost(building_index, selected_buy_mode)
+	var bulk_cost: BigNumber = state.get_building_bulk_display_cost(building_index, selected_buy_mode)
 	var can_afford: bool = state.can_afford_building_bulk(building_index, selected_buy_mode)
 	row["button_label"].text = LocalizationManager.format_key("settlement.build_button", {
 		"count": bulk_count,

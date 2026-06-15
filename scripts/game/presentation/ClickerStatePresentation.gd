@@ -65,10 +65,9 @@ static func get_building_total_bonus_text(state: ClickerState, building_index: i
 # --- Partner descriptions ---
 
 static func get_partner_description(partner_index: int) -> String:
-	if partner_index < 0 or partner_index >= BalanceConfig.PARTNER_DPS_VALUES.size():
+	if partner_index < 0 or partner_index >= BalanceConfig.PARTNER_COUNT:
 		return ""
-
-	return "%d DPS" % BalanceConfig.PARTNER_DPS_VALUES[partner_index]
+	return "%s DPS" % NumberFormatter.compact(BalanceConfig.get_partner_dps_bignum(partner_index))
 
 
 # --- Prestige talent descriptions ---
@@ -306,7 +305,7 @@ static func get_shop_product_view_data(state: ClickerState, mode: String = "x1")
 			total_multiplier = -1
 			var reward_type: String = String(product.get("reward_type", ""))
 			if reward_type == "gold":
-				var gold_amount: int = ShopRuntime.get_gold_pack_reward_for_count(state, product_id, buy_count)
+				var gold_amount: BigNumber = ShopRuntime.get_gold_pack_reward_for_count(state, product_id, buy_count)
 				effect_key = "shop.card.gold_reward"
 				effect_params = {"amount": NumberFormatter.compact(gold_amount)}
 			else:

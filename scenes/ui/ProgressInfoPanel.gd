@@ -36,8 +36,8 @@ func update_view(state: ClickerState) -> void:
 		"current": NumberFormatter.compact(state.target_hp),
 		"max": NumberFormatter.compact(state.target_max_hp),
 	})
-	enemy_hp_progress_bar.max_value = maxf(float(state.target_max_hp), 1.0)
-	enemy_hp_progress_bar.value = clampf(float(state.target_hp), 0.0, enemy_hp_progress_bar.max_value)
+	enemy_hp_progress_bar.max_value = maxf(state.target_max_hp.to_float_approx(), 1.0)
+	enemy_hp_progress_bar.value = clampf(state.target_hp.to_float_approx(), 0.0, enemy_hp_progress_bar.max_value)
 
 
 func _get_localized_enemy_name(state: ClickerState) -> String:

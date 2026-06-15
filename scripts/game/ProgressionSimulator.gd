@@ -79,7 +79,7 @@ func _run(max_minutes: float, target_level: int, stop_at_prestige: bool, profile
 	var elapsed: float = 0.0
 	var max_seconds: float = max_minutes * 60.0 if max_minutes > 0.0 else 1e9
 	var gold_window_start: float = 0.0
-	var gold_window_amount: int = 0
+	var gold_window_amount: float = 0.0
 	var gold_per_minute: float = 0.0
 	var iteration: int = 0
 
@@ -96,20 +96,19 @@ func _run(max_minutes: float, target_level: int, stop_at_prestige: bool, profile
 			elapsed += 1.0
 			continue
 
-		var time_to_kill: float = sim.target_hp / total_dps
+		var time_to_kill: float = sim.target_hp.to_float_approx() / total_dps
 		elapsed += time_to_kill
 
-		# Kill enemy and collect gold.
-		sim.target_hp = 0
+		sim.target_hp = BigNumber.zero()
 		var result: Dictionary = sim.resolve_defeated_target()
-		var earned: int = int(result.get("reward_gold", 0))
+		var reward_raw = result.get("reward_gold", null)
+		var earned: float = reward_raw.to_float_approx() if reward_raw is BigNumber else float(int(reward_raw if reward_raw != null else 0))
 		gold_window_amount += earned
 
-		# Update gold/min estimate every 60 simulated seconds.
 		var window_duration: float = elapsed - gold_window_start
 		if window_duration >= 60.0:
 			gold_per_minute = gold_window_amount / (window_duration / 60.0)
-			gold_window_amount = 0
+			gold_window_amount = 0.0
 			gold_window_start = elapsed
 
 		_spend_greedily(sim, spend_rate)
@@ -118,28 +117,25 @@ func _run(max_minutes: float, target_level: int, stop_at_prestige: bool, profile
 
 
 func _estimate_dps(sim: ClickerState, cps: float) -> float:
-	var manual_dps: float = float(sim.click_damage) * cps
-	var partner_dps: float = float(sim.get_final_partner_dps())
+	var manual_dps: float = sim.click_damage.to_float_approx() * cps
+	var partner_dps: float = sim.get_final_partner_dps().to_float_approx()
 	return manual_dps + partner_dps
 
 
 func _spend_greedily(sim: ClickerState, spend_rate: int) -> void:
-	# Buy character levels first; then partners cheapest-first.
-	# spend_rate controls how many rounds of purchases to attempt.
 	for _round in range(spend_rate):
 		var bought_any: bool = false
 
-		# Buy character levels while affordable.
-		while sim.gold >= sim.character_level_upgrade_cost:
+		while sim.gold.compare_to(sim.character_level_upgrade_cost) >= 0:
 			sim.buy_character_level_upgrade()
 			bought_any = true
 
-		# Buy partners in order while first one of each tier is affordable.
 		for i in range(sim.partner_counts.size()):
-			if sim.can_buy_partner(i) and sim.gold >= sim.partner_purchase_costs[i]:
+			var pcost: BigNumber = sim.partner_purchase_costs[i] as BigNumber
+			if sim.can_buy_partner(i) and sim.gold.compare_to(pcost) >= 0:
 				sim.buy_partner(i)
 				bought_any = true
-				break  # restart the partner loop after a purchase
+				break
 
 		if not bought_any:
 			break
@@ -150,18 +146,18 @@ func _snapshot(sim: ClickerState, elapsed_minutes: float, profile: String, gold_
 	var time_to_clear: float = 0.0
 	if total_dps > 0.0:
 		var enemies_needed: int = sim.enemies_required_per_level - sim.enemies_defeated_on_level
-		time_to_clear = (float(enemies_needed) * float(sim.target_max_hp)) / total_dps
+		time_to_clear = (float(enemies_needed) * sim.target_max_hp.to_float_approx()) / total_dps
 
 	return {
 		"minutes": elapsed_minutes,
 		"profile": profile,
 		"level": sim.current_level,
 		"hero_level": sim.character_level,
-		"click_damage": sim.click_damage,
-		"partner_dps": sim.get_final_partner_dps(),
-		"total_power": sim.click_damage + sim.get_final_partner_dps(),
-		"enemy_hp": sim.target_max_hp,
-		"enemy_reward": sim.reward_gold,
+		"click_damage": sim.click_damage.to_float_approx(),
+		"partner_dps": sim.get_final_partner_dps().to_float_approx(),
+		"total_power": sim.click_damage.to_float_approx() + sim.get_final_partner_dps().to_float_approx(),
+		"enemy_hp": sim.target_max_hp.to_float_approx(),
+		"enemy_reward": sim.reward_gold.to_float_approx(),
 		"gold_per_minute": int(gold_per_minute),
 		"time_to_clear_level": snappedf(time_to_clear, 0.1),
 		"prestige_points": sim.get_prestige_reward(),

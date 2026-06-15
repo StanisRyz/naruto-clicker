@@ -78,7 +78,7 @@ func _update_view(state: ClickerState) -> void:
 		return
 
 	var unlock_level: int = int(skill.get("unlock_character_level", 0))
-	var cost: int = state.get_hero_skill_cost(current_skill_id) if current_owner_type == "hero" else state.get_ability_skill_cost(current_skill_id)
+	var cost: BigNumber = state.get_hero_skill_cost(current_skill_id) if current_owner_type == "hero" else state.get_ability_skill_cost(current_skill_id)
 	var skill_state: String = state.get_hero_skill_state(current_skill_id) if current_owner_type == "hero" else state.get_ability_skill_state(current_skill_id)
 	var ability_id: String = String(skill.get("ability_id", ""))
 	var L := LocalizationManager
