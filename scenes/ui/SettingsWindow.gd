@@ -32,6 +32,7 @@ const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 
 var sound_enabled: bool = true
 var music_enabled: bool = true
+var _language_label: Label = null
 var _language_button: Button = null
 var _language_button_label: Label = null
 
@@ -86,6 +87,8 @@ func _refresh_static_labels() -> void:
 	_music_label.text = LocalizationManager.tr_key("settings.music")
 	_reset_confirm_title_label.text = LocalizationManager.tr_key("settings.reset_confirm_title")
 	_reset_confirm_desc_label.text = LocalizationManager.tr_key("settings.reset_confirm_description")
+	if _language_label:
+		_language_label.text = LocalizationManager.tr_key("settings.language") + ":"
 	if _save_button_label:
 		_save_button_label.text = LocalizationManager.tr_key("settings.save_now")
 	if _reset_button_label:
@@ -106,6 +109,7 @@ func _create_language_row() -> void:
 	lang_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	lang_label.text = LocalizationManager.tr_key("settings.language") + ":"
 	lang_row.add_child(lang_label)
+	_language_label = lang_label
 
 	_language_button = Button.new()
 	_language_button.custom_minimum_size = Vector2(175, 60)

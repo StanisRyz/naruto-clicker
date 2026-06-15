@@ -1103,8 +1103,6 @@ func _begin_level_change_transition() -> int:
 
 
 func _on_stage_selected(level: int) -> void:
-	if enemy_transition_locked:
-		return
 	if level == state.current_level:
 		return
 	var result: Dictionary = state.travel_to_level(level)

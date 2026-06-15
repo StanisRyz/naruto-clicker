@@ -50,7 +50,7 @@ skill_popup.requirement.partner_count,Requires {count},Требуется {count
 skill_popup.current.hero_level,Current: {current} / {required},Сейчас: {current} / {required},Skill popup current state row,{current} and {required} are integers
 skill_popup.current.partner_count,Current: {current} / {required},Сейчас: {current} / {required},Skill popup current state row,{current} and {required} are integers
 skill_popup.current.unlocked,Unlocked,Открыто,Skill popup current state when requirement met,
-skill_popup.button.buy,Buy: {cost},Купить: {cost},Skill popup buy button,{cost} is compact number
+skill_popup.button.buy,{cost},{cost},Skill popup buy button,{cost} is compact number
 skill_popup.button.locked,Locked,Закрыто,Skill popup buy button locked state,
 skill_popup.button.purchased,Purchased,Куплено,Skill popup buy button purchased state,
 task.in_progress,In Progress,В Процессе,TasksWindow task button,
@@ -66,7 +66,7 @@ upgrade.hero.card.milestone_next,x2 at {milestone} Lv,x2 на {milestone} Ур,U
 upgrade.hero.card.milestone_max,Max,Максимум,UpgradePanel hero card row 4 all reached,
 upgrade.ability.purchased,Purchased,Куплено,UpgradePanel ability unlock button,
 upgrade.ability.requires_level,Requires {level} Lv,Требуется {level} Ур,UpgradePanel ability unlock button,{level} is integer
-upgrade.ability.buy,Buy: {cost},Купить: {cost},UpgradePanel ability unlock button,{cost} is compact number
+upgrade.ability.buy,{cost},{cost},UpgradePanel ability unlock button,{cost} is compact number
 upgrade.ability.card.name,{name},{name},UpgradePanel ability card row 1,{name} is ability name
 upgrade.ability.card.rank,Rank {rank}/{max_rank},Ранг {rank}/{max_rank},UpgradePanel ability card row 2,{rank} and {max_rank} are integers
 upgrade.ability.unlock_with_duration,{duration},{duration},locked ability row 4,{level} is integer; {duration} is duration text

@@ -5,7 +5,7 @@ extends RefCounted
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
 # Generated key count: 369
-# Generated at: 1781453284
+# Generated at: 1781535896
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -60,7 +60,7 @@ const TRANSLATIONS: Dictionary = {
 		"skill_popup.current.hero_level": "Current: {current} / {required}",
 		"skill_popup.current.partner_count": "Current: {current} / {required}",
 		"skill_popup.current.unlocked": "Unlocked",
-		"skill_popup.button.buy": "Buy: {cost}",
+		"skill_popup.button.buy": "{cost}",
 		"skill_popup.button.locked": "Locked",
 		"skill_popup.button.purchased": "Purchased",
 		"task.in_progress": "In Progress",
@@ -76,7 +76,7 @@ const TRANSLATIONS: Dictionary = {
 		"upgrade.hero.card.milestone_max": "Max",
 		"upgrade.ability.purchased": "Purchased",
 		"upgrade.ability.requires_level": "Requires {level} Lv",
-		"upgrade.ability.buy": "Buy: {cost}",
+		"upgrade.ability.buy": "{cost}",
 		"upgrade.ability.card.name": "{name}",
 		"upgrade.ability.card.rank": "Rank {rank}/{max_rank}",
 		"upgrade.ability.unlock_with_duration": "{duration}",
@@ -431,7 +431,7 @@ const TRANSLATIONS: Dictionary = {
 		"skill_popup.current.hero_level": "Сейчас: {current} / {required}",
 		"skill_popup.current.partner_count": "Сейчас: {current} / {required}",
 		"skill_popup.current.unlocked": "Открыто",
-		"skill_popup.button.buy": "Купить: {cost}",
+		"skill_popup.button.buy": "{cost}",
 		"skill_popup.button.locked": "Закрыто",
 		"skill_popup.button.purchased": "Куплено",
 		"task.in_progress": "В Процессе",
@@ -447,7 +447,7 @@ const TRANSLATIONS: Dictionary = {
 		"upgrade.hero.card.milestone_max": "Максимум",
 		"upgrade.ability.purchased": "Куплено",
 		"upgrade.ability.requires_level": "Требуется {level} Ур",
-		"upgrade.ability.buy": "Купить: {cost}",
+		"upgrade.ability.buy": "{cost}",
 		"upgrade.ability.card.name": "{name}",
 		"upgrade.ability.card.rank": "Ранг {rank}/{max_rank}",
 		"upgrade.ability.unlock_with_duration": "{duration}",

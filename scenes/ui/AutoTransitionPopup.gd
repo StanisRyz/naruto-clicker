@@ -28,14 +28,25 @@ func _ready() -> void:
 	mouse_filter = MOUSE_FILTER_PASS
 	_add_background_image_holder(_panel, "PopupBackgroundImageHolder", "ui.popup.auto_transition.background")
 	_apply_fixed_panel_size()
+	for lbl in [_desc_line1, _desc_line2, _desc_line3, _desc_line4, _status_label]:
+		UiFontConfig.apply_label_font_size(lbl, UiFontConfig.AUTO_TRANSITION_POPUP_FONT_SIZE)
+	LocalizationManager.language_changed.connect(_on_language_changed)
+	_refresh_static_labels()
+
+
+func _refresh_static_labels() -> void:
 	var L := LocalizationManager
 	_title_label.text = L.tr_key("auto_transition.title")
 	_desc_line1.text = L.tr_key("auto_transition.description.line_1")
 	_desc_line2.text = L.tr_key("auto_transition.description.line_2")
 	_desc_line3.text = L.tr_key("auto_transition.description.line_3")
 	_desc_line4.text = L.tr_key("auto_transition.description.line_4")
-	for lbl in [_desc_line1, _desc_line2, _desc_line3, _desc_line4, _status_label]:
-		UiFontConfig.apply_label_font_size(lbl, UiFontConfig.AUTO_TRANSITION_POPUP_FONT_SIZE)
+
+
+func _on_language_changed() -> void:
+	_refresh_static_labels()
+	if _state != null:
+		refresh_view(_state)
 
 
 func show_popup(state: ClickerState, anchor: Vector2, button_global_rect: Rect2 = Rect2()) -> void:
