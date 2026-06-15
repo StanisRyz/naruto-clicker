@@ -5,7 +5,7 @@ extends RefCounted
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
 # Generated key count: 369
-# Generated at: 1781537545
+# Generated at: 1781538078
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -738,7 +738,7 @@ const TRANSLATIONS: Dictionary = {
 		"settings.sound": "Звук",
 		"settings.music": "Музыка",
 		"settings.save_now": "Сохранить",
-		"settings.reset": "Сброс",
+		"settings.reset": "Сбросить",
 		"settings.reset_confirm_title": "Сбросить прогресс?",
 		"settings.reset_confirm_description": "Обычный прогресс будет сброшен, но гемы, постоянные улучшения, звук, музыка и язык сохранятся.",
 		"settings.version": "Версия: {version}",

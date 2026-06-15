@@ -1272,6 +1272,7 @@ func _on_fullscreen_ad_error(_message: String) -> void:
 	if is_instance_valid(_fullscreen_ad_overlay):
 		_fullscreen_ad_overlay.visible = false
 	AudioManager.resume_after_ad()
+	YandexBridge.gameplay_start()
 	_fullscreen_ad_cooldown_left = FULLSCREEN_AD_COOLDOWN_SECONDS
 
 
