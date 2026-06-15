@@ -356,12 +356,12 @@ offline_reward.claim_x3,Watch Ad x3,Реклама x3,OfflineRewardDialog claim 
 offline_reward.loading_ad,Loading ad...,Загрузка рекламы...,OfflineRewardDialog loading state,
 settings.sound,Sound,Звук,SettingsWindow sound row label,
 settings.music,Music,Музыка,SettingsWindow music row label,
-settings.save_now,Save Now,Сохранить,SettingsWindow save button,
+settings.save_now,Save,Сохранить,SettingsWindow save button,
 settings.reset,Reset,Сброс,SettingsWindow reset confirm action button,
-settings.reset_confirm_title,Reset all progress?,Сбросить весь прогресс?,SettingsWindow reset confirm dialog title,
-settings.reset_confirm_description,This will delete your save and start a new game.,Это удалит прогресс и начнёт новую игру.,SettingsWindow reset confirm dialog description,
-settings.version,Version {version},Версия {version},SettingsWindow version label,{version} is the app version string
-auto_transition.title,Auto-transition,Авто-переход,AutoTransitionPopup title label,
+settings.reset_confirm_title,Reset progress?,Сбросить прогресс?,SettingsWindow reset confirm dialog title,
+settings.reset_confirm_description,"This will reset normal progress but keep gems, permanent upgrades, sound, music, and language.","Обычный прогресс будет сброшен, но гемы, постоянные улучшения, звук, музыка и язык сохранятся.",SettingsWindow reset confirm dialog description,
+settings.version,Version: {version},Версия: {version},SettingsWindow version label,{version} is the app version string
+auto_transition.title,Auto-transition,Автопереход,AutoTransitionPopup title label,
 ui.gameplay.new_zone,New Zone!,Новая Зона!,GameField defeat feedback when zone changes,
 ui.gameplay.level_up,Level Up!,Новый Уровень!,GameField defeat feedback when level up,
 common.duration.seconds,{seconds}s,{seconds}с,OfflineRewardDialog duration format,{seconds} is integer

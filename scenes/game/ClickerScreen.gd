@@ -59,10 +59,14 @@ var _debug_visual_test_previous_gems: int = 0
 var _pending_shop_product_id: String = ""
 var _pending_payment_product_id: String = ""
 var _payment_reward_granted_for_current_request: bool = false
+var _processed_purchase_tokens: Dictionary = {}
+var _unprocessed_purchase_check_requested: bool = false
 
 const FULLSCREEN_AD_COOLDOWN_SECONDS: float = 300.0
 const FULLSCREEN_AD_INITIAL_COOLDOWN_SECONDS: float = 300.0
 const FULLSCREEN_AD_SAFE_INTERACTION_GAP_SECONDS: float = 2.5
+const YANDEX_PURCHASE_RECOVERY_MAX_READY_ATTEMPTS: int = 20
+const YANDEX_PURCHASE_RECOVERY_RETRY_DELAY_SEC: float = 0.5
 var _fullscreen_ad_cooldown_left: float = FULLSCREEN_AD_INITIAL_COOLDOWN_SECONDS
 var _last_user_interaction_time: float = -999.0
 var _fullscreen_ad_overlay: Control = null
@@ -142,6 +146,8 @@ func _ready() -> void:
 	YandexBridge.payment_purchase_success.connect(_on_payment_purchase_success)
 	YandexBridge.payment_purchase_cancelled.connect(_on_payment_purchase_cancelled)
 	YandexBridge.payment_purchase_error.connect(_on_payment_purchase_error)
+	YandexBridge.unprocessed_purchase_found.connect(_on_unprocessed_purchase_found)
+	YandexBridge.unprocessed_purchase_check_error.connect(_on_unprocessed_purchase_check_error)
 	prestige_confirm_dialog.confirmed.connect(_on_prestige_confirmed)
 	prestige_confirm_dialog.cancelled.connect(_on_prestige_cancelled)
 	upgrade_sheet.closed.connect(_on_sheet_closed)
@@ -165,6 +171,7 @@ func _ready() -> void:
 	_apply_button_visual_cleanup()
 	bottom_tabs_backdrop.set_asset_key("ui.bottom_tabs.backdrop", Color.TRANSPARENT)
 	await _load_game_on_start_async()
+	_request_unprocessed_purchase_check_when_ready()
 	AudioManager.set_music_enabled(state.music_enabled)
 	AudioManager.set_sound_enabled(state.sound_enabled)
 	AudioManager.play_main_music()
@@ -584,18 +591,62 @@ func _on_gem_product_purchase_requested(product_id: String) -> void:
 func _on_payment_purchase_success(local_product_id: String, purchase_token: String) -> void:
 	if _payment_reward_granted_for_current_request:
 		return
+	if _is_purchase_token_processed(purchase_token):
+		return
 	if local_product_id != _pending_payment_product_id:
 		push_warning("YandexBridge: success for unexpected product '%s' (pending '%s'), ignoring" % [local_product_id, _pending_payment_product_id])
 		return
 	_payment_reward_granted_for_current_request = true
+	_mark_purchase_token_processed(purchase_token)
 	var result: Dictionary = state.grant_paid_gem_purchase(local_product_id)
 	_handle_status_text(result.get("status_text", ""))
 	AudioManager.play_purchase_success()
 	_update_ui()
-	_save_game_now()
+	_save_game_and_flush_cloud_now()
 	YandexBridge.consume_purchase(purchase_token)
 	_pending_payment_product_id = ""
 	gem_purchase_dialog.hide_dialog()
+
+
+func _on_unprocessed_purchase_found(product_id: String, purchase_token: String) -> void:
+	if _is_purchase_token_processed(purchase_token):
+		return
+	var product: Dictionary = _find_gem_product_by_any_id(product_id)
+	if product.is_empty():
+		push_warning("YandexBridge: unknown unprocessed purchase product '%s', ignoring" % product_id)
+		return
+	_mark_purchase_token_processed(purchase_token)
+	var local_product_id: String = String(product.get("id", ""))
+	var result: Dictionary = state.grant_paid_gem_purchase(local_product_id)
+	_handle_status_text(result.get("status_text", ""))
+	AudioManager.play_purchase_success()
+	_update_ui()
+	_save_game_and_flush_cloud_now()
+	YandexBridge.consume_purchase(purchase_token)
+
+
+func _on_unprocessed_purchase_check_error(message: String) -> void:
+	if message != "Yandex SDK is not ready":
+		push_warning("YandexBridge: unprocessed purchase check failed: %s" % message)
+
+
+func _find_gem_product_by_any_id(product_id: String) -> Dictionary:
+	var product: Dictionary = GemPurchaseConfigClass.get_by_id(product_id)
+	if not product.is_empty():
+		return product
+	for candidate: Dictionary in GemPurchaseConfigClass.get_all():
+		if String(candidate.get("yandex_product_id", "")) == product_id:
+			return candidate
+	return {}
+
+
+func _is_purchase_token_processed(purchase_token: String) -> bool:
+	return purchase_token != "" and _processed_purchase_tokens.has(purchase_token)
+
+
+func _mark_purchase_token_processed(purchase_token: String) -> void:
+	if purchase_token != "":
+		_processed_purchase_tokens[purchase_token] = true
 
 
 func _on_payment_purchase_cancelled(_local_product_id: String) -> void:
@@ -1275,6 +1326,28 @@ func _save_game_now() -> bool:
 	return SaveManager.save_data(state.get_save_data())
 
 
+func _save_game_and_flush_cloud_now() -> bool:
+	state.save_current_level_progress()
+	var data: Dictionary = state.get_save_data()
+	var saved: bool = SaveManager.save_data(data)
+	if saved:
+		SaveManager.queue_cloud_save(data, true)
+	return saved
+
+
+func _request_unprocessed_purchase_check_when_ready(attempt: int = 0) -> void:
+	if _unprocessed_purchase_check_requested:
+		return
+	if YandexBridge.refresh_yandex_sdk_ready():
+		_unprocessed_purchase_check_requested = true
+		YandexBridge.check_unprocessed_purchases()
+		return
+	if attempt >= YANDEX_PURCHASE_RECOVERY_MAX_READY_ATTEMPTS:
+		return
+	await get_tree().create_timer(YANDEX_PURCHASE_RECOVERY_RETRY_DELAY_SEC).timeout
+	_request_unprocessed_purchase_check_when_ready(attempt + 1)
+
+
 func _apply_startup_language() -> void:
 	if not state.language_manually_selected:
 		var platform_lang: String = YandexBridge.get_yandex_language()
@@ -1543,6 +1616,7 @@ func _on_rewarded_ad_banner_pressed() -> void:
 
 func _on_rewarded_ad_opened() -> void:
 	AudioManager.pause_for_ad()
+	YandexBridge.gameplay_stop()
 
 
 func _on_rewarded_ad_rewarded() -> void:
@@ -1578,6 +1652,7 @@ func _on_rewarded_ad_rewarded() -> void:
 
 func _on_rewarded_ad_closed(_was_shown: bool) -> void:
 	AudioManager.resume_after_ad()
+	YandexBridge.gameplay_start()
 	if _rewarded_ad_request_context == "shop_gems":
 		shop_sheet.set_product_buy_button_modal_pressed(_rewarded_ad_shop_product_id, false)
 	if _rewarded_ad_request_context == "offline_gold_x3" and not _rewarded_ad_reward_granted_for_current_request:
@@ -1590,6 +1665,7 @@ func _on_rewarded_ad_closed(_was_shown: bool) -> void:
 
 func _on_rewarded_ad_error(_message: String) -> void:
 	AudioManager.resume_after_ad()
+	YandexBridge.gameplay_start()
 	if _rewarded_ad_request_context == "shop_gems":
 		shop_sheet.set_product_buy_button_modal_pressed(_rewarded_ad_shop_product_id, false)
 	if _rewarded_ad_request_context == "offline_gold_x3":

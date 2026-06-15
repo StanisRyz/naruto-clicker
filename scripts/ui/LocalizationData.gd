@@ -5,7 +5,7 @@ extends RefCounted
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
 # Generated key count: 369
-# Generated at: 1781535896
+# Generated at: 1781537545
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -366,11 +366,11 @@ const TRANSLATIONS: Dictionary = {
 		"offline_reward.loading_ad": "Loading ad...",
 		"settings.sound": "Sound",
 		"settings.music": "Music",
-		"settings.save_now": "Save Now",
+		"settings.save_now": "Save",
 		"settings.reset": "Reset",
-		"settings.reset_confirm_title": "Reset all progress?",
-		"settings.reset_confirm_description": "This will delete your save and start a new game.",
-		"settings.version": "Version {version}",
+		"settings.reset_confirm_title": "Reset progress?",
+		"settings.reset_confirm_description": "This will reset normal progress but keep gems, permanent upgrades, sound, music, and language.",
+		"settings.version": "Version: {version}",
 		"auto_transition.title": "Auto-transition",
 		"ui.gameplay.new_zone": "New Zone!",
 		"ui.gameplay.level_up": "Level Up!",
@@ -739,10 +739,10 @@ const TRANSLATIONS: Dictionary = {
 		"settings.music": "Музыка",
 		"settings.save_now": "Сохранить",
 		"settings.reset": "Сброс",
-		"settings.reset_confirm_title": "Сбросить весь прогресс?",
-		"settings.reset_confirm_description": "Это удалит прогресс и начнёт новую игру.",
-		"settings.version": "Версия {version}",
-		"auto_transition.title": "Авто-переход",
+		"settings.reset_confirm_title": "Сбросить прогресс?",
+		"settings.reset_confirm_description": "Обычный прогресс будет сброшен, но гемы, постоянные улучшения, звук, музыка и язык сохранятся.",
+		"settings.version": "Версия: {version}",
+		"auto_transition.title": "Автопереход",
 		"ui.gameplay.new_zone": "Новая Зона!",
 		"ui.gameplay.level_up": "Новый Уровень!",
 		"common.duration.seconds": "{seconds}с",

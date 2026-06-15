@@ -125,7 +125,7 @@ vertical_alignment = 1
 custom_minimum_size = Vector2(175, 60)
 layout_mode = 2
 size_flags_horizontal = 8
-text = "ON"
+text = ""
 
 [node name="MusicMargin" type="MarginContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -146,20 +146,20 @@ vertical_alignment = 1
 custom_minimum_size = Vector2(175, 60)
 layout_mode = 2
 size_flags_horizontal = 8
-text = "ON"
+text = ""
 
 [node name="SaveButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(218, 75)
 layout_mode = 2
 size_flags_horizontal = 4
-text = "Save Now"
+text = ""
 
 [node name="ResetButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(218, 75)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_styles/normal = SubResource("StyleBoxFlat_reset_button")
-text = "Reset Progress"
+text = ""
 
 [node name="StatusLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -240,11 +240,11 @@ alignment = 1
 custom_minimum_size = Vector2(168, 58)
 layout_mode = 2
 size_flags_horizontal = 0
-text = "Cancel"
+text = ""
 
 [node name="ResetButton" type="Button" parent="ResetConfirmDialog/PanelContainer/MarginContainer/VBoxContainer/ButtonRow"]
 custom_minimum_size = Vector2(168, 58)
 layout_mode = 2
 size_flags_horizontal = 0
 theme_override_styles/normal = SubResource("StyleBoxFlat_reset_button")
-text = "Reset"
+text = ""

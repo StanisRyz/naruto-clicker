@@ -116,7 +116,7 @@ func _create_product_cell(product_id: String, product: Dictionary) -> Dictionary
 	buy_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	buy_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	buy_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	buy_label.text = "%d ₽" % price_rub
+	buy_label.text = LocalizationManager.format_key("shop.gem_purchase.price", {"price": str(price_rub)})
 	buy_button.add_child(buy_label)
 	UiFontConfig.apply_label_font_size(buy_label, UiFontConfig.UPGRADE_BUTTON_FONT_SIZE)
 

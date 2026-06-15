@@ -13,6 +13,9 @@ signal payment_purchase_started(product_id: String)
 signal payment_purchase_success(product_id: String, purchase_token: String)
 signal payment_purchase_cancelled(product_id: String)
 signal payment_purchase_error(product_id: String, message: String)
+signal unprocessed_purchase_found(product_id: String, purchase_token: String)
+signal unprocessed_purchase_check_completed
+signal unprocessed_purchase_check_error(message: String)
 
 signal cloud_save_loaded(data: Dictionary)
 signal cloud_save_load_error(message: String)
@@ -23,6 +26,8 @@ signal cloud_save_delete_error(message: String)
 
 const CLOUD_SAVE_KEY: String = "save_v1"
 const CLOUD_SAVE_SCHEMA_VERSION: int = 1
+const SDK_READY_RETRY_DELAY_SEC: float = 0.5
+const SDK_READY_MAX_RETRY_ATTEMPTS: int = 20
 
 var is_web: bool = false
 var is_yandex_available: bool = false
@@ -43,7 +48,7 @@ func _ready() -> void:
 
 
 func get_yandex_language() -> String:
-	if not is_web:
+	if not _is_ysdk_ready():
 		return ""
 	var result = JavaScriptBridge.eval("""
 		(function() {
@@ -62,20 +67,38 @@ func get_yandex_language() -> String:
 
 
 func _check_yandex_sdk() -> void:
-	var result = JavaScriptBridge.eval("""
-		typeof YaGames !== 'undefined';
-	""")
-
-	is_yandex_available = result == true
+	refresh_yandex_sdk_ready()
 
 	if is_yandex_available:
-		print("YandexBridge: Yandex SDK is available")
+		print("YandexBridge: Yandex SDK is ready")
 	else:
-		print("YandexBridge: Yandex SDK is not available")
+		print("YandexBridge: Yandex SDK is not ready")
 
 
-func game_ready() -> void:
+func refresh_yandex_sdk_ready() -> bool:
 	if not is_web:
+		is_yandex_available = false
+		return false
+	var result = JavaScriptBridge.eval("""
+		(function() {
+			try {
+				return !!(window.ysdk && (window.ysdkReady === undefined || window.ysdkReady === true));
+			} catch(e) {
+				return false;
+			}
+		})();
+	""")
+	is_yandex_available = result == true
+	return is_yandex_available
+
+
+func _is_ysdk_ready() -> bool:
+	return refresh_yandex_sdk_ready()
+
+
+func game_ready(attempt: int = 0) -> void:
+	if not _is_ysdk_ready():
+		_retry_game_ready(attempt)
 		return
 
 	JavaScriptBridge.eval("""
@@ -88,8 +111,9 @@ func game_ready() -> void:
 	""")
 
 
-func gameplay_start() -> void:
-	if not is_web:
+func gameplay_start(attempt: int = 0) -> void:
+	if not _is_ysdk_ready():
+		_retry_gameplay_start(attempt)
 		return
 
 	JavaScriptBridge.eval("""
@@ -100,7 +124,7 @@ func gameplay_start() -> void:
 
 
 func gameplay_stop() -> void:
-	if not is_web:
+	if not _is_ysdk_ready():
 		return
 
 	JavaScriptBridge.eval("""
@@ -110,12 +134,26 @@ func gameplay_stop() -> void:
 	""")
 
 
+func _retry_game_ready(attempt: int) -> void:
+	if not is_web or attempt >= SDK_READY_MAX_RETRY_ATTEMPTS:
+		return
+	await get_tree().create_timer(SDK_READY_RETRY_DELAY_SEC).timeout
+	game_ready(attempt + 1)
+
+
+func _retry_gameplay_start(attempt: int) -> void:
+	if not is_web or attempt >= SDK_READY_MAX_RETRY_ATTEMPTS:
+		return
+	await get_tree().create_timer(SDK_READY_RETRY_DELAY_SEC).timeout
+	gameplay_start(attempt + 1)
+
+
 func show_rewarded_ad() -> void:
 	if _rewarded_ad_in_progress:
 		return
 	_rewarded_ad_in_progress = true
 
-	if not is_web or not is_yandex_available:
+	if not _is_ysdk_ready():
 		if BuildConfig.is_debug_features_enabled():
 			_simulate_rewarded_ad_debug()
 		else:
@@ -176,6 +214,7 @@ func _setup_js_callbacks() -> void:
 	JavaScriptBridge.eval("window._godot_rewarded_ad_error = %s;" % error_cb)
 	_setup_fullscreen_ad_js_callbacks()
 	_setup_cloud_save_js_callbacks()
+	_setup_unprocessed_purchase_js_callbacks()
 
 
 func _simulate_rewarded_ad_debug() -> void:
@@ -194,7 +233,7 @@ func show_fullscreen_ad() -> void:
 		return
 	_fullscreen_ad_in_progress = true
 
-	if not is_web or not is_yandex_available:
+	if not _is_ysdk_ready():
 		_fullscreen_ad_in_progress = false
 		fullscreen_ad_error.emit("Fullscreen ad unavailable outside Yandex Games")
 		return
@@ -244,7 +283,7 @@ func _setup_fullscreen_ad_js_callbacks() -> void:
 func purchase_product(yandex_product_id: String, local_product_id: String) -> void:
 	payment_purchase_started.emit(local_product_id)
 
-	if not is_web or not is_yandex_available:
+	if not _is_ysdk_ready():
 		if BuildConfig.is_debug_features_enabled():
 			_simulate_payment_debug(local_product_id)
 		else:
@@ -278,7 +317,7 @@ func purchase_product(yandex_product_id: String, local_product_id: String) -> vo
 
 
 func consume_purchase(purchase_token: String) -> void:
-	if not is_web or not is_yandex_available or purchase_token == "":
+	if not _is_ysdk_ready() or purchase_token == "":
 		return
 
 	JavaScriptBridge.eval("""
@@ -293,6 +332,48 @@ func consume_purchase(purchase_token: String) -> void:
 			});
 		})();
 	""" % JSON.stringify(purchase_token))
+
+
+func check_unprocessed_purchases() -> void:
+	if not _is_ysdk_ready():
+		unprocessed_purchase_check_error.emit("Yandex SDK is not ready")
+		return
+
+	JavaScriptBridge.eval("""
+		(function() {
+			try {
+				window.ysdk.getPayments({ signed: true }).then(function(payments) {
+					return payments.getPurchases();
+				}).then(function(purchases) {
+					var list = Array.isArray(purchases) ? purchases : [];
+					list.forEach(function(purchase) {
+						var productId = "";
+						var token = "";
+						if (purchase) {
+							productId = purchase.productID || purchase.productId || purchase.product_id || purchase.id || "";
+							token = purchase.purchaseToken || purchase.purchase_token || purchase.token || "";
+						}
+						if (productId && token && window._godot_unprocessed_purchase_found) {
+							window._godot_unprocessed_purchase_found(String(productId), String(token));
+						}
+					});
+					if (window._godot_unprocessed_purchase_check_completed) {
+						window._godot_unprocessed_purchase_check_completed();
+					}
+				}).catch(function(err) {
+					console.warn("YandexBridge: getPurchases failed:", err);
+					if (window._godot_unprocessed_purchase_check_error) {
+						window._godot_unprocessed_purchase_check_error(String(err));
+					}
+				});
+			} catch(e) {
+				console.warn("YandexBridge: getPurchases exception:", e);
+				if (window._godot_unprocessed_purchase_check_error) {
+					window._godot_unprocessed_purchase_check_error(String(e));
+				}
+			}
+		})();
+	""")
 
 
 func _on_js_payment_success(local_product_id: String, purchase_token: String) -> void:
@@ -319,17 +400,17 @@ func _setup_payment_js_callbacks() -> void:
 
 func _simulate_payment_debug(local_product_id: String) -> void:
 	await Engine.get_main_loop().create_timer(0.5).timeout
-	payment_purchase_success.emit(local_product_id, "debug_token")
+	payment_purchase_success.emit(local_product_id, "debug_token_%d" % Time.get_ticks_usec())
 
 
 # ── Cloud save ────────────────────────────────────────────────────────────────
 
 func is_cloud_save_available() -> bool:
-	return is_web and is_yandex_available
+	return _is_ysdk_ready()
 
 
 func load_cloud_save() -> void:
-	if not is_web or not is_yandex_available:
+	if not _is_ysdk_ready():
 		cloud_save_loaded.emit({})
 		return
 
@@ -357,7 +438,7 @@ func load_cloud_save() -> void:
 
 
 func save_cloud_save(data: Dictionary, flush: bool = false) -> void:
-	if not is_web or not is_yandex_available:
+	if not _is_ysdk_ready():
 		return
 
 	var json_string: String = JSON.stringify(data)
@@ -399,7 +480,7 @@ func save_cloud_save(data: Dictionary, flush: bool = false) -> void:
 
 
 func delete_cloud_save() -> void:
-	if not is_web or not is_yandex_available:
+	if not _is_ysdk_ready():
 		cloud_save_deleted.emit()
 		return
 
@@ -486,3 +567,24 @@ func _setup_cloud_save_js_callbacks() -> void:
 	JavaScriptBridge.eval("window._godot_cloud_save_error = %s;" % save_err_cb)
 	JavaScriptBridge.eval("window._godot_cloud_save_deleted = %s;" % deleted_cb)
 	JavaScriptBridge.eval("window._godot_cloud_save_delete_error = %s;" % delete_err_cb)
+
+
+func _on_js_unprocessed_purchase_found(product_id: String, purchase_token: String) -> void:
+	unprocessed_purchase_found.emit(product_id, purchase_token)
+
+
+func _on_js_unprocessed_purchase_check_completed() -> void:
+	unprocessed_purchase_check_completed.emit()
+
+
+func _on_js_unprocessed_purchase_check_error(message: String) -> void:
+	unprocessed_purchase_check_error.emit(message)
+
+
+func _setup_unprocessed_purchase_js_callbacks() -> void:
+	var found_cb := JavaScriptBridge.create_callback(func(args): _on_js_unprocessed_purchase_found(str(args[0]), str(args[1])))
+	var completed_cb := JavaScriptBridge.create_callback(_on_js_unprocessed_purchase_check_completed)
+	var error_cb := JavaScriptBridge.create_callback(func(args): _on_js_unprocessed_purchase_check_error(str(args[0])))
+	JavaScriptBridge.eval("window._godot_unprocessed_purchase_found = %s;" % found_cb)
+	JavaScriptBridge.eval("window._godot_unprocessed_purchase_check_completed = %s;" % completed_cb)
+	JavaScriptBridge.eval("window._godot_unprocessed_purchase_check_error = %s;" % error_cb)

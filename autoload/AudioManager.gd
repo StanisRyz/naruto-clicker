@@ -13,7 +13,8 @@ var _music_player: AudioStreamPlayer = null
 var _sfx_players: Array[AudioStreamPlayer] = []
 
 var _music_streams: Array[AudioStream] = []
-var _current_music_index: int = 0
+var _current_music_index: int = -1
+var _shuffled_music_bag: Array[int] = []
 
 var _hit_streams: Array[AudioStream] = []
 var _click_stream: AudioStream = null
@@ -69,7 +70,7 @@ func set_music_enabled(enabled: bool) -> void:
 	if not enabled:
 		_music_player.stop()
 	elif not _music_player.playing:
-		_play_track_at_index(_current_music_index)
+		play_next_music_track()
 
 
 func set_sound_enabled(enabled: bool) -> void:
@@ -80,12 +81,13 @@ func set_sound_enabled(enabled: bool) -> void:
 
 func play_main_music() -> void:
 	if _music_enabled:
-		_current_music_index = 0
-		_play_track_at_index(_current_music_index)
+		play_next_music_track()
 
 
 func play_music_track(index: int) -> void:
 	if index < 0 or index >= _music_streams.size():
+		return
+	if _music_streams[index] == null:
 		return
 	_current_music_index = index
 	if _music_enabled:
@@ -93,24 +95,23 @@ func play_music_track(index: int) -> void:
 
 
 func play_random_music_track() -> void:
-	var valid: Array[int] = []
-	for i: int in _music_streams.size():
-		if _music_streams[i] != null:
-			valid.append(i)
-	if valid.is_empty():
-		return
-	play_music_track(valid[randi() % valid.size()])
+	play_next_music_track()
 
 
 func play_next_music_track() -> void:
-	var total: int = _music_streams.size()
-	if total == 0:
+	if _shuffled_music_bag.is_empty():
+		_rebuild_shuffled_music_bag()
+	if _shuffled_music_bag.is_empty():
 		return
-	for _i: int in total:
-		_current_music_index = (_current_music_index + 1) % total
-		if _music_streams[_current_music_index] != null:
-			_play_track_at_index(_current_music_index)
-			return
+	var next_index: int = _shuffled_music_bag.pop_front()
+	if next_index == _current_music_index and _has_multiple_valid_music_tracks():
+		if _shuffled_music_bag.is_empty():
+			_rebuild_shuffled_music_bag()
+		if not _shuffled_music_bag.is_empty():
+			_shuffled_music_bag.append(next_index)
+			next_index = _shuffled_music_bag.pop_front()
+	_current_music_index = next_index
+	_play_track_at_index(_current_music_index)
 
 
 func stop_music() -> void:
@@ -132,7 +133,10 @@ func unlock_audio_if_needed() -> void:
 	# Re-attempt music start after first confirmed user gesture.
 	# On web, AudioContext may be suspended until the first interaction.
 	if _music_enabled and not _paused_for_ad and not _music_player.playing:
-		_play_track_at_index(_current_music_index)
+		if _current_music_index >= 0:
+			_play_track_at_index(_current_music_index)
+		else:
+			play_next_music_track()
 
 
 func play_button_click() -> void:
@@ -219,6 +223,8 @@ func _bind_buttons_recursive(node: Node) -> void:
 # --- Internal ---
 
 func _play_track_at_index(index: int) -> void:
+	if not _music_enabled or _paused_for_ad:
+		return
 	if index < 0 or index >= _music_streams.size():
 		return
 	var stream: AudioStream = _music_streams[index]
@@ -227,6 +233,28 @@ func _play_track_at_index(index: int) -> void:
 		return
 	_music_player.stream = stream
 	_music_player.play()
+
+
+func _get_valid_music_indices() -> Array[int]:
+	var valid: Array[int] = []
+	for i: int in _music_streams.size():
+		if _music_streams[i] != null:
+			valid.append(i)
+	return valid
+
+
+func _rebuild_shuffled_music_bag() -> void:
+	_shuffled_music_bag = _get_valid_music_indices()
+	_shuffled_music_bag.shuffle()
+	if _shuffled_music_bag.size() > 1 and _shuffled_music_bag[0] == _current_music_index:
+		var swap_index: int = 1 + (randi() % (_shuffled_music_bag.size() - 1))
+		var tmp: int = _shuffled_music_bag[0]
+		_shuffled_music_bag[0] = _shuffled_music_bag[swap_index]
+		_shuffled_music_bag[swap_index] = tmp
+
+
+func _has_multiple_valid_music_tracks() -> bool:
+	return _get_valid_music_indices().size() > 1
 
 
 func _notification(what: int) -> void:
