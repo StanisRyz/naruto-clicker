@@ -5,7 +5,7 @@ extends RefCounted
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
 # Generated key count: 369
-# Generated at: 1781624140
+# Generated at: 1781625622
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
