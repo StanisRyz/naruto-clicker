@@ -2,9 +2,13 @@
 
 ## Project status
 
-Release candidate. All core mechanics are implemented and QA-complete:
-balance, assets, ads, payments, UI, audio, save/load. The next major step is Web
-export and Yandex Games testing before public release.
+Final release-candidate / pre-publication. All core systems are implemented and
+QA-complete: balance, assets, ads, payments, UI, audio, save/load, localization.
+
+Current next steps: final Web release export, Yandex Games preview QA, upload
+and moderation. After release, work should focus on QoL improvements, polish,
+and blocking fixes only. Do not propose new major mechanics unless explicitly
+requested.
 
 ## Tech stack
 
@@ -40,35 +44,51 @@ requested.
 ## Core gameplay systems
 
 - **Tapping** — tap the enemy to deal click damage; critical hits possible via partner skills.
-- **Partner DPS** — 13 partner tiers provide passive damage per tick.
+- **Partner DPS** — 28 partner tiers provide passive damage per tick (major power source).
+- **BigNumber economy** — gold, costs, rewards, enemy HP, damage, and DPS all use BigNumber
+  (mantissa/exponent base-1000, compact display). Do not use raw `int` literals for large values.
 - **Upgrades / skills** — hero level upgrades and purchasable passive skill icons for hero, partners, and abilities.
 - **Active abilities** — Autoclick, Gold Bonus, Focus Burst, Rally (unlocked through Upgrade tab, improved by passive skills).
-- **Settlement / buildings** — six buildings with bulk-buy and milestone multipliers; reset on prestige.
+- **Settlement / buildings** — six buildings with bulk-buy and milestone multipliers; 0.1% bonus per purchased building level; reset on prestige.
 - **Tasks** — 5 active repeatable tasks from a pool of 10; claim for scaled gold rewards.
 - **Prestige** — spend prestige points on permanent talents that survive reset.
 - **Stage navigation** — horizontal strip navigator; auto-transition toggle; farmable boss levels.
 - **Boss levels** — every 10th level; 30-second timer; fail returns to previous level.
 - **Offline reward** — accumulates gold while the game is closed; claim via dialog on return.
 
+Enemy scaling constants (do not change without explicit request):
+- `ENEMY_HP_GROWTH = 1.26`
+- `ENEMY_REWARD_GROWTH = 1.20`
+
 ## Monetization systems
 
-### Floating rewarded ad banner (shown on main screen)
+### Floating rewarded ad banner (shown on main screen only)
 
-Reward is randomly selected per viewing:
+Appears only on the clear main screen. Reward is randomly selected per viewing:
 
 - x2 all damage for 60 seconds
 - x4 enemy kill gold for 60 seconds
 - +5 gems
 
-Cooldown: 300 seconds between viewings.
+- Initial cooldown: 300 seconds after game load.
+- Cooldown between viewings: 300 seconds.
+- Visible/available lifetime: 60 seconds. If not clicked within 60 s the banner
+  disappears and the normal 300 s cooldown begins.
 
 ### Shop rewarded ad
 
-- +3 gems per viewing.
+- +3 gems after rewarded success.
 
 ### Offline reward ad
 
 - Watch ad to claim offline gold ×3 (instead of ×1).
+
+### Fullscreen ads
+
+- No reward granted.
+- Safe cooldown-based display only.
+- Must not appear during active user interaction, purchases, rewarded ads, dialogs, or other unsafe states.
+- A UI input overlay blocks accidental clicks while the fullscreen ad is in progress.
 
 ### Donation gem purchases (Yandex Payments)
 
@@ -79,8 +99,13 @@ Cooldown: 300 seconds between viewings.
 | `gems_500` | +500 gems | 249 RUB |
 | `gems_1500` | +1500 gems | 499 RUB |
 
-**Important:** rewards are granted only after a success callback. Close/error/cancel
-grants nothing. Protect against duplicate success callbacks.
+**Rewards** are granted only after a success callback. Close/error/cancel grants nothing.
+Protect against duplicate success callbacks (prevent double-granting the same purchase token).
+Unprocessed purchases are recovered via `payments.getPurchases()` on startup.
+For consumable purchases the required order is: grant gems → update UI → save locally →
+request cloud save flush → call `consumePurchase()`.
+
+`GameplayAPI.stop()` / `start()` must be called around all rewarded and fullscreen ads.
 
 ## Audio
 
@@ -109,8 +134,21 @@ res://assets/audio/sfx/rewards/reward_received.ogg
 res://assets/audio/sfx/rewards/gold_received.ogg
 ```
 
-Sound setting gates all SFX. Music setting gates music playback. Audio pauses
-during rewarded/fullscreen ads.
+### Music behavior
+
+- 7 tracks; playback order is randomized/shuffled each session.
+- Game does not always start from track 1; immediate repeat is avoided.
+- Music starts/resumes after the first real user interaction (required by Web/Yandex autoplay policy).
+- Music pauses when the page/tab is hidden and resumes when visible again (if enabled and not
+  paused for an ad).
+- Audio pauses during rewarded/fullscreen ads and resumes after close/error when the page is visible.
+- `YandexBridge.is_ad_in_progress()` is used to avoid restarting GameplayAPI during ads.
+
+### SFX behavior
+
+- Sound setting gates all SFX; music setting gates music.
+- SFX are suppressed while the page/tab is hidden.
+- Button SFX fires on `button_down`, not after the button action completes.
 
 ## Localization
 
@@ -148,7 +186,12 @@ during rewarded/fullscreen ads.
 - prestige points (available and total earned)
 - prestige talent levels and `total_prestiges`
 
-Save immediately after purchases, rewards, reset, prestige, and settings changes.
+Save immediately after purchases, ad rewards, task claims, reset, prestige, settings/language changes, and important economy changes.
+
+**Cloud save:** Yandex cloud save (player data) is used alongside local save. Respect the
+Yandex player data size limit. Cloud save is flushed after purchases, ad rewards, and any
+action that changes persistent state. BigNumber values in the save must remain
+forward-compatible; do not rename save field keys without adding a migration.
 
 ## Debug / release rules
 
@@ -193,5 +236,5 @@ python -m http.server 8080
 | UI (panels, sheets, scrolling, touch) | Complete |
 | Audio (SFX, music, settings) | Complete |
 | Asset / build sanity | Complete |
-| Web export | Pending |
-| Yandex Games cabinet testing | Pending |
+| Web export | Ready for final local/Yandex preview verification |
+| Yandex Games cabinet testing | Ready for final local/Yandex preview verification |

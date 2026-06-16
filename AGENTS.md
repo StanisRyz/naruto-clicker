@@ -4,7 +4,7 @@ Development rules for AI coding agents working on this repository.
 
 ## Project rules
 
-- This is a Godot 4.5.1 Web/Yandex Games idle clicker, release-candidate stage.
+- This is a Godot 4.5.1 Web/Yandex Games idle clicker, final release-candidate / pre-publication stage.
 - Preserve current architecture.
 - Do not make broad rewrites.
 - Prefer small focused patches.
@@ -13,6 +13,16 @@ Development rules for AI coding agents working on this repository.
 - Do not add new gameplay systems during release-candidate cleanup unless explicitly requested.
 - Config files must contain only static data — no runtime player state, no SaveManager calls, no scene references.
 - Pure formula logic lives in `scripts/game/calculators/`; save serialization in `scripts/game/save/`; UI formatting in `scripts/game/presentation/`.
+
+## QoL work rules
+
+The project is at final release-candidate stage. Future tasks must:
+
+- Focus on QoL improvements, polish, and moderation/release blocking fixes only.
+- Not introduce new major mechanics unless explicitly requested by the user.
+- Not change balance constants unless explicitly requested.
+- Keep patches small and individually testable.
+- Avoid broad refactors or architectural changes unless fixing a specific bug that requires them.
 
 ## Localization rules
 
@@ -49,27 +59,63 @@ Development rules for AI coding agents working on this repository.
 - `onError` grants nothing.
 - Protect against duplicate reward grants for the same ad view.
 - Floating rewarded banner, shop rewarded gems, and offline ×3 use separate request contexts.
-- Audio must pause during rewarded and fullscreen ads.
+- Audio must pause during rewarded and fullscreen ads and resume after close/error when the page is visible.
+- `GameplayAPI.stop()` must be called before showing any rewarded or fullscreen ad.
+  `GameplayAPI.start()` must be called in every exit path (rewarded callback, close, error).
+- `GameplayAPI.stop()` / `start()` must also be called on page/tab visibility changes (pagehide/pageshow).
+- `YandexBridge.is_ad_in_progress()` must be checked before restarting GameplayAPI to avoid
+  restarting during an active ad.
+
+### Floating rewarded banner rules
+
+- Banner appears only on the clear main screen (no dialogs, no sheets open).
+- Initial cooldown: 300 seconds after game load.
+- Cooldown between viewings: 300 seconds.
+- Visible/available lifetime: 60 seconds (`REWARDED_AD_BANNER_LIFETIME_SECONDS = 60`).
+  If not clicked within 60 s the banner disappears and the normal 300 s cooldown begins.
+
+### Fullscreen ad rules
+
+- No reward is granted for fullscreen ads.
+- Safe cooldown-based display only; must not appear during active user interaction, purchases,
+  rewarded ads, dialogs, or any other unsafe state.
+- A UI input overlay must block accidental taps while the fullscreen ad is in progress.
 
 ## Payment rules
 
 - Paid gems are granted only after a payment success callback.
 - Cancel and error grant nothing.
-- A duplicate success callback must not double-grant gems.
+- A duplicate success callback must not double-grant gems. Prevent double-granting the
+  same purchase token within a session.
+- Unprocessed purchases must be checked via `payments.getPurchases()` on startup to recover
+  any purchases that were not consumed in a previous session.
+- For consumable purchases the required order is strictly:
+  1. Grant gems.
+  2. Update UI.
+  3. Save locally.
+  4. Request cloud save flush.
+  5. Call `consumePurchase()`.
 - In-game displayed prices must match the actual Yandex product prices:
   - `gems_25` → 24 RUB (+25 gems)
   - `gems_150` → 99 RUB (+150 gems)
   - `gems_500` → 249 RUB (+500 gems)
   - `gems_1500` → 499 RUB (+1500 gems)
+- `amount_gems` is the source of truth for reward quantities.
+- `price_rub` is the source of truth for displayed prices.
 
 ## Save / reset rules
 
+- Both local save and Yandex cloud save (player data) are used. Respect the Yandex player data size limit.
+- Cloud save must be flushed after purchases, ad rewards, task claims, reset, prestige, settings/language changes, and any important economy change.
 - Gems survive Reset Progress.
 - Permanent shop upgrades survive Reset Progress.
-- Gems and permanent shop upgrades survive Prestige.
-- Pending offline rewards must not duplicate or disappear.
-- Save immediately after purchases, rewards, reset, prestige, and settings changes.
+- Sound/music/language settings survive Reset Progress.
+- Gems, permanent shop upgrades, sound/music/language settings, and prestige points/talents survive Prestige.
+- Pending offline rewards must not duplicate or disappear. The pending offline reward must not be
+  lost, duplicated, or cleared on ad close/error.
+- Save immediately after purchases, ad rewards, task claims, reset, prestige, settings/language changes, and important economy changes.
 - Save field names (keys in the save dictionary) are part of Save System v1 and must not be renamed without a migration.
+- BigNumber values in the save must remain forward-compatible; adding a new BigNumber field requires handling the absent-key case on load.
 
 ## Debug / release rules
 
@@ -81,11 +127,19 @@ Development rules for AI coding agents working on this repository.
 
 ## Audio rules
 
-- Sound setting gates all SFX.
-- Music setting gates music playback.
-- Audio pauses during rewarded / fullscreen ads and resumes after they close.
+- Sound setting gates all SFX. Music setting gates music playback.
+- Music tracks are played in randomized/shuffled order; the game must not always start from track 1
+  and must avoid immediate repeats where possible.
+- Music starts/resumes after the first real user interaction (required by Web/Yandex autoplay policy).
+- Music pauses when the page/tab is hidden (pagehide) and resumes when visible again (pageshow) if
+  the music setting is enabled and audio was not paused for an ad.
+- SFX are suppressed while the page/tab is hidden.
+- Audio pauses during rewarded/fullscreen ads and resumes after close/error when the page is visible.
+- Button SFX fires on `button_down`, not after the delayed button action completes.
 - Avoid duplicate button / popup sounds triggered in the same frame.
 - `gold_received.ogg` must not spam on every partner tick — only play on meaningful gold events.
+- Do not use `Engine.has_singleton("YandexBridge")` to check for the YandexBridge autoload —
+  it is always registered. Use it directly as `YandexBridge`.
 
 ## Asset rules
 
@@ -257,6 +311,22 @@ Before final release, verify:
 - Large arrays (`PARTNER_DPS_VALUES`, skill definitions, etc.) are documented in `BalanceConfig` but kept as typed literals in `ClickerState` to avoid typed-array conversion risk.
 - Do not add runtime mutable state to `BalanceConfig` — consts only.
 - See `docs/BALANCE.md` for the full tuning guide.
+- Do not change balance constants unless explicitly requested.
+
+### BigNumber rules
+
+- Large economy values use `BigNumber`: gold, costs, rewards, enemy HP, damage, DPS, and offline
+  rewards where applicable.
+- `BigNumber` uses mantissa/exponent base-1000 representation with compact display formatting.
+- Do not use raw `int` or `float` literals for values that could exceed safe integer range. Use
+  `BigNumber.from_int()`, `BigNumber.from_float()`, or the relevant `BalanceConfig` BigNumber helpers.
+- Partner count is `PARTNER_COUNT = 28`. Partner cost and DPS formulas use BigNumber helpers for
+  high indices to avoid integer overflow.
+- Partner base progression: partner 1 cost = 35, DPS = 4; each subsequent partner base cost ×11,
+  base DPS ×12.
+- Settlement building bonus is 0.1% per purchased building level.
+- Enemy HP growth: `ENEMY_HP_GROWTH = 1.26`. Enemy reward growth: `ENEMY_REWARD_GROWTH = 1.20`.
+  Do not change these without explicit request.
 
 ## ProgressionSimulator Rules
 
@@ -293,7 +363,7 @@ Before final release, verify:
 - **K** — clears the current level and advances to the next.
 - While F12 mode is ON (`ClickerState.is_debug_purchase_override_enabled()` returns `true`):
   - All gold-based purchases cost exactly **1 gold**.
-  - All 13 partner rows are visible; gold-based reveal requirement is bypassed.
+  - All 28 partner rows are visible; gold-based reveal requirement is bypassed.
   - All building rows are visible; previous-building ownership requirement is bypassed.
   - Ability unlock level requirements are ignored.
   - Hero skill, ability skill, and partner skill level/count requirements are ignored.
