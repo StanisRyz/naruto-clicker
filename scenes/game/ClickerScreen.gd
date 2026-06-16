@@ -605,6 +605,12 @@ func _on_gem_product_purchase_requested(product_id: String) -> void:
 
 
 func _on_payment_purchase_success(local_product_id: String, purchase_token: String) -> void:
+	if purchase_token == "":
+		push_warning("YandexBridge: purchase success for '%s' without purchaseToken, ignoring" % local_product_id)
+		AudioManager.play_purchase_error()
+		_handle_status_text(LocalizationManager.tr_key("shop.gem_purchase.error"))
+		_clear_payment_request_state()
+		return
 	if _payment_reward_granted_for_current_request:
 		_clear_payment_request_state()
 		return
@@ -1333,7 +1339,7 @@ func _set_runtime_pause_reason(reason: String, paused: bool) -> void:
 		if was_paused and _runtime_pause_reasons.is_empty() and _runtime_pause_started_unix_time > 0:
 			var paused_seconds: int = int(Time.get_unix_time_from_system()) - _runtime_pause_started_unix_time
 			if paused_seconds > 0 and _is_initialized:
-				state.extend_rewarded_ad_buff_expirations(paused_seconds)
+				state.extend_rewarded_ad_buff_expirations(paused_seconds, _runtime_pause_started_unix_time)
 			_runtime_pause_started_unix_time = 0
 
 
@@ -1349,6 +1355,11 @@ func _can_resume_yandex_gameplay() -> bool:
 	if YandexBridge.is_ad_in_progress():
 		return false
 	return true
+
+
+func notify_yandex_game_ready() -> void:
+	YandexBridge.game_ready()
+	_try_resume_yandex_gameplay()
 
 
 func _request_yandex_gameplay_stop() -> void:

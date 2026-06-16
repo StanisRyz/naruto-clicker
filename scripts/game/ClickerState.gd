@@ -868,13 +868,12 @@ func is_rewarded_ad_gold_active() -> bool:
 	return int(Time.get_unix_time_from_system()) < rewarded_ad_gold_x2_expires_at
 
 
-func extend_rewarded_ad_buff_expirations(seconds: int) -> void:
-	if seconds <= 0:
+func extend_rewarded_ad_buff_expirations(seconds: int, pause_started_at: int) -> void:
+	if seconds <= 0 or pause_started_at <= 0:
 		return
-	var now: int = int(Time.get_unix_time_from_system())
-	if rewarded_ad_all_damage_x2_expires_at > now:
+	if rewarded_ad_all_damage_x2_expires_at > pause_started_at:
 		rewarded_ad_all_damage_x2_expires_at += seconds
-	if rewarded_ad_gold_x2_expires_at > now:
+	if rewarded_ad_gold_x2_expires_at > pause_started_at:
 		rewarded_ad_gold_x2_expires_at += seconds
 
 

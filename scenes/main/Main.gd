@@ -6,8 +6,9 @@ func _ready() -> void:
 		push_warning("Main: ClickerScreen startup_completed not found — calling game_ready as fallback")
 		await get_tree().process_frame
 		YandexBridge.game_ready()
-		YandexBridge.gameplay_start()
 		return
 	await clicker_screen.startup_completed
-	YandexBridge.game_ready()
-	YandexBridge.gameplay_start()
+	if clicker_screen.has_method("notify_yandex_game_ready"):
+		clicker_screen.notify_yandex_game_ready()
+	else:
+		YandexBridge.game_ready()
