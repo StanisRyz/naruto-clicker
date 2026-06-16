@@ -168,10 +168,10 @@ const BUILDING_BONUS_PERCENT_PER_LEVEL: float = 0.1
 # reward(level) = ENEMY_REWARD_BASE * ENEMY_REWARD_GROWTH^(level-1)
 # HP grows faster than rewards to create increasing friction over time.
 const ENEMY_HP_BASE: float = 18.0
-const ENEMY_HP_GROWTH: float = 1.398
+const ENEMY_HP_GROWTH: float = 1.26
 
 const ENEMY_REWARD_BASE: float = 4.0
-const ENEMY_REWARD_GROWTH: float = 1.115
+const ENEMY_REWARD_GROWTH: float = 1.20
 
 const ELITE_SPAWN_CHANCE: float = 0.07
 const ELITE_HP_MULTIPLIER: int = 3
@@ -237,5 +237,6 @@ const REWARDED_AD_GOLD_BUFF_DURATION_SECONDS: int = 60
 const REWARDED_AD_GEMS_REWARD: int = 5
 const REWARDED_AD_BANNER_COOLDOWN_SECONDS: int = 300
 const REWARDED_AD_INITIAL_COOLDOWN_SECONDS: int = 300
+const REWARDED_AD_BANNER_LIFETIME_SECONDS: int = 60
 # Kept for BalanceAuditReport compile compatibility — new logic uses split duration constants above.
 const REWARDED_AD_BUFF_DURATION_SECONDS: int = 60

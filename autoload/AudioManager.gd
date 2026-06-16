@@ -6,8 +6,13 @@ const GOLD_RECEIVED_SOUND_MIN_INTERVAL_SEC: float = 0.15
 var _sound_enabled: bool = true
 var _music_enabled: bool = true
 var _paused_for_ad: bool = false
+var _page_visible: bool = true
 var _last_gold_received_time: float = -999.0
 var _audio_context_unlocked: bool = false
+
+var _js_page_hidden_cb = null
+var _js_page_shown_cb = null
+var _js_gesture_cb = null
 
 var _music_player: AudioStreamPlayer = null
 var _sfx_players: Array[AudioStreamPlayer] = []
@@ -37,6 +42,7 @@ func _ready() -> void:
 		_sfx_players.append(p)
 
 	_load_streams()
+	_register_web_event_listeners()
 
 
 func _load_streams() -> void:
@@ -123,7 +129,7 @@ func stop_music() -> void:
 func unlock_audio_if_needed() -> void:
 	# Un-pause music if paused by NOTIFICATION_APPLICATION_FOCUS_OUT when FOCUS_IN never fired
 	# (common in Yandex Games iframe).
-	if _music_enabled and not _paused_for_ad and _music_player.stream_paused:
+	if _music_enabled and not _paused_for_ad and _page_visible and _music_player.stream_paused:
 		_music_player.stream_paused = false
 
 	if _audio_context_unlocked:
@@ -132,7 +138,7 @@ func unlock_audio_if_needed() -> void:
 
 	# Re-attempt music start after first confirmed user gesture.
 	# On web, AudioContext may be suspended until the first interaction.
-	if _music_enabled and not _paused_for_ad and not _music_player.playing:
+	if _music_enabled and not _paused_for_ad and _page_visible and not _music_player.playing:
 		if _current_music_index >= 0:
 			_play_track_at_index(_current_music_index)
 		else:
@@ -193,8 +199,59 @@ func resume_after_ad() -> void:
 	if not _paused_for_ad:
 		return
 	_paused_for_ad = false
-	if _music_enabled:
+	if _music_enabled and _page_visible:
 		_music_player.stream_paused = false
+
+
+# --- Page visibility ---
+
+func set_page_audio_visible(visible: bool) -> void:
+	if visible == _page_visible:
+		return
+	_page_visible = visible
+	if not visible:
+		_music_player.stream_paused = true
+		if Engine.has_singleton("YandexBridge"):
+			YandexBridge.gameplay_stop()
+	else:
+		if _music_enabled and not _paused_for_ad:
+			_music_player.stream_paused = false
+		if Engine.has_singleton("YandexBridge"):
+			if not YandexBridge._rewarded_ad_in_progress and not YandexBridge._fullscreen_ad_in_progress:
+				YandexBridge.gameplay_start()
+
+
+func _register_web_event_listeners() -> void:
+	if not OS.has_feature("web"):
+		return
+	_js_page_hidden_cb = JavaScriptBridge.create_callback(func(_args): set_page_audio_visible(false))
+	_js_page_shown_cb = JavaScriptBridge.create_callback(func(_args): set_page_audio_visible(true))
+	_js_gesture_cb = JavaScriptBridge.create_callback(func(_args): unlock_audio_if_needed())
+	JavaScriptBridge.eval("window._godot_audio_page_hidden = %s;" % _js_page_hidden_cb)
+	JavaScriptBridge.eval("window._godot_audio_page_visible = %s;" % _js_page_shown_cb)
+	JavaScriptBridge.eval("window._godot_audio_user_gesture = %s;" % _js_gesture_cb)
+	JavaScriptBridge.eval("""
+		(function() {
+			document.addEventListener('visibilitychange', function() {
+				if (document.hidden) {
+					if (window._godot_audio_page_hidden) window._godot_audio_page_hidden();
+				} else {
+					if (window._godot_audio_page_visible) window._godot_audio_page_visible();
+				}
+			});
+			window.addEventListener('pagehide', function() {
+				if (window._godot_audio_page_hidden) window._godot_audio_page_hidden();
+			});
+			window.addEventListener('pageshow', function() {
+				if (window._godot_audio_page_visible) window._godot_audio_page_visible();
+			});
+			['pointerdown', 'touchstart', 'keydown'].forEach(function(ev) {
+				document.addEventListener(ev, function() {
+					if (window._godot_audio_user_gesture) window._godot_audio_user_gesture();
+				}, { passive: true });
+			});
+		})();
+	""")
 
 
 # --- Button binding ---
@@ -223,7 +280,7 @@ func _bind_buttons_recursive(node: Node) -> void:
 # --- Internal ---
 
 func _play_track_at_index(index: int) -> void:
-	if not _music_enabled or _paused_for_ad:
+	if not _music_enabled or _paused_for_ad or not _page_visible:
 		return
 	if index < 0 or index >= _music_streams.size():
 		return
@@ -264,12 +321,14 @@ func _notification(what: int) -> void:
 		NOTIFICATION_APPLICATION_FOCUS_OUT:
 			_music_player.stream_paused = true
 		NOTIFICATION_APPLICATION_FOCUS_IN:
-			if _music_enabled and not _paused_for_ad:
+			if _music_enabled and not _paused_for_ad and _page_visible:
 				_music_player.stream_paused = false
 
 
 func _play_sfx(stream: AudioStream) -> void:
-	if stream == null or _paused_for_ad:
+	if stream == null:
+		return
+	if _paused_for_ad or not _page_visible:
 		return
 	for player: AudioStreamPlayer in _sfx_players:
 		if not player.playing:

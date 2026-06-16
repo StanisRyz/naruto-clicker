@@ -1083,6 +1083,9 @@ func _process_rewarded_ad_buff_expiry() -> void:
 	elif gold_just_expired:
 		_update_ui()
 
+	if state.expire_rewarded_ad_banner_if_needed():
+		_save_game_now()
+
 	_update_rewarded_ad_banner()
 
 
@@ -1605,7 +1608,7 @@ func _on_offline_reward_claim_ad_requested() -> void:
 
 
 func _on_rewarded_ad_banner_pressed() -> void:
-	if not state.can_request_rewarded_ad():
+	if not state.is_rewarded_ad_banner_available():
 		rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.COOLDOWN)
 		return
 	_rewarded_ad_request_context = "bonus_banner"
@@ -1694,22 +1697,17 @@ func _is_main_screen_clear_for_rewarded_banner() -> bool:
 	)
 
 
-func _can_show_rewarded_ad_banner_now() -> bool:
-	if BuildConfig.is_debug_features_enabled() and state.is_debug_visual_test_mode_enabled():
-		return true
-	return state.can_request_rewarded_ad()
-
-
 func _update_rewarded_ad_banner() -> void:
 	if not _is_main_screen_clear_for_rewarded_banner():
 		rewarded_ad_banner.visible = false
 		rewarded_ad_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		return
 
-	if _can_show_rewarded_ad_banner_now():
+	state.spawn_rewarded_ad_banner_if_needed()
+
+	if state.is_rewarded_ad_banner_available():
 		rewarded_ad_banner.visible = true
 		rewarded_ad_banner.mouse_filter = Control.MOUSE_FILTER_STOP
-		state.ensure_rewarded_ad_current_reward_selected()
 		rewarded_ad_banner.set_reward_id(state.get_rewarded_ad_current_reward_id())
 		rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.AVAILABLE)
 	else:

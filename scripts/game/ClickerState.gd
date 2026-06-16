@@ -111,6 +111,7 @@ var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var rewarded_ad_all_damage_x2_expires_at: int = 0
 var rewarded_ad_gold_x2_expires_at: int = 0
 var rewarded_ad_banner_cooldown_until: int = 0
+var rewarded_ad_banner_available_until: int = 0
 var rewarded_ad_current_reward_id: String = ""
 
 const REWARDED_AD_REWARD_IDS: Array[String] = [
@@ -880,7 +881,9 @@ func can_request_rewarded_ad() -> bool:
 
 
 func clear_rewarded_ad_banner_cooldown_for_debug() -> void:
+	var now: int = int(Time.get_unix_time_from_system())
 	rewarded_ad_banner_cooldown_until = 0
+	rewarded_ad_banner_available_until = now + 600
 	ensure_rewarded_ad_current_reward_selected()
 
 
@@ -903,6 +906,40 @@ func get_rewarded_ad_current_reward_id() -> String:
 	return rewarded_ad_current_reward_id
 
 
+func is_rewarded_ad_banner_available() -> bool:
+	var now: int = int(Time.get_unix_time_from_system())
+	return rewarded_ad_current_reward_id != "" and now < rewarded_ad_banner_available_until
+
+
+func spawn_rewarded_ad_banner_if_needed() -> bool:
+	var now: int = int(Time.get_unix_time_from_system())
+	if now < rewarded_ad_banner_cooldown_until:
+		return false
+	if rewarded_ad_banner_available_until > now:
+		return false
+	ensure_rewarded_ad_current_reward_selected()
+	rewarded_ad_banner_available_until = now + BalanceConfig.REWARDED_AD_BANNER_LIFETIME_SECONDS
+	return true
+
+
+func expire_rewarded_ad_banner_if_needed() -> bool:
+	if rewarded_ad_current_reward_id == "":
+		return false
+	var now: int = int(Time.get_unix_time_from_system())
+	if now < rewarded_ad_banner_available_until:
+		return false
+	rewarded_ad_current_reward_id = ""
+	rewarded_ad_banner_available_until = 0
+	rewarded_ad_banner_cooldown_until = now + BalanceConfig.REWARDED_AD_BANNER_COOLDOWN_SECONDS
+	return true
+
+
+func start_rewarded_ad_banner_cooldown() -> void:
+	var now: int = int(Time.get_unix_time_from_system())
+	rewarded_ad_banner_available_until = 0
+	rewarded_ad_banner_cooldown_until = now + BalanceConfig.REWARDED_AD_BANNER_COOLDOWN_SECONDS
+
+
 func grant_random_rewarded_ad_bonus() -> Dictionary:
 	ensure_rewarded_ad_current_reward_selected()
 	return grant_rewarded_ad_bonus(rewarded_ad_current_reward_id)
@@ -911,6 +948,7 @@ func grant_random_rewarded_ad_bonus() -> Dictionary:
 func grant_rewarded_ad_bonus(reward_id: String) -> Dictionary:
 	var now: int = int(Time.get_unix_time_from_system())
 	rewarded_ad_banner_cooldown_until = now + BalanceConfig.REWARDED_AD_BANNER_COOLDOWN_SECONDS
+	rewarded_ad_banner_available_until = 0
 	rewarded_ad_current_reward_id = ""
 
 	match reward_id:
