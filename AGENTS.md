@@ -52,6 +52,24 @@ The project is at final release-candidate stage. Future tasks must:
 - Background ImageSlot uses `stretch_mode = STRETCH_KEEP_ASPECT_COVERED` — vertical crop is
   acceptable and expected on the 9:16 Web layout.
 
+## Yandex lifecycle / runtime pause rules
+
+- `LoadingAPI.ready()` is called only after `ClickerScreen.startup_completed` fires.
+- `Main.gd` must **not** call `YandexBridge.gameplay_start()` directly. Initial game-ready
+  flow goes through `ClickerScreen.notify_yandex_game_ready()`, which calls `game_ready()`
+  then `_try_resume_yandex_gameplay()`.
+- `GameplayAPI.start()` must only be called through `_try_resume_yandex_gameplay()`, which
+  verifies `_is_initialized`, all runtime pause reasons are clear, and no ad is in progress.
+- `GameplayAPI.stop()` must be paired with adding a runtime pause reason
+  (`_set_runtime_pause_reason(reason, true)`).
+- Handle `game_api_pause` / `game_api_resume` platform signals via
+  `_on_yandex_platform_pause_requested()` / `_on_yandex_platform_resume_requested()`.
+- Runtime pause stops: boss timer, ability timers and cooldowns, fullscreen ad cooldown,
+  autoclick accumulator, partner DPS accumulator, enemy transition waits
+  (`_wait_runtime_seconds`), and manual attacks.
+- Page visibility (`visibilitychange` / `pagehide` / `pageshow`) sets the `hidden` pause
+  reason and is handled by `AudioManager`.
+
 ## Ads rules
 
 - Rewarded rewards must be granted only in the `onRewarded` / `rewarded_ad_rewarded` callback.
@@ -60,9 +78,11 @@ The project is at final release-candidate stage. Future tasks must:
 - Protect against duplicate reward grants for the same ad view.
 - Floating rewarded banner, shop rewarded gems, and offline ×3 use separate request contexts.
 - Audio must pause during rewarded and fullscreen ads and resume after close/error when the page is visible.
-- `GameplayAPI.stop()` must be called before showing any rewarded or fullscreen ad.
-  `GameplayAPI.start()` must be called in every exit path (rewarded callback, close, error).
-- `GameplayAPI.stop()` / `start()` must also be called on page/tab visibility changes (pagehide/pageshow).
+- Before showing any rewarded or fullscreen ad: add the relevant runtime pause reason,
+  call `AudioManager.pause_for_ad()`, call `GameplayAPI.stop()`.
+- On ad close/error: clear the pause reason and call `_try_resume_yandex_gameplay()`.
+  Do **not** call `GameplayAPI.start()` directly from ad handlers.
+- `GameplayAPI.stop()` must also be called on page/tab visibility changes (pagehide/pageshow).
 - `YandexBridge.is_ad_in_progress()` must be checked before restarting GameplayAPI to avoid
   restarting during an active ad.
 
@@ -83,7 +103,10 @@ The project is at final release-candidate stage. Future tasks must:
 
 ## Payment rules
 
-- Paid gems are granted only after a payment success callback.
+- Use client-side Yandex Payments mode: `ysdk.getPayments()`. Do **not** use
+  `getPayments({ signed: true })` unless a backend signature verification flow is added.
+- Paid gems are granted only after a payment success callback that carries a **non-empty
+  `purchaseToken`**. An empty or missing token must not grant gems; treat it as an error.
 - Cancel and error grant nothing.
 - A duplicate success callback must not double-grant gems. Prevent double-granting the
   same purchase token within a session.
@@ -95,6 +118,13 @@ The project is at final release-candidate stage. Future tasks must:
   3. Save locally.
   4. Request cloud save flush.
   5. Call `consumePurchase()`.
+- The payment modal must add a runtime pause reason, call `AudioManager.set_audio_pause_reason`,
+  and call `GameplayAPI.stop()` before the Yandex payment dialog opens.
+- Payment success/cancel/error must clear pending payment state
+  (`_pending_payment_product_id`, `_payment_reward_granted_for_current_request`) and
+  call safe resume logic.
+- The gem purchase dialog must not be dismissible (close button or outside click) while
+  `_payment_in_progress` is true.
 - In-game displayed prices must match the actual Yandex product prices:
   - `gems_25` → 24 RUB (+25 gems)
   - `gems_150` → 99 RUB (+150 gems)
@@ -111,6 +141,9 @@ The project is at final release-candidate stage. Future tasks must:
 - Permanent shop upgrades survive Reset Progress.
 - Sound/music/language settings survive Reset Progress.
 - Gems, permanent shop upgrades, sound/music/language settings, and prestige points/talents survive Prestige.
+- Prestige resets: current level, max unlocked level, normal run progress (gold, hero level,
+  partners, buildings, skills), tasks, temporary buffs, and `auto_stage_advance_enabled`
+  (resets to default ON).
 - Pending offline rewards must not duplicate or disappear. The pending offline reward must not be
   lost, duplicated, or cleared on ad close/error.
 - Save immediately after purchases, ad rewards, task claims, reset, prestige, settings/language changes, and important economy changes.
@@ -119,21 +152,26 @@ The project is at final release-candidate stage. Future tasks must:
 
 ## Debug / release rules
 
-- Debug features are allowed only when `BuildConfig.is_debug_features_enabled()` returns true (which checks `IS_DEBUG_BUILD`).
-- F12 debug mode must not work in production.
+- Debug features are allowed only when `BuildConfig.is_debug_features_enabled()` returns true.
+  This reflects `OS.is_debug_build()` internally — do not manually force `IS_DEBUG_BUILD` in source.
+- Use a proper release export (`godot --headless --export-release "Web" …`) to produce a
+  production build. Do not ship a debug export.
+- F12 debug mode and keyboard shortcuts (F5/F9/F10/F12/L/K) must not work in production.
 - Fake ad / payment success must not work in production.
 - Dev tools (`ProgressionSimulator`, `BalanceAuditReport`) must not be autoloaded or runtime-active in release builds.
-- Before public release: set `IS_DEBUG_BUILD = false` in `BuildConfig.gd` and verify no dev UI is visible.
 
 ## Audio rules
 
 - Sound setting gates all SFX. Music setting gates music playback.
+- Audio uses a multi-reason pause: `ad`, `platform`, `payment`, `hidden`. Music and SFX are
+  suppressed while any pause reason is active.
 - Music tracks are played in randomized/shuffled order; the game must not always start from track 1
   and must avoid immediate repeats where possible.
 - Music starts/resumes after the first real user interaction (required by Web/Yandex autoplay policy).
-- Music pauses when the page/tab is hidden (pagehide) and resumes when visible again (pageshow) if
-  the music setting is enabled and audio was not paused for an ad.
-- SFX are suppressed while the page/tab is hidden.
+- Music pauses when the page/tab is hidden (pagehide / `visibilitychange`) and resumes when visible
+  again (pageshow) if the music setting is enabled and no other pause reason is active.
+- SFX are suppressed while the page/tab is hidden, during ads, during platform pause, and during
+  active payment.
 - Audio pauses during rewarded/fullscreen ads and resumes after close/error when the page is visible.
 - Button SFX fires on `button_down`, not after the delayed button action completes.
 - Avoid duplicate button / popup sounds triggered in the same frame.
@@ -187,13 +225,23 @@ Before final release, verify:
 ## Yandex Games / Web Export Rules
 
 - Keep YandexBridge registered as an Autoload.
-- Preserve existing YandexBridge public methods: `game_ready()`, `gameplay_start()`, `gameplay_stop()`.
+- Preserve existing YandexBridge public methods: `game_ready()`, `gameplay_start()`, `gameplay_stop()`,
+  and `notify_yandex_game_ready()` on ClickerScreen.
 - Make sure editor and desktop preview runs do not crash when Web-only APIs are unavailable.
 - Production export must use release mode, not debug.
 - `index.html` must be at the archive root for Yandex Games upload.
 - No Cyrillic or spaces in exported file paths.
 - Unpacked build ≤ 100 MB.
 - Test locally via HTTP server, not by opening `index.html` directly.
+
+### Localhost / offline behavior
+
+- On localhost, `window.ysdk` is not present — the Yandex SDK is unavailable.
+- Real ads and real paid purchases will not open.
+- The game must fail gracefully: no rewards or gems must be granted, and the game must
+  not be left in a paused state with no recovery path.
+- Debug mode simulates ad and payment flows for local testing. These simulations are
+  disabled in release builds via `BuildConfig.is_debug_features_enabled()`.
 
 ## Stage Navigator Rules
 
@@ -228,7 +276,8 @@ Before final release, verify:
 
 ## Auto-transition Rules
 
-- `ClickerState.auto_stage_advance_enabled: bool = true` — saved locally, not reset on prestige.
+- `ClickerState.auto_stage_advance_enabled: bool = true` — defaults to true. Saved locally during
+  a normal run. Prestige resets it back to default ON.
 - `set_auto_stage_advance_enabled(enabled)` is the only setter.
 - When `auto_stage_advance_enabled` is ON and `resolve_defeated_target()` detects `did_level_up`: `current_level += 1`, `setup_current_level()`, returns `advanced_to_next_level: true`.
 - When `auto_stage_advance_enabled` is OFF and `resolve_defeated_target()` detects `did_level_up`: next level is unlocked (`max_unlocked_level` updated), `enemies_defeated_on_level = 0`, `setup_current_level()` resets the same level's target for farming, returns `advanced_to_next_level: false`.
@@ -375,7 +424,8 @@ Before final release, verify:
 **Rules:**
 - Do not remove `_on_test_gems_requested` or the `test_gems_requested` signal — they are used during development.
 - Do not add new debug tools without wrapping them in `if BuildConfig.IS_DEBUG_BUILD`.
-- Before public release, set `IS_DEBUG_BUILD = false` and verify no dev UI is visible.
+- Do not manually force `IS_DEBUG_BUILD` in source. Use a proper release export to produce
+  a production build where `OS.is_debug_build()` returns false.
 
 ## UI Font Size Rules
 

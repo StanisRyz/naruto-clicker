@@ -2,12 +2,10 @@
 
 ## Project status
 
-Final release-candidate / pre-publication. All core systems are implemented and
-QA-complete: balance, assets, ads, payments, UI, audio, save/load, localization.
-
-Current next steps: final Web release export, Yandex Games preview QA, upload
-and moderation. After release, work should focus on QoL improvements, polish,
-and blocking fixes only. Do not propose new major mechanics unless explicitly
+Release-candidate / pre-publication for Yandex Games. All core systems are
+implemented and ready for final local/Yandex Preview verification. Future work
+should focus on QoL improvements, polish, and moderation/release blocking fixes
+only. Do not propose major new mechanics or balance changes unless explicitly
 requested.
 
 ## Tech stack
@@ -40,6 +38,46 @@ involved.
 Do **not** switch to `viewport` stretch mode — it makes assets pixelated on
 high-DPI phones. Do not use `expand` or `ignore` aspect unless explicitly
 requested.
+
+## Yandex lifecycle / runtime pause
+
+### Startup flow
+
+- `LoadingAPI.ready()` is called only after `ClickerScreen.startup_completed`
+  fires, ensuring the UI is interactive before Yandex marks the game loaded.
+- The initial `GameplayAPI.start()` is routed through
+  `ClickerScreen.notify_yandex_game_ready()`, which calls `game_ready()` then
+  `_try_resume_yandex_gameplay()`.
+- `Main.gd` must **not** call `YandexBridge.gameplay_start()` directly. It
+  calls `clicker_screen.notify_yandex_game_ready()`.
+
+### Runtime pause
+
+A multi-reason pause dictionary (`_runtime_pause_reasons`) in `ClickerScreen`
+controls whether gameplay ticks. Active reasons: `payment`, `rewarded_ad`,
+`fullscreen_ad`, `platform`, `hidden`.
+
+`GameplayAPI.stop()` must be paired with adding a pause reason.
+`GameplayAPI.start()` must go through `_try_resume_yandex_gameplay()`, which
+checks all of:
+- `_is_initialized`
+- `_runtime_pause_reasons` is empty
+- `YandexBridge.is_ad_in_progress()` is false
+
+Gameplay that must not tick during any runtime pause:
+- boss timer
+- ability timers and cooldowns
+- fullscreen ad cooldown
+- autoclick accumulator
+- partner DPS accumulator
+- enemy transition waits (`_wait_runtime_seconds`)
+- manual attacks
+
+`game_api_pause` / `game_api_resume` platform signals are forwarded to
+`_set_runtime_pause_reason("platform", …)`.
+
+Page visibility (`visibilitychange` / `pagehide` / `pageshow`) sets the
+`hidden` pause reason.
 
 ## Core gameplay systems
 
@@ -90,6 +128,20 @@ Appears only on the clear main screen. Reward is randomly selected per viewing:
 - Must not appear during active user interaction, purchases, rewarded ads, dialogs, or other unsafe states.
 - A UI input overlay blocks accidental clicks while the fullscreen ad is in progress.
 
+### Rewarded ad rules
+
+- Reward is granted only in the `onRewarded` / `rewarded_ad_rewarded` callback.
+- `onClose` without prior reward grants nothing. `onError` grants nothing.
+- Before showing any ad: add the relevant runtime pause reason, call
+  `AudioManager.pause_for_ad()`, call `GameplayAPI.stop()`.
+- After close/error: clear the pause reason and call
+  `_try_resume_yandex_gameplay()`. Do not call `GameplayAPI.start()` directly
+  from ad handlers.
+- Rewarded buff timers (`rewarded_ad_all_damage_x2_expires_at`,
+  `rewarded_ad_gold_x2_expires_at`) are compensated for runtime pause: if a
+  buff was active when pause started, its expiry is extended by the paused
+  wall-clock duration when gameplay resumes.
+
 ### Donation gem purchases (Yandex Payments)
 
 | Product ID | Gems | Price |
@@ -99,13 +151,20 @@ Appears only on the clear main screen. Reward is randomly selected per viewing:
 | `gems_500` | +500 gems | 249 RUB |
 | `gems_1500` | +1500 gems | 499 RUB |
 
-**Rewards** are granted only after a success callback. Close/error/cancel grants nothing.
-Protect against duplicate success callbacks (prevent double-granting the same purchase token).
-Unprocessed purchases are recovered via `payments.getPurchases()` on startup.
-For consumable purchases the required order is: grant gems → update UI → save locally →
-request cloud save flush → call `consumePurchase()`.
-
-`GameplayAPI.stop()` / `start()` must be called around all rewarded and fullscreen ads.
+- Use client-side Yandex Payments mode: `ysdk.getPayments()`. Do **not** use
+  `getPayments({ signed: true })` unless a backend signature verification flow
+  is added.
+- Paid gems are granted only after a success callback that carries a **non-empty
+  `purchaseToken`**. An empty or missing token must not grant gems.
+- Cancel / error / close grant nothing.
+- Duplicate success callbacks must not double-grant (deduplication by token).
+- Unprocessed purchases are recovered via `payments.getPurchases()` on startup.
+- Required consumable order: grant gems → update UI → save locally → request
+  cloud save flush → call `consumePurchase()`.
+- The gem purchase dialog must not be dismissible (close button or outside click)
+  while `_payment_in_progress` is true.
+- Payment modal must pause runtime and audio and call `GameplayAPI.stop()`.
+  Cancel/error/success must clear pending payment state and call safe resume.
 
 ## Audio
 
@@ -140,14 +199,15 @@ res://assets/audio/sfx/rewards/gold_received.ogg
 - Game does not always start from track 1; immediate repeat is avoided.
 - Music starts/resumes after the first real user interaction (required by Web/Yandex autoplay policy).
 - Music pauses when the page/tab is hidden and resumes when visible again (if enabled and not
-  paused for an ad).
-- Audio pauses during rewarded/fullscreen ads and resumes after close/error when the page is visible.
-- `YandexBridge.is_ad_in_progress()` is used to avoid restarting GameplayAPI during ads.
+  paused for an ad or payment).
 
 ### SFX behavior
 
 - Sound setting gates all SFX; music setting gates music.
-- SFX are suppressed while the page/tab is hidden.
+- Audio uses a multi-reason pause: `ad`, `platform`, `payment`, `hidden`.
+  Music and SFX are suppressed while any pause reason is active.
+- SFX are suppressed while the page/tab is hidden, during ads, during platform
+  pause, and during active payment.
 - Button SFX fires on `button_down`, not after the button action completes.
 
 ## Localization
@@ -186,6 +246,11 @@ res://assets/audio/sfx/rewards/gold_received.ogg
 - prestige points (available and total earned)
 - prestige talent levels and `total_prestiges`
 
+**Prestige resets:**
+- current level and max unlocked level
+- normal run progress (gold, hero level, partners, buildings, normal skills)
+- `auto_stage_advance_enabled` resets to default ON
+
 Save immediately after purchases, ad rewards, task claims, reset, prestige, settings/language changes, and important economy changes.
 
 **Cloud save:** Yandex cloud save (player data) is used alongside local save. Respect the
@@ -195,12 +260,25 @@ forward-compatible; do not rename save field keys without adding a migration.
 
 ## Debug / release rules
 
-- All dev-only features must be gated by `BuildConfig.is_debug_features_enabled()`.
+- All dev-only features must be gated by `BuildConfig.is_debug_features_enabled()`,
+  which reflects `OS.is_debug_build()` internally. Do not manually force
+  `IS_DEBUG_BUILD` in source code.
+- Use a proper release export (`godot --headless --export-release "Web" …`) to
+  produce a production build. Do not ship a debug export.
 - F12 debug mode and keyboard shortcuts (F5/F9/F10/F12/L/K) must not work in production.
 - Fake ad / payment success must not work in production.
 - `BalanceAuditReport`, `ProgressionSimulator`, and other dev tools are dev-only and must not be autoloaded or runtime-active in release builds.
-- Before shipping: set `BuildConfig.IS_DEBUG_BUILD = false` in
-  `res://scripts/game/BuildConfig.gd`.
+
+## Localhost note
+
+On localhost, the Yandex SDK is unavailable (`window.ysdk` is not present).
+
+- Real ads will not open.
+- Real paid purchases will not open.
+- The game must fail gracefully: no rewards or gems must be granted, and the
+  game must not be left in a paused state with no recovery path.
+- Debug mode simulates ad/payment flows for local testing; these simulations
+  must be disabled in release builds.
 
 ## Export / release
 
@@ -238,3 +316,15 @@ python -m http.server 8080
 | Asset / build sanity | Complete |
 | Web export | Ready for final local/Yandex preview verification |
 | Yandex Games cabinet testing | Ready for final local/Yandex preview verification |
+
+## QoL update mode
+
+This project is in release-candidate QoL mode. When contributing:
+
+- Keep balance and monetization values unchanged unless explicitly requested.
+- Prefer small, individually reviewable patches.
+- Do not introduce major mechanics, architecture rewrites, or new systems by default.
+- Preserve Yandex lifecycle safety: runtime pause, audio pause, and payment state
+  must remain correct after every change.
+- Include brief validation notes (static checks or manual test steps) with every
+  code change.
