@@ -1703,6 +1703,8 @@ func _update_rewarded_ad_banner() -> void:
 		rewarded_ad_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		return
 
+	if state.expire_rewarded_ad_banner_if_needed():
+		_save_game_now()
 	state.spawn_rewarded_ad_banner_if_needed()
 
 	if state.is_rewarded_ad_banner_available():

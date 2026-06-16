@@ -111,6 +111,10 @@ func game_ready(attempt: int = 0) -> void:
 	""")
 
 
+func is_ad_in_progress() -> bool:
+	return _rewarded_ad_in_progress or _fullscreen_ad_in_progress
+
+
 func gameplay_start(attempt: int = 0) -> void:
 	if not _is_ysdk_ready():
 		_retry_gameplay_start(attempt)

@@ -211,14 +211,12 @@ func set_page_audio_visible(visible: bool) -> void:
 	_page_visible = visible
 	if not visible:
 		_music_player.stream_paused = true
-		if Engine.has_singleton("YandexBridge"):
-			YandexBridge.gameplay_stop()
+		YandexBridge.gameplay_stop()
 	else:
 		if _music_enabled and not _paused_for_ad:
 			_music_player.stream_paused = false
-		if Engine.has_singleton("YandexBridge"):
-			if not YandexBridge._rewarded_ad_in_progress and not YandexBridge._fullscreen_ad_in_progress:
-				YandexBridge.gameplay_start()
+		if not YandexBridge.is_ad_in_progress():
+			YandexBridge.gameplay_start()
 
 
 func _register_web_event_listeners() -> void:
