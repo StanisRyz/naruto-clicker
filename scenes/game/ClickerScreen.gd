@@ -605,11 +605,14 @@ func _on_gem_product_purchase_requested(product_id: String) -> void:
 
 func _on_payment_purchase_success(local_product_id: String, purchase_token: String) -> void:
 	if _payment_reward_granted_for_current_request:
+		_clear_payment_pause_and_try_resume()
 		return
 	if _is_purchase_token_processed(purchase_token):
+		_clear_payment_pause_and_try_resume()
 		return
 	if local_product_id != _pending_payment_product_id:
 		push_warning("YandexBridge: success for unexpected product '%s' (pending '%s'), ignoring" % [local_product_id, _pending_payment_product_id])
+		_clear_payment_pause_and_try_resume()
 		return
 	_payment_reward_granted_for_current_request = true
 	_mark_purchase_token_processed(purchase_token)
@@ -621,9 +624,7 @@ func _on_payment_purchase_success(local_product_id: String, purchase_token: Stri
 	YandexBridge.consume_purchase(purchase_token)
 	_pending_payment_product_id = ""
 	gem_purchase_dialog.hide_dialog()
-	_set_runtime_pause_reason("payment", false)
-	AudioManager.set_audio_pause_reason("payment", false)
-	_try_resume_yandex_gameplay()
+	_clear_payment_pause_and_try_resume()
 
 
 func _on_unprocessed_purchase_found(product_id: String, purchase_token: String) -> void:
@@ -672,9 +673,7 @@ func _on_payment_purchase_cancelled(_local_product_id: String) -> void:
 	_payment_reward_granted_for_current_request = false
 	gem_purchase_dialog.set_payment_done()
 	_handle_status_text(LocalizationManager.tr_key("shop.gem_purchase.cancelled"))
-	_set_runtime_pause_reason("payment", false)
-	AudioManager.set_audio_pause_reason("payment", false)
-	_try_resume_yandex_gameplay()
+	_clear_payment_pause_and_try_resume()
 
 
 func _on_payment_purchase_error(_local_product_id: String, _message: String) -> void:
@@ -683,9 +682,7 @@ func _on_payment_purchase_error(_local_product_id: String, _message: String) -> 
 	gem_purchase_dialog.set_payment_done()
 	AudioManager.play_purchase_error()
 	_handle_status_text(LocalizationManager.tr_key("shop.gem_purchase.error"))
-	_set_runtime_pause_reason("payment", false)
-	AudioManager.set_audio_pause_reason("payment", false)
-	_try_resume_yandex_gameplay()
+	_clear_payment_pause_and_try_resume()
 
 
 func _request_shop_rewarded_gems_ad(product_id: String) -> void:
@@ -1372,12 +1369,28 @@ func _on_page_visibility_changed(visible: bool) -> void:
 		_try_resume_yandex_gameplay()
 
 
+func _clear_payment_pause_and_try_resume() -> void:
+	_set_runtime_pause_reason("payment", false)
+	AudioManager.set_audio_pause_reason("payment", false)
+	_try_resume_yandex_gameplay()
+
+
+func _wait_runtime_seconds(seconds: float) -> void:
+	var remaining := seconds
+	while remaining > 0.0:
+		await get_tree().process_frame
+		if _is_runtime_paused():
+			continue
+		var delta := get_process_delta_time()
+		remaining = maxf(remaining - delta, 0.0)
+
+
 func _play_spawn_smoke_and_unlock_after_invulnerability(transition_token: int) -> void:
 	combat_effects_layer.play_spawn_smoke_effect(
 		game_field.get_enemy_global_rect(),
 		ENEMY_SPAWN_SMOKE_DURATION
 	)
-	await get_tree().create_timer(ENEMY_SPAWN_INVULNERABILITY_DURATION).timeout
+	await _wait_runtime_seconds(ENEMY_SPAWN_INVULNERABILITY_DURATION)
 	if transition_token != enemy_transition_token:
 		return
 	enemy_transition_locked = false
@@ -1386,7 +1399,7 @@ func _play_spawn_smoke_and_unlock_after_invulnerability(transition_token: int) -
 
 
 func _finish_enemy_transition_after_delay(transition_token: int) -> void:
-	await get_tree().create_timer(enemy_respawn_delay).timeout
+	await _wait_runtime_seconds(enemy_respawn_delay)
 	if transition_token != enemy_transition_token:
 		return
 

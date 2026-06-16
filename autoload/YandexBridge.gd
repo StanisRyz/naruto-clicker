@@ -31,6 +31,8 @@ const CLOUD_SAVE_KEY: String = "save_v1"
 const CLOUD_SAVE_SCHEMA_VERSION: int = 1
 const SDK_READY_RETRY_DELAY_SEC: float = 0.5
 const SDK_READY_MAX_RETRY_ATTEMPTS: int = 20
+const PLATFORM_EVENTS_RETRY_DELAY_SEC: float = 0.5
+const PLATFORM_EVENTS_MAX_RETRY_ATTEMPTS: int = 20
 
 var is_web: bool = false
 var is_yandex_available: bool = false
@@ -107,6 +109,7 @@ func game_ready(attempt: int = 0) -> void:
 		_retry_game_ready(attempt)
 		return
 
+	_setup_platform_event_callbacks()
 	JavaScriptBridge.eval("""
 		if (window.ysdk && window.ysdk.features && window.ysdk.features.LoadingAPI) {
 			window.ysdk.features.LoadingAPI.ready();
@@ -126,6 +129,7 @@ func gameplay_start(attempt: int = 0) -> void:
 		_retry_gameplay_start(attempt)
 		return
 
+	_setup_platform_event_callbacks()
 	JavaScriptBridge.eval("""
 		if (window.ysdk && window.ysdk.features && window.ysdk.features.GameplayAPI) {
 			window.ysdk.features.GameplayAPI.start();
@@ -617,26 +621,39 @@ func _setup_unprocessed_purchase_js_callbacks() -> void:
 	JavaScriptBridge.eval("window._godot_unprocessed_purchase_check_error = %s;" % error_cb)
 
 
-func _setup_platform_event_callbacks() -> void:
+func _setup_platform_event_callbacks(attempt: int = 0) -> void:
+	if not is_web:
+		return
 	if _platform_events_setup:
 		return
 	if not _is_ysdk_ready():
+		if attempt >= PLATFORM_EVENTS_MAX_RETRY_ATTEMPTS:
+			push_warning("YandexBridge: platform event setup gave up after %d attempts — SDK never became ready" % attempt)
+			return
+		await get_tree().create_timer(PLATFORM_EVENTS_RETRY_DELAY_SEC).timeout
+		_setup_platform_event_callbacks(attempt + 1)
 		return
-	_platform_events_setup = true
-	_platform_pause_cb = JavaScriptBridge.create_callback(func(_args): platform_pause_requested.emit())
-	_platform_resume_cb = JavaScriptBridge.create_callback(func(_args): platform_resume_requested.emit())
+	var has_on = JavaScriptBridge.eval("""
+		(function() {
+			try { return !!(window.ysdk && typeof window.ysdk.on === 'function'); } catch(e) { return false; }
+		})();
+	""")
+	if has_on != true:
+		push_warning("YandexBridge: ysdk.on not available — game_api_pause/resume not subscribed")
+		_platform_events_setup = true
+		return
+	if _platform_pause_cb == null:
+		_platform_pause_cb = JavaScriptBridge.create_callback(func(_args): platform_pause_requested.emit())
+		_platform_resume_cb = JavaScriptBridge.create_callback(func(_args): platform_resume_requested.emit())
 	JavaScriptBridge.eval("""
 		(function() {
 			try {
-				if (window.ysdk && typeof window.ysdk.on === 'function') {
-					window.ysdk.on('game_api_pause', %s);
-					window.ysdk.on('game_api_resume', %s);
-					console.log('YandexBridge: game_api_pause/resume subscribed');
-				} else {
-					console.warn('YandexBridge: ysdk.on not available, platform events not subscribed');
-				}
+				window.ysdk.on('game_api_pause', %s);
+				window.ysdk.on('game_api_resume', %s);
+				console.log('YandexBridge: game_api_pause/resume subscribed');
 			} catch(e) {
-				console.warn('YandexBridge: platform event setup failed:', e);
+				console.warn('YandexBridge: platform event subscription failed:', e);
 			}
 		})();
 	""" % [_platform_pause_cb, _platform_resume_cb])
+	_platform_events_setup = true
