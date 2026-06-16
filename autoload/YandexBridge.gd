@@ -17,6 +17,9 @@ signal unprocessed_purchase_found(product_id: String, purchase_token: String)
 signal unprocessed_purchase_check_completed
 signal unprocessed_purchase_check_error(message: String)
 
+signal platform_pause_requested
+signal platform_resume_requested
+
 signal cloud_save_loaded(data: Dictionary)
 signal cloud_save_load_error(message: String)
 signal cloud_save_completed
@@ -35,6 +38,9 @@ var is_yandex_available: bool = false
 var _rewarded_ad_in_progress: bool = false
 var _fullscreen_ad_in_progress: bool = false
 var _payment_js_callbacks_setup: bool = false
+var _platform_pause_cb = null
+var _platform_resume_cb = null
+var _platform_events_setup: bool = false
 
 func _ready() -> void:
 	is_web = OS.has_feature("web")
@@ -167,22 +173,30 @@ func show_rewarded_ad() -> void:
 
 	JavaScriptBridge.eval("""
 		(function() {
-			window.ysdk.adv.showRewardedVideo({
-				callbacks: {
-					onOpen: function() {
-						if (window._godot_rewarded_ad_open) window._godot_rewarded_ad_open();
-					},
-					onRewarded: function() {
-						if (window._godot_rewarded_ad_rewarded) window._godot_rewarded_ad_rewarded();
-					},
-					onClose: function(wasShown) {
-						if (window._godot_rewarded_ad_close) window._godot_rewarded_ad_close(wasShown ? 1 : 0);
-					},
-					onError: function(err) {
-						if (window._godot_rewarded_ad_error) window._godot_rewarded_ad_error(String(err));
-					}
+			try {
+				if (!window.ysdk || !window.ysdk.adv || typeof window.ysdk.adv.showRewardedVideo !== 'function') {
+					if (window._godot_rewarded_ad_error) window._godot_rewarded_ad_error('showRewardedVideo not available');
+					return;
 				}
-			});
+				window.ysdk.adv.showRewardedVideo({
+					callbacks: {
+						onOpen: function() {
+							if (window._godot_rewarded_ad_open) window._godot_rewarded_ad_open();
+						},
+						onRewarded: function() {
+							if (window._godot_rewarded_ad_rewarded) window._godot_rewarded_ad_rewarded();
+						},
+						onClose: function(wasShown) {
+							if (window._godot_rewarded_ad_close) window._godot_rewarded_ad_close(wasShown ? 1 : 0);
+						},
+						onError: function(err) {
+							if (window._godot_rewarded_ad_error) window._godot_rewarded_ad_error(String(err));
+						}
+					}
+				});
+			} catch(e) {
+				if (window._godot_rewarded_ad_error) window._godot_rewarded_ad_error(String(e));
+			}
 		})();
 	""")
 
@@ -219,6 +233,7 @@ func _setup_js_callbacks() -> void:
 	_setup_fullscreen_ad_js_callbacks()
 	_setup_cloud_save_js_callbacks()
 	_setup_unprocessed_purchase_js_callbacks()
+	_setup_platform_event_callbacks()
 
 
 func _simulate_rewarded_ad_debug() -> void:
@@ -244,19 +259,27 @@ func show_fullscreen_ad() -> void:
 
 	JavaScriptBridge.eval("""
 		(function() {
-			window.ysdk.adv.showFullscreenAdv({
-				callbacks: {
-					onOpen: function() {
-						if (window._godot_fullscreen_ad_open) window._godot_fullscreen_ad_open();
-					},
-					onClose: function(wasShown) {
-						if (window._godot_fullscreen_ad_close) window._godot_fullscreen_ad_close(wasShown ? 1 : 0);
-					},
-					onError: function(err) {
-						if (window._godot_fullscreen_ad_error) window._godot_fullscreen_ad_error(String(err));
-					}
+			try {
+				if (!window.ysdk || !window.ysdk.adv || typeof window.ysdk.adv.showFullscreenAdv !== 'function') {
+					if (window._godot_fullscreen_ad_error) window._godot_fullscreen_ad_error('showFullscreenAdv not available');
+					return;
 				}
-			});
+				window.ysdk.adv.showFullscreenAdv({
+					callbacks: {
+						onOpen: function() {
+							if (window._godot_fullscreen_ad_open) window._godot_fullscreen_ad_open();
+						},
+						onClose: function(wasShown) {
+							if (window._godot_fullscreen_ad_close) window._godot_fullscreen_ad_close(wasShown ? 1 : 0);
+						},
+						onError: function(err) {
+							if (window._godot_fullscreen_ad_error) window._godot_fullscreen_ad_error(String(err));
+						}
+					}
+				});
+			} catch(e) {
+				if (window._godot_fullscreen_ad_error) window._godot_fullscreen_ad_error(String(e));
+			}
 		})();
 	""")
 
@@ -592,3 +615,28 @@ func _setup_unprocessed_purchase_js_callbacks() -> void:
 	JavaScriptBridge.eval("window._godot_unprocessed_purchase_found = %s;" % found_cb)
 	JavaScriptBridge.eval("window._godot_unprocessed_purchase_check_completed = %s;" % completed_cb)
 	JavaScriptBridge.eval("window._godot_unprocessed_purchase_check_error = %s;" % error_cb)
+
+
+func _setup_platform_event_callbacks() -> void:
+	if _platform_events_setup:
+		return
+	if not _is_ysdk_ready():
+		return
+	_platform_events_setup = true
+	_platform_pause_cb = JavaScriptBridge.create_callback(func(_args): platform_pause_requested.emit())
+	_platform_resume_cb = JavaScriptBridge.create_callback(func(_args): platform_resume_requested.emit())
+	JavaScriptBridge.eval("""
+		(function() {
+			try {
+				if (window.ysdk && typeof window.ysdk.on === 'function') {
+					window.ysdk.on('game_api_pause', %s);
+					window.ysdk.on('game_api_resume', %s);
+					console.log('YandexBridge: game_api_pause/resume subscribed');
+				} else {
+					console.warn('YandexBridge: ysdk.on not available, platform events not subscribed');
+				}
+			} catch(e) {
+				console.warn('YandexBridge: platform event setup failed:', e);
+			}
+		})();
+	""" % [_platform_pause_cb, _platform_resume_cb])

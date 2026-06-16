@@ -3,9 +3,11 @@ extends Node
 const _SFX_POOL_SIZE: int = 6
 const GOLD_RECEIVED_SOUND_MIN_INTERVAL_SEC: float = 0.15
 
+signal page_visibility_changed(visible: bool)
+
 var _sound_enabled: bool = true
 var _music_enabled: bool = true
-var _paused_for_ad: bool = false
+var _pause_reasons: Dictionary = {}
 var _page_visible: bool = true
 var _last_gold_received_time: float = -999.0
 var _audio_context_unlocked: bool = false
@@ -75,7 +77,7 @@ func set_music_enabled(enabled: bool) -> void:
 	_music_enabled = enabled
 	if not enabled:
 		_music_player.stop()
-	elif not _music_player.playing:
+	elif not _music_player.playing and not _is_audio_paused():
 		play_next_music_track()
 
 
@@ -129,7 +131,7 @@ func stop_music() -> void:
 func unlock_audio_if_needed() -> void:
 	# Un-pause music if paused by NOTIFICATION_APPLICATION_FOCUS_OUT when FOCUS_IN never fired
 	# (common in Yandex Games iframe).
-	if _music_enabled and not _paused_for_ad and _page_visible and _music_player.stream_paused:
+	if _music_enabled and not _is_audio_paused() and _music_player.stream_paused:
 		_music_player.stream_paused = false
 
 	if _audio_context_unlocked:
@@ -138,7 +140,7 @@ func unlock_audio_if_needed() -> void:
 
 	# Re-attempt music start after first confirmed user gesture.
 	# On web, AudioContext may be suspended until the first interaction.
-	if _music_enabled and not _paused_for_ad and _page_visible and not _music_player.playing:
+	if _music_enabled and not _is_audio_paused() and not _music_player.playing:
 		if _current_music_index >= 0:
 			_play_track_at_index(_current_music_index)
 		else:
@@ -186,21 +188,35 @@ func play_gold_received() -> void:
 	_play_sfx(_gold_stream)
 
 
-# --- Ad pause/resume ---
+# --- Multi-reason pause system ---
+
+func set_audio_pause_reason(reason: String, paused: bool) -> void:
+	if paused:
+		_pause_reasons[reason] = true
+	else:
+		_pause_reasons.erase(reason)
+	_apply_audio_pause_state()
+
+
+func _is_audio_paused() -> bool:
+	return not _pause_reasons.is_empty()
+
+
+func _apply_audio_pause_state() -> void:
+	if _is_audio_paused():
+		_music_player.stream_paused = true
+	elif _music_enabled:
+		_music_player.stream_paused = false
+
+
+# --- Ad pause/resume (backwards-compatible wrappers) ---
 
 func pause_for_ad() -> void:
-	if _paused_for_ad:
-		return
-	_paused_for_ad = true
-	_music_player.stream_paused = true
+	set_audio_pause_reason("ad", true)
 
 
 func resume_after_ad() -> void:
-	if not _paused_for_ad:
-		return
-	_paused_for_ad = false
-	if _music_enabled and _page_visible:
-		_music_player.stream_paused = false
+	set_audio_pause_reason("ad", false)
 
 
 # --- Page visibility ---
@@ -209,14 +225,10 @@ func set_page_audio_visible(visible: bool) -> void:
 	if visible == _page_visible:
 		return
 	_page_visible = visible
+	set_audio_pause_reason("hidden", not visible)
 	if not visible:
-		_music_player.stream_paused = true
 		YandexBridge.gameplay_stop()
-	else:
-		if _music_enabled and not _paused_for_ad:
-			_music_player.stream_paused = false
-		if not YandexBridge.is_ad_in_progress():
-			YandexBridge.gameplay_start()
+	page_visibility_changed.emit(visible)
 
 
 func _register_web_event_listeners() -> void:
@@ -278,7 +290,7 @@ func _bind_buttons_recursive(node: Node) -> void:
 # --- Internal ---
 
 func _play_track_at_index(index: int) -> void:
-	if not _music_enabled or _paused_for_ad or not _page_visible:
+	if not _music_enabled or _is_audio_paused():
 		return
 	if index < 0 or index >= _music_streams.size():
 		return
@@ -319,14 +331,14 @@ func _notification(what: int) -> void:
 		NOTIFICATION_APPLICATION_FOCUS_OUT:
 			_music_player.stream_paused = true
 		NOTIFICATION_APPLICATION_FOCUS_IN:
-			if _music_enabled and not _paused_for_ad and _page_visible:
+			if _music_enabled and not _is_audio_paused():
 				_music_player.stream_paused = false
 
 
 func _play_sfx(stream: AudioStream) -> void:
 	if stream == null:
 		return
-	if _paused_for_ad or not _page_visible:
+	if _is_audio_paused():
 		return
 	for player: AudioStreamPlayer in _sfx_players:
 		if not player.playing:

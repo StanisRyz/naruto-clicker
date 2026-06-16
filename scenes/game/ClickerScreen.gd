@@ -1,5 +1,7 @@
 extends Control
 
+signal startup_completed
+
 const GemPurchaseDialogClass = preload("res://scenes/ui/GemPurchaseDialog.gd")
 const GemPurchaseConfigClass = preload("res://scripts/game/config/GemPurchaseConfig.gd")
 
@@ -61,6 +63,7 @@ var _pending_payment_product_id: String = ""
 var _payment_reward_granted_for_current_request: bool = false
 var _processed_purchase_tokens: Dictionary = {}
 var _unprocessed_purchase_check_requested: bool = false
+var _runtime_pause_reasons: Dictionary = {}
 
 const FULLSCREEN_AD_COOLDOWN_SECONDS: float = 300.0
 const FULLSCREEN_AD_INITIAL_COOLDOWN_SECONDS: float = 300.0
@@ -166,6 +169,9 @@ func _ready() -> void:
 	YandexBridge.fullscreen_ad_opened.connect(_on_fullscreen_ad_opened)
 	YandexBridge.fullscreen_ad_closed.connect(_on_fullscreen_ad_closed)
 	YandexBridge.fullscreen_ad_error.connect(_on_fullscreen_ad_error)
+	YandexBridge.platform_pause_requested.connect(_on_yandex_platform_pause_requested)
+	YandexBridge.platform_resume_requested.connect(_on_yandex_platform_resume_requested)
+	AudioManager.page_visibility_changed.connect(_on_page_visibility_changed)
 	_create_fullscreen_ad_overlay()
 	_apply_ui_font_sizes()
 	_apply_button_visual_cleanup()
@@ -187,6 +193,7 @@ func _ready() -> void:
 		balance_logger = BalancePlaytestLogger.new()
 		balance_logger.start_session(state)
 		balance_logger.mark_enemy_spawned(state)
+	startup_completed.emit()
 
 
 func _process(delta: float) -> void:
@@ -194,6 +201,9 @@ func _process(delta: float) -> void:
 	if _autosave_timer >= _AUTOSAVE_INTERVAL:
 		_autosave_timer = 0.0
 		_save_game_now()
+
+	if _is_runtime_paused():
+		return
 
 	if _fullscreen_ad_cooldown_left > 0.0:
 		_fullscreen_ad_cooldown_left = maxf(_fullscreen_ad_cooldown_left - delta, 0.0)
@@ -314,6 +324,8 @@ func _update_settings_if_visible() -> void:
 
 func _on_attack_requested(click_global_position: Vector2) -> void:
 	_mark_user_interaction()
+	if _is_runtime_paused():
+		return
 	if tasks_window.visible:
 		return
 
@@ -585,6 +597,9 @@ func _on_gem_product_purchase_requested(product_id: String) -> void:
 	var yandex_product_id: String = String(product.get("yandex_product_id", ""))
 	_pending_payment_product_id = product_id
 	_payment_reward_granted_for_current_request = false
+	_set_runtime_pause_reason("payment", true)
+	AudioManager.set_audio_pause_reason("payment", true)
+	YandexBridge.gameplay_stop()
 	YandexBridge.purchase_product(yandex_product_id, product_id)
 
 
@@ -606,6 +621,9 @@ func _on_payment_purchase_success(local_product_id: String, purchase_token: Stri
 	YandexBridge.consume_purchase(purchase_token)
 	_pending_payment_product_id = ""
 	gem_purchase_dialog.hide_dialog()
+	_set_runtime_pause_reason("payment", false)
+	AudioManager.set_audio_pause_reason("payment", false)
+	_try_resume_yandex_gameplay()
 
 
 func _on_unprocessed_purchase_found(product_id: String, purchase_token: String) -> void:
@@ -654,6 +672,9 @@ func _on_payment_purchase_cancelled(_local_product_id: String) -> void:
 	_payment_reward_granted_for_current_request = false
 	gem_purchase_dialog.set_payment_done()
 	_handle_status_text(LocalizationManager.tr_key("shop.gem_purchase.cancelled"))
+	_set_runtime_pause_reason("payment", false)
+	AudioManager.set_audio_pause_reason("payment", false)
+	_try_resume_yandex_gameplay()
 
 
 func _on_payment_purchase_error(_local_product_id: String, _message: String) -> void:
@@ -662,6 +683,9 @@ func _on_payment_purchase_error(_local_product_id: String, _message: String) -> 
 	gem_purchase_dialog.set_payment_done()
 	AudioManager.play_purchase_error()
 	_handle_status_text(LocalizationManager.tr_key("shop.gem_purchase.error"))
+	_set_runtime_pause_reason("payment", false)
+	AudioManager.set_audio_pause_reason("payment", false)
+	_try_resume_yandex_gameplay()
 
 
 func _request_shop_rewarded_gems_ad(product_id: String) -> void:
@@ -671,6 +695,9 @@ func _request_shop_rewarded_gems_ad(product_id: String) -> void:
 	_rewarded_ad_shop_product_id = product_id
 	_rewarded_ad_reward_granted_for_current_request = false
 	shop_sheet.set_product_buy_button_modal_pressed(product_id, true)
+	_set_runtime_pause_reason("rewarded_ad", true)
+	AudioManager.pause_for_ad()
+	YandexBridge.gameplay_stop()
 	YandexBridge.show_rewarded_ad()
 
 
@@ -949,6 +976,8 @@ func _run_partner_damage_tick() -> void:
 
 
 func _on_autoclick_requested() -> void:
+	if _is_runtime_paused():
+		return
 	var rank: int = state.get_ability_rank("autoclick")
 	if not state.is_ability_purchased("autoclick") or state.autoclick_active or autoclick_cooldown_left > 0.0:
 		return
@@ -964,6 +993,8 @@ func _on_autoclick_requested() -> void:
 
 
 func _on_gold_bonus_requested() -> void:
+	if _is_runtime_paused():
+		return
 	if not state.is_ability_purchased("gold_bonus") or state.gold_bonus_active or gold_bonus_cooldown_left > 0.0:
 		return
 
@@ -975,6 +1006,8 @@ func _on_gold_bonus_requested() -> void:
 
 
 func _on_focus_burst_requested() -> void:
+	if _is_runtime_paused():
+		return
 	if not state.is_ability_purchased("focus_burst") or state.focus_burst_active or focus_burst_cooldown_left > 0.0:
 		return
 
@@ -987,6 +1020,8 @@ func _on_focus_burst_requested() -> void:
 
 
 func _on_rally_requested() -> void:
+	if _is_runtime_paused():
+		return
 	if not state.is_ability_purchased("rally") or state.rally_active or rally_cooldown_left > 0.0:
 		return
 
@@ -1253,12 +1288,16 @@ func _try_show_fullscreen_ad_if_safe() -> void:
 	if not _is_safe_for_fullscreen_ad():
 		return
 	_fullscreen_ad_cooldown_left = FULLSCREEN_AD_COOLDOWN_SECONDS
+	_set_runtime_pause_reason("fullscreen_ad", true)
+	AudioManager.pause_for_ad()
+	YandexBridge.gameplay_stop()
 	YandexBridge.show_fullscreen_ad()
 
 
 func _on_fullscreen_ad_opened() -> void:
 	if is_instance_valid(_fullscreen_ad_overlay):
 		_fullscreen_ad_overlay.visible = true
+	_set_runtime_pause_reason("fullscreen_ad", true)
 	AudioManager.pause_for_ad()
 	YandexBridge.gameplay_stop()
 
@@ -1266,21 +1305,71 @@ func _on_fullscreen_ad_opened() -> void:
 func _on_fullscreen_ad_closed(_was_shown: bool) -> void:
 	if is_instance_valid(_fullscreen_ad_overlay):
 		_fullscreen_ad_overlay.visible = false
+	_set_runtime_pause_reason("fullscreen_ad", false)
 	AudioManager.resume_after_ad()
-	YandexBridge.gameplay_start()
+	_try_resume_yandex_gameplay()
 	_fullscreen_ad_cooldown_left = FULLSCREEN_AD_COOLDOWN_SECONDS
 
 
 func _on_fullscreen_ad_error(_message: String) -> void:
 	if is_instance_valid(_fullscreen_ad_overlay):
 		_fullscreen_ad_overlay.visible = false
+	_set_runtime_pause_reason("fullscreen_ad", false)
 	AudioManager.resume_after_ad()
-	YandexBridge.gameplay_start()
+	_try_resume_yandex_gameplay()
 	_fullscreen_ad_cooldown_left = FULLSCREEN_AD_COOLDOWN_SECONDS
 
 
 func _handle_status_text(_text: String) -> void:
 	pass
+
+
+func _set_runtime_pause_reason(reason: String, paused: bool) -> void:
+	if paused:
+		_runtime_pause_reasons[reason] = true
+	else:
+		_runtime_pause_reasons.erase(reason)
+
+
+func _is_runtime_paused() -> bool:
+	return not _runtime_pause_reasons.is_empty()
+
+
+func _can_resume_yandex_gameplay() -> bool:
+	if not _is_initialized:
+		return false
+	if _is_runtime_paused():
+		return false
+	if YandexBridge.is_ad_in_progress():
+		return false
+	return true
+
+
+func _request_yandex_gameplay_stop() -> void:
+	YandexBridge.gameplay_stop()
+
+
+func _try_resume_yandex_gameplay() -> void:
+	if _can_resume_yandex_gameplay():
+		YandexBridge.gameplay_start()
+
+
+func _on_yandex_platform_pause_requested() -> void:
+	_set_runtime_pause_reason("platform", true)
+	AudioManager.set_audio_pause_reason("platform", true)
+	_request_yandex_gameplay_stop()
+
+
+func _on_yandex_platform_resume_requested() -> void:
+	_set_runtime_pause_reason("platform", false)
+	AudioManager.set_audio_pause_reason("platform", false)
+	_try_resume_yandex_gameplay()
+
+
+func _on_page_visibility_changed(visible: bool) -> void:
+	_set_runtime_pause_reason("hidden", not visible)
+	if visible:
+		_try_resume_yandex_gameplay()
 
 
 func _play_spawn_smoke_and_unlock_after_invulnerability(transition_token: int) -> void:
@@ -1604,6 +1693,9 @@ func _on_offline_reward_claim_ad_requested() -> void:
 	_rewarded_ad_shop_product_id = ""
 	_rewarded_ad_reward_granted_for_current_request = false
 	offline_reward_dialog.set_buttons_loading(true)
+	_set_runtime_pause_reason("rewarded_ad", true)
+	AudioManager.pause_for_ad()
+	YandexBridge.gameplay_stop()
 	YandexBridge.show_rewarded_ad()
 
 
@@ -1615,10 +1707,14 @@ func _on_rewarded_ad_banner_pressed() -> void:
 	_rewarded_ad_shop_product_id = ""
 	_rewarded_ad_reward_granted_for_current_request = false
 	rewarded_ad_banner.set_banner_state(rewarded_ad_banner.BannerState.LOADING)
+	_set_runtime_pause_reason("rewarded_ad", true)
+	AudioManager.pause_for_ad()
+	YandexBridge.gameplay_stop()
 	YandexBridge.show_rewarded_ad()
 
 
 func _on_rewarded_ad_opened() -> void:
+	_set_runtime_pause_reason("rewarded_ad", true)
 	AudioManager.pause_for_ad()
 	YandexBridge.gameplay_stop()
 
@@ -1655,8 +1751,9 @@ func _on_rewarded_ad_rewarded() -> void:
 
 
 func _on_rewarded_ad_closed(_was_shown: bool) -> void:
+	_set_runtime_pause_reason("rewarded_ad", false)
 	AudioManager.resume_after_ad()
-	YandexBridge.gameplay_start()
+	_try_resume_yandex_gameplay()
 	if _rewarded_ad_request_context == "shop_gems":
 		shop_sheet.set_product_buy_button_modal_pressed(_rewarded_ad_shop_product_id, false)
 	if _rewarded_ad_request_context == "offline_gold_x3" and not _rewarded_ad_reward_granted_for_current_request:
@@ -1668,8 +1765,9 @@ func _on_rewarded_ad_closed(_was_shown: bool) -> void:
 
 
 func _on_rewarded_ad_error(_message: String) -> void:
+	_set_runtime_pause_reason("rewarded_ad", false)
 	AudioManager.resume_after_ad()
-	YandexBridge.gameplay_start()
+	_try_resume_yandex_gameplay()
 	if _rewarded_ad_request_context == "shop_gems":
 		shop_sheet.set_product_buy_button_modal_pressed(_rewarded_ad_shop_product_id, false)
 	if _rewarded_ad_request_context == "offline_gold_x3":
