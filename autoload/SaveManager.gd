@@ -151,6 +151,8 @@ func load_cloud_data_async() -> Dictionary:
 
 	on_loaded = func(data: Dictionary) -> void:
 		_cloud_load_in_progress = false
+		if YandexBridge.cloud_save_loaded.is_connected(on_loaded):
+			YandexBridge.cloud_save_loaded.disconnect(on_loaded)
 		if YandexBridge.cloud_save_load_error.is_connected(on_error):
 			YandexBridge.cloud_save_load_error.disconnect(on_error)
 		var parsed: Dictionary = data
@@ -166,6 +168,8 @@ func load_cloud_data_async() -> Dictionary:
 		push_warning("SaveManager: cloud load error — %s" % msg)
 		if YandexBridge.cloud_save_loaded.is_connected(on_loaded):
 			YandexBridge.cloud_save_loaded.disconnect(on_loaded)
+		if YandexBridge.cloud_save_load_error.is_connected(on_error):
+			YandexBridge.cloud_save_load_error.disconnect(on_error)
 		_cloud_load_done.emit({})
 
 	YandexBridge.cloud_save_loaded.connect(on_loaded)

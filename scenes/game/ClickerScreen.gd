@@ -64,6 +64,7 @@ var _payment_reward_granted_for_current_request: bool = false
 var _processed_purchase_tokens: Dictionary = {}
 var _unprocessed_purchase_check_requested: bool = false
 var _runtime_pause_reasons: Dictionary = {}
+var _runtime_pause_started_unix_time: int = 0
 
 const FULLSCREEN_AD_COOLDOWN_SECONDS: float = 300.0
 const FULLSCREEN_AD_INITIAL_COOLDOWN_SECONDS: float = 300.0
@@ -605,14 +606,14 @@ func _on_gem_product_purchase_requested(product_id: String) -> void:
 
 func _on_payment_purchase_success(local_product_id: String, purchase_token: String) -> void:
 	if _payment_reward_granted_for_current_request:
-		_clear_payment_pause_and_try_resume()
+		_clear_payment_request_state()
 		return
 	if _is_purchase_token_processed(purchase_token):
-		_clear_payment_pause_and_try_resume()
+		_clear_payment_request_state()
 		return
 	if local_product_id != _pending_payment_product_id:
 		push_warning("YandexBridge: success for unexpected product '%s' (pending '%s'), ignoring" % [local_product_id, _pending_payment_product_id])
-		_clear_payment_pause_and_try_resume()
+		_clear_payment_request_state()
 		return
 	_payment_reward_granted_for_current_request = true
 	_mark_purchase_token_processed(purchase_token)
@@ -1322,10 +1323,18 @@ func _handle_status_text(_text: String) -> void:
 
 
 func _set_runtime_pause_reason(reason: String, paused: bool) -> void:
+	var was_paused: bool = not _runtime_pause_reasons.is_empty()
 	if paused:
 		_runtime_pause_reasons[reason] = true
+		if not was_paused:
+			_runtime_pause_started_unix_time = int(Time.get_unix_time_from_system())
 	else:
 		_runtime_pause_reasons.erase(reason)
+		if was_paused and _runtime_pause_reasons.is_empty() and _runtime_pause_started_unix_time > 0:
+			var paused_seconds: int = int(Time.get_unix_time_from_system()) - _runtime_pause_started_unix_time
+			if paused_seconds > 0 and _is_initialized:
+				state.extend_rewarded_ad_buff_expirations(paused_seconds)
+			_runtime_pause_started_unix_time = 0
 
 
 func _is_runtime_paused() -> bool:
@@ -1373,6 +1382,14 @@ func _clear_payment_pause_and_try_resume() -> void:
 	_set_runtime_pause_reason("payment", false)
 	AudioManager.set_audio_pause_reason("payment", false)
 	_try_resume_yandex_gameplay()
+
+
+func _clear_payment_request_state() -> void:
+	_pending_payment_product_id = ""
+	_payment_reward_granted_for_current_request = false
+	if is_instance_valid(gem_purchase_dialog):
+		gem_purchase_dialog.set_payment_done()
+	_clear_payment_pause_and_try_resume()
 
 
 func _wait_runtime_seconds(seconds: float) -> void:

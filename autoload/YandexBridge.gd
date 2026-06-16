@@ -326,23 +326,38 @@ func purchase_product(yandex_product_id: String, local_product_id: String) -> vo
 
 	JavaScriptBridge.eval("""
 		(function() {
-			var localId = %s;
-			var yandexId = %s;
-			window.ysdk.getPayments({ signed: true }).then(function(payments) {
-				payments.purchase({ id: yandexId }).then(function(purchase) {
-					var token = purchase.purchaseToken || "";
-					if (window._godot_payment_success) window._godot_payment_success(localId, token);
-				}).catch(function(err) {
-					var msg = String(err);
-					if (msg.indexOf("cancel") !== -1 || msg.indexOf("Cancel") !== -1) {
-						if (window._godot_payment_cancelled) window._godot_payment_cancelled(localId);
-					} else {
-						if (window._godot_payment_error) window._godot_payment_error(localId, msg);
+			try {
+				var localId = %s;
+				var yandexId = %s;
+
+				if (!window.ysdk || typeof window.ysdk.getPayments !== "function") {
+					if (window._godot_payment_error) window._godot_payment_error(localId, "getPayments not available");
+					return;
+				}
+
+				window.ysdk.getPayments().then(function(payments) {
+					if (!payments || typeof payments.purchase !== "function") {
+						if (window._godot_payment_error) window._godot_payment_error(localId, "payments.purchase not available");
+						return;
 					}
+
+					return payments.purchase({ id: yandexId }).then(function(purchase) {
+						var token = purchase && purchase.purchaseToken ? purchase.purchaseToken : "";
+						if (window._godot_payment_success) window._godot_payment_success(localId, token);
+					}).catch(function(err) {
+						var msg = String(err);
+						if (msg.indexOf("cancel") !== -1 || msg.indexOf("Cancel") !== -1) {
+							if (window._godot_payment_cancelled) window._godot_payment_cancelled(localId);
+						} else {
+							if (window._godot_payment_error) window._godot_payment_error(localId, msg);
+						}
+					});
+				}).catch(function(err) {
+					if (window._godot_payment_error) window._godot_payment_error(localId, String(err));
 				});
-			}).catch(function(err) {
-				if (window._godot_payment_error) window._godot_payment_error(localId, String(err));
-			});
+			} catch(e) {
+				if (window._godot_payment_error) window._godot_payment_error(localId, String(e));
+			}
 		})();
 	""" % [JSON.stringify(local_product_id), JSON.stringify(yandex_product_id)])
 
@@ -353,14 +368,26 @@ func consume_purchase(purchase_token: String) -> void:
 
 	JavaScriptBridge.eval("""
 		(function() {
-			var token = %s;
-			window.ysdk.getPayments({ signed: true }).then(function(payments) {
-				payments.consumePurchase(token).catch(function(err) {
-					console.warn("YandexBridge: consumePurchase failed:", err);
+			try {
+				var token = %s;
+				if (!window.ysdk || typeof window.ysdk.getPayments !== "function") {
+					console.warn("YandexBridge: getPayments not available for consume");
+					return;
+				}
+				window.ysdk.getPayments().then(function(payments) {
+					if (!payments || typeof payments.consumePurchase !== "function") {
+						console.warn("YandexBridge: consumePurchase not available");
+						return;
+					}
+					payments.consumePurchase(token).catch(function(err) {
+						console.warn("YandexBridge: consumePurchase failed:", err);
+					});
+				}).catch(function(err) {
+					console.warn("YandexBridge: getPayments for consume failed:", err);
 				});
-			}).catch(function(err) {
-				console.warn("YandexBridge: getPayments for consume failed:", err);
-			});
+			} catch(e) {
+				console.warn("YandexBridge: consume exception:", e);
+			}
 		})();
 	""" % JSON.stringify(purchase_token))
 
@@ -373,11 +400,17 @@ func check_unprocessed_purchases() -> void:
 	JavaScriptBridge.eval("""
 		(function() {
 			try {
-				window.ysdk.getPayments({ signed: true }).then(function(payments) {
+				window.ysdk.getPayments().then(function(payments) {
 					return payments.getPurchases();
 				}).then(function(purchases) {
-					var list = Array.isArray(purchases) ? purchases : [];
-					list.forEach(function(purchase) {
+					if (!Array.isArray(purchases)) {
+						console.warn("YandexBridge: getPurchases result is not an array:", purchases);
+						if (window._godot_unprocessed_purchase_check_error) {
+							window._godot_unprocessed_purchase_check_error("getPurchases returned unexpected type");
+						}
+						return;
+					}
+					purchases.forEach(function(purchase) {
 						var productId = "";
 						var token = "";
 						if (purchase) {

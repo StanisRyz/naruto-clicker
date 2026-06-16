@@ -47,6 +47,8 @@ func set_payment_done() -> void:
 
 
 func _on_close_pressed() -> void:
+	if _payment_in_progress:
+		return
 	ButtonVisualUtils.play_pressed_then_call(
 		_close_button,
 		Callable(self, "hide_dialog"),
@@ -175,4 +177,6 @@ func _add_panel_background() -> void:
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		if not _inner_panel.get_global_rect().has_point(event.global_position):
+			if _payment_in_progress:
+				return
 			hide_dialog()
