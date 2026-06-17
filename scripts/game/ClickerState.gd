@@ -125,9 +125,10 @@ const DEBUG_VISUAL_TEST_HP: int = 100000
 const DEBUG_PURCHASE_COST: int = 1
 const DEBUG_PURCHASE_MAX_BULK: int = 100
 const DEBUG_PRESTIGE_REWARD: int = 999
-# Cap for max-mode UI preview to prevent an unbounded while loop running every UI frame.
-# Actual purchase on button click is uncapped but single-trigger, so it is safe.
+# Cap for max-mode preview loop (runs every UI frame — must be fast).
 const MAX_BULK_PREVIEW_PURCHASES: int = 1000
+# Cap for max-mode actual purchase loop (click-triggered but still capped to prevent freeze).
+const MAX_BULK_PURCHASES: int = 5000
 
 var last_save_unix_time: int = 0
 var pending_offline_gold_reward: BigNumber
@@ -1115,12 +1116,48 @@ func buy_partner(partner_index: int) -> Dictionary:
 	return buy_partners(partner_index, "x1")
 
 
+func _get_partner_bulk_purchase_quote(partner_index: int, mode: String, cap: int) -> Dictionary:
+	# Returns {"count": int, "cost": BigNumber, "capped": bool}.
+	# Fixed modes: count is 0 when unaffordable; cost is always the full fixed-count price.
+	# Max mode: count and total cost computed together in one capped loop.
+	if is_debug_purchase_override_enabled():
+		var dbg_cost: BigNumber = BigNumber.from_int(DEBUG_PURCHASE_COST)
+		if mode == "max":
+			var dbg_count: int = DEBUG_PURCHASE_MAX_BULK if gold.compare_to(dbg_cost) >= 0 else 0
+			return {"count": dbg_count, "cost": dbg_cost if dbg_count > 0 else BigNumber.zero(), "capped": false}
+		var dbg_fixed: int = _get_fixed_buy_count(mode)
+		var dbg_can: bool = gold.compare_to(dbg_cost) >= 0
+		return {"count": dbg_fixed if dbg_can else 0, "cost": dbg_cost, "capped": false}
+
+	var fixed_count: int = _get_fixed_buy_count(mode)
+	if fixed_count > 0:
+		var fixed_cost: BigNumber = _get_partner_bulk_cost_for_count(partner_index, fixed_count)
+		var can: bool = gold.compare_to(fixed_cost) >= 0
+		return {"count": fixed_count if can else 0, "cost": fixed_cost, "capped": false}
+
+	# max mode: single loop computes affordable count and accumulated cost together
+	var sim_gold: BigNumber = gold.clone()
+	var sim_owned: int = partner_counts[partner_index]
+	var sim_cost: BigNumber = (partner_purchase_costs[partner_index] as BigNumber).clone()
+	var bought: int = 0
+	var accum_cost: BigNumber = BigNumber.zero()
+	while sim_gold.compare_to(sim_cost) >= 0 and bought < cap:
+		sim_gold = sim_gold.subtract(sim_cost)
+		accum_cost = accum_cost.add(sim_cost)
+		sim_owned += 1
+		bought += 1
+		sim_cost = _get_partner_cost_for_count(partner_index, sim_owned)
+	var was_capped: bool = bought >= cap and sim_gold.compare_to(sim_cost) >= 0
+	return {"count": bought, "cost": accum_cost, "capped": was_capped}
+
+
 func buy_partners(partner_index: int, mode: String) -> Dictionary:
 	if partner_index < 0 or partner_index >= partner_counts.size():
 		return _make_purchase_result("Invalid partner")
 
-	var bought: int = get_partner_bulk_count(partner_index, mode)
-	var total_cost: BigNumber = get_partner_bulk_cost(partner_index, mode)
+	var quote: Dictionary = _get_partner_bulk_purchase_quote(partner_index, mode, MAX_BULK_PURCHASES)
+	var bought: int = quote["count"]
+	var total_cost: BigNumber = quote["cost"]
 
 	if bought <= 0 or total_cost.is_zero() or gold.compare_to(total_cost) < 0:
 		return _make_purchase_result("Not enough gold", true)
@@ -1136,42 +1173,16 @@ func buy_partners(partner_index: int, mode: String) -> Dictionary:
 func get_partner_bulk_count(partner_index: int, mode: String) -> int:
 	if partner_index < 0 or partner_index >= partner_counts.size():
 		return 0
-
-	if is_debug_purchase_override_enabled():
-		var dbg_cost: BigNumber = BigNumber.from_int(DEBUG_PURCHASE_COST)
-		if mode == "max":
-			return DEBUG_PURCHASE_MAX_BULK if gold.compare_to(dbg_cost) >= 0 else 0
-		var dbg_fixed: int = _get_fixed_buy_count(mode)
-		return dbg_fixed if gold.compare_to(dbg_cost) >= 0 else 0
-
-	var fixed_count: int = _get_fixed_buy_count(mode)
-	if fixed_count > 0:
-		var fixed_cost: BigNumber = _get_partner_bulk_cost_for_count(partner_index, fixed_count)
-		return fixed_count if gold.compare_to(fixed_cost) >= 0 else 0
-
-	var simulated_gold: BigNumber = gold.clone()
-	var simulated_count: int = partner_counts[partner_index]
-	var count: int = 0
-	var simulated_cost: BigNumber = (partner_purchase_costs[partner_index] as BigNumber).clone()
-
-	while simulated_gold.compare_to(simulated_cost) >= 0:
-		simulated_gold = simulated_gold.subtract(simulated_cost)
-		simulated_count += 1
-		count += 1
-		simulated_cost = _get_partner_cost_for_count(partner_index, simulated_count)
-
-	return count
+	return _get_partner_bulk_purchase_quote(partner_index, mode, MAX_BULK_PURCHASES)["count"]
 
 
 func get_partner_bulk_cost(partner_index: int, mode: String) -> BigNumber:
-	var count: int = get_partner_bulk_count(partner_index, mode)
-	if count <= 0:
+	if partner_index < 0 or partner_index >= partner_counts.size():
 		return BigNumber.zero()
-
-	if is_debug_purchase_override_enabled():
-		return BigNumber.from_int(DEBUG_PURCHASE_COST)
-
-	return _get_partner_bulk_cost_for_count(partner_index, count)
+	var quote: Dictionary = _get_partner_bulk_purchase_quote(partner_index, mode, MAX_BULK_PURCHASES)
+	if quote["count"] <= 0:
+		return BigNumber.zero()
+	return quote["cost"]
 
 
 func get_partner_bulk_display_count(partner_index: int, mode: String) -> int:
@@ -1976,42 +1987,19 @@ func can_afford_partner_bulk(partner_index: int, mode: String) -> bool:
 
 func get_partner_bulk_preview(partner_index: int, mode: String) -> Dictionary:
 	if partner_index < 0 or partner_index >= partner_counts.size():
-		return {"count": 0, "cost": BigNumber.zero(), "dps_gain": BigNumber.zero(), "can_afford": false}
+		return {"count": 0, "cost": BigNumber.zero(), "dps_gain": BigNumber.zero(), "can_afford": false, "capped": false}
 
+	var quote: Dictionary = _get_partner_bulk_purchase_quote(partner_index, mode, MAX_BULK_PREVIEW_PURCHASES)
+
+	# For fixed modes (x1/x10/x100), always show the fixed count on the button even when unaffordable.
 	var display_count: int
-	var total_cost: BigNumber
 	var can_afford: bool
-
-	if is_debug_purchase_override_enabled():
-		var dbg_cost: BigNumber = BigNumber.from_int(DEBUG_PURCHASE_COST)
-		if mode == "max":
-			display_count = DEBUG_PURCHASE_MAX_BULK if gold.compare_to(dbg_cost) >= 0 else 0
-		else:
-			display_count = _get_fixed_buy_count(mode)
-		can_afford = display_count > 0 and gold.compare_to(dbg_cost) >= 0
-		total_cost = dbg_cost if display_count > 0 else BigNumber.zero()
-	elif mode == "max":
-		# Single capped loop: computes affordable count and accumulated cost together,
-		# avoiding duplicate while-loop runs that caused per-frame lag in x100/max mode.
-		var sim_gold: BigNumber = gold.clone()
-		var sim_owned: int = partner_counts[partner_index]
-		var sim_cost: BigNumber = (partner_purchase_costs[partner_index] as BigNumber).clone()
-		var bought: int = 0
-		var accum_cost: BigNumber = BigNumber.zero()
-		while sim_gold.compare_to(sim_cost) >= 0 and bought < MAX_BULK_PREVIEW_PURCHASES:
-			sim_gold = sim_gold.subtract(sim_cost)
-			accum_cost = accum_cost.add(sim_cost)
-			sim_owned += 1
-			bought += 1
-			sim_cost = _get_partner_cost_for_count(partner_index, sim_owned)
-		display_count = bought
-		total_cost = accum_cost
-		can_afford = bought > 0
+	if mode == "max":
+		display_count = quote["count"]
+		can_afford = quote["count"] > 0
 	else:
-		var fixed_count: int = _get_fixed_buy_count(mode)
-		display_count = fixed_count
-		total_cost = _get_partner_bulk_cost_for_count(partner_index, fixed_count)
-		can_afford = gold.compare_to(total_cost) >= 0
+		display_count = _get_fixed_buy_count(mode)
+		can_afford = quote["count"] > 0
 
 	var dps_gain: BigNumber
 	if display_count > 0:
@@ -2023,9 +2011,10 @@ func get_partner_bulk_preview(partner_index: int, mode: String) -> Dictionary:
 
 	return {
 		"count": display_count,
-		"cost": total_cost,
+		"cost": quote["cost"],
 		"dps_gain": dps_gain,
 		"can_afford": can_afford,
+		"capped": quote.get("capped", false),
 	}
 
 
