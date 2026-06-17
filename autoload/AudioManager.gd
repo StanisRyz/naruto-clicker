@@ -77,8 +77,8 @@ func set_music_enabled(enabled: bool) -> void:
 	_music_enabled = enabled
 	if not enabled:
 		_music_player.stop()
-	elif not _music_player.playing and not _is_audio_paused():
-		play_next_music_track()
+	elif not _is_audio_paused():
+		unlock_audio_if_needed()
 
 
 func set_sound_enabled(enabled: bool) -> void:
@@ -129,18 +129,13 @@ func stop_music() -> void:
 # --- SFX ---
 
 func unlock_audio_if_needed() -> void:
-	# Un-pause music if paused by NOTIFICATION_APPLICATION_FOCUS_OUT when FOCUS_IN never fired
-	# (common in Yandex Games iframe).
-	if _music_enabled and not _is_audio_paused() and _music_player.stream_paused:
-		_music_player.stream_paused = false
-
-	if _audio_context_unlocked:
-		return
 	_audio_context_unlocked = true
 
-	# Re-attempt music start after first confirmed user gesture.
-	# On web, AudioContext may be suspended until the first interaction.
-	if _music_enabled and not _is_audio_paused() and not _music_player.playing:
+	if not _music_enabled or _is_audio_paused():
+		return
+	if _music_player.stream_paused:
+		_music_player.stream_paused = false
+	if not _music_player.playing:
 		if _current_music_index >= 0:
 			_play_track_at_index(_current_music_index)
 		else:
@@ -164,21 +159,25 @@ func play_random_hit() -> void:
 
 
 func play_purchase_success() -> void:
+	unlock_audio_if_needed()
 	if _sound_enabled:
 		_play_sfx(_purchase_stream)
 
 
 func play_purchase_error() -> void:
+	unlock_audio_if_needed()
 	if _sound_enabled:
 		_play_sfx(_error_stream)
 
 
 func play_reward_received() -> void:
+	unlock_audio_if_needed()
 	if _sound_enabled:
 		_play_sfx(_reward_stream)
 
 
 func play_gold_received() -> void:
+	unlock_audio_if_needed()
 	if not _sound_enabled:
 		return
 	var now: float = Time.get_ticks_msec() / 1000.0
@@ -205,8 +204,14 @@ func _is_audio_paused() -> bool:
 func _apply_audio_pause_state() -> void:
 	if _is_audio_paused():
 		_music_player.stream_paused = true
+		_music_player.stop()
 	elif _music_enabled:
 		_music_player.stream_paused = false
+		if not _music_player.playing:
+			if _current_music_index >= 0:
+				_play_track_at_index(_current_music_index)
+			else:
+				play_next_music_track()
 
 
 # --- Ad pause/resume (backwards-compatible wrappers) ---
@@ -242,19 +247,23 @@ func _register_web_event_listeners() -> void:
 	JavaScriptBridge.eval("window._godot_audio_user_gesture = %s;" % _js_gesture_cb)
 	JavaScriptBridge.eval("""
 		(function() {
-			document.addEventListener('visibilitychange', function() {
-				if (document.hidden) {
-					if (window._godot_audio_page_hidden) window._godot_audio_page_hidden();
-				} else {
-					if (window._godot_audio_page_visible) window._godot_audio_page_visible();
-				}
-			});
-			window.addEventListener('pagehide', function() {
+			function _onHidden() {
 				if (window._godot_audio_page_hidden) window._godot_audio_page_hidden();
+			}
+			function _onVisible() {
+				if (!document.hidden && window._godot_audio_page_visible) window._godot_audio_page_visible();
+			}
+			document.addEventListener('visibilitychange', function() {
+				if (document.hidden) { _onHidden(); } else { _onVisible(); }
 			});
-			window.addEventListener('pageshow', function() {
-				if (window._godot_audio_page_visible) window._godot_audio_page_visible();
-			});
+			window.addEventListener('pagehide', _onHidden);
+			window.addEventListener('pageshow', _onVisible);
+			window.addEventListener('blur', _onHidden);
+			window.addEventListener('focus', _onVisible);
+			if (typeof document.onfreeze !== 'undefined') {
+				document.addEventListener('freeze', _onHidden);
+				document.addEventListener('resume', _onVisible);
+			}
 			['pointerdown', 'touchstart', 'keydown'].forEach(function(ev) {
 				document.addEventListener(ev, function() {
 					if (window._godot_audio_user_gesture) window._godot_audio_user_gesture();
@@ -266,13 +275,12 @@ func _register_web_event_listeners() -> void:
 
 # --- Button binding ---
 
-func bind_button(button: Button) -> void:
+func bind_button(button: BaseButton) -> void:
 	if button.get_meta("audio_skip", false):
 		return
 	if button.get_meta("audio_button_bound", false):
 		return
 	button.set_meta("audio_button_bound", true)
-	# button_down fires at press time, not at release — SFX plays immediately.
 	button.button_down.connect(play_button_click)
 
 
@@ -281,8 +289,8 @@ func bind_buttons_in_tree(root: Node) -> void:
 
 
 func _bind_buttons_recursive(node: Node) -> void:
-	if node is Button:
-		bind_button(node as Button)
+	if node is BaseButton:
+		bind_button(node as BaseButton)
 	for child: Node in node.get_children():
 		_bind_buttons_recursive(child)
 
@@ -326,6 +334,8 @@ func _has_multiple_valid_music_tracks() -> bool:
 
 func _notification(what: int) -> void:
 	if _music_player == null:
+		return
+	if OS.has_feature("web"):
 		return
 	match what:
 		NOTIFICATION_APPLICATION_FOCUS_OUT:

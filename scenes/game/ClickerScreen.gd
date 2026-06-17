@@ -50,6 +50,8 @@ const HIT_EFFECT_SIZE: Vector2 = Vector2(128, 128)
 const HIT_EFFECT_DURATION_SEC: float = 0.1
 var _autosave_timer: float = 0.0
 const _AUTOSAVE_INTERVAL: float = 10.0
+var _debug_pause_log_timer: float = 0.0
+const _DEBUG_PAUSE_LOG_INTERVAL: float = 3.0
 var _rewarded_ad_reward_granted_for_current_request: bool = false
 var _rewarded_ad_damage_buff_was_active: bool = false
 var _rewarded_ad_gold_buff_was_active: bool = false
@@ -204,7 +206,13 @@ func _process(delta: float) -> void:
 		_save_game_now()
 
 	if _is_runtime_paused():
+		if BuildConfig.IS_DEBUG_BUILD:
+			_debug_pause_log_timer += delta
+			if _debug_pause_log_timer >= _DEBUG_PAUSE_LOG_INTERVAL:
+				_debug_pause_log_timer = 0.0
+				print("ClickerScreen: _process paused. Reasons: %s" % str(_runtime_pause_reasons.keys()))
 		return
+	_debug_pause_log_timer = 0.0
 
 	if _fullscreen_ad_cooldown_left > 0.0:
 		_fullscreen_ad_cooldown_left = maxf(_fullscreen_ad_cooldown_left - delta, 0.0)
@@ -1372,15 +1380,23 @@ func _try_resume_yandex_gameplay() -> void:
 
 
 func _on_yandex_platform_pause_requested() -> void:
+	if BuildConfig.IS_DEBUG_BUILD:
+		print("ClickerScreen: platform_pause_requested — pausing gameplay. Bridge state: %s" % str(YandexBridge.get_platform_event_debug_state()))
 	_set_runtime_pause_reason("platform", true)
 	AudioManager.set_audio_pause_reason("platform", true)
 	_request_yandex_gameplay_stop()
+	if BuildConfig.IS_DEBUG_BUILD:
+		print("ClickerScreen: runtime pause reasons after platform pause: %s" % str(_runtime_pause_reasons.keys()))
 
 
 func _on_yandex_platform_resume_requested() -> void:
+	if BuildConfig.IS_DEBUG_BUILD:
+		print("ClickerScreen: platform_resume_requested — clearing platform pause. Bridge state: %s" % str(YandexBridge.get_platform_event_debug_state()))
 	_set_runtime_pause_reason("platform", false)
 	AudioManager.set_audio_pause_reason("platform", false)
 	_try_resume_yandex_gameplay()
+	if BuildConfig.IS_DEBUG_BUILD:
+		print("ClickerScreen: runtime pause reasons after platform resume: %s" % str(_runtime_pause_reasons.keys()))
 
 
 func _on_page_visibility_changed(visible: bool) -> void:
@@ -1662,6 +1678,8 @@ func _run_balance_simulation() -> void:
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton or event is InputEventScreenTouch:
 		_mark_user_interaction()
+		AudioManager.unlock_audio_if_needed()
+	elif event is InputEventKey and event.pressed and not event.echo:
 		AudioManager.unlock_audio_if_needed()
 
 	if not BuildConfig.IS_DEBUG_BUILD:

@@ -42,7 +42,13 @@ var _fullscreen_ad_in_progress: bool = false
 var _payment_js_callbacks_setup: bool = false
 var _platform_pause_cb = null
 var _platform_resume_cb = null
+var _platform_subscribed_cb = null
+var _platform_sub_error_cb = null
 var _platform_events_setup: bool = false
+var _platform_events_subscribed: bool = false
+var _last_platform_event_name: String = ""
+var _platform_pause_event_count: int = 0
+var _platform_resume_event_count: int = 0
 
 func _ready() -> void:
 	is_web = OS.has_feature("web")
@@ -654,6 +660,45 @@ func _setup_unprocessed_purchase_js_callbacks() -> void:
 	JavaScriptBridge.eval("window._godot_unprocessed_purchase_check_error = %s;" % error_cb)
 
 
+func is_platform_events_subscribed() -> bool:
+	return _platform_events_subscribed
+
+
+func get_platform_event_debug_state() -> Dictionary:
+	return {
+		"subscribed": _platform_events_subscribed,
+		"last_event": _last_platform_event_name,
+		"pause_count": _platform_pause_event_count,
+		"resume_count": _platform_resume_event_count,
+	}
+
+
+func _on_js_platform_pause() -> void:
+	_platform_pause_event_count += 1
+	_last_platform_event_name = "game_api_pause"
+	if BuildConfig.is_debug_features_enabled():
+		print("YandexBridge: game_api_pause received (total=%d)" % _platform_pause_event_count)
+	platform_pause_requested.emit()
+
+
+func _on_js_platform_resume() -> void:
+	_platform_resume_event_count += 1
+	_last_platform_event_name = "game_api_resume"
+	if BuildConfig.is_debug_features_enabled():
+		print("YandexBridge: game_api_resume received (total=%d)" % _platform_resume_event_count)
+	platform_resume_requested.emit()
+
+
+func _on_js_platform_events_subscribed() -> void:
+	_platform_events_subscribed = true
+	if BuildConfig.is_debug_features_enabled():
+		print("YandexBridge: platform events subscribed successfully")
+
+
+func _on_js_platform_events_subscription_error(message: String) -> void:
+	push_warning("YandexBridge: platform event subscription error — %s" % message)
+
+
 func _setup_platform_event_callbacks(attempt: int = 0) -> void:
 	if not is_web:
 		return
@@ -676,16 +721,22 @@ func _setup_platform_event_callbacks(attempt: int = 0) -> void:
 		_platform_events_setup = true
 		return
 	if _platform_pause_cb == null:
-		_platform_pause_cb = JavaScriptBridge.create_callback(func(_args): platform_pause_requested.emit())
-		_platform_resume_cb = JavaScriptBridge.create_callback(func(_args): platform_resume_requested.emit())
+		_platform_pause_cb = JavaScriptBridge.create_callback(func(_args): _on_js_platform_pause())
+		_platform_resume_cb = JavaScriptBridge.create_callback(func(_args): _on_js_platform_resume())
+		_platform_subscribed_cb = JavaScriptBridge.create_callback(func(_args): _on_js_platform_events_subscribed())
+		_platform_sub_error_cb = JavaScriptBridge.create_callback(func(args): _on_js_platform_events_subscription_error(str(args[0])))
+		JavaScriptBridge.eval("window._godot_platform_events_subscribed = %s;" % _platform_subscribed_cb)
+		JavaScriptBridge.eval("window._godot_platform_events_subscription_error = %s;" % _platform_sub_error_cb)
 	JavaScriptBridge.eval("""
 		(function() {
 			try {
 				window.ysdk.on('game_api_pause', %s);
 				window.ysdk.on('game_api_resume', %s);
 				console.log('YandexBridge: game_api_pause/resume subscribed');
+				if (window._godot_platform_events_subscribed) window._godot_platform_events_subscribed();
 			} catch(e) {
 				console.warn('YandexBridge: platform event subscription failed:', e);
+				if (window._godot_platform_events_subscription_error) window._godot_platform_events_subscription_error(String(e));
 			}
 		})();
 	""" % [_platform_pause_cb, _platform_resume_cb])
