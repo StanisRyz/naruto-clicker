@@ -47,37 +47,38 @@ const HERO_SKILL_COST_MULTIPLIERS: Array = [4, 7, 11, 17, 26]
 
 
 # --- Partners ---
-# Formula: DPS[i] = PARTNER_DPS_BASE * PARTNER_DPS_MULT^i
-#          Cost[i] = PARTNER_COST_BASE * PARTNER_COST_MULT^i
-# These produce values that exceed int64 for high indices; BigNumber is used instead
-# of storing overflowing literals. See get_partner_dps_bignum() / get_partner_cost_bignum().
+# Formula: DPS[i]  = PARTNER_DPS_BASE  * PARTNER_DPS_MULT^i  =  4 * 23^i
+#          Cost[i] = PARTNER_COST_BASE * PARTNER_COST_MULT^i = 35 * 25^i
+# Next-partner efficiency ratio: DPS_MULT / COST_MULT = 23 / 25 = 0.92
+# (next partner gives slightly less DPS per gold than the current one, encouraging copy milestones)
+# Values exceed int64 quickly; BigNumber is used for all runtime calculations.
+# See get_partner_dps_bignum() / get_partner_cost_bignum().
 const PARTNER_COUNT: int = 28
 const PARTNER_DPS_BASE: int = 4
-const PARTNER_DPS_MULT: int = 12
+const PARTNER_DPS_MULT: int = 23
 const PARTNER_COST_BASE: int = 35
-const PARTNER_COST_MULT: int = 11
+const PARTNER_COST_MULT: int = 25
 
-# Compact int representation for the first indices that fit in int64 safely (indices 0–16).
-# Used only for backward-compat references; prefer the BigNumber getters below.
+# Compact int representation for indices that safely fit in int64 (4*23^i overflows at i=14;
+# 35*25^i overflows at i=13). Used only as legacy/reference; prefer the BigNumber getters below.
 const PARTNER_DPS_VALUES: Array = [
-	4, 48, 576, 6912, 82944, 995328, 11943936, 143327232,
-	1719926784, 20639121408, 247669456896, 2972033482752,
-	35664401793024, 427972821516288, 5135673858195456,
-	61628086298345472, 739537035580145664,
+	4, 92, 2116, 48668, 1119364, 25745372, 592143556, 13619301788,
+	313243941124, 7204610645852, 165706044854596, 3811239031655708,
+	87658497728081284, 2016145447745869532,
 ]
 
 const PARTNER_BASE_COSTS: Array = [
-	35, 385, 4235, 46585, 512435, 5636785, 62004635, 682050985,
-	7502560835, 82528169185, 907809861035, 9985908471385,
-	109844993185235, 1208294925037585, 13291244175413435,
-	146203685929547785, 1608240545225025635,
+	35, 875, 21875, 546875, 13671875, 341796875, 8544921875, 213623046875,
+	5340576171875, 133514404296875, 3337860107421875,
+	83446502685546875, 2086162567138671875,
 ]
 
-# Segmented adaptive exponential cost by owned count:
+# Segmented adaptive exponential cost by owned count — one consistent coefficient (1.08)
+# across all segments encourages buying 10/25/50 copies rather than rushing the next partner.
 # cost(count) = base_cost * growth^count, boundary applied continuously
-const PARTNER_COST_GROWTH_EARLY: float = 1.12   # counts 0–99
-const PARTNER_COST_GROWTH_MID: float = 1.145    # counts 100–249
-const PARTNER_COST_GROWTH_LATE: float = 1.17    # counts 250+
+const PARTNER_COST_GROWTH_EARLY: float = 1.08   # counts 0–99
+const PARTNER_COST_GROWTH_MID: float = 1.08     # counts 100–249
+const PARTNER_COST_GROWTH_LATE: float = 1.08    # counts 250+
 const PARTNER_COST_MID_START_COUNT: int = 100
 const PARTNER_COST_LATE_START_COUNT: int = 250
 
@@ -87,19 +88,19 @@ const PARTNER_SKILL_COST_MULTIPLIERS: Array = [4, 6, 9, 14, 22]
 
 
 # --- BigNumber partner helpers ---
-# Use these instead of indexing PARTNER_DPS_VALUES / PARTNER_BASE_COSTS for indices ≥ 17.
+# Use these for all runtime calculations; the compact arrays above are legacy/reference only.
 
 static func get_partner_dps_bignum(index: int) -> BigNumber:
 	if index < 0 or index >= PARTNER_COUNT:
 		return BigNumber.zero()
-	# DPS[i] = 4 * 12^i
+	# DPS[i] = 4 * 23^i
 	return BigNumber.pow_float(float(PARTNER_DPS_MULT), index).multiply_int(PARTNER_DPS_BASE)
 
 
 static func get_partner_cost_bignum(index: int) -> BigNumber:
 	if index < 0 or index >= PARTNER_COUNT:
 		return BigNumber.zero()
-	# Cost[i] = 35 * 11^i
+	# Cost[i] = 35 * 25^i
 	return BigNumber.pow_float(float(PARTNER_COST_MULT), index).multiply_int(PARTNER_COST_BASE)
 
 
@@ -168,7 +169,7 @@ const BUILDING_BONUS_PERCENT_PER_LEVEL: float = 0.1
 # reward(level) = ENEMY_REWARD_BASE * ENEMY_REWARD_GROWTH^(level-1)
 # HP grows faster than rewards to create increasing friction over time.
 const ENEMY_HP_BASE: float = 18.0
-const ENEMY_HP_GROWTH: float = 1.26
+const ENEMY_HP_GROWTH: float = 1.28   # raised from 1.26 as mild compensation for lower copy-cost growth
 
 const ENEMY_REWARD_BASE: float = 4.0
 const ENEMY_REWARD_GROWTH: float = 1.20
