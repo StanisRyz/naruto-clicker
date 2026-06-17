@@ -30,7 +30,7 @@ signal cloud_save_delete_error(message: String)
 const CLOUD_SAVE_KEY: String = "save_v1"
 const CLOUD_SAVE_SCHEMA_VERSION: int = 1
 const SDK_READY_RETRY_DELAY_SEC: float = 0.5
-const SDK_READY_MAX_RETRY_ATTEMPTS: int = 20
+const SDK_READY_MAX_RETRY_ATTEMPTS: int = 60
 const PLATFORM_EVENTS_RETRY_DELAY_SEC: float = 0.5
 const PLATFORM_EVENTS_MAX_RETRY_ATTEMPTS: int = 20
 
@@ -135,15 +135,13 @@ func _is_ysdk_ready() -> bool:
 
 
 func game_ready(attempt: int = 0) -> void:
-	if BuildConfig.is_debug_features_enabled():
-		print("YandexBridge: game_ready attempt=%d sdk_ready=%s" % [attempt, str(_is_ysdk_ready())])
-	if not _is_ysdk_ready():
+	var sdk_ready := _is_ysdk_ready()
+	print("YandexBridge: game_ready attempt=%d sdk_ready=%s" % [attempt, str(sdk_ready)])
+	if not sdk_ready:
 		_retry_game_ready(attempt)
 		return
 
 	_setup_platform_event_callbacks()
-	if BuildConfig.is_debug_features_enabled():
-		print("YandexBridge: calling LoadingAPI.ready()")
 	JavaScriptBridge.eval("""
 		if (window.ysdk && window.ysdk.features && window.ysdk.features.LoadingAPI) {
 			window.ysdk.features.LoadingAPI.ready();
@@ -184,6 +182,7 @@ func gameplay_stop() -> void:
 
 func _retry_game_ready(attempt: int) -> void:
 	if not is_web or attempt >= SDK_READY_MAX_RETRY_ATTEMPTS:
+		push_warning("YandexBridge: game_ready retry exhausted after %d attempts" % attempt)
 		return
 	await get_tree().create_timer(SDK_READY_RETRY_DELAY_SEC).timeout
 	game_ready(attempt + 1)

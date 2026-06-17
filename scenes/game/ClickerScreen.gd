@@ -67,6 +67,7 @@ var _processed_purchase_tokens: Dictionary = {}
 var _unprocessed_purchase_check_requested: bool = false
 var _runtime_pause_reasons: Dictionary = {}
 var _runtime_pause_started_unix_time: int = 0
+var _yandex_game_ready_notified: bool = false
 
 const FULLSCREEN_AD_COOLDOWN_SECONDS: float = 300.0
 const FULLSCREEN_AD_INITIAL_COOLDOWN_SECONDS: float = 300.0
@@ -197,6 +198,7 @@ func _ready() -> void:
 		balance_logger.start_session(state)
 		balance_logger.mark_enemy_spawned(state)
 	startup_completed.emit()
+	notify_yandex_game_ready()
 
 
 func _process(delta: float) -> void:
@@ -1365,7 +1367,15 @@ func _can_resume_yandex_gameplay() -> bool:
 	return true
 
 
+func is_startup_completed() -> bool:
+	return _is_initialized
+
+
 func notify_yandex_game_ready() -> void:
+	if _yandex_game_ready_notified:
+		return
+	_yandex_game_ready_notified = true
+	print("ClickerScreen: notify_yandex_game_ready called")
 	YandexBridge.game_ready()
 	_try_resume_yandex_gameplay()
 

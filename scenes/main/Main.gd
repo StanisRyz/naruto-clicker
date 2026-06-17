@@ -7,6 +7,12 @@ func _ready() -> void:
 		await get_tree().process_frame
 		YandexBridge.game_ready()
 		return
+	if clicker_screen.has_method("is_startup_completed") and clicker_screen.is_startup_completed():
+		if clicker_screen.has_method("notify_yandex_game_ready"):
+			clicker_screen.notify_yandex_game_ready()
+		else:
+			YandexBridge.game_ready()
+		return
 	await clicker_screen.startup_completed
 	if clicker_screen.has_method("notify_yandex_game_ready"):
 		clicker_screen.notify_yandex_game_ready()
