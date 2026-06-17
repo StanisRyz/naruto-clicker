@@ -57,8 +57,10 @@ func update_view(state: ClickerState) -> void:
 
 	for partner_index in range(partner_rows.size()):
 		var panel_row: Control = partner_rows[partner_index]["row"]
-		panel_row.visible = _should_show_partner_row(state, partner_index)
-		_update_partner_row(state, partner_index, partner_rows[partner_index])
+		var is_visible: bool = _should_show_partner_row(state, partner_index)
+		panel_row.visible = is_visible
+		if is_visible:
+			_update_partner_row(state, partner_index, partner_rows[partner_index])
 
 
 func _ensure_partner_rows(_state: ClickerState) -> void:
@@ -343,7 +345,8 @@ func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionar
 	var partner_name: String = LocalizationManager.tr_key(PartnerConfig.get_name_key(partner_index))
 	var partner_count: int = state.partner_counts[partner_index]
 	var tier_total_dps: BigNumber = state.get_partner_tier_total_dps(partner_index)
-	var dps_gain: BigNumber = state.get_partner_bulk_dps_gain(partner_index, selected_buy_mode)
+	var preview: Dictionary = state.get_partner_bulk_preview(partner_index, selected_buy_mode)
+	var dps_gain: BigNumber = preview["dps_gain"]
 	var next_milestone: int = state.get_next_milestone(partner_count)
 	partner_name_label.text = LocalizationManager.format_key("partner.card.name", {
 		"name": partner_name,
@@ -375,9 +378,9 @@ func _update_partner_row(state: ClickerState, partner_index: int, row: Dictionar
 			var skill_state: String = state.get_partner_skill_state(skill_id)
 			_apply_skill_icon_visual(skill_image_holder, skill_state)
 
-	var bulk_count: int = state.get_partner_bulk_display_count(partner_index, selected_buy_mode)
-	var bulk_cost: BigNumber = state.get_partner_bulk_display_cost(partner_index, selected_buy_mode)
-	var can_afford: bool = state.can_afford_partner_bulk(partner_index, selected_buy_mode)
+	var bulk_count: int = preview["count"]
+	var bulk_cost: BigNumber = preview["cost"]
+	var can_afford: bool = preview["can_afford"]
 	row["button_label"].text = LocalizationManager.format_key("partner.hire_button", {
 		"count": bulk_count,
 		"cost": NumberFormatter.compact(bulk_cost),

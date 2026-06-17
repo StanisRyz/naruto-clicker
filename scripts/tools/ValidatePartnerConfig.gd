@@ -23,11 +23,52 @@ func _init() -> void:
 	if PartnerConfig.PARTNER_NAMES.size() != EXPECTED_PARTNER_COUNT:
 		errors.append("PartnerConfig.PARTNER_NAMES.size() is %d, expected %d" % [PartnerConfig.PARTNER_NAMES.size(), EXPECTED_PARTNER_COUNT])
 
-	if BalanceConfig.PARTNER_DPS_VALUES.size() != EXPECTED_PARTNER_COUNT:
-		errors.append("BalanceConfig.PARTNER_DPS_VALUES.size() is %d, expected %d" % [BalanceConfig.PARTNER_DPS_VALUES.size(), EXPECTED_PARTNER_COUNT])
+	# Compact legacy arrays are intentionally shorter than PARTNER_COUNT:
+	# higher-index values overflow int64 (4*23^i at i>=14; 35*25^i at i>=13).
+	# Runtime uses get_partner_dps_bignum / get_partner_cost_bignum for all 28 partners.
+	var dps_compact_size: int = BalanceConfig.PARTNER_DPS_VALUES.size()
+	var cost_compact_size: int = BalanceConfig.PARTNER_BASE_COSTS.size()
 
-	if BalanceConfig.PARTNER_BASE_COSTS.size() != EXPECTED_PARTNER_COUNT:
-		errors.append("BalanceConfig.PARTNER_BASE_COSTS.size() is %d, expected %d" % [BalanceConfig.PARTNER_BASE_COSTS.size(), EXPECTED_PARTNER_COUNT])
+	if dps_compact_size <= 0 or dps_compact_size > EXPECTED_PARTNER_COUNT:
+		errors.append("BalanceConfig.PARTNER_DPS_VALUES.size() is %d, expected 1..%d" % [dps_compact_size, EXPECTED_PARTNER_COUNT])
+	else:
+		var expected_dps: int = BalanceConfig.PARTNER_DPS_BASE
+		for i in range(dps_compact_size):
+			if i > 0:
+				expected_dps *= BalanceConfig.PARTNER_DPS_MULT
+			if BalanceConfig.PARTNER_DPS_VALUES[i] != expected_dps:
+				errors.append("PARTNER_DPS_VALUES[%d] is %d, expected %d (formula: %d*%d^%d)" % [
+					i, BalanceConfig.PARTNER_DPS_VALUES[i], expected_dps,
+					BalanceConfig.PARTNER_DPS_BASE, BalanceConfig.PARTNER_DPS_MULT, i])
+
+	if cost_compact_size <= 0 or cost_compact_size > EXPECTED_PARTNER_COUNT:
+		errors.append("BalanceConfig.PARTNER_BASE_COSTS.size() is %d, expected 1..%d" % [cost_compact_size, EXPECTED_PARTNER_COUNT])
+	else:
+		var expected_cost: int = BalanceConfig.PARTNER_COST_BASE
+		for i in range(cost_compact_size):
+			if i > 0:
+				expected_cost *= BalanceConfig.PARTNER_COST_MULT
+			if BalanceConfig.PARTNER_BASE_COSTS[i] != expected_cost:
+				errors.append("PARTNER_BASE_COSTS[%d] is %d, expected %d (formula: %d*%d^%d)" % [
+					i, BalanceConfig.PARTNER_BASE_COSTS[i], expected_cost,
+					BalanceConfig.PARTNER_COST_BASE, BalanceConfig.PARTNER_COST_MULT, i])
+
+	# --- Runtime BigNumber validation (all 28 partners via formula, no int64 overflow risk) ---
+	var prev_dps: BigNumber = BigNumber.zero()
+	var prev_cost: BigNumber = BigNumber.zero()
+	for i in range(EXPECTED_PARTNER_COUNT):
+		var dps_bn: BigNumber = BalanceConfig.get_partner_dps_bignum(i)
+		var cost_bn: BigNumber = BalanceConfig.get_partner_cost_bignum(i)
+		if not dps_bn.is_positive():
+			errors.append("get_partner_dps_bignum(%d) is not positive" % i)
+		elif i > 0 and dps_bn.compare_to(prev_dps) <= 0:
+			errors.append("get_partner_dps_bignum(%d) did not increase from partner %d" % [i, i - 1])
+		if not cost_bn.is_positive():
+			errors.append("get_partner_cost_bignum(%d) is not positive" % i)
+		elif i > 0 and cost_bn.compare_to(prev_cost) <= 0:
+			errors.append("get_partner_cost_bignum(%d) did not increase from partner %d" % [i, i - 1])
+		prev_dps = dps_bn
+		prev_cost = cost_bn
 
 	# --- Existing 13 partner names not renamed ---
 	for i in range(EXPECTED_PARTNER_NAMES_13.size()):

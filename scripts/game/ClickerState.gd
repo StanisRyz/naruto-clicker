@@ -125,6 +125,9 @@ const DEBUG_VISUAL_TEST_HP: int = 100000
 const DEBUG_PURCHASE_COST: int = 1
 const DEBUG_PURCHASE_MAX_BULK: int = 100
 const DEBUG_PRESTIGE_REWARD: int = 999
+# Cap for max-mode UI preview to prevent an unbounded while loop running every UI frame.
+# Actual purchase on button click is uncapped but single-trigger, so it is safe.
+const MAX_BULK_PREVIEW_PURCHASES: int = 1000
 
 var last_save_unix_time: int = 0
 var pending_offline_gold_reward: BigNumber
@@ -1969,6 +1972,61 @@ func refresh_partner_visibility_unlocks() -> void:
 
 func can_afford_partner_bulk(partner_index: int, mode: String) -> bool:
 	return get_partner_bulk_count(partner_index, mode) > 0
+
+
+func get_partner_bulk_preview(partner_index: int, mode: String) -> Dictionary:
+	if partner_index < 0 or partner_index >= partner_counts.size():
+		return {"count": 0, "cost": BigNumber.zero(), "dps_gain": BigNumber.zero(), "can_afford": false}
+
+	var display_count: int
+	var total_cost: BigNumber
+	var can_afford: bool
+
+	if is_debug_purchase_override_enabled():
+		var dbg_cost: BigNumber = BigNumber.from_int(DEBUG_PURCHASE_COST)
+		if mode == "max":
+			display_count = DEBUG_PURCHASE_MAX_BULK if gold.compare_to(dbg_cost) >= 0 else 0
+		else:
+			display_count = _get_fixed_buy_count(mode)
+		can_afford = display_count > 0 and gold.compare_to(dbg_cost) >= 0
+		total_cost = dbg_cost if display_count > 0 else BigNumber.zero()
+	elif mode == "max":
+		# Single capped loop: computes affordable count and accumulated cost together,
+		# avoiding duplicate while-loop runs that caused per-frame lag in x100/max mode.
+		var sim_gold: BigNumber = gold.clone()
+		var sim_owned: int = partner_counts[partner_index]
+		var sim_cost: BigNumber = (partner_purchase_costs[partner_index] as BigNumber).clone()
+		var bought: int = 0
+		var accum_cost: BigNumber = BigNumber.zero()
+		while sim_gold.compare_to(sim_cost) >= 0 and bought < MAX_BULK_PREVIEW_PURCHASES:
+			sim_gold = sim_gold.subtract(sim_cost)
+			accum_cost = accum_cost.add(sim_cost)
+			sim_owned += 1
+			bought += 1
+			sim_cost = _get_partner_cost_for_count(partner_index, sim_owned)
+		display_count = bought
+		total_cost = accum_cost
+		can_afford = bought > 0
+	else:
+		var fixed_count: int = _get_fixed_buy_count(mode)
+		display_count = fixed_count
+		total_cost = _get_partner_bulk_cost_for_count(partner_index, fixed_count)
+		can_afford = gold.compare_to(total_cost) >= 0
+
+	var dps_gain: BigNumber
+	if display_count > 0:
+		var current_dps: BigNumber = get_partner_tier_total_dps(partner_index)
+		var future_dps: BigNumber = get_partner_tier_total_dps_for_count(partner_index, partner_counts[partner_index] + display_count)
+		dps_gain = future_dps.subtract(current_dps)
+	else:
+		dps_gain = BigNumber.zero()
+
+	return {
+		"count": display_count,
+		"cost": total_cost,
+		"dps_gain": dps_gain,
+		"can_afford": can_afford,
+	}
 
 
 func _get_fixed_buy_count(mode: String) -> int:
