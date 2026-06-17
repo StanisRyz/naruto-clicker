@@ -50,6 +50,30 @@ var _last_platform_event_name: String = ""
 var _platform_pause_event_count: int = 0
 var _platform_resume_event_count: int = 0
 
+var _rewarded_open_cb = null
+var _rewarded_reward_cb = null
+var _rewarded_close_cb = null
+var _rewarded_error_cb = null
+
+var _fullscreen_open_cb = null
+var _fullscreen_close_cb = null
+var _fullscreen_error_cb = null
+
+var _payment_success_cb = null
+var _payment_cancel_cb = null
+var _payment_error_cb = null
+
+var _cloud_loaded_cb = null
+var _cloud_load_err_cb = null
+var _cloud_completed_cb = null
+var _cloud_error_cb = null
+var _cloud_deleted_cb = null
+var _cloud_delete_err_cb = null
+
+var _unprocessed_found_cb = null
+var _unprocessed_completed_cb = null
+var _unprocessed_error_cb = null
+
 func _ready() -> void:
 	is_web = OS.has_feature("web")
 
@@ -111,17 +135,21 @@ func _is_ysdk_ready() -> bool:
 
 
 func game_ready(attempt: int = 0) -> void:
+	if BuildConfig.is_debug_features_enabled():
+		print("YandexBridge: game_ready attempt=%d sdk_ready=%s" % [attempt, str(_is_ysdk_ready())])
 	if not _is_ysdk_ready():
 		_retry_game_ready(attempt)
 		return
 
 	_setup_platform_event_callbacks()
+	if BuildConfig.is_debug_features_enabled():
+		print("YandexBridge: calling LoadingAPI.ready()")
 	JavaScriptBridge.eval("""
 		if (window.ysdk && window.ysdk.features && window.ysdk.features.LoadingAPI) {
 			window.ysdk.features.LoadingAPI.ready();
-			console.log("Yandex LoadingAPI.ready() called");
+			console.log("YandexBridge: LoadingAPI.ready() called");
 		} else {
-			console.log("Yandex SDK is not initialized yet");
+			console.log("YandexBridge: LoadingAPI not available at game_ready");
 		}
 	""")
 
@@ -232,14 +260,17 @@ func _on_js_rewarded_ad_error(message: String) -> void:
 func _setup_js_callbacks() -> void:
 	if not is_web:
 		return
-	var open_cb := JavaScriptBridge.create_callback(_on_js_rewarded_ad_open)
-	var reward_cb := JavaScriptBridge.create_callback(_on_js_rewarded_ad_rewarded)
-	var close_cb := JavaScriptBridge.create_callback(func(args): _on_js_rewarded_ad_close(int(args[0])))
-	var error_cb := JavaScriptBridge.create_callback(func(args): _on_js_rewarded_ad_error(str(args[0])))
-	JavaScriptBridge.eval("window._godot_rewarded_ad_open = %s;" % open_cb)
-	JavaScriptBridge.eval("window._godot_rewarded_ad_rewarded = %s;" % reward_cb)
-	JavaScriptBridge.eval("window._godot_rewarded_ad_close = %s;" % close_cb)
-	JavaScriptBridge.eval("window._godot_rewarded_ad_error = %s;" % error_cb)
+	_rewarded_open_cb = JavaScriptBridge.create_callback(_on_js_rewarded_ad_open)
+	_rewarded_reward_cb = JavaScriptBridge.create_callback(_on_js_rewarded_ad_rewarded)
+	_rewarded_close_cb = JavaScriptBridge.create_callback(func(args): _on_js_rewarded_ad_close(int(args[0])))
+	_rewarded_error_cb = JavaScriptBridge.create_callback(func(args): _on_js_rewarded_ad_error(str(args[0])))
+	var _win := JavaScriptBridge.get_interface("window")
+	_win._godot_rewarded_ad_open = _rewarded_open_cb
+	_win._godot_rewarded_ad_rewarded = _rewarded_reward_cb
+	_win._godot_rewarded_ad_close = _rewarded_close_cb
+	_win._godot_rewarded_ad_error = _rewarded_error_cb
+	if BuildConfig.is_debug_features_enabled():
+		print("YandexBridge: rewarded ad callbacks registered on window")
 	_setup_fullscreen_ad_js_callbacks()
 	_setup_cloud_save_js_callbacks()
 	_setup_unprocessed_purchase_js_callbacks()
@@ -309,12 +340,15 @@ func _on_js_fullscreen_ad_error(message: String) -> void:
 
 
 func _setup_fullscreen_ad_js_callbacks() -> void:
-	var open_cb := JavaScriptBridge.create_callback(_on_js_fullscreen_ad_open)
-	var close_cb := JavaScriptBridge.create_callback(func(args): _on_js_fullscreen_ad_close(int(args[0])))
-	var error_cb := JavaScriptBridge.create_callback(func(args): _on_js_fullscreen_ad_error(str(args[0])))
-	JavaScriptBridge.eval("window._godot_fullscreen_ad_open = %s;" % open_cb)
-	JavaScriptBridge.eval("window._godot_fullscreen_ad_close = %s;" % close_cb)
-	JavaScriptBridge.eval("window._godot_fullscreen_ad_error = %s;" % error_cb)
+	_fullscreen_open_cb = JavaScriptBridge.create_callback(_on_js_fullscreen_ad_open)
+	_fullscreen_close_cb = JavaScriptBridge.create_callback(func(args): _on_js_fullscreen_ad_close(int(args[0])))
+	_fullscreen_error_cb = JavaScriptBridge.create_callback(func(args): _on_js_fullscreen_ad_error(str(args[0])))
+	var _win := JavaScriptBridge.get_interface("window")
+	_win._godot_fullscreen_ad_open = _fullscreen_open_cb
+	_win._godot_fullscreen_ad_close = _fullscreen_close_cb
+	_win._godot_fullscreen_ad_error = _fullscreen_error_cb
+	if BuildConfig.is_debug_features_enabled():
+		print("YandexBridge: fullscreen ad callbacks registered on window")
 
 
 func purchase_product(yandex_product_id: String, local_product_id: String) -> void:
@@ -460,12 +494,15 @@ func _on_js_payment_error(local_product_id: String, message: String) -> void:
 
 func _setup_payment_js_callbacks() -> void:
 	_payment_js_callbacks_setup = true
-	var success_cb := JavaScriptBridge.create_callback(func(args): _on_js_payment_success(str(args[0]), str(args[1])))
-	var cancel_cb := JavaScriptBridge.create_callback(func(args): _on_js_payment_cancelled(str(args[0])))
-	var error_cb := JavaScriptBridge.create_callback(func(args): _on_js_payment_error(str(args[0]), str(args[1])))
-	JavaScriptBridge.eval("window._godot_payment_success = %s;" % success_cb)
-	JavaScriptBridge.eval("window._godot_payment_cancelled = %s;" % cancel_cb)
-	JavaScriptBridge.eval("window._godot_payment_error = %s;" % error_cb)
+	_payment_success_cb = JavaScriptBridge.create_callback(func(args): _on_js_payment_success(str(args[0]), str(args[1])))
+	_payment_cancel_cb = JavaScriptBridge.create_callback(func(args): _on_js_payment_cancelled(str(args[0])))
+	_payment_error_cb = JavaScriptBridge.create_callback(func(args): _on_js_payment_error(str(args[0]), str(args[1])))
+	var _win := JavaScriptBridge.get_interface("window")
+	_win._godot_payment_success = _payment_success_cb
+	_win._godot_payment_cancelled = _payment_cancel_cb
+	_win._godot_payment_error = _payment_error_cb
+	if BuildConfig.is_debug_features_enabled():
+		print("YandexBridge: payment callbacks registered on window")
 
 
 func _simulate_payment_debug(local_product_id: String) -> void:
@@ -625,18 +662,21 @@ func _on_js_cloud_save_delete_error(message: String) -> void:
 
 
 func _setup_cloud_save_js_callbacks() -> void:
-	var loaded_cb := JavaScriptBridge.create_callback(func(args): _on_js_cloud_save_loaded(str(args[0])))
-	var load_err_cb := JavaScriptBridge.create_callback(func(args): _on_js_cloud_save_load_error(str(args[0])))
-	var completed_cb := JavaScriptBridge.create_callback(_on_js_cloud_save_completed)
-	var save_err_cb := JavaScriptBridge.create_callback(func(args): _on_js_cloud_save_error(str(args[0])))
-	var deleted_cb := JavaScriptBridge.create_callback(_on_js_cloud_save_deleted)
-	var delete_err_cb := JavaScriptBridge.create_callback(func(args): _on_js_cloud_save_delete_error(str(args[0])))
-	JavaScriptBridge.eval("window._godot_cloud_save_loaded = %s;" % loaded_cb)
-	JavaScriptBridge.eval("window._godot_cloud_save_load_error = %s;" % load_err_cb)
-	JavaScriptBridge.eval("window._godot_cloud_save_completed = %s;" % completed_cb)
-	JavaScriptBridge.eval("window._godot_cloud_save_error = %s;" % save_err_cb)
-	JavaScriptBridge.eval("window._godot_cloud_save_deleted = %s;" % deleted_cb)
-	JavaScriptBridge.eval("window._godot_cloud_save_delete_error = %s;" % delete_err_cb)
+	_cloud_loaded_cb = JavaScriptBridge.create_callback(func(args): _on_js_cloud_save_loaded(str(args[0])))
+	_cloud_load_err_cb = JavaScriptBridge.create_callback(func(args): _on_js_cloud_save_load_error(str(args[0])))
+	_cloud_completed_cb = JavaScriptBridge.create_callback(_on_js_cloud_save_completed)
+	_cloud_error_cb = JavaScriptBridge.create_callback(func(args): _on_js_cloud_save_error(str(args[0])))
+	_cloud_deleted_cb = JavaScriptBridge.create_callback(_on_js_cloud_save_deleted)
+	_cloud_delete_err_cb = JavaScriptBridge.create_callback(func(args): _on_js_cloud_save_delete_error(str(args[0])))
+	var _win := JavaScriptBridge.get_interface("window")
+	_win._godot_cloud_save_loaded = _cloud_loaded_cb
+	_win._godot_cloud_save_load_error = _cloud_load_err_cb
+	_win._godot_cloud_save_completed = _cloud_completed_cb
+	_win._godot_cloud_save_error = _cloud_error_cb
+	_win._godot_cloud_save_deleted = _cloud_deleted_cb
+	_win._godot_cloud_save_delete_error = _cloud_delete_err_cb
+	if BuildConfig.is_debug_features_enabled():
+		print("YandexBridge: cloud save callbacks registered on window")
 
 
 func _on_js_unprocessed_purchase_found(product_id: String, purchase_token: String) -> void:
@@ -652,12 +692,15 @@ func _on_js_unprocessed_purchase_check_error(message: String) -> void:
 
 
 func _setup_unprocessed_purchase_js_callbacks() -> void:
-	var found_cb := JavaScriptBridge.create_callback(func(args): _on_js_unprocessed_purchase_found(str(args[0]), str(args[1])))
-	var completed_cb := JavaScriptBridge.create_callback(_on_js_unprocessed_purchase_check_completed)
-	var error_cb := JavaScriptBridge.create_callback(func(args): _on_js_unprocessed_purchase_check_error(str(args[0])))
-	JavaScriptBridge.eval("window._godot_unprocessed_purchase_found = %s;" % found_cb)
-	JavaScriptBridge.eval("window._godot_unprocessed_purchase_check_completed = %s;" % completed_cb)
-	JavaScriptBridge.eval("window._godot_unprocessed_purchase_check_error = %s;" % error_cb)
+	_unprocessed_found_cb = JavaScriptBridge.create_callback(func(args): _on_js_unprocessed_purchase_found(str(args[0]), str(args[1])))
+	_unprocessed_completed_cb = JavaScriptBridge.create_callback(_on_js_unprocessed_purchase_check_completed)
+	_unprocessed_error_cb = JavaScriptBridge.create_callback(func(args): _on_js_unprocessed_purchase_check_error(str(args[0])))
+	var _win := JavaScriptBridge.get_interface("window")
+	_win._godot_unprocessed_purchase_found = _unprocessed_found_cb
+	_win._godot_unprocessed_purchase_check_completed = _unprocessed_completed_cb
+	_win._godot_unprocessed_purchase_check_error = _unprocessed_error_cb
+	if BuildConfig.is_debug_features_enabled():
+		print("YandexBridge: unprocessed purchase callbacks registered on window")
 
 
 func is_platform_events_subscribed() -> bool:
@@ -725,13 +768,16 @@ func _setup_platform_event_callbacks(attempt: int = 0) -> void:
 		_platform_resume_cb = JavaScriptBridge.create_callback(func(_args): _on_js_platform_resume())
 		_platform_subscribed_cb = JavaScriptBridge.create_callback(func(_args): _on_js_platform_events_subscribed())
 		_platform_sub_error_cb = JavaScriptBridge.create_callback(func(args): _on_js_platform_events_subscription_error(str(args[0])))
-		JavaScriptBridge.eval("window._godot_platform_events_subscribed = %s;" % _platform_subscribed_cb)
-		JavaScriptBridge.eval("window._godot_platform_events_subscription_error = %s;" % _platform_sub_error_cb)
+	var _win := JavaScriptBridge.get_interface("window")
+	_win._godot_platform_pause_fn = _platform_pause_cb
+	_win._godot_platform_resume_fn = _platform_resume_cb
+	_win._godot_platform_events_subscribed = _platform_subscribed_cb
+	_win._godot_platform_events_subscription_error = _platform_sub_error_cb
 	JavaScriptBridge.eval("""
 		(function() {
 			try {
-				window.ysdk.on('game_api_pause', %s);
-				window.ysdk.on('game_api_resume', %s);
+				window.ysdk.on('game_api_pause', window._godot_platform_pause_fn);
+				window.ysdk.on('game_api_resume', window._godot_platform_resume_fn);
 				console.log('YandexBridge: game_api_pause/resume subscribed');
 				if (window._godot_platform_events_subscribed) window._godot_platform_events_subscribed();
 			} catch(e) {
@@ -739,5 +785,5 @@ func _setup_platform_event_callbacks(attempt: int = 0) -> void:
 				if (window._godot_platform_events_subscription_error) window._godot_platform_events_subscription_error(String(e));
 			}
 		})();
-	""" % [_platform_pause_cb, _platform_resume_cb])
+	""")
 	_platform_events_setup = true

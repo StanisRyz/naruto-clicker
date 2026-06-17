@@ -239,12 +239,23 @@ func set_page_audio_visible(visible: bool) -> void:
 func _register_web_event_listeners() -> void:
 	if not OS.has_feature("web"):
 		return
-	_js_page_hidden_cb = JavaScriptBridge.create_callback(func(_args): set_page_audio_visible(false))
-	_js_page_shown_cb = JavaScriptBridge.create_callback(func(_args): set_page_audio_visible(true))
+	_js_page_hidden_cb = JavaScriptBridge.create_callback(func(_args):
+		if OS.is_debug_build():
+			print("AudioManager: page hidden — pausing audio; reasons=%s" % str(_pause_reasons))
+		set_page_audio_visible(false)
+	)
+	_js_page_shown_cb = JavaScriptBridge.create_callback(func(_args):
+		if OS.is_debug_build():
+			print("AudioManager: page visible — resuming audio; reasons=%s" % str(_pause_reasons))
+		set_page_audio_visible(true)
+	)
 	_js_gesture_cb = JavaScriptBridge.create_callback(func(_args): unlock_audio_if_needed())
-	JavaScriptBridge.eval("window._godot_audio_page_hidden = %s;" % _js_page_hidden_cb)
-	JavaScriptBridge.eval("window._godot_audio_page_visible = %s;" % _js_page_shown_cb)
-	JavaScriptBridge.eval("window._godot_audio_user_gesture = %s;" % _js_gesture_cb)
+	var _win := JavaScriptBridge.get_interface("window")
+	_win._godot_audio_page_hidden = _js_page_hidden_cb
+	_win._godot_audio_page_visible = _js_page_shown_cb
+	_win._godot_audio_user_gesture = _js_gesture_cb
+	if OS.is_debug_build():
+		print("AudioManager: web event callbacks registered on window")
 	JavaScriptBridge.eval("""
 		(function() {
 			function _onHidden() {
@@ -254,6 +265,7 @@ func _register_web_event_listeners() -> void:
 				if (!document.hidden && window._godot_audio_page_visible) window._godot_audio_page_visible();
 			}
 			document.addEventListener('visibilitychange', function() {
+				console.log('AudioManager visibilitychange: hidden=' + document.hidden + ' state=' + document.visibilityState);
 				if (document.hidden) { _onHidden(); } else { _onVisible(); }
 			});
 			window.addEventListener('pagehide', _onHidden);
