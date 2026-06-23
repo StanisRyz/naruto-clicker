@@ -132,6 +132,11 @@ const MAX_BULK_PURCHASES: int = 5000
 
 var last_save_unix_time: int = 0
 var pending_offline_gold_reward: BigNumber
+
+# Persistent deduplication list for paid purchase ids (tokens / order ids).
+# Survives prestige and reset so the same purchase can never be double-granted.
+const MAX_PROCESSED_PURCHASE_IDS: int = 100
+var processed_purchase_ids: Array[String] = []
 var pending_offline_elapsed_seconds: int = 0
 var pending_offline_created_at: int = 0
 
@@ -1025,6 +1030,20 @@ func grant_paid_gem_purchase(product_id: String) -> Dictionary:
 		"zone_changed": false,
 		"zone_name": "",
 	}
+
+
+func is_purchase_processed(purchase_id: String) -> bool:
+	return purchase_id != "" and processed_purchase_ids.has(purchase_id)
+
+
+func mark_purchase_processed(purchase_id: String) -> void:
+	if purchase_id == "" or processed_purchase_ids.has(purchase_id):
+		return
+	processed_purchase_ids.append(purchase_id)
+	if processed_purchase_ids.size() > MAX_PROCESSED_PURCHASE_IDS:
+		processed_purchase_ids = processed_purchase_ids.slice(
+			processed_purchase_ids.size() - MAX_PROCESSED_PURCHASE_IDS
+		)
 
 
 func grant_shop_rewarded_gems() -> Dictionary:

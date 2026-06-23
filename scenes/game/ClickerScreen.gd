@@ -63,7 +63,6 @@ var _debug_visual_test_previous_gems: int = 0
 var _pending_shop_product_id: String = ""
 var _pending_payment_product_id: String = ""
 var _payment_reward_granted_for_current_request: bool = false
-var _processed_purchase_tokens: Dictionary = {}
 var _unprocessed_purchase_check_requested: bool = false
 var _runtime_pause_reasons: Dictionary = {}
 var _runtime_pause_started_unix_time: int = 0
@@ -605,18 +604,19 @@ func _on_gem_product_purchase_requested(product_id: String) -> void:
 	var product: Dictionary = GemPurchaseConfigClass.get_by_id(product_id)
 	if product.is_empty():
 		return
-	var yandex_product_id: String = String(product.get("yandex_product_id", ""))
+	var platform_key: String = Platform.get_platform_key()
+	var platform_product_id: String = GemPurchaseConfigClass.get_platform_product_id(product_id, platform_key)
 	_pending_payment_product_id = product_id
 	_payment_reward_granted_for_current_request = false
 	_set_runtime_pause_reason("payment", true)
 	AudioManager.set_audio_pause_reason("payment", true)
 	Platform.gameplay_stop()
-	Platform.purchase_product(yandex_product_id, product_id)
+	Platform.purchase_product(platform_product_id, product_id)
 
 
 func _on_payment_purchase_success(local_product_id: String, purchase_token: String) -> void:
 	if purchase_token == "":
-		push_warning("YandexBridge: purchase success for '%s' without purchaseToken, ignoring" % local_product_id)
+		push_warning("Platform: purchase success for '%s' without purchase id, ignoring" % local_product_id)
 		AudioManager.play_purchase_error()
 		_handle_status_text(LocalizationManager.tr_key("shop.gem_purchase.error"))
 		_clear_payment_request_state()
@@ -624,15 +624,15 @@ func _on_payment_purchase_success(local_product_id: String, purchase_token: Stri
 	if _payment_reward_granted_for_current_request:
 		_clear_payment_request_state()
 		return
-	if _is_purchase_token_processed(purchase_token):
+	if state.is_purchase_processed(purchase_token):
 		_clear_payment_request_state()
 		return
 	if local_product_id != _pending_payment_product_id:
-		push_warning("YandexBridge: success for unexpected product '%s' (pending '%s'), ignoring" % [local_product_id, _pending_payment_product_id])
+		push_warning("Platform: success for unexpected product '%s' (pending '%s'), ignoring" % [local_product_id, _pending_payment_product_id])
 		_clear_payment_request_state()
 		return
 	_payment_reward_granted_for_current_request = true
-	_mark_purchase_token_processed(purchase_token)
+	state.mark_purchase_processed(purchase_token)
 	var result: Dictionary = state.grant_paid_gem_purchase(local_product_id)
 	_handle_status_text(result.get("status_text", ""))
 	AudioManager.play_purchase_success()
@@ -645,13 +645,13 @@ func _on_payment_purchase_success(local_product_id: String, purchase_token: Stri
 
 
 func _on_unprocessed_purchase_found(product_id: String, purchase_token: String) -> void:
-	if _is_purchase_token_processed(purchase_token):
+	if state.is_purchase_processed(purchase_token):
 		return
 	var product: Dictionary = _find_gem_product_by_any_id(product_id)
 	if product.is_empty():
-		push_warning("YandexBridge: unknown unprocessed purchase product '%s', ignoring" % product_id)
+		push_warning("Platform: unknown unprocessed purchase product '%s', ignoring" % product_id)
 		return
-	_mark_purchase_token_processed(purchase_token)
+	state.mark_purchase_processed(purchase_token)
 	var local_product_id: String = String(product.get("id", ""))
 	var result: Dictionary = state.grant_paid_gem_purchase(local_product_id)
 	_handle_status_text(result.get("status_text", ""))
@@ -673,16 +673,9 @@ func _find_gem_product_by_any_id(product_id: String) -> Dictionary:
 	for candidate: Dictionary in GemPurchaseConfigClass.get_all():
 		if String(candidate.get("yandex_product_id", "")) == product_id:
 			return candidate
+		if String(candidate.get("rustore_product_id", "")) == product_id:
+			return candidate
 	return {}
-
-
-func _is_purchase_token_processed(purchase_token: String) -> bool:
-	return purchase_token != "" and _processed_purchase_tokens.has(purchase_token)
-
-
-func _mark_purchase_token_processed(purchase_token: String) -> void:
-	if purchase_token != "":
-		_processed_purchase_tokens[purchase_token] = true
 
 
 func _on_payment_purchase_cancelled(_local_product_id: String) -> void:

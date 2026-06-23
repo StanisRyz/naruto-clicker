@@ -66,6 +66,7 @@ static func build_save_data(state: ClickerState) -> Dictionary:
 		"pending_offline_gold_reward": state.pending_offline_gold_reward.to_save_dict(),
 		"pending_offline_elapsed_seconds": state.pending_offline_elapsed_seconds,
 		"pending_offline_created_at": state.pending_offline_created_at,
+		"processed_purchase_ids": Array(state.processed_purchase_ids),
 	}
 
 
@@ -190,6 +191,20 @@ static func apply_save_data(state: ClickerState, data: Dictionary) -> bool:
 	state.pending_offline_gold_reward = BigNumber.from_save_dict(data.get("pending_offline_gold_reward", 0))
 	state.pending_offline_elapsed_seconds = maxi(0, int(data.get("pending_offline_elapsed_seconds", 0)))
 	state.pending_offline_created_at = maxi(0, int(data.get("pending_offline_created_at", 0)))
+
+	state.processed_purchase_ids.clear()
+	var raw_purchase_ids = data.get("processed_purchase_ids", [])
+	if raw_purchase_ids is Array:
+		var seen: Dictionary = {}
+		for entry in raw_purchase_ids:
+			var sid: String = str(entry)
+			if sid != "" and not seen.has(sid):
+				seen[sid] = true
+				state.processed_purchase_ids.append(sid)
+		if state.processed_purchase_ids.size() > ClickerState.MAX_PROCESSED_PURCHASE_IDS:
+			state.processed_purchase_ids = state.processed_purchase_ids.slice(
+				state.processed_purchase_ids.size() - ClickerState.MAX_PROCESSED_PURCHASE_IDS
+			)
 
 	if not _try_restore_tasks(state, data):
 		state.initialize_tasks()

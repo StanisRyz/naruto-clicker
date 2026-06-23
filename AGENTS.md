@@ -52,6 +52,27 @@ The project is at final release-candidate stage. Future tasks must:
 - Background ImageSlot uses `stretch_mode = STRETCH_KEEP_ASPECT_COVERED` — vertical crop is
   acceptable and expected on the 9:16 Web layout.
 
+## Payment rules (all platforms)
+
+- **Never grant paid rewards without a non-empty purchase id / order id.** An
+  empty string must be rejected at the earliest check.
+- **Paid purchase ids must be persisted.** Use `state.is_purchase_processed(id)`
+  and `state.mark_purchase_processed(id)`. These write to
+  `ClickerState.processed_purchase_ids`, which is saved in every game save and
+  never cleared by prestige or reset.
+- Do not rely on the runtime-only deduplication that existed before this version.
+  Always go through `ClickerState` for dedup checks.
+- Real RuStore Pay SDK calls must live **only in `AndroidRuStorePlatform.gd`**.
+  Gameplay and UI code must call `Platform.purchase_product()`.
+- Do not use the deprecated RuStore BillingClient for new payment work. Use
+  RuStore Pay SDK (the newer product-based payments API) when integrating.
+- Platform product id resolution goes through
+  `GemPurchaseConfig.get_platform_product_id(local_id, Platform.get_platform_key())`.
+  Do not hardcode `yandex_product_id` in gameplay code.
+- `consume_purchase()` behavior differs by platform (Yandex token vs RuStore
+  order id). Always call `Platform.consume_purchase()` after granting; each
+  platform impl handles its own semantics.
+
 ## Platform abstraction rules
 
 - All gameplay and UI code must call `Platform` (the autoload), **never**

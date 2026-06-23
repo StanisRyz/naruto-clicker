@@ -176,29 +176,48 @@ Appears only on the clear main screen. Reward is randomly selected per viewing:
   buff was active when pause started, its expiry is extended by the paused
   wall-clock duration when gameplay resumes.
 
-### Donation gem purchases (Yandex Payments)
+### Donation gem purchases
 
-| Product ID | Gems | Price |
-|---|---|---|
-| `gems_25` | +25 gems | 24 RUB |
-| `gems_150` | +150 gems | 99 RUB |
-| `gems_500` | +500 gems | 249 RUB |
-| `gems_1500` | +1500 gems | 499 RUB |
+| Local ID | Yandex product | RuStore product | Gems | Price |
+|---|---|---|---|---|
+| `gems_25` | `gems_25` | `gems_25` | +25 gems | 24 RUB |
+| `gems_150` | `gems_150` | `gems_150` | +150 gems | 99 RUB |
+| `gems_500` | `gems_500` | `gems_500` | +500 gems | 249 RUB |
+| `gems_1500` | `gems_1500` | `gems_1500` | +1500 gems | 499 RUB |
 
-- Use client-side Yandex Payments mode: `ysdk.getPayments()`. Do **not** use
-  `getPayments({ signed: true })` unless a backend signature verification flow
-  is added.
+Both `yandex_product_id` and `rustore_product_id` are defined in
+`GemPurchaseConfig.gd`. `GemPurchaseConfig.get_platform_product_id(id, key)`
+resolves the store-specific ID at runtime via `Platform.get_platform_key()`.
+Update `rustore_product_id` values to match actual RuStore product registrations
+before publishing to RuStore.
+
+**Purchase safety rules (all platforms):**
+
 - Paid gems are granted only after a success callback that carries a **non-empty
-  `purchaseToken`**. An empty or missing token must not grant gems.
-- Cancel / error / close grant nothing.
-- Duplicate success callbacks must not double-grant (deduplication by token).
-- Unprocessed purchases are recovered via `payments.getPurchases()` on startup.
-- Required consumable order: grant gems → update UI → save locally → request
-  cloud save flush → call `consumePurchase()`.
-- The gem purchase dialog must not be dismissible (close button or outside click)
-  while `_payment_in_progress` is true.
-- Payment modal must pause runtime and audio and call `GameplayAPI.stop()`.
-  Cancel/error/success must clear pending payment state and call safe resume.
+  purchase id / order id**. An empty id must not grant gems.
+- Duplicate success callbacks must not double-grant. Purchase ids are persisted
+  in `ClickerState.processed_purchase_ids` and saved/restored across sessions.
+  The list is capped at 100 entries. It is **never** cleared by prestige or reset.
+- Real RuStore Pay SDK calls must live only in `AndroidRuStorePlatform.gd`.
+- Cancel / error grant nothing.
+- Payment modal must pause runtime and audio and call `GameplayAPI.stop()` on
+  Web. Cancel/error/success must clear pending payment state and call safe resume.
+
+**Yandex Payments (Web):**
+
+- Uses client-side `ysdk.getPayments()`. Do **not** use
+  `getPayments({ signed: true })` without a backend.
+- Unprocessed purchases recovered via `payments.getPurchases()` on startup.
+- Consumable order: grant gems → update UI → save → cloud flush → `consumePurchase()`.
+
+**RuStore Pay (Android — placeholder):**
+
+- `AndroidRuStorePlatform.gd` emits `payment_purchase_error` until a real plugin
+  is wired in. No gems are granted.
+- Implement `_get_rustore_pay_plugin()` and add a real purchase call in
+  `purchase_product()` once the plugin is bundled.
+- `check_unprocessed_purchases()` must be wired to the plugin's `getPurchases()`
+  when available; currently emits `unprocessed_purchase_check_completed` immediately.
 
 ## Audio
 

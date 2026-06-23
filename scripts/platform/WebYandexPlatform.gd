@@ -66,3 +66,7 @@ func refresh_platform_ready() -> bool:
 
 func get_platform_event_debug_state() -> Dictionary:
 	return YandexBridge.get_platform_event_debug_state()
+
+
+func get_platform_key() -> String:
+	return "yandex"
