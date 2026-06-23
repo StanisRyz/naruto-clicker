@@ -60,22 +60,35 @@ RuStore. Work through each item before uploading the first APK.
 
 | Item | Status |
 |---|---|
-| SDK integration | ⚠️ **Pending** — `AndroidRuStorePlatform._get_rustore_pay_plugin()` returns `null` |
-| Real purchase call | ⚠️ **Pending** — `purchase_product()` emits error until plugin is wired |
-| RuStore product ids | ⚠️ **Pending** — `rustore_product_id` fields in `GemPurchaseConfig.gd` are placeholders; update to match actual RuStore product registrations |
-| Unprocessed purchase recovery | ⚠️ **Pending** — `check_unprocessed_purchases()` emits complete immediately; must call plugin `getPurchases()` when integrated |
+| Plugin structure committed | ✅ `addons/android_rustore_pay/` — Godot 4 Android plugin v2 |
+| Singleton name | `Engine.get_singleton("AndroidRuStorePay")` |
+| Plugin enabled in project.godot | ✅ |
+| Plugin AAR built | ⚠️ **Must build before export** — `./gradlew assembleRelease` from `addons/android_rustore_pay/android/AndroidRuStorePayPlugin/` |
+| RuStore Pay SDK stubs filled in | ⚠️ **Pending** — `AndroidRuStorePayPlugin.kt` has `// TODO` stubs; real SDK not available yet |
+| RuStore Pay SDK AAR / Maven dep | ⚠️ **Pending** — add to `build.gradle` and `AndroidRuStorePayExportPlugin.gd` once obtained |
+| Real purchase call | ⚠️ **Pending** — `purchase()` stub emits error; replace with real SDK call |
+| Consume call | ⚠️ **Pending** — `consume()` stub is a no-op; replace with real SDK call |
+| Unprocessed purchase recovery | ⚠️ **Pending** — `get_pending_purchases()` stub emits completed immediately; replace with real SDK call |
+| RuStore product ids | ⚠️ **Pending** — `rustore_product_id` fields in `GemPurchaseConfig.gd` are placeholders; update to match RuStore developer console |
 | Duplicate purchase protection | ✅ `ClickerState.processed_purchase_ids` — persisted, capped at 100, never cleared by prestige/reset |
 | Purchase id deduplication | ✅ `state.is_purchase_processed()` / `state.mark_purchase_processed()` |
-| RuStore Pay SDK must not be BillingClient | ✅ Architecture uses RuStore Pay (new SDK) pattern; BillingClient is not used |
+| RuStore Pay SDK must not be BillingClient | ✅ Architecture uses RuStore Pay (new SDK) pattern; BillingClient is forbidden |
+| Signal wiring in AndroidRuStorePlatform | ✅ `_ready()` connects all 6 plugin signals to handlers |
+| Empty product id guard | ✅ `purchase_product()` rejects empty `platform_product_id` before setting in-progress flag |
+| Validate tool | ✅ `scripts/tools/ValidateMonetizationConfig.gd` — headless, validates all 4 gem products |
+
+**Missing external step (one file required):**
+
+The official RuStore Pay SDK AAR (or Maven coordinate) is not bundled.
+This is the single external dependency blocking real payments.
 
 **To complete RuStore Pay integration:**
-1. Obtain the official RuStore Pay Godot plugin `.aar`.
-2. Drop the `.aar` into `android/plugins/` (or wire via export plugin).
-3. Implement `_get_rustore_pay_plugin()` to return `Engine.get_singleton("RuStorePayPlugin")`.
-4. Implement `purchase_product()` using the plugin's purchase call.
-5. Connect plugin `success/cancel/error` signals to `_on_rustore_purchase_*` handlers in `AndroidRuStorePlatform`.
-6. Update `rustore_product_id` values in `GemPurchaseConfig.gd` to match RuStore dashboard.
-7. Implement `check_unprocessed_purchases()` via plugin `getPurchases()`.
+1. Obtain the official RuStore Pay SDK from the RuStore developer portal.
+2. Add to `addons/android_rustore_pay/android/AndroidRuStorePayPlugin/libs/` (or configure Maven).
+3. Fill in the `// TODO` stubs in `AndroidRuStorePayPlugin.kt` — see `docs/rustore_pay_integration.md`.
+4. Build the plugin AAR: `./gradlew assembleRelease`.
+5. Update `rustore_product_id` values in `GemPurchaseConfig.gd` to match RuStore dashboard.
+6. Test all 4 gem purchase flows on a real Android device.
 
 ---
 
@@ -106,9 +119,10 @@ RuStore. Work through each item before uploading the first APK.
 1. **Build the AndroidYandexAds plugin AAR** (`./gradlew assembleRelease`).
 2. **Register the app in Yandex Mobile Ads dashboard** and fill in `android_ad_unit_id` values in `AdPlacementConfig.gd`.
 3. **Test rewarded and interstitial ads on a real Android device**.
-4. **Integrate RuStore Pay SDK** (see steps above).
-5. **Update `rustore_product_id` values** in `GemPurchaseConfig.gd`.
-6. **Test all 4 gem purchase flows** via RuStore Pay.
-7. **Set version code / version name** before each upload.
-8. **Verify keystore** is configured and the release APK is signed.
-9. **Upload signed release APK** to RuStore developer console.
+4. **Obtain RuStore Pay SDK** and fill in `AndroidRuStorePayPlugin.kt` stubs (see `docs/rustore_pay_integration.md`).
+5. **Build the AndroidRuStorePay plugin AAR** (`./gradlew assembleRelease`).
+6. **Update `rustore_product_id` values** in `GemPurchaseConfig.gd` to match RuStore developer console.
+7. **Test all 4 gem purchase flows** via RuStore Pay on a real Android device.
+8. **Set version code / version name** before each upload.
+9. **Verify keystore** is configured and the release APK is signed.
+10. **Upload signed release APK** to RuStore developer console.

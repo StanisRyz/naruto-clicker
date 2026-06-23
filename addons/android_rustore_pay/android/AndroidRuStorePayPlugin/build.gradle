@@ -1,0 +1,64 @@
+// Android library module for the RuStore Pay SDK Godot 4 plugin.
+//
+// Build steps:
+//   1. Copy godot-lib.template_release.aar from android/build/libs/release/ into libs/
+//      (for compileOnly reference — it is not bundled into the output AAR).
+//   2. Run ./gradlew assembleRelease  (or assembleDebug for debug exports).
+//   3. The output AAR is at build/outputs/aar/AndroidRuStorePayPlugin-{release,debug}.aar.
+//      Godot's export plugin (AndroidRuStorePayExportPlugin.gd) picks it up automatically.
+//
+// RuStore Pay SDK:
+//   Add the official SDK AAR or Maven coordinate once available from RuStore docs.
+//   Declare it as compileOnly here (like Yandex SDK below) if injected via export plugin,
+//   or as implementation if bundled directly into this AAR.
+//   See docs/rustore_pay_integration.md for the integration checklist.
+
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.shinobi.rustorepay'
+    compileSdk 35
+
+    defaultConfig {
+        minSdk 24
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+}
+
+repositories {
+    google()
+    mavenCentral()
+    // TODO: Add RuStore Maven repo here if SDK is hosted on Maven.
+    // Example (verify from official docs):
+    //   maven { url 'https://artifactory.rustore.ru/artifactory/apps/' }
+}
+
+dependencies {
+    // Godot engine runtime — required for GodotPlugin base class.
+    // Place a copy of godot-lib.template_release.aar in the libs/ folder before building.
+    // Source: android/build/libs/release/godot-lib.template_release.aar
+    compileOnly fileTree(dir: 'libs', include: ['*.aar'])
+
+    // TODO: Add RuStore Pay SDK dependency here once the official AAR/coordinate is known.
+    // Option A — local AAR (copy SDK .aar into libs/):
+    //   compileOnly fileTree(dir: 'libs', include: ['rustore-pay-*.aar'])
+    // Option B — Maven (if hosted remotely):
+    //   compileOnly 'ru.rustore.sdk:pay:X.Y.Z'
+}

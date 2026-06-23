@@ -7,12 +7,12 @@ extends "res://scripts/platform/PlatformServices.gd"
 #   addons/android_yandex_ads/android/AndroidYandexAdsPlugin/
 # Ad unit ids are configured in scripts/game/config/AdPlacementConfig.gd.
 #
-# Payments: RuStore Pay SDK — placeholder only. No real plugin is bundled yet.
-# When the official RuStore Pay Godot plugin is available:
-# 1. Drop the .aar into android/plugins/.
-# 2. Implement _get_rustore_pay_plugin() to return the plugin node.
-# 3. Implement purchase_product() using the plugin's documented purchase call.
-# 4. Connect plugin success/cancel/error signals in _ready().
+# Payments: RuStore Pay SDK via the AndroidRuStorePay Godot plugin.
+# The plugin is a compile-safe adapter built from:
+#   addons/android_rustore_pay/android/AndroidRuStorePayPlugin/
+# SDK stubs are marked TODO inside AndroidRuStorePayPlugin.kt.
+# Fill them in once the official RuStore Pay SDK AAR is available.
+# See docs/rustore_pay_integration.md for the integration checklist.
 
 const AdPlacementConfigClass = preload("res://scripts/game/config/AdPlacementConfig.gd")
 
@@ -43,6 +43,15 @@ func _ready() -> void:
 		ads_plugin.fullscreen_ad_error.connect(_on_android_fullscreen_ad_error)
 		ads_plugin.initialize()
 
+	var pay_plugin := _get_rustore_pay_plugin()
+	if pay_plugin:
+		pay_plugin.purchase_success.connect(_on_rustore_purchase_success)
+		pay_plugin.purchase_cancelled.connect(_on_rustore_purchase_cancelled)
+		pay_plugin.purchase_error.connect(_on_rustore_purchase_error)
+		pay_plugin.pending_purchase_found.connect(_on_rustore_pending_purchase_found)
+		pay_plugin.pending_purchases_check_completed.connect(_on_rustore_pending_purchases_check_completed)
+		pay_plugin.pending_purchases_check_error.connect(_on_rustore_pending_purchases_check_error)
+
 # ── Plugin access ─────────────────────────────────────────────────────────────
 
 func _get_android_ads_plugin() -> Object:
@@ -55,9 +64,10 @@ func _is_android_ads_available() -> bool:
 	return _get_android_ads_plugin() != null
 
 
-# Returns the RuStore Pay plugin node if available, or null.
+# Returns the RuStore Pay plugin singleton if available, or null.
 func _get_rustore_pay_plugin() -> Object:
-	# TODO: return Engine.get_singleton("RuStorePayPlugin") when plugin is available
+	if Engine.has_singleton("AndroidRuStorePay"):
+		return Engine.get_singleton("AndroidRuStorePay")
 	return null
 
 
@@ -186,35 +196,39 @@ func _on_android_fullscreen_ad_error(message: String) -> void:
 func purchase_product(platform_product_id: String, local_product_id: String = "") -> void:
 	var local_id: String = local_product_id if local_product_id != "" else platform_product_id
 
+	if platform_product_id == "":
+		payment_purchase_error.emit(local_id, "Empty platform product id")
+		return
+
 	if _payment_in_progress:
 		payment_purchase_error.emit(local_id, "Payment already in progress")
 		return
 
 	payment_purchase_started.emit(local_id)
 
-	if not _is_rustore_pay_available():
-		# TODO: replace this block with real RuStore Pay plugin call
-		payment_purchase_error.emit(local_id, "RuStore Pay plugin not available")
-		return
-
 	_payment_in_progress = true
 	_pending_local_product_id = local_id
 	_pending_platform_product_id = platform_product_id
 
-	# TODO: call the plugin here, e.g.:
-	# var plugin = _get_rustore_pay_plugin()
-	# plugin.purchase(platform_product_id)
-	# Then connect plugin signals in _ready() to _on_rustore_purchase_success / _error / _cancel
+	var plugin := _get_rustore_pay_plugin()
+	if not plugin:
+		_payment_in_progress = false
+		_pending_local_product_id = ""
+		_pending_platform_product_id = ""
+		payment_purchase_error.emit(local_id, "RuStore Pay plugin not available")
+		return
+
+	plugin.purchase(platform_product_id)
 
 
-func _on_rustore_purchase_success(order_id: String) -> void:
+func _on_rustore_purchase_success(_platform_product_id: String, purchase_token: String) -> void:
 	if not _payment_in_progress:
 		return
 	var local_id: String = _pending_local_product_id
 	_payment_in_progress = false
 	_pending_local_product_id = ""
 	_pending_platform_product_id = ""
-	payment_purchase_success.emit(local_id, order_id)
+	payment_purchase_success.emit(local_id, purchase_token)
 
 
 func _on_rustore_purchase_cancelled() -> void:
@@ -235,15 +249,30 @@ func _on_rustore_purchase_error(message: String) -> void:
 	payment_purchase_error.emit(local_id, message)
 
 
-func consume_purchase(_purchase_token: String) -> void:
-	# RuStore Pay uses order_id for deduplication; consumePurchase may not apply.
-	# TODO: call plugin consume if the product type requires it.
-	pass
+func consume_purchase(purchase_token: String) -> void:
+	var plugin := _get_rustore_pay_plugin()
+	if plugin:
+		plugin.consume(purchase_token)
 
 
 func check_unprocessed_purchases() -> void:
-	# TODO: call plugin getPurchases() when plugin is available.
+	var plugin := _get_rustore_pay_plugin()
+	if plugin:
+		plugin.get_pending_purchases()
+	else:
+		unprocessed_purchase_check_completed.emit()
+
+
+func _on_rustore_pending_purchase_found(product_id: String, purchase_token: String) -> void:
+	unprocessed_purchase_found.emit(product_id, purchase_token)
+
+
+func _on_rustore_pending_purchases_check_completed() -> void:
 	unprocessed_purchase_check_completed.emit()
+
+
+func _on_rustore_pending_purchases_check_error(message: String) -> void:
+	unprocessed_purchase_check_error.emit(message)
 
 # ── Cloud save ────────────────────────────────────────────────────────────────
 

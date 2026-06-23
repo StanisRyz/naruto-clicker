@@ -171,11 +171,46 @@ The project is at final release-candidate stage. Future tasks must:
   See `docs/android_ads_build.md` for the build command and output path.
 - Android export changes (plugin, Gradle, SDK settings) must never break the
   Web/Yandex export. Test Web export after every Android-related change.
-- RuStore Pay integration must use the RuStore Pay SDK, not the deprecated
-  BillingClient. See `docs/rustore_readiness_checklist.md` for integration steps.
 - Ad terminology: use "Yandex Mobile Ads SDK" for the ad SDK.
   "RuStore Pay" is exclusively for the payment SDK. Never call the ad SDK
   "RuStore Ads" — RuStore has no public Godot ads plugin.
+
+### Android payments plugin rules
+
+- The `AndroidRuStorePay` Godot plugin (`addons/android_rustore_pay/`) is the
+  ONLY place where RuStore Pay SDK calls may live. Gameplay code and the platform
+  bridge must not call RuStore SDK types directly.
+- **Never use the deprecated RuStore BillingClient.** All payment work must use the
+  RuStore Pay SDK (newer product-based API). The AGENTS.md payment rules forbid
+  BillingClient.
+- **Never grant paid rewards inside the Kotlin plugin.** The plugin only emits
+  `purchase_success(productId, purchaseToken)` — the GDScript handler in
+  `ClickerScreen._on_payment_purchase_success()` is the only place a reward is
+  applied to game state.
+- **Never invent RuStore Pay SDK API names.** If the real SDK is not available,
+  keep the compile-safe stub and document the missing external SDK step.
+  Do not guess class names or method signatures.
+- Plugin singleton name: `"AndroidRuStorePay"`.
+  Check availability with `Engine.has_singleton("AndroidRuStorePay")`.
+- Signal contract (plugin → GDScript):
+  - `purchase_success(productId: String, purchaseToken: String)` — purchase completed
+  - `purchase_cancelled` — user closed the RuStore UI without paying
+  - `purchase_error(message: String)` — SDK error
+  - `pending_purchase_found(productId: String, purchaseToken: String)` — recovery
+  - `pending_purchases_check_completed` — recovery check done, no pending items
+  - `pending_purchases_check_error(message: String)` — recovery check failed
+- `AndroidRuStorePlatform._on_rustore_purchase_success(platform_product_id, purchase_token)`
+  uses `_pending_local_product_id` (not `platform_product_id`) when emitting
+  `payment_purchase_success` so `ClickerScreen` sees the local product id.
+- `consume_purchase(purchase_token)` must be called after every successful grant.
+  In RuStore Pay SDK terms, `purchaseToken` is the `purchaseId` returned by the SDK.
+- `check_unprocessed_purchases()` calls `plugin.get_pending_purchases()`. When the
+  plugin is absent (stub not wired), it falls back to emitting
+  `unprocessed_purchase_check_completed` so the startup check completes cleanly.
+- The AndroidRuStorePay plugin AAR must be built before each Android export.
+  See `docs/rustore_pay_integration.md` for the build command and integration checklist.
+- All RuStore Pay SDK calls must run on the Android UI thread (`activity.runOnUiThread { ... }`).
+- Do not alter Web/Yandex payment behavior while working on Android payments.
 
 ### Floating rewarded banner rules
 

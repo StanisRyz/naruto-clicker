@@ -56,9 +56,11 @@ Pay SDK for payments.
   (`android_ad_unit_id` per placement). Leave them empty until your Yandex Mobile
   Ads dashboard placements are created.
 
-**Payments** (placeholder — no real RuStore Pay plugin bundled yet):
-- Payment methods emit `payment_purchase_error`; no crashes.
-- `check_unprocessed_purchases` emits `unprocessed_purchase_check_completed`.
+**Payments** — `AndroidRuStorePay` Godot plugin (`addons/android_rustore_pay/`):
+- Plugin is a compile-safe adapter. SDK stubs in `AndroidRuStorePayPlugin.kt` are marked TODO.
+- Without the real SDK: `purchase()` emits `purchase_error` cleanly; no crash, no stuck state.
+- `check_unprocessed_purchases()` calls plugin `get_pending_purchases()` — stub returns completed.
+- See `docs/rustore_pay_integration.md` for the full integration checklist.
 
 **Cloud save / lifecycle**: no-ops; `load_cloud_save` emits `cloud_save_loaded({})`.
 
@@ -80,6 +82,28 @@ Ad unit ids live only in `scripts/game/config/AdPlacementConfig.gd`
 dashboard placements are created — empty ids fail safely with an error signal.
 
 Rewarded rewards are granted only in `ClickerScreen._on_rewarded_ad_rewarded()`;
+the Kotlin plugin never modifies game state.
+
+### Android payments plugin
+
+Plugin: `addons/android_rustore_pay/` — Godot 4 Android plugin v2.
+Singleton: `Engine.get_singleton("AndroidRuStorePay")`.
+SDK: **not bundled** — add the official RuStore Pay SDK AAR to `libs/` (or configure Maven).
+Enabled in `project.godot` via `[editor_plugins]`.
+
+**The plugin AAR must be built before each Android export.**
+
+```bash
+cp android/build/libs/release/godot-lib.template_release.aar \
+   addons/android_rustore_pay/android/AndroidRuStorePayPlugin/libs/
+cd addons/android_rustore_pay/android/AndroidRuStorePayPlugin
+./gradlew assembleRelease
+```
+
+Product ids per platform live in `scripts/game/config/GemPurchaseConfig.gd`
+(`rustore_product_id` per product). Update to match the RuStore developer console.
+
+All paid rewards are granted only in `ClickerScreen._on_payment_purchase_success()`;
 the Kotlin plugin never modifies game state.
 
 ## Display / resolution
