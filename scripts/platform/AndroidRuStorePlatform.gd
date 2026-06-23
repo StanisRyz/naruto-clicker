@@ -1,20 +1,18 @@
 extends "res://scripts/platform/PlatformServices.gd"
 
-# Android bridge for RuStore Pay SDK and RuStore Ads SDK.
-# No real SDK plugins are bundled yet — all ad and payment attempts emit
-# clean error callbacks so the game stays stable and never crashes.
+# Android bridge for RuStore Pay SDK and Yandex Mobile Ads SDK.
 #
+# Ads: Yandex Mobile Ads SDK via the AndroidYandexAds Godot plugin.
+# The plugin is an Android library built from:
+#   addons/android_yandex_ads/android/AndroidYandexAdsPlugin/
+# Ad unit ids are configured in scripts/game/config/AdPlacementConfig.gd.
+#
+# Payments: RuStore Pay SDK — placeholder only. No real plugin is bundled yet.
 # When the official RuStore Pay Godot plugin is available:
-# 1. Drop the .aar into android/plugins/ (or use the Godot Asset Library version).
+# 1. Drop the .aar into android/plugins/.
 # 2. Implement _get_rustore_pay_plugin() to return the plugin node.
 # 3. Implement purchase_product() using the plugin's documented purchase call.
-# 4. Connect plugin success/cancel/error signals to this node's signals.
-#
-# When the official RuStore Ads Godot plugin is available:
-# 1. Drop the .aar into android/plugins/.
-# 2. Implement _get_android_ads_plugin() to return the plugin node.
-# 3. Fill in android_ad_unit_id values in AdPlacementConfig.gd.
-# 4. Connect plugin rewarded/fullscreen callbacks to _on_android_* methods below.
+# 4. Connect plugin success/cancel/error signals in _ready().
 
 const AdPlacementConfigClass = preload("res://scripts/game/config/AdPlacementConfig.gd")
 
@@ -31,7 +29,31 @@ var _fullscreen_ad_in_progress: bool = false
 var _pending_rewarded_placement_id: String = ""
 var _pending_fullscreen_placement_id: String = ""
 
+# ── Initialization ────────────────────────────────────────────────────────────
+
+func _ready() -> void:
+	var ads_plugin := _get_android_ads_plugin()
+	if ads_plugin:
+		ads_plugin.rewarded_ad_opened.connect(_on_android_rewarded_ad_opened)
+		ads_plugin.rewarded_ad_rewarded.connect(_on_android_rewarded_ad_rewarded)
+		ads_plugin.rewarded_ad_closed.connect(_on_android_rewarded_ad_closed)
+		ads_plugin.rewarded_ad_error.connect(_on_android_rewarded_ad_error)
+		ads_plugin.fullscreen_ad_opened.connect(_on_android_fullscreen_ad_opened)
+		ads_plugin.fullscreen_ad_closed.connect(_on_android_fullscreen_ad_closed)
+		ads_plugin.fullscreen_ad_error.connect(_on_android_fullscreen_ad_error)
+		ads_plugin.initialize()
+
 # ── Plugin access ─────────────────────────────────────────────────────────────
+
+func _get_android_ads_plugin() -> Object:
+	if Engine.has_singleton("AndroidYandexAds"):
+		return Engine.get_singleton("AndroidYandexAds")
+	return null
+
+
+func _is_android_ads_available() -> bool:
+	return _get_android_ads_plugin() != null
+
 
 # Returns the RuStore Pay plugin node if available, or null.
 func _get_rustore_pay_plugin() -> Object:
@@ -43,18 +65,8 @@ func _is_rustore_pay_available() -> bool:
 	return _get_rustore_pay_plugin() != null
 
 
-# Returns the Android Ads plugin node if available, or null.
-func _get_android_ads_plugin() -> Object:
-	# TODO: return Engine.get_singleton("RuStoreAdsPlugin") when plugin is available
-	return null
-
-
-func _is_android_ads_available() -> bool:
-	return _get_android_ads_plugin() != null
-
-
-# Resolves a logical placement id to a platform-specific ad unit id.
-# Returns "" if the placement does not exist or has no unit id configured.
+# Resolves a logical placement id to a Yandex ad unit id.
+# Returns "" if the placement has no unit id configured yet.
 func _resolve_ad_unit_id(placement_id: String) -> String:
 	return AdPlacementConfigClass.get_platform_ad_unit_id(placement_id, "rustore")
 
@@ -90,17 +102,14 @@ func show_rewarded_ad(placement_id: String = "") -> void:
 		rewarded_ad_error.emit("Rewarded ad unit id not configured for placement: " + placement_id)
 		return
 
-	if not _is_android_ads_available():
-		rewarded_ad_error.emit("Rewarded ads not available (RuStore Ads not integrated)")
+	var plugin := _get_android_ads_plugin()
+	if not plugin:
+		rewarded_ad_error.emit("Rewarded ads not available (AndroidYandexAds plugin not loaded)")
 		return
 
 	_rewarded_ad_in_progress = true
 	_pending_rewarded_placement_id = placement_id
-
-	# TODO: call the plugin here, e.g.:
-	# var plugin = _get_android_ads_plugin()
-	# plugin.show_rewarded_ad(ad_unit_id)
-	# Then connect plugin callbacks in _ready() or here to _on_android_rewarded_ad_* methods
+	plugin.show_rewarded_ad(ad_unit_id)
 
 
 func show_fullscreen_ad(placement_id: String = "") -> void:
@@ -116,19 +125,16 @@ func show_fullscreen_ad(placement_id: String = "") -> void:
 		fullscreen_ad_error.emit("Fullscreen ad unit id not configured for placement: " + placement_id)
 		return
 
-	if not _is_android_ads_available():
-		fullscreen_ad_error.emit("Fullscreen ads not available (RuStore Ads not integrated)")
+	var plugin := _get_android_ads_plugin()
+	if not plugin:
+		fullscreen_ad_error.emit("Fullscreen ads not available (AndroidYandexAds plugin not loaded)")
 		return
 
 	_fullscreen_ad_in_progress = true
 	_pending_fullscreen_placement_id = placement_id
+	plugin.show_interstitial_ad(ad_unit_id)
 
-	# TODO: call the plugin here, e.g.:
-	# var plugin = _get_android_ads_plugin()
-	# plugin.show_interstitial_ad(ad_unit_id)
-	# Then connect plugin callbacks in _ready() or here to _on_android_fullscreen_ad_* methods
-
-# ── Android ad plugin callbacks (wire to plugin signals when plugin is added) ──
+# ── Android Yandex Ads plugin callbacks ───────────────────────────────────────
 
 func _on_android_rewarded_ad_opened() -> void:
 	if not _rewarded_ad_in_progress:
@@ -167,7 +173,7 @@ func _on_android_fullscreen_ad_closed() -> void:
 		return
 	_fullscreen_ad_in_progress = false
 	_pending_fullscreen_placement_id = ""
-	fullscreen_ad_closed.emit()
+	fullscreen_ad_closed.emit(true)
 
 
 func _on_android_fullscreen_ad_error(message: String) -> void:
@@ -198,7 +204,7 @@ func purchase_product(platform_product_id: String, local_product_id: String = ""
 	# TODO: call the plugin here, e.g.:
 	# var plugin = _get_rustore_pay_plugin()
 	# plugin.purchase(platform_product_id)
-	# Then connect plugin signals in _ready() or here to _on_rustore_purchase_success / _error / _cancel
+	# Then connect plugin signals in _ready() to _on_rustore_purchase_success / _error / _cancel
 
 
 func _on_rustore_purchase_success(order_id: String) -> void:

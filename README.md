@@ -40,16 +40,72 @@ directly to its own signals, so no behavior changes exist on the Web export.
 
 ### Android / RuStore
 
-`AndroidRuStorePlatform` is a safe placeholder:
-- `game_ready`, `gameplay_start`, `gameplay_stop` are no-ops.
-- Ad methods validate the placement id and ad unit id first; if either is
-  missing or no plugin is present, they emit a clean error callback; no crashes.
+`AndroidRuStorePlatform` bridges the Yandex Mobile Ads SDK for ads and RuStore
+Pay SDK for payments.
+
+**Ads** (active — Yandex Mobile Ads SDK via `AndroidYandexAds` plugin):
+- Ad flow is delegated to the `AndroidYandexAds` Godot plugin
+  (`addons/android_yandex_ads/`). The plugin must be built and the export plugin
+  enabled before Android exports.
+- `show_rewarded_ad(placement_id)` / `show_fullscreen_ad(placement_id)` validate
+  the placement id and ad unit id before calling the plugin; if either is missing
+  they emit a clean error — no crash, no stuck flags.
+- All rewards are granted only by the GDScript `rewarded_ad_rewarded` signal
+  handler in `ClickerScreen`; the Kotlin plugin never modifies game state.
+- Ad unit ids are configured in `scripts/game/config/AdPlacementConfig.gd`
+  (`android_ad_unit_id` per placement). Leave them empty until your Yandex Mobile
+  Ads dashboard placements are created.
+
+**Payments** (placeholder — no real RuStore Pay plugin bundled yet):
 - Payment methods emit `payment_purchase_error`; no crashes.
-- Cloud save is unavailable; `load_cloud_save` emits `cloud_save_loaded({})`.
 - `check_unprocessed_purchases` emits `unprocessed_purchase_check_completed`.
 
-RuStore Pay SDK and Android Ads SDK integration will extend this class when
-ready. No existing Web/Yandex behavior is affected by this placeholder.
+**Cloud save / lifecycle**: no-ops; `load_cloud_save` emits `cloud_save_loaded({})`.
+
+No existing Web/Yandex behavior is affected.
+
+### Android ads plugin
+
+Plugin path: `addons/android_yandex_ads/`
+
+| File | Role |
+|---|---|
+| `plugin.cfg` | Registers the editor plugin with Godot |
+| `AndroidYandexAdsExportPlugin.gd` | Declares SDK Maven dep + AAR path for export |
+| `android/AndroidYandexAdsPlugin/` | Android library Gradle project (Kotlin source) |
+
+**Singleton name in GDScript:** `Engine.get_singleton("AndroidYandexAds")`
+
+**SDK dependency added by export plugin:**
+`com.yandex.android:mobileads:8.1.0` (via `https://maven.yandex.ru/`)
+
+**Build the plugin AAR before exporting:**
+```
+cd addons/android_yandex_ads/android/AndroidYandexAdsPlugin
+# Copy godot-lib.template_release.aar into libs/ first
+cp ../../../../android/build/libs/release/godot-lib.template_release.aar libs/
+./gradlew assembleRelease   # for release export
+./gradlew assembleDebug     # for debug export
+```
+
+The export plugin (`AndroidYandexAdsExportPlugin.gd`) then picks up the AAR
+automatically and adds the Maven dependency to the Gradle build.
+
+**Enable in editor:** Project → Project Settings → Plugins → AndroidYandexAds → Enable.
+
+**Android Logcat tags to monitor:**
+- `AndroidYandexAds` — plugin initialization, ad load/show/dismiss logs
+- `MobileAds` — Yandex SDK internal logs
+
+**Rewarded ad reward callback mapping:**
+- Kotlin `onRewarded()` → `emitSignal("rewarded_ad_rewarded")` → GDScript
+  `Platform.rewarded_ad_rewarded` → `ClickerScreen._on_rewarded_ad_rewarded()`
+  — this is the ONLY place a gameplay reward is granted.
+
+**Interstitial callback mapping:**
+- Kotlin `onAdShown()` → `emitSignal("fullscreen_ad_opened")` → `fullscreen_ad_opened`
+- Kotlin `onAdDismissed()` → `emitSignal("fullscreen_ad_closed")` → `fullscreen_ad_closed`
+- Kotlin `onAdFailedToLoad/Show()` → `emitSignal("fullscreen_ad_error", msg)` → `fullscreen_ad_error`
 
 ## Display / resolution
 
@@ -169,11 +225,11 @@ Each placement has a stable string id and a per-platform ad unit id field.
 | `fullscreen_auto_interstitial` | fullscreen | Auto cooldown interstitial |
 
 `android_ad_unit_id` in each placement is empty until real unit ids are
-registered in the RuStore Ads dashboard. `AndroidRuStorePlatform` reads these
-ids at runtime via `AdPlacementConfig.get_platform_ad_unit_id()`. On Web
-(`WebYandexPlatform`) the placement id is accepted but ignored — Yandex does
-not use per-placement unit ids. On editor/debug (`LocalDebugPlatform`) the
-placement id is also accepted but ignored.
+created in the Yandex Mobile Ads dashboard and filled in. `AndroidRuStorePlatform`
+reads these ids at runtime via `AdPlacementConfig.get_platform_ad_unit_id()`. On
+Web (`WebYandexPlatform`) the placement id is accepted but ignored — the Yandex
+Web SDK does not use per-placement unit ids. On editor/debug (`LocalDebugPlatform`)
+the placement id is also accepted but ignored.
 
 ### Fullscreen ads
 

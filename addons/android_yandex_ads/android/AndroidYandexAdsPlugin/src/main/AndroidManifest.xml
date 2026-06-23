@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        Registers the plugin with Godot 4 Android Plugin v2 system.
+        Godot reads the meta-data key "org.godotengine.plugin.v2.<PluginName>"
+        at runtime to instantiate the plugin class and expose it as a singleton.
+        After this manifest merges into the main app, GDScript can access the plugin via:
+            Engine.get_singleton("AndroidYandexAds")
+    -->
+    <application>
+        <meta-data
+            android:name="org.godotengine.plugin.v2.AndroidYandexAds"
+            android:value="com.shinobi.yandexads.AndroidYandexAdsPlugin" />
+    </application>
+
+</manifest>

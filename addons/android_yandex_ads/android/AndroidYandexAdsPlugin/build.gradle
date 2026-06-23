@@ -1,0 +1,58 @@
+// Android library module for the Yandex Mobile Ads SDK Godot 4 plugin.
+//
+// Build steps:
+//   1. Copy godot-lib.template_release.aar from android/build/libs/release/ into libs/
+//      (for compileOnly reference — it is not bundled into the output AAR).
+//   2. Run ./gradlew assembleRelease  (or assembleDebug for debug exports).
+//   3. The output AAR is at build/outputs/aar/AndroidYandexAdsPlugin-{release,debug}.aar.
+//      Godot's export plugin (AndroidYandexAdsExportPlugin.gd) picks it up automatically.
+//
+// Yandex Mobile Ads SDK is declared as compileOnly here because it is injected
+// into the main app build as a remote Maven dependency by AndroidYandexAdsExportPlugin.
+// It is NOT bundled into this AAR to avoid duplication.
+
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.shinobi.yandexads'
+    compileSdk 35
+
+    defaultConfig {
+        minSdk 24
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+}
+
+repositories {
+    google()
+    mavenCentral()
+    maven { url 'https://maven.yandex.ru/' }
+}
+
+dependencies {
+    // Godot engine runtime — required for GodotPlugin base class.
+    // Place a copy of godot-lib.template_release.aar in the libs/ folder before building.
+    // Source: android/build/libs/release/godot-lib.template_release.aar
+    compileOnly fileTree(dir: 'libs', include: ['*.aar'])
+
+    // Yandex Mobile Ads SDK — compileOnly to avoid bundling into AAR.
+    // The main app receives this as a remote Gradle dependency via the export plugin.
+    compileOnly 'com.yandex.android:mobileads:8.1.0'
+}

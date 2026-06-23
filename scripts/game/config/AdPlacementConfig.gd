@@ -2,11 +2,12 @@ class_name AdPlacementConfig
 extends RefCounted
 
 # Logical ad placements. android_ad_unit_id is a placeholder — fill in the
-# real unit ids from the RuStore Ads dashboard before enabling Android ads.
+# real unit ids from the Yandex Mobile Ads dashboard before enabling Android ads.
 const AD_PLACEMENTS: Array[Dictionary] = [
 	{
 		"id": "rewarded_shop_gems",
 		"type": "rewarded",
+		# Fill in the Yandex ad unit id from the Yandex Mobile Ads dashboard.
 		"android_ad_unit_id": "",
 	},
 	{

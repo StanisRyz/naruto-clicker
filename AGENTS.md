@@ -133,7 +133,7 @@ The project is at final release-candidate stage. Future tasks must:
 - Placement ids are defined in `scripts/game/config/AdPlacementConfig.gd`.
   Do not add new placement ids without also adding an entry to `AD_PLACEMENTS`.
 - `android_ad_unit_id` per placement starts empty and must be filled in from
-  the RuStore Ads dashboard before enabling Android ads. Do not hardcode
+  the Yandex Mobile Ads dashboard before enabling Android ads. Do not hardcode
   Android ad unit ids anywhere except `AdPlacementConfig.gd`.
 - `AdPlacementConfig.get_platform_ad_unit_id(placement_id, platform_key)`
   resolves the unit id. Do not call it from gameplay code; it is called
@@ -145,6 +145,30 @@ The project is at final release-candidate stage. Future tasks must:
   unknown, if the ad unit id is empty, or if the plugin is unavailable.
   The ad-in-progress flag must never be left as `true` when an error is
   emitted before the plugin call.
+
+### Android ads plugin rules
+
+- The `AndroidYandexAds` Godot plugin (`addons/android_yandex_ads/`) is the
+  ONLY place where Yandex Mobile Ads SDK (Android) calls may live.
+  Gameplay code (`ClickerScreen.gd`) and the platform bridge
+  (`AndroidRuStorePlatform.gd`) must not call Yandex SDK types directly.
+- **Never grant rewarded rewards inside the Kotlin plugin.** The plugin only
+  emits `rewarded_ad_rewarded` — the GDScript handler in `ClickerScreen` is
+  the only place a reward is applied to game state.
+- Do not add new ad formats (banner, native, app-open, feed, sticky) without
+  an explicit user request. Only rewarded and interstitial are integrated.
+- Do not alter Web/Yandex ad behavior while changing Android ads. The two
+  platforms are completely independent code paths.
+- Ad SDK calls (`show_rewarded_ad`, `show_interstitial_ad`) must always run
+  on the Android UI thread (`activity.runOnUiThread { ... }`).
+- `AndroidRuStorePlatform._on_android_fullscreen_ad_closed()` must emit
+  `fullscreen_ad_closed.emit(true)` — the `was_shown: bool` parameter is
+  required by `PlatformServices.gd`'s signal signature.
+- Plugin singleton name: `"AndroidYandexAds"`.
+  Check availability with `Engine.has_singleton("AndroidYandexAds")`.
+- Ad terminology: use "Yandex Mobile Ads SDK" for the ad SDK.
+  "RuStore Pay" is exclusively for the payment SDK. Never call the ad SDK
+  "RuStore Ads" — RuStore has no public Godot ads plugin.
 
 ### Floating rewarded banner rules
 
