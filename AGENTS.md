@@ -125,6 +125,27 @@ The project is at final release-candidate stage. Future tasks must:
 - `YandexBridge.is_ad_in_progress()` must be checked before restarting GameplayAPI to avoid
   restarting during an active ad.
 
+### Ad placement config rules
+
+- All ad show calls must pass an explicit placement id string:
+  `Platform.show_rewarded_ad("rewarded_shop_gems")`,
+  `Platform.show_fullscreen_ad("fullscreen_auto_interstitial")`, etc.
+- Placement ids are defined in `scripts/game/config/AdPlacementConfig.gd`.
+  Do not add new placement ids without also adding an entry to `AD_PLACEMENTS`.
+- `android_ad_unit_id` per placement starts empty and must be filled in from
+  the RuStore Ads dashboard before enabling Android ads. Do not hardcode
+  Android ad unit ids anywhere except `AdPlacementConfig.gd`.
+- `AdPlacementConfig.get_platform_ad_unit_id(placement_id, platform_key)`
+  resolves the unit id. Do not call it from gameplay code; it is called
+  internally by `AndroidRuStorePlatform.show_rewarded_ad()` /
+  `show_fullscreen_ad()`.
+- `WebYandexPlatform` and `LocalDebugPlatform` accept but ignore the
+  placement id — do not add placement-id validation to those impls.
+- `AndroidRuStorePlatform` emits a clean ad error if the placement id is
+  unknown, if the ad unit id is empty, or if the plugin is unavailable.
+  The ad-in-progress flag must never be left as `true` when an error is
+  emitted before the plugin call.
+
 ### Floating rewarded banner rules
 
 - Banner appears only on the clear main screen (no dialogs, no sheets open).

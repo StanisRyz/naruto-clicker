@@ -705,7 +705,7 @@ func _request_shop_rewarded_gems_ad(product_id: String) -> void:
 	_set_runtime_pause_reason("rewarded_ad", true)
 	AudioManager.pause_for_ad()
 	Platform.gameplay_stop()
-	Platform.show_rewarded_ad()
+	Platform.show_rewarded_ad("rewarded_shop_gems")
 
 
 func _get_shop_product_display_name(product_id: String) -> String:
@@ -1296,7 +1296,7 @@ func _try_show_fullscreen_ad_if_safe() -> void:
 	_set_runtime_pause_reason("fullscreen_ad", true)
 	AudioManager.pause_for_ad()
 	Platform.gameplay_stop()
-	Platform.show_fullscreen_ad()
+	Platform.show_fullscreen_ad("fullscreen_auto_interstitial")
 
 
 func _on_fullscreen_ad_opened() -> void:
@@ -1756,7 +1756,7 @@ func _on_offline_reward_claim_ad_requested() -> void:
 	_set_runtime_pause_reason("rewarded_ad", true)
 	AudioManager.pause_for_ad()
 	Platform.gameplay_stop()
-	Platform.show_rewarded_ad()
+	Platform.show_rewarded_ad("rewarded_offline_gold_x3")
 
 
 func _on_rewarded_ad_banner_pressed() -> void:
@@ -1770,7 +1770,7 @@ func _on_rewarded_ad_banner_pressed() -> void:
 	_set_runtime_pause_reason("rewarded_ad", true)
 	AudioManager.pause_for_ad()
 	Platform.gameplay_stop()
-	Platform.show_rewarded_ad()
+	Platform.show_rewarded_ad("rewarded_bonus_banner")
 
 
 func _on_rewarded_ad_opened() -> void:

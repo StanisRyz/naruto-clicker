@@ -42,7 +42,8 @@ directly to its own signals, so no behavior changes exist on the Web export.
 
 `AndroidRuStorePlatform` is a safe placeholder:
 - `game_ready`, `gameplay_start`, `gameplay_stop` are no-ops.
-- Ad methods emit clean error callbacks; no crashes.
+- Ad methods validate the placement id and ad unit id first; if either is
+  missing or no plugin is present, they emit a clean error callback; no crashes.
 - Payment methods emit `payment_purchase_error`; no crashes.
 - Cloud save is unavailable; `load_cloud_save` emits `cloud_save_loaded({})`.
 - `check_unprocessed_purchases` emits `unprocessed_purchase_check_completed`.
@@ -154,6 +155,25 @@ Appears only on the clear main screen. Reward is randomly selected per viewing:
 ### Offline reward ad
 
 - Watch ad to claim offline gold ×3 (instead of ×1).
+
+### Ad placement config
+
+Logical ad placements are defined in `scripts/game/config/AdPlacementConfig.gd`.
+Each placement has a stable string id and a per-platform ad unit id field.
+
+| Placement id | Type | Used in |
+|---|---|---|
+| `rewarded_shop_gems` | rewarded | Shop — +3 gems ad button |
+| `rewarded_bonus_banner` | rewarded | Floating rewarded banner |
+| `rewarded_offline_gold_x3` | rewarded | Offline reward ×3 ad |
+| `fullscreen_auto_interstitial` | fullscreen | Auto cooldown interstitial |
+
+`android_ad_unit_id` in each placement is empty until real unit ids are
+registered in the RuStore Ads dashboard. `AndroidRuStorePlatform` reads these
+ids at runtime via `AdPlacementConfig.get_platform_ad_unit_id()`. On Web
+(`WebYandexPlatform`) the placement id is accepted but ignored — Yandex does
+not use per-placement unit ids. On editor/debug (`LocalDebugPlatform`) the
+placement id is also accepted but ignored.
 
 ### Fullscreen ads
 
