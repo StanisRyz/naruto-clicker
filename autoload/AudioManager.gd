@@ -232,7 +232,7 @@ func set_page_audio_visible(visible: bool) -> void:
 	_page_visible = visible
 	set_audio_pause_reason("hidden", not visible)
 	if not visible:
-		YandexBridge.gameplay_stop()
+		Platform.gameplay_stop()
 	page_visibility_changed.emit(visible)
 
 

@@ -52,6 +52,24 @@ The project is at final release-candidate stage. Future tasks must:
 - Background ImageSlot uses `stretch_mode = STRETCH_KEEP_ASPECT_COVERED` — vertical crop is
   acceptable and expected on the 9:16 Web layout.
 
+## Platform abstraction rules
+
+- All gameplay and UI code must call `Platform` (the autoload), **never**
+  `YandexBridge` directly. `YandexBridge` is an internal implementation detail
+  used only by `WebYandexPlatform`.
+- Do not remove or weaken existing Web/Yandex behavior while preparing Android
+  or RuStore integration. Web and Android implementations are independent.
+- The four platform scripts live in `res://scripts/platform/`:
+  - `PlatformServices.gd` — base interface (signals + method stubs)
+  - `WebYandexPlatform.gd` — delegates to `YandexBridge`
+  - `AndroidRuStorePlatform.gd` — safe Android placeholder
+  - `LocalDebugPlatform.gd` — editor/debug simulation
+- `Platform.gd` (`res://autoload/Platform.gd`) selects the implementation and
+  re-exposes all signals. It is loaded after `YandexBridge` and before
+  `SaveManager` in `project.godot`.
+- New ad, payment, or cloud-save integrations must be added as methods in
+  `PlatformServices.gd` first, then implemented per-platform.
+
 ## Yandex lifecycle / runtime pause rules
 
 - `LoadingAPI.ready()` is called only after `ClickerScreen.startup_completed` fires.

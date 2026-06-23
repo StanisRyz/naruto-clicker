@@ -12,9 +12,43 @@ requested.
 
 - Engine: Godot 4.5.1
 - Language: GDScript
-- Export target: Web / HTML5
-- Platform SDK: Yandex Games
+- Export targets: Web / HTML5 (primary), Android (in progress)
+- Platform SDK: Yandex Games (Web), RuStore Pay / Ads (Android — placeholder)
 - Layout: vertical mobile portrait
+
+## Platform architecture
+
+All platform-specific calls go through the `Platform` autoload
+(`res://autoload/Platform.gd`). Gameplay and UI code must never call
+`YandexBridge` directly.
+
+| Export | Active implementation |
+|---|---|
+| Web (`OS.has_feature("web")`) | `WebYandexPlatform` — delegates to `YandexBridge` |
+| Android (`OS.has_feature("android")`) | `AndroidRuStorePlatform` — safe placeholder (no real SDK yet) |
+| Editor / other | `LocalDebugPlatform` — simulates flows in debug builds only |
+
+`Platform` selects the correct implementation at startup, creates it as a
+child node, and re-exposes all signals so callers only deal with `Platform`.
+
+### Web / Yandex
+
+`WebYandexPlatform` wraps `YandexBridge`. All SDK internals (JavaScript
+callbacks, LoadingAPI, GameplayAPI, Yandex Payments, cloud save) remain
+unchanged inside `YandexBridge`. `Platform` forwards `YandexBridge` signals
+directly to its own signals, so no behavior changes exist on the Web export.
+
+### Android / RuStore
+
+`AndroidRuStorePlatform` is a safe placeholder:
+- `game_ready`, `gameplay_start`, `gameplay_stop` are no-ops.
+- Ad methods emit clean error callbacks; no crashes.
+- Payment methods emit `payment_purchase_error`; no crashes.
+- Cloud save is unavailable; `load_cloud_save` emits `cloud_save_loaded({})`.
+- `check_unprocessed_purchases` emits `unprocessed_purchase_check_completed`.
+
+RuStore Pay SDK and Android Ads SDK integration will extend this class when
+ready. No existing Web/Yandex behavior is affected by this placeholder.
 
 ## Display / resolution
 

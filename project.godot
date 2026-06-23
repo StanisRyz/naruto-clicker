@@ -20,6 +20,7 @@ config/icon="uid://b2er20jnl6rl0"
 
 BuildConfig="*res://scripts/game/BuildConfig.gd"
 YandexBridge="*res://autoload/YandexBridge.gd"
+Platform="*res://autoload/Platform.gd"
 SaveManager="*res://autoload/SaveManager.gd"
 LocalizationManager="*res://scripts/ui/LocalizationManager.gd"
 AudioManager="*res://autoload/AudioManager.gd"
