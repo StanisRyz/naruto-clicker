@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="Naruto Clicker"
+config/name="Shinobi Clicker: Idle"
 run/main_scene="uid://vp5q6agyccmk"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 boot_splash/image="uid://d2xxh4ek0b7ag"
