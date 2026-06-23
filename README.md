@@ -66,46 +66,21 @@ No existing Web/Yandex behavior is affected.
 
 ### Android ads plugin
 
-Plugin path: `addons/android_yandex_ads/`
+Plugin: `addons/android_yandex_ads/` — Godot 4 Android plugin v2.
+Singleton: `Engine.get_singleton("AndroidYandexAds")`.
+SDK: `com.yandex.android:mobileads:8.1.0` via `https://maven.yandex.ru/`.
+Enabled in `project.godot` via `[editor_plugins]`.
 
-| File | Role |
-|---|---|
-| `plugin.cfg` | Registers the editor plugin with Godot |
-| `AndroidYandexAdsExportPlugin.gd` | Declares SDK Maven dep + AAR path for export |
-| `android/AndroidYandexAdsPlugin/` | Android library Gradle project (Kotlin source) |
+**The plugin AAR must be built before each Android export.** See
+`docs/android_ads_build.md` for full build instructions, Logcat tags, and
+the callback mapping between Kotlin events and GDScript signals.
 
-**Singleton name in GDScript:** `Engine.get_singleton("AndroidYandexAds")`
+Ad unit ids live only in `scripts/game/config/AdPlacementConfig.gd`
+(`android_ad_unit_id` per placement). Keep them empty until Yandex Mobile Ads
+dashboard placements are created — empty ids fail safely with an error signal.
 
-**SDK dependency added by export plugin:**
-`com.yandex.android:mobileads:8.1.0` (via `https://maven.yandex.ru/`)
-
-**Build the plugin AAR before exporting:**
-```
-cd addons/android_yandex_ads/android/AndroidYandexAdsPlugin
-# Copy godot-lib.template_release.aar into libs/ first
-cp ../../../../android/build/libs/release/godot-lib.template_release.aar libs/
-./gradlew assembleRelease   # for release export
-./gradlew assembleDebug     # for debug export
-```
-
-The export plugin (`AndroidYandexAdsExportPlugin.gd`) then picks up the AAR
-automatically and adds the Maven dependency to the Gradle build.
-
-**Enable in editor:** Project → Project Settings → Plugins → AndroidYandexAds → Enable.
-
-**Android Logcat tags to monitor:**
-- `AndroidYandexAds` — plugin initialization, ad load/show/dismiss logs
-- `MobileAds` — Yandex SDK internal logs
-
-**Rewarded ad reward callback mapping:**
-- Kotlin `onRewarded()` → `emitSignal("rewarded_ad_rewarded")` → GDScript
-  `Platform.rewarded_ad_rewarded` → `ClickerScreen._on_rewarded_ad_rewarded()`
-  — this is the ONLY place a gameplay reward is granted.
-
-**Interstitial callback mapping:**
-- Kotlin `onAdShown()` → `emitSignal("fullscreen_ad_opened")` → `fullscreen_ad_opened`
-- Kotlin `onAdDismissed()` → `emitSignal("fullscreen_ad_closed")` → `fullscreen_ad_closed`
-- Kotlin `onAdFailedToLoad/Show()` → `emitSignal("fullscreen_ad_error", msg)` → `fullscreen_ad_error`
+Rewarded rewards are granted only in `ClickerScreen._on_rewarded_ad_rewarded()`;
+the Kotlin plugin never modifies game state.
 
 ## Display / resolution
 
@@ -291,9 +266,11 @@ before publishing to RuStore.
 - `AndroidRuStorePlatform.gd` emits `payment_purchase_error` until a real plugin
   is wired in. No gems are granted.
 - Implement `_get_rustore_pay_plugin()` and add a real purchase call in
-  `purchase_product()` once the plugin is bundled.
+  `purchase_product()` once the plugin is bundled. Use RuStore Pay SDK (new),
+  not the deprecated BillingClient.
 - `check_unprocessed_purchases()` must be wired to the plugin's `getPurchases()`
   when available; currently emits `unprocessed_purchase_check_completed` immediately.
+- See `docs/rustore_readiness_checklist.md` for the full pre-upload checklist.
 
 ## Audio
 

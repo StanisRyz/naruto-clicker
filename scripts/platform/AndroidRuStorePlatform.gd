@@ -168,12 +168,12 @@ func _on_android_fullscreen_ad_opened() -> void:
 	fullscreen_ad_opened.emit()
 
 
-func _on_android_fullscreen_ad_closed() -> void:
+func _on_android_fullscreen_ad_closed(was_shown: bool = true) -> void:
 	if not _fullscreen_ad_in_progress:
 		return
 	_fullscreen_ad_in_progress = false
 	_pending_fullscreen_placement_id = ""
-	fullscreen_ad_closed.emit(true)
+	fullscreen_ad_closed.emit(was_shown)
 
 
 func _on_android_fullscreen_ad_error(message: String) -> void:

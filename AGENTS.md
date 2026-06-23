@@ -161,11 +161,18 @@ The project is at final release-candidate stage. Future tasks must:
   platforms are completely independent code paths.
 - Ad SDK calls (`show_rewarded_ad`, `show_interstitial_ad`) must always run
   on the Android UI thread (`activity.runOnUiThread { ... }`).
-- `AndroidRuStorePlatform._on_android_fullscreen_ad_closed()` must emit
-  `fullscreen_ad_closed.emit(true)` — the `was_shown: bool` parameter is
-  required by `PlatformServices.gd`'s signal signature.
+- `AndroidRuStorePlatform._on_android_fullscreen_ad_closed(was_shown: bool = true)`
+  must emit `fullscreen_ad_closed.emit(was_shown)` — the `was_shown: bool`
+  parameter is required by `PlatformServices.gd`'s signal signature. The Kotlin
+  plugin must also declare `SignalInfo("fullscreen_ad_closed", Boolean::class.javaObjectType)`.
 - Plugin singleton name: `"AndroidYandexAds"`.
   Check availability with `Engine.has_singleton("AndroidYandexAds")`.
+- The AndroidYandexAds plugin AAR must be built before each Android export.
+  See `docs/android_ads_build.md` for the build command and output path.
+- Android export changes (plugin, Gradle, SDK settings) must never break the
+  Web/Yandex export. Test Web export after every Android-related change.
+- RuStore Pay integration must use the RuStore Pay SDK, not the deprecated
+  BillingClient. See `docs/rustore_readiness_checklist.md` for integration steps.
 - Ad terminology: use "Yandex Mobile Ads SDK" for the ad SDK.
   "RuStore Pay" is exclusively for the payment SDK. Never call the ad SDK
   "RuStore Ads" — RuStore has no public Godot ads plugin.

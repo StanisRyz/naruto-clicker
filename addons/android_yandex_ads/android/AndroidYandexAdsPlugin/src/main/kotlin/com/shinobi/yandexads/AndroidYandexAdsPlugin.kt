@@ -66,7 +66,7 @@ class AndroidYandexAdsPlugin(godot: Godot) : GodotPlugin(godot) {
         SignalInfo("rewarded_ad_closed", Boolean::class.javaObjectType),
         SignalInfo("rewarded_ad_error", String::class.java),
         SignalInfo("fullscreen_ad_opened"),
-        SignalInfo("fullscreen_ad_closed"),
+        SignalInfo("fullscreen_ad_closed", Boolean::class.javaObjectType),
         SignalInfo("fullscreen_ad_error", String::class.java),
     )
 
@@ -206,7 +206,7 @@ class AndroidYandexAdsPlugin(godot: Godot) : GodotPlugin(godot) {
                         override fun onAdDismissed() {
                             Log.d(TAG, "Interstitial ad dismissed")
                             interstitialAd = null
-                            emitSignal("fullscreen_ad_closed")
+                            emitSignal("fullscreen_ad_closed", true)
                         }
 
                         override fun onAdClicked() {}
