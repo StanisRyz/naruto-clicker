@@ -221,8 +221,9 @@ func purchase_product(platform_product_id: String, local_product_id: String = ""
 		payment_purchase_error.emit(local_id, "RuStore Pay SDK not available")
 		return
 
-	var params := RuStorePayProductPurchaseParams.new()
-	params.productId = RuStorePayProductId.new(platform_product_id)
+	var params := RuStorePayProductPurchaseParams.new(
+		RuStorePayProductId.new(platform_product_id)
+	)
 
 	_pay_client.purchase(
 		params,
