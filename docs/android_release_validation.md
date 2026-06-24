@@ -4,6 +4,38 @@ Pre-upload checklist. Work through every item before submitting the APK to RuSto
 
 ---
 
+## Automated validation
+
+Run before every release upload:
+
+```bash
+python tools/validate_android_release.py --apk <ANDROID_RELEASE_OUTPUT_APK>
+```
+
+The script is **read-only** — it does not modify files, build APKs, change export
+presets, increment versions, or read signing passwords.
+
+It validates automatically:
+
+| Check | Tool used |
+|---|---|
+| APK file exists and is non-zero | Python `pathlib` |
+| Package name `com.stanis.shinobiclickeridle` | `aapt` / `aapt2` |
+| `versionCode` matches `export_presets.cfg` | `aapt` / `aapt2` |
+| `versionName` matches `export_presets.cfg` | `aapt` / `aapt2` |
+| APK is signed (not debug key) | `apksigner` |
+| `AndroidYandexAds` release AAR built | file existence check |
+| `export_presets.cfg` release identity (package, SDK, version) | text search |
+| `.gitignore` release safety patterns present | text search |
+
+Requirements: Python 3.9+, Android SDK Build Tools on `PATH` (`aapt`/`aapt2`, `apksigner`).
+If SDK tools are missing, those checks are skipped with a `SKIP:` message rather than failing.
+
+**Device smoke-tests remain manual.** See the checklist below for steps that
+require a physical Android device (install, launch, save/load, ad failure, purchase failure).
+
+---
+
 ## 1. Build the Android Ads plugin AAR
 
 Must be done before every Android export.

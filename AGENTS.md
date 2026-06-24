@@ -614,6 +614,15 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
   or local signing paths. These are machine-specific credentials that must stay out of git.
 - **Never commit APK or AAB release builds** (`*.apk`, `*.aab`, `/godot_apk/`). These are
   local build artifacts covered by `.gitignore`.
+- **Release validation tooling must remain read-only.** `tools/validate_android_release.py`
+  must not modify files, build APKs, change export presets, increment versions, or read
+  signing passwords. Do not add write operations to this script.
+- **Do not embed keystore paths, passwords, or local secrets** in any validation script or
+  tool. Use only placeholder labels or command descriptions.
+- **Do not bypass failed validation before a RuStore upload.** If
+  `tools/validate_android_release.py` exits with code 1, fix the failing checks before uploading.
+- **Do not change package name** (`com.stanis.shinobiclickeridle`) after first upload.
+- **Do not decrease `version/code`** after any upload.
 - **Do not change the package name** (`com.stanis.shinobiclickeridle`) after the first
   RuStore upload. A package name change creates a new app listing and breaks updates for
   all existing installs.

@@ -429,7 +429,13 @@ On localhost, the Yandex SDK is unavailable (`window.ysdk` is not present).
   SDK AAR/API is not yet available. Purchase calls emit a clean error until the SDK
   is provided.
 - Never commit keystore files, passwords, key aliases, or local absolute paths.
-- See `docs/android_release_validation.md` for the full pre-upload APK validation checklist.
+- Run the read-only validation script before every RuStore upload:
+  ```bash
+  python tools/validate_android_release.py --apk <ANDROID_RELEASE_OUTPUT_APK>
+  ```
+  The script checks package name, versionCode, versionName, APK signature, AAR presence,
+  export preset identity, and `.gitignore` safety. It does not replace manual device testing.
+- See `docs/android_release_validation.md` for the full pre-upload checklist.
 
 ## Export / release
 
