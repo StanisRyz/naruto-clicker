@@ -11,8 +11,8 @@ RuStore. Work through each item before uploading the first APK.
 |---|---|---|
 | App name | Shinobi Clicker: Idle | ✅ Set in `project.godot` and `export_presets.cfg` |
 | Package name | `com.stanis.shinobiclickeridle` | ✅ Set in `export_presets.cfg` |
-| Version code | 1 (increment before each upload) | ⚠️ Increment before upload |
-| Version name | 1.0 (set in export_presets.cfg) | ⚠️ Set before upload |
+| Version code | 1 (increment before each upload) | ⚠️ Increment before each upload — first upload may use 1; every later upload must be strictly larger |
+| Version name | 1.0.0 (set in export_presets.cfg) | ✅ Set to `1.0.0` in `export_presets.cfg` |
 
 ---
 
@@ -20,7 +20,7 @@ RuStore. Work through each item before uploading the first APK.
 
 | Item | Value | Status |
 |---|---|---|
-| Signed APK | keystore configured in export preset | ⚠️ Verify keystore paths in `export_presets.cfg` |
+| Signed APK | keystore configured in export preset | ⚠️ Manual verification required — configure keystore locally before export; see `docs/android_release_signing.md` |
 | min SDK | 24 | ✅ Set in `export_presets.cfg` and `config.gradle` |
 | target SDK | 35 | ✅ Set in `export_presets.cfg` and `config.gradle` |
 | Architecture | arm64-v8a (armeabi-v7a optional) | ✅ Set in `export_presets.cfg` |
@@ -114,15 +114,25 @@ This is the single external dependency blocking real payments.
 
 ---
 
+## Release signing and APK validation
+
+- See **`docs/android_release_signing.md`** — keystore generation, storage rules, signing
+  configuration in Godot, APK verification commands.
+- See **`docs/android_release_validation.md`** — full pre-upload APK validation checklist.
+- See **`docs/local_release_env.example.md`** — local path and credential template (never commit).
+
+---
+
 ## Remaining blockers before RuStore upload
 
-1. **Build the AndroidYandexAds plugin AAR** (`./gradlew assembleRelease`).
-2. **Register the app in Yandex Mobile Ads dashboard** and fill in `android_ad_unit_id` values in `AdPlacementConfig.gd`.
-3. **Test rewarded and interstitial ads on a real Android device**.
-4. **Obtain RuStore Pay SDK** and fill in `AndroidRuStorePayPlugin.kt` stubs (see `docs/rustore_pay_integration.md`).
-5. **Build the AndroidRuStorePay plugin AAR** (`./gradlew assembleRelease`).
-6. **Update `rustore_product_id` values** in `GemPurchaseConfig.gd` to match RuStore developer console.
-7. **Test all 4 gem purchase flows** via RuStore Pay on a real Android device.
-8. **Set version code / version name** before each upload.
-9. **Verify keystore** is configured and the release APK is signed.
-10. **Upload signed release APK** to RuStore developer console.
+1. **Configure release keystore locally** and verify the APK is signed (see `docs/android_release_signing.md`).
+2. **Build the AndroidYandexAds plugin AAR** (`./gradlew assembleRelease`).
+3. **Register the app in Yandex Mobile Ads dashboard** and fill in `android_ad_unit_id` values in `AdPlacementConfig.gd`.
+4. **Test rewarded and interstitial ads on a real Android device**.
+5. **Obtain RuStore Pay SDK** and fill in `AndroidRuStorePayPlugin.kt` stubs (see `docs/rustore_pay_integration.md`).
+6. **Build the AndroidRuStorePay plugin AAR** (`./gradlew assembleRelease`).
+7. **Update `rustore_product_id` values** in `GemPurchaseConfig.gd` to match RuStore developer console.
+8. **Test all 4 gem purchase flows** via RuStore Pay on a real Android device.
+9. **Increment `version/code`** in `export_presets.cfg` before each upload after the first.
+10. **Validate the release APK** using `docs/android_release_validation.md` before each upload.
+11. **Upload signed release APK** to RuStore developer console.

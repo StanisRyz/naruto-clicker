@@ -410,6 +410,27 @@ On localhost, the Yandex SDK is unavailable (`window.ysdk` is not present).
 - Debug mode simulates ad/payment flows for local testing; these simulations
   must be disabled in release builds.
 
+## Android release build notes
+
+- Android export preset is configured for RuStore package identity:
+  `com.stanis.shinobiclickeridle`.
+- Release APK must be signed with a **persistent release keystore**. The keystore
+  must not be committed to the repository. See `docs/android_release_signing.md`.
+- `version/code` must increase for every APK uploaded to RuStore. The first upload
+  may use `version/code=1`; every later upload must use a strictly larger integer.
+- Build the Android Ads plugin AAR before each export:
+  ```bash
+  cp android/build/libs/release/godot-lib.template_release.aar \
+     addons/android_yandex_ads/android/AndroidYandexAdsPlugin/libs/
+  cd addons/android_yandex_ads/android/AndroidYandexAdsPlugin
+  ./gradlew assembleRelease
+  ```
+- RuStore Pay SDK is currently **blocked by an external dependency** — the official
+  SDK AAR/API is not yet available. Purchase calls emit a clean error until the SDK
+  is provided.
+- Never commit keystore files, passwords, key aliases, or local absolute paths.
+- See `docs/android_release_validation.md` for the full pre-upload APK validation checklist.
+
 ## Export / release
 
 Export target is Web (Yandex Games). Production export must use **release** mode,

@@ -608,6 +608,24 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
 - Prestige points do not provide passive bonuses on their own — only purchased talent levels do.
 - Prestige talents survive Reset Progress and Prestige; normal progression does not.
 
+## Android Release Rules
+
+- **Never commit keystore files** (`.jks`, `.keystore`, `.p12`), passwords, key aliases,
+  or local signing paths. These are machine-specific credentials that must stay out of git.
+- **Do not change the package name** (`com.stanis.shinobiclickeridle`) after the first
+  RuStore upload. A package name change creates a new app listing and breaks updates for
+  all existing installs.
+- **Do not reset or decrease `version/code`** after any upload. The next uploaded APK must
+  always have a strictly larger `version/code` than the previous upload.
+- **Do not modify release signing settings** (`package/signed`, keystore fields in
+  `export_presets.cfg`) without an explicit user request. Changing these can break release builds.
+- **RuStore Pay remains blocked** until the official RuStore Pay SDK AAR/API is provided by
+  the RuStore developer portal. Do not stub in fake SDK class names or invent API signatures.
+- **Release docs and checklists must stay updated** whenever `export_presets.cfg` changes
+  (version/code, version/name, SDK settings, permissions). Keep
+  `docs/rustore_readiness_checklist.md`, `docs/android_release_signing.md`, and
+  `docs/android_release_validation.md` in sync with the actual export preset.
+
 ## Documentation Update Rules
 
 Update this file when adding important systems, scenes, architecture decisions, workflow rules, or validation requirements. Keep README.md aligned with major project setup or workflow changes.
