@@ -66,7 +66,8 @@ RuStore. Work through each item before uploading the first APK.
 | Plugins enabled in project.godot | ✅ `RuStoreGodotCore`, `RuStoreGodotPay` |
 | AndroidRuStorePlatform uses official client | ✅ `RuStoreGodotPayClient.get_instance()` — no `AndroidRuStorePay` singleton |
 | SDK availability guards | ✅ checks `OS.has_feature("android")`, `Engine.has_singleton("RuStoreGodotPay")`, `Engine.has_singleton("RuStoreGodotCore")` |
-| Purchase type | ONE_STEP (auto-confirmed consumable — no explicit consume call needed) |
+| Purchase type | ONE_STEP (auto-confirmed consumable) — `confirm_two_step_purchase` is not used |
+| `consume_purchase()` behavior | No-op by design — ONE_STEP is auto-confirmed by SDK; no explicit consume call is made after reward grant |
 | Empty product id guard | ✅ `purchase_product()` rejects empty `platform_product_id` before setting in-progress flag |
 | Empty purchase id guard | ✅ `on_purchase_success` result with all-empty ids is treated as error — no reward granted |
 | Purchase id extraction | ✅ preferred order: `purchaseId` → `orderId` → `invoiceId` |

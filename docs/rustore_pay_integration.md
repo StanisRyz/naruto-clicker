@@ -132,8 +132,9 @@ Key invariants:
 ## Purchase parameters
 
 ```gdscript
-var params := RuStorePayProductPurchaseParams.new()
-params.productId = RuStorePayProductId.new(platform_product_id)
+var params := RuStorePayProductPurchaseParams.new(
+    RuStorePayProductId.new(platform_product_id)
+)
 
 _pay_client.purchase(
     params,
@@ -145,6 +146,8 @@ _pay_client.purchase(
 
 Purchase type `ONE_STEP` is used for consumable products. The SDK automatically
 confirms the purchase; no explicit consume/confirm call is needed afterward.
+`RuStorePayProductPurchaseParams._init()` requires `productId` as its first
+positional argument — property assignment after `new()` is incorrect.
 
 ---
 
@@ -173,6 +176,14 @@ separate consume or confirm API call for this purchase type.
 `AndroidRuStorePlatform.consume_purchase()` is a safe no-op; it exists to
 satisfy the `PlatformServices` interface and for symmetry with the Yandex
 payment path.
+
+`confirm_two_step_purchase()` and `cancel_two_step_purchase()` are only relevant
+for TWO_STEP purchase flows. The current implementation does not use TWO_STEP
+and does not call either method.
+
+Rewards are granted only in `ClickerScreen._on_payment_purchase_success()`, which
+fires after `payment_purchase_success` is emitted with a non-empty purchase id.
+No separate confirm step occurs after reward grant.
 
 ---
 
@@ -223,10 +234,10 @@ adapter and are no longer used.
 
 ## Manual test checklist
 
-- [ ] Purchase gems_25 — reward granted, re-purchase allowed after confirm
-- [ ] Purchase gems_150 — reward granted, re-purchase allowed after confirm
-- [ ] Purchase gems_500 — reward granted, re-purchase allowed after confirm
-- [ ] Purchase gems_1500 — reward granted, re-purchase allowed after confirm
+- [ ] Purchase gems_25 — reward granted, re-purchase allowed after successful ONE_STEP purchase flow
+- [ ] Purchase gems_150 — reward granted, re-purchase allowed after successful ONE_STEP purchase flow
+- [ ] Purchase gems_500 — reward granted, re-purchase allowed after successful ONE_STEP purchase flow
+- [ ] Purchase gems_1500 — reward granted, re-purchase allowed after successful ONE_STEP purchase flow
 - [ ] Cancel purchase mid-flow — no reward, no stuck `_payment_in_progress` flag
 - [ ] Purchase while payment in progress — second attempt rejected with error signal
 - [ ] Crash after payment, before reward grant — recovery grants reward on next launch
