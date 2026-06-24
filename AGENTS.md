@@ -612,6 +612,8 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
 
 - **Never commit keystore files** (`.jks`, `.keystore`, `.p12`), passwords, key aliases,
   or local signing paths. These are machine-specific credentials that must stay out of git.
+- **Never commit APK or AAB release builds** (`*.apk`, `*.aab`, `/godot_apk/`). These are
+  local build artifacts covered by `.gitignore`.
 - **Do not change the package name** (`com.stanis.shinobiclickeridle`) after the first
   RuStore upload. A package name change creates a new app listing and breaks updates for
   all existing installs.
