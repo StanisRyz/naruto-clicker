@@ -177,39 +177,38 @@ The project is at final release-candidate stage. Future tasks must:
 
 ### Android payments plugin rules
 
-- The `AndroidRuStorePay` Godot plugin (`addons/android_rustore_pay/`) is the
-  ONLY place where RuStore Pay SDK calls may live. Gameplay code and the platform
-  bridge must not call RuStore SDK types directly.
-- **Never use the deprecated RuStore BillingClient.** All payment work must use the
-  RuStore Pay SDK (newer product-based API). The AGENTS.md payment rules forbid
-  BillingClient.
-- **Never grant paid rewards inside the Kotlin plugin.** The plugin only emits
-  `purchase_success(productId, purchaseToken)` — the GDScript handler in
-  `ClickerScreen._on_payment_purchase_success()` is the only place a reward is
-  applied to game state.
-- **Never invent RuStore Pay SDK API names.** If the real SDK is not available,
-  keep the compile-safe stub and document the missing external SDK step.
-  Do not guess class names or method signatures.
-- Plugin singleton name: `"AndroidRuStorePay"`.
-  Check availability with `Engine.has_singleton("AndroidRuStorePay")`.
-- Signal contract (plugin → GDScript):
-  - `purchase_success(productId: String, purchaseToken: String)` — purchase completed
-  - `purchase_cancelled` — user closed the RuStore UI without paying
-  - `purchase_error(message: String)` — SDK error
-  - `pending_purchase_found(productId: String, purchaseToken: String)` — recovery
-  - `pending_purchases_check_completed` — recovery check done, no pending items
-  - `pending_purchases_check_error(message: String)` — recovery check failed
-- `AndroidRuStorePlatform._on_rustore_purchase_success(platform_product_id, purchase_token)`
-  uses `_pending_local_product_id` (not `platform_product_id`) when emitting
-  `payment_purchase_success` so `ClickerScreen` sees the local product id.
-- `consume_purchase(purchase_token)` must be called after every successful grant.
-  In RuStore Pay SDK terms, `purchaseToken` is the `purchaseId` returned by the SDK.
-- `check_unprocessed_purchases()` calls `plugin.get_pending_purchases()`. When the
-  plugin is absent (stub not wired), it falls back to emitting
-  `unprocessed_purchase_check_completed` so the startup check completes cleanly.
-- The AndroidRuStorePay plugin AAR must be built before each Android export.
-  See `docs/rustore_pay_integration.md` for the build command and integration checklist.
-- All RuStore Pay SDK calls must run on the Android UI thread (`activity.runOnUiThread { ... }`).
+- **`AndroidRuStorePlatform.gd` is the ONLY place where RuStore Pay SDK calls may
+  live.** Gameplay code (`ClickerScreen.gd`) must call `Platform.purchase_product()`.
+- **Use the official `RuStoreGodotPayClient`** (`addons/RuStoreGodotPay/RuStoreGodotPay.gd`).
+  Access it via `RuStoreGodotPayClient.get_instance()` after checking both
+  `Engine.has_singleton("RuStoreGodotPay")` and `Engine.has_singleton("RuStoreGodotCore")`.
+- **Never use the deprecated RuStore BillingClient.** All payment work must use
+  `RuStoreGodotPayClient`. BillingClient is forbidden.
+- **Never use `Engine.get_singleton("AndroidRuStorePay")`.** The old custom
+  `AndroidRuStorePay` adapter (`addons/android_rustore_pay/`) is deprecated and
+  must not be re-enabled in `project.godot` or referenced in payment code.
+- **Never grant paid rewards inside the SDK.** Only `ClickerScreen._on_payment_purchase_success()`
+  applies rewards to game state.
+- **Purchase type: ONE_STEP.** Consumable purchases are auto-confirmed by the SDK.
+  `consume_purchase()` is a safe no-op; do not add an explicit confirm/consume call.
+- **Purchase id extraction order:** `purchaseId` → `orderId` → `invoiceId`.
+  Do not emit `payment_purchase_success` if all three are empty — treat as error.
+- **SDK signals used** (from `RuStoreGodotPayClient`):
+  - `on_purchase_success(result: RuStorePayProductPurchaseResult)` — purchase completed
+  - `on_purchase_failure(product_id: RuStorePayProductId, error: RuStorePaymentException)` — SDK error
+  - `on_purchase_cancelled(product_id, purchase_id, invoice_id)` — user cancelled
+  - `on_get_purchases_success(purchases: Array)` — recovery check result
+  - `on_get_purchases_failure(error: RuStorePaymentException)` — recovery check failed
+- **Old custom signals** (`purchase_success`, `purchase_cancelled`, `purchase_error`,
+  `pending_purchase_found`, `pending_purchases_check_completed`,
+  `pending_purchases_check_error`) belonged to the deprecated adapter. Do not use them.
+- `check_unprocessed_purchases()` calls
+  `get_purchases(CONSUMABLE_PRODUCT, CONFIRMED)`. When the client is absent it
+  emits `unprocessed_purchase_check_completed` so the startup check completes cleanly.
+- `_pay_client` is set once in `_ready()` via `_create_rustore_pay_client()`.
+  Do not call `RuStoreGodotPayClient.get_instance()` outside `_create_rustore_pay_client()`.
+- Local `android/build/res/values/rustore_values.xml` (Application ID) must be
+  configured by the developer; it is not committed because `/android/` is in `.gitignore`.
 - Do not alter Web/Yandex payment behavior while working on Android payments.
 
 ### Floating rewarded banner rules

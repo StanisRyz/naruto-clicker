@@ -56,11 +56,15 @@ Pay SDK for payments.
   (`android_ad_unit_id` per placement). Leave them empty until your Yandex Mobile
   Ads dashboard placements are created.
 
-**Payments** — `AndroidRuStorePay` Godot plugin (`addons/android_rustore_pay/`):
-- Plugin is a compile-safe adapter. SDK stubs in `AndroidRuStorePayPlugin.kt` are marked TODO.
-- Without the real SDK: `purchase()` emits `purchase_error` cleanly; no crash, no stuck state.
-- `check_unprocessed_purchases()` calls plugin `get_pending_purchases()` — stub returns completed.
-- See `docs/rustore_pay_integration.md` for the full integration checklist.
+**Payments** — official RuStore Pay SDK via `RuStoreGodotPayClient` (`addons/RuStoreGodotPay/`):
+- `AndroidRuStorePlatform` uses `RuStoreGodotPayClient.get_instance()` with guards for
+  `OS.has_feature("android")`, `Engine.has_singleton("RuStoreGodotPay")`, and `"RuStoreGodotCore"`.
+- Purchase type: `ONE_STEP` consumable — SDK auto-confirms; no explicit consume call needed.
+- `check_unprocessed_purchases()` calls `get_purchases(CONSUMABLE_PRODUCT, CONFIRMED)`.
+- Empty purchase id from `on_purchase_success` is rejected — no reward granted.
+- Old custom adapter `addons/android_rustore_pay/` is deprecated and not used.
+- `android/build/res/values/rustore_values.xml` must be configured locally (not committed).
+- See `docs/rustore_pay_integration.md` for the full setup and test checklist.
 
 **Cloud save / lifecycle**: no-ops; `load_cloud_save` emits `cloud_save_loaded({})`.
 
@@ -84,27 +88,25 @@ dashboard placements are created — empty ids fail safely with an error signal.
 Rewarded rewards are granted only in `ClickerScreen._on_rewarded_ad_rewarded()`;
 the Kotlin plugin never modifies game state.
 
-### Android payments plugin
+### Android payments
 
-Plugin: `addons/android_rustore_pay/` — Godot 4 Android plugin v2.
-Singleton: `Engine.get_singleton("AndroidRuStorePay")`.
-SDK: **not bundled** — add the official RuStore Pay SDK AAR to `libs/` (or configure Maven).
-Enabled in `project.godot` via `[editor_plugins]`.
+SDK: official RuStore Godot Pay SDK (`addons/RuStoreGodotPay/` + `addons/RuStoreGodotCore/`).
+Client: `RuStoreGodotPayClient` GDScript class.
+Singletons: `Engine.get_singleton("RuStoreGodotPay")` / `"RuStoreGodotCore"`.
+Both plugins enabled in `project.godot` via `[editor_plugins]`.
 
-**The plugin AAR must be built before each Android export.**
-
-```bash
-cp android/build/libs/release/godot-lib.template_release.aar \
-   addons/android_rustore_pay/android/AndroidRuStorePayPlugin/libs/
-cd addons/android_rustore_pay/android/AndroidRuStorePayPlugin
-./gradlew assembleRelease
-```
+The old custom adapter `addons/android_rustore_pay/` is **deprecated** and not
+enabled. Do not re-enable it.
 
 Product ids per platform live in `scripts/game/config/GemPurchaseConfig.gd`
 (`rustore_product_id` per product). Update to match the RuStore developer console.
 
+Local files required before export (not committed — `/android/` is in `.gitignore`):
+- `android/build/res/values/rustore_values.xml` — Application ID
+- `android/build/AndroidManifest.xml` — RuStore metadata + intent filter activity
+
 All paid rewards are granted only in `ClickerScreen._on_payment_purchase_success()`;
-the Kotlin plugin never modifies game state.
+the SDK never modifies game state.
 
 ## Display / resolution
 
@@ -285,15 +287,12 @@ before publishing to RuStore.
 - Unprocessed purchases recovered via `payments.getPurchases()` on startup.
 - Consumable order: grant gems → update UI → save → cloud flush → `consumePurchase()`.
 
-**RuStore Pay (Android — placeholder):**
+**RuStore Pay (Android):**
 
-- `AndroidRuStorePlatform.gd` emits `payment_purchase_error` until a real plugin
-  is wired in. No gems are granted.
-- Implement `_get_rustore_pay_plugin()` and add a real purchase call in
-  `purchase_product()` once the plugin is bundled. Use RuStore Pay SDK (new),
-  not the deprecated BillingClient.
-- `check_unprocessed_purchases()` must be wired to the plugin's `getPurchases()`
-  when available; currently emits `unprocessed_purchase_check_completed` immediately.
+- `AndroidRuStorePlatform.gd` uses `RuStoreGodotPayClient` (official SDK).
+- Purchase type `ONE_STEP`; no explicit consume needed.
+- `check_unprocessed_purchases()` calls `get_purchases(CONSUMABLE_PRODUCT, CONFIRMED)`.
+- Empty purchase id from success result is rejected — no gems granted.
 - See `docs/rustore_readiness_checklist.md` for the full pre-upload checklist.
 
 ## Audio
@@ -425,9 +424,9 @@ On localhost, the Yandex SDK is unavailable (`window.ysdk` is not present).
   cd addons/android_yandex_ads/android/AndroidYandexAdsPlugin
   ./gradlew assembleRelease
   ```
-- RuStore Pay SDK is currently **blocked by an external dependency** — the official
-  SDK AAR/API is not yet available. Purchase calls emit a clean error until the SDK
-  is provided.
+- RuStore Pay uses the official `RuStoreGodotPayClient` SDK (addons/RuStoreGodotPay/).
+  Local `android/build/res/values/rustore_values.xml` must be configured before
+  a payment-enabled export. See `docs/rustore_pay_integration.md`.
 - Never commit keystore files, passwords, key aliases, or local absolute paths.
 - Run the read-only validation script before every RuStore upload:
   ```bash

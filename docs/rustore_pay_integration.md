@@ -2,154 +2,219 @@
 
 ## Overview
 
-In-app purchases on Android use the **AndroidRuStorePay** Godot 4 Android Plugin v2.
-The plugin is a compile-safe adapter: it builds and runs without the real RuStore Pay SDK,
-but all purchase calls emit `purchase_error` until the SDK stubs are replaced.
+In-app purchases on Android use the **official RuStore Godot Pay SDK**
+(`addons/RuStoreGodotPay/`) via the `RuStoreGodotPayClient` GDScript wrapper.
+
+The old custom `AndroidRuStorePay` adapter (`addons/android_rustore_pay/`) is
+**deprecated** and no longer used for payments. It must not be re-enabled in
+`project.godot`.
 
 ---
 
-## Plugin location
+## SDK addon locations
 
 ```
-addons/android_rustore_pay/
-  plugin.cfg                               ← Godot editor plugin registration
-  AndroidRuStorePayExportPlugin.gd         ← Declares AAR path for Android export
-  android/AndroidRuStorePayPlugin/         ← Android library Gradle project
-    build.gradle
-    settings.gradle
-    src/main/
-      AndroidManifest.xml                  ← Registers singleton via meta-data
-      kotlin/com/shinobi/rustorepay/
-        AndroidRuStorePayPlugin.kt         ← GodotPlugin subclass (stub — fill in SDK)
+addons/RuStoreGodotCore/
+  RuStoreGodotCore.gd         ← RuStoreGodotCoreUtils (singleton wrapper)
+  plugin.cfg                  ← enabled in project.godot [editor_plugins]
+
+addons/RuStoreGodotPay/
+  RuStoreGodotPay.gd          ← RuStoreGodotPayClient (main payment client)
+  plugin.cfg                  ← enabled in project.godot [editor_plugins]
+  ERuStorePayPreferredPurchaseType.gd
+  ERuStorePaySdkTheme.gd
+  ERuStorePayProductType.gd
+  ERuStorePayPurchaseStatusFilter.gd
+  RuStorePayProductPurchaseParams.gd
+  RuStorePayProductPurchaseResult.gd
+  RuStorePayProductPurchase.gd
+  RuStorePayJsonParser.gd
+  ... (other data classes)
 ```
 
-## Singleton name
+## Singleton names (Android native side)
+
+```
+Engine.get_singleton("RuStoreGodotPay")   — payment operations
+Engine.get_singleton("RuStoreGodotCore")  — core utilities
+```
+
+Both are checked before `RuStoreGodotPayClient.get_instance()` is called.
+`AndroidRuStorePlatform._create_rustore_pay_client()` guards with:
 
 ```gdscript
-Engine.get_singleton("AndroidRuStorePay")
+if not OS.has_feature("android"):    return null
+if not Engine.has_singleton("RuStoreGodotPay"):  return null
+if not Engine.has_singleton("RuStoreGodotCore"): return null
+return RuStoreGodotPayClient.get_instance()
 ```
 
-Checked in `AndroidRuStorePlatform._get_rustore_pay_plugin()`. Returns `null` if the
-plugin AAR was not included in the build or the Kotlin stubs were not filled in.
+---
+
+## Required local Android configuration
+
+Because `/android/` is in `.gitignore`, these files are **never committed**.
+Each developer must configure them locally before building a payment-enabled APK:
+
+1. **`android/build/res/values/rustore_values.xml`** — Application ID:
+   ```xml
+   <resources>
+       <string name="rustore_application_id">YOUR_APP_ID</string>
+   </resources>
+   ```
+2. **`android/build/AndroidManifest.xml`** — RuStore metadata entry and
+   `RuStoreIntentFilterActivity` declaration per official RuStore Godot Pay docs.
+
+See the [official RuStore Godot Pay documentation](https://www.rustore.ru/help/sdk/godot-pay)
+for the exact manifest entries and intent filter activity required.
 
 ---
 
 ## Product id mapping
 
 Product ids are configured in `scripts/game/config/GemPurchaseConfig.gd`.
-Each product has a `rustore_product_id` field (currently a placeholder matching the local id).
-
-Update `rustore_product_id` values to match the exact product ids registered in the
-RuStore developer console before publishing.
+Each product has a `rustore_product_id` field.
 
 ```gdscript
 GemPurchaseConfig.get_platform_product_id(local_id, "rustore")
 ```
 
-This resolution happens in `ClickerScreen._on_gem_product_purchase_requested()` via
-`Platform.get_platform_key()` — no product id is hardcoded in gameplay code.
+Update `rustore_product_id` values to match the exact ids registered in the
+RuStore developer console before publishing.
 
 ---
 
 ## Purchase flow
 
 ```
-ClickerScreen                  Platform              AndroidRuStorePlatform     AndroidRuStorePayPlugin (Kotlin)
-     │                             │                          │                            │
-     │  purchase_product(id)       │                          │                            │
-     │────────────────────────────▶│                          │                            │
-     │                             │  purchase_product(id)    │                            │
-     │                             │─────────────────────────▶│                            │
-     │                             │                          │  plugin.purchase(id)       │
-     │                             │                          │───────────────────────────▶│
-     │                             │                          │                            │ (SDK call → RuStore UI)
-     │                             │                          │  purchase_success(id, tok) │
-     │   payment_purchase_success  │◀─────────────────────────│◀───────────────────────────│
-     │◀────────────────────────────│                          │                            │
-     │  grant gems + mark_processed│                          │                            │
-     │  Platform.consume_purchase  │                          │                            │
-     │────────────────────────────▶│                          │                            │
-     │                             │  consume_purchase(tok)   │                            │
-     │                             │─────────────────────────▶│                            │
-     │                             │                          │  plugin.consume(tok)       │
-     │                             │                          │───────────────────────────▶│
+ClickerScreen             Platform           AndroidRuStorePlatform     RuStoreGodotPayClient
+     │                        │                        │                         │
+     │  purchase_product(id)  │                        │                         │
+     │───────────────────────▶│                        │                         │
+     │                        │  purchase_product(id)  │                         │
+     │                        │───────────────────────▶│                         │
+     │                        │                        │  client.purchase(params)│
+     │                        │                        │────────────────────────▶│
+     │                        │                        │                         │ (RuStore UI)
+     │                        │                        │  on_purchase_success    │
+     │                        │  payment_purchase_success◀──────────────────────│
+     │◀───────────────────────│                        │                         │
+     │  grant gems + save     │                        │                         │
+     │  Platform.consume()    │  no-op (ONE_STEP)      │                         │
 ```
 
 Key invariants:
 - Rewards are granted only in `ClickerScreen._on_payment_purchase_success()`.
-- `state.mark_purchase_processed(purchase_token)` is called before `consume_purchase()`.
-- `state.is_purchase_processed(purchase_token)` guards against duplicate grants.
+- `state.mark_purchase_processed(purchase_id)` is called before `consume_purchase()`.
+- `state.is_purchase_processed(purchase_id)` guards against duplicate grants.
 - `_payment_in_progress` flag prevents overlapping purchase attempts.
 - Empty `platform_product_id` is rejected before the flag is set.
+- `on_purchase_success` result with all-empty ids is rejected — no reward granted.
+
+---
+
+## Purchase parameters
+
+```gdscript
+var params := RuStorePayProductPurchaseParams.new()
+params.productId = RuStorePayProductId.new(platform_product_id)
+
+_pay_client.purchase(
+    params,
+    ERuStorePayPreferredPurchaseType.Item.ONE_STEP,
+    ERuStorePaySdkTheme.Item.DARK,
+    false  # enable_purchase_event_listener
+)
+```
+
+Purchase type `ONE_STEP` is used for consumable products. The SDK automatically
+confirms the purchase; no explicit consume/confirm call is needed afterward.
+
+---
+
+## Purchase id extraction
+
+`on_purchase_success` emits a `RuStorePayProductPurchaseResult` object.
+The id is extracted with this preferred order:
+
+1. `result.purchaseId.value` — if non-null and non-empty
+2. `result.orderId.value` — if non-null and non-empty
+3. `result.invoiceId.value` — if non-null and non-empty
+
+If all three are empty, the success is treated as an error and no reward is
+granted. This is implemented in
+`AndroidRuStorePlatform._extract_purchase_id_from_result()`.
+
+The same preferred order is applied when extracting ids from
+`RuStorePayProductPurchase` objects returned by `get_purchases()`.
 
 ---
 
 ## Consume behavior
 
-RuStore Pay requires consuming (finalizing) consumable purchases to allow re-purchase.
-`AndroidRuStorePlatform.consume_purchase(purchase_token)` calls `plugin.consume(token)`.
-Consume failures are logged by the Kotlin plugin but not signalled — they are non-fatal
-for the user (the purchase has already been granted and persisted).
+`ONE_STEP` consumables are auto-confirmed by the RuStore Pay SDK. There is no
+separate consume or confirm API call for this purchase type.
+`AndroidRuStorePlatform.consume_purchase()` is a safe no-op; it exists to
+satisfy the `PlatformServices` interface and for symmetry with the Yandex
+payment path.
 
 ---
 
 ## Unprocessed purchase recovery
 
-On startup, `ClickerScreen._request_unprocessed_purchase_check_when_ready()` calls
-`Platform.check_unprocessed_purchases()`. On Android this calls
-`plugin.get_pending_purchases()`, which queries RuStore for unconsumed purchases.
+On startup, `ClickerScreen._request_unprocessed_purchase_check_when_ready()`
+calls `Platform.check_unprocessed_purchases()`. On Android this calls:
 
-For each found purchase, `unprocessed_purchase_found(product_id, purchase_token)` is
-emitted. `ClickerScreen._on_unprocessed_purchase_found()` grants the reward and consumes.
+```gdscript
+_pay_client.get_purchases(
+    ERuStorePayProductType.Item.CONSUMABLE_PRODUCT,
+    ERuStorePayPurchaseStatusFilter.Item.CONFIRMED
+)
+```
 
-This handles the recovery scenario: user paid, app crashed before consume, next launch
-detects the dangling purchase and grants it.
+For each `RuStorePayProductPurchase` in the result:
+1. Extract `productId.value` → look up local id via `GemPurchaseConfig`.
+2. Extract purchase id (same preferred order as success path).
+3. Skip if unknown product id or empty purchase id.
+4. Emit `unprocessed_purchase_found(local_id, purchase_id)`.
+5. After loop emit `unprocessed_purchase_check_completed()`.
+
+`ClickerScreen._on_unprocessed_purchase_found()` checks
+`state.is_purchase_processed(purchase_id)` before granting.
+Already-processed purchases are skipped silently.
+
+On failure, `unprocessed_purchase_check_error(message)` is emitted — the
+startup flow continues without crashing.
 
 ---
 
-## Completing the SDK integration
+## Signals connected in AndroidRuStorePlatform
 
-All SDK call sites in `AndroidRuStorePayPlugin.kt` are marked `// TODO: Replace`.
-To complete integration:
+| SDK signal | Handler |
+|---|---|
+| `on_purchase_success(result)` | `_on_rustore_purchase_success` |
+| `on_purchase_failure(product_id, error)` | `_on_rustore_purchase_failure` |
+| `on_purchase_cancelled(product_id, purchase_id, invoice_id)` | `_on_rustore_purchase_cancelled` |
+| `on_get_purchases_success(purchases)` | `_on_rustore_get_purchases_success` |
+| `on_get_purchases_failure(error)` | `_on_rustore_get_purchases_failure` |
 
-1. **Obtain the RuStore Pay SDK AAR** from the official RuStore developer portal.
-2. **Add the AAR or Maven coordinate** to `build.gradle`:
-   - Local AAR: copy into `addons/android_rustore_pay/android/AndroidRuStorePayPlugin/libs/`
-     and uncomment the `compileOnly fileTree(...)` line.
-   - Maven: uncomment the `compileOnly 'ru.rustore.sdk:...'` line with the verified coordinate.
-   - Also add the Maven repo to `build.gradle` → `repositories` and to
-     `AndroidRuStorePayExportPlugin.gd` → `_get_android_maven_repos()` /
-     `_get_android_dependencies()`.
-3. **Fill in the three TODO stubs** in `AndroidRuStorePayPlugin.kt`:
-   - `purchase(productId)` — call the SDK launch purchase method; emit `purchase_success`,
-     `purchase_cancelled`, or `purchase_error` from the SDK callback.
-   - `consume(purchaseToken)` — call the SDK consume/confirm method.
-   - `get_pending_purchases()` — call the SDK getPurchases method; emit
-     `pending_purchase_found` for each result, then `pending_purchases_check_completed`
-     or `pending_purchases_check_error`.
-4. **Rebuild the plugin AAR**:
-   ```bash
-   cp android/build/libs/release/godot-lib.template_release.aar \
-      addons/android_rustore_pay/android/AndroidRuStorePayPlugin/libs/
-   cd addons/android_rustore_pay/android/AndroidRuStorePayPlugin
-   ./gradlew assembleRelease
-   ```
-5. **Update `rustore_product_id`** values in `GemPurchaseConfig.gd` to match
-   the product ids registered in the RuStore developer console.
-6. **Test all 4 gem purchase flows** on a real Android device via RuStore.
+Old custom signals (`purchase_success`, `purchase_cancelled`, `purchase_error`,
+`pending_purchase_found`, `pending_purchases_check_completed`,
+`pending_purchases_check_error`) belonged to the deprecated `AndroidRuStorePay`
+adapter and are no longer used.
 
 ---
 
 ## Manual test checklist
 
-- [ ] Purchase gems_25 — reward granted, consume called, re-purchase allowed
-- [ ] Purchase gems_150 — reward granted, consume called, re-purchase allowed
-- [ ] Purchase gems_500 — reward granted, consume called, re-purchase allowed
-- [ ] Purchase gems_1500 — reward granted, consume called, re-purchase allowed
+- [ ] Purchase gems_25 — reward granted, re-purchase allowed after confirm
+- [ ] Purchase gems_150 — reward granted, re-purchase allowed after confirm
+- [ ] Purchase gems_500 — reward granted, re-purchase allowed after confirm
+- [ ] Purchase gems_1500 — reward granted, re-purchase allowed after confirm
 - [ ] Cancel purchase mid-flow — no reward, no stuck `_payment_in_progress` flag
 - [ ] Purchase while payment in progress — second attempt rejected with error signal
-- [ ] Crash after payment, before consume — recovery grants reward on next launch
-- [ ] Duplicate purchase token — second grant blocked by `state.is_purchase_processed()`
+- [ ] Crash after payment, before reward grant — recovery grants reward on next launch
+- [ ] Duplicate purchase id — second grant blocked by `state.is_purchase_processed()`
 - [ ] Network unavailable — clean error emitted, no crash, no stuck flag
 - [ ] Web export unaffected — `YandexBridge` payment flow unchanged
 
@@ -158,19 +223,12 @@ To complete integration:
 ## Logcat tags
 
 ```
-adb logcat -s AndroidRuStorePay
+adb logcat -s RuStoreGodotPay RuStoreGodotCore
 ```
-
-| Log line | Meaning |
-|---|---|
-| `purchase called for productId=...` | Purchase initiated from GDScript |
-| `RuStore Pay SDK not integrated` | Stub not yet replaced; expected before SDK wired |
-| `consume called for purchaseToken=...` | Consume initiated after reward grant |
-| `get_pending_purchases called` | Startup recovery check |
 
 ---
 
 ## Do NOT use BillingClient
 
-RuStore BillingClient is the **deprecated** payments API. Use RuStore Pay SDK only.
-The AGENTS.md payment rules forbid BillingClient for new payment work.
+RuStore BillingClient is the **deprecated** payments API. Use RuStore Pay SDK
+(`RuStoreGodotPayClient`) only. The AGENTS.md payment rules forbid BillingClient.

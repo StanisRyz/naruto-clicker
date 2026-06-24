@@ -1,18 +1,18 @@
 extends "res://scripts/platform/PlatformServices.gd"
 
-# Android bridge for RuStore Pay SDK and Yandex Mobile Ads SDK.
+# Android bridge for Yandex Mobile Ads SDK and the official RuStore Pay SDK.
 #
 # Ads: Yandex Mobile Ads SDK via the AndroidYandexAds Godot plugin.
-# The plugin is an Android library built from:
-#   addons/android_yandex_ads/android/AndroidYandexAdsPlugin/
-# Ad unit ids are configured in scripts/game/config/AdPlacementConfig.gd.
+#   Plugin source: addons/android_yandex_ads/
+#   Singleton:     Engine.get_singleton("AndroidYandexAds")
+#   Ad unit ids:   scripts/game/config/AdPlacementConfig.gd
 #
-# Payments: RuStore Pay SDK via the AndroidRuStorePay Godot plugin.
-# The plugin is a compile-safe adapter built from:
-#   addons/android_rustore_pay/android/AndroidRuStorePayPlugin/
-# SDK stubs are marked TODO inside AndroidRuStorePayPlugin.kt.
-# Fill them in once the official RuStore Pay SDK AAR is available.
-# See docs/rustore_pay_integration.md for the integration checklist.
+# Payments: Official RuStore Pay SDK via RuStoreGodotPayClient.
+#   SDK addon:     addons/RuStoreGodotPay/  (class RuStoreGodotPayClient)
+#   Core addon:    addons/RuStoreGodotCore/ (class RuStoreGodotCoreUtils)
+#   Singletons:    Engine.get_singleton("RuStoreGodotPay") / "RuStoreGodotCore"
+#   Old adapter:   addons/android_rustore_pay/ — DEPRECATED, not used for payments.
+#   See docs/rustore_pay_integration.md for setup and manual test checklist.
 
 const AdPlacementConfigClass = preload("res://scripts/game/config/AdPlacementConfig.gd")
 
@@ -21,6 +21,7 @@ const AdPlacementConfigClass = preload("res://scripts/game/config/AdPlacementCon
 var _payment_in_progress: bool = false
 var _pending_local_product_id: String = ""
 var _pending_platform_product_id: String = ""
+var _pay_client: RuStoreGodotPayClient = null
 
 # ── Ad state ──────────────────────────────────────────────────────────────────
 
@@ -43,16 +44,15 @@ func _ready() -> void:
 		ads_plugin.fullscreen_ad_error.connect(_on_android_fullscreen_ad_error)
 		ads_plugin.initialize()
 
-	var pay_plugin := _get_rustore_pay_plugin()
-	if pay_plugin:
-		pay_plugin.purchase_success.connect(_on_rustore_purchase_success)
-		pay_plugin.purchase_cancelled.connect(_on_rustore_purchase_cancelled)
-		pay_plugin.purchase_error.connect(_on_rustore_purchase_error)
-		pay_plugin.pending_purchase_found.connect(_on_rustore_pending_purchase_found)
-		pay_plugin.pending_purchases_check_completed.connect(_on_rustore_pending_purchases_check_completed)
-		pay_plugin.pending_purchases_check_error.connect(_on_rustore_pending_purchases_check_error)
+	_pay_client = _create_rustore_pay_client()
+	if _pay_client:
+		_pay_client.on_purchase_success.connect(_on_rustore_purchase_success)
+		_pay_client.on_purchase_failure.connect(_on_rustore_purchase_failure)
+		_pay_client.on_purchase_cancelled.connect(_on_rustore_purchase_cancelled)
+		_pay_client.on_get_purchases_success.connect(_on_rustore_get_purchases_success)
+		_pay_client.on_get_purchases_failure.connect(_on_rustore_get_purchases_failure)
 
-# ── Plugin access ─────────────────────────────────────────────────────────────
+# ── Plugin / client access ─────────────────────────────────────────────────────
 
 func _get_android_ads_plugin() -> Object:
 	if Engine.has_singleton("AndroidYandexAds"):
@@ -64,19 +64,23 @@ func _is_android_ads_available() -> bool:
 	return _get_android_ads_plugin() != null
 
 
-# Returns the RuStore Pay plugin singleton if available, or null.
-func _get_rustore_pay_plugin() -> Object:
-	if Engine.has_singleton("AndroidRuStorePay"):
-		return Engine.get_singleton("AndroidRuStorePay")
-	return null
+# Returns a RuStoreGodotPayClient instance if the official SDK singletons are
+# available, or null. Called once in _ready(); result cached in _pay_client.
+func _create_rustore_pay_client() -> RuStoreGodotPayClient:
+	if not OS.has_feature("android"):
+		return null
+	if not Engine.has_singleton("RuStoreGodotPay"):
+		return null
+	if not Engine.has_singleton("RuStoreGodotCore"):
+		return null
+	return RuStoreGodotPayClient.get_instance()
 
 
 func _is_rustore_pay_available() -> bool:
-	return _get_rustore_pay_plugin() != null
+	return _pay_client != null
 
 
 # Resolves a logical placement id to a Yandex ad unit id.
-# Returns "" if the placement has no unit id configured yet.
 func _resolve_ad_unit_id(placement_id: String) -> String:
 	return AdPlacementConfigClass.get_platform_ad_unit_id(placement_id, "rustore")
 
@@ -210,28 +214,67 @@ func purchase_product(platform_product_id: String, local_product_id: String = ""
 	_pending_local_product_id = local_id
 	_pending_platform_product_id = platform_product_id
 
-	var plugin := _get_rustore_pay_plugin()
-	if not plugin:
+	if not _pay_client:
 		_payment_in_progress = false
 		_pending_local_product_id = ""
 		_pending_platform_product_id = ""
-		payment_purchase_error.emit(local_id, "RuStore Pay plugin not available")
+		payment_purchase_error.emit(local_id, "RuStore Pay SDK not available")
 		return
 
-	plugin.purchase(platform_product_id)
+	var params := RuStorePayProductPurchaseParams.new()
+	params.productId = RuStorePayProductId.new(platform_product_id)
+
+	_pay_client.purchase(
+		params,
+		ERuStorePayPreferredPurchaseType.Item.ONE_STEP,
+		ERuStorePaySdkTheme.Item.DARK,
+		false
+	)
 
 
-func _on_rustore_purchase_success(_platform_product_id: String, purchase_token: String) -> void:
+func _on_rustore_purchase_success(result: RuStorePayProductPurchaseResult) -> void:
 	if not _payment_in_progress:
 		return
 	var local_id: String = _pending_local_product_id
 	_payment_in_progress = false
 	_pending_local_product_id = ""
 	_pending_platform_product_id = ""
-	payment_purchase_success.emit(local_id, purchase_token)
+
+	var purchase_id: String = _extract_purchase_id_from_result(result)
+	if purchase_id == "":
+		payment_purchase_error.emit(local_id, "Purchase result has no valid purchase id")
+		return
+	payment_purchase_success.emit(local_id, purchase_id)
 
 
-func _on_rustore_purchase_cancelled() -> void:
+# Preferred id order: purchaseId → orderId → invoiceId.
+# An empty string means none were present — caller must not grant rewards.
+func _extract_purchase_id_from_result(result: RuStorePayProductPurchaseResult) -> String:
+	if result == null:
+		return ""
+	if result.purchaseId != null and result.purchaseId.value != "":
+		return result.purchaseId.value
+	if result.orderId != null and result.orderId.value != "":
+		return result.orderId.value
+	if result.invoiceId != null and result.invoiceId.value != "":
+		return result.invoiceId.value
+	return ""
+
+
+func _on_rustore_purchase_failure(product_id: RuStorePayProductId, error: RuStorePaymentException) -> void:
+	var local_id: String = _pending_local_product_id
+	_payment_in_progress = false
+	_pending_local_product_id = ""
+	_pending_platform_product_id = ""
+	var message: String = _exception_message(error)
+	if message == "":
+		message = "Purchase failed"
+	payment_purchase_error.emit(local_id, message)
+
+
+# on_purchase_cancelled emits (productId, purchaseId, invoiceId) — all ignored here.
+# We only need _pending_local_product_id which is already stored.
+func _on_rustore_purchase_cancelled(_product_id: Variant, _purchase_id: Variant, _invoice_id: Variant) -> void:
 	if not _payment_in_progress:
 		return
 	var local_id: String = _pending_local_product_id
@@ -241,38 +284,74 @@ func _on_rustore_purchase_cancelled() -> void:
 	payment_purchase_cancelled.emit(local_id)
 
 
-func _on_rustore_purchase_error(message: String) -> void:
-	var local_id: String = _pending_local_product_id
-	_payment_in_progress = false
-	_pending_local_product_id = ""
-	_pending_platform_product_id = ""
-	payment_purchase_error.emit(local_id, message)
+func _exception_message(error: RuStorePaymentException) -> String:
+	if error == null:
+		return ""
+	if error.description != "":
+		return error.description
+	return error.name
 
 
-func consume_purchase(purchase_token: String) -> void:
-	var plugin := _get_rustore_pay_plugin()
-	if plugin:
-		plugin.consume(purchase_token)
+# ONE_STEP consumables are auto-confirmed by the SDK. No explicit consume call
+# is required or available for this purchase type.
+func consume_purchase(_purchase_token: String) -> void:
+	pass
 
 
 func check_unprocessed_purchases() -> void:
-	var plugin := _get_rustore_pay_plugin()
-	if plugin:
-		plugin.get_pending_purchases()
-	else:
+	if not _pay_client:
 		unprocessed_purchase_check_completed.emit()
+		return
+	_pay_client.get_purchases(
+		ERuStorePayProductType.Item.CONSUMABLE_PRODUCT,
+		ERuStorePayPurchaseStatusFilter.Item.CONFIRMED
+	)
 
 
-func _on_rustore_pending_purchase_found(product_id: String, purchase_token: String) -> void:
-	unprocessed_purchase_found.emit(product_id, purchase_token)
-
-
-func _on_rustore_pending_purchases_check_completed() -> void:
+func _on_rustore_get_purchases_success(purchases: Array) -> void:
+	for purchase in purchases:
+		if not (purchase is RuStorePayProductPurchase):
+			continue
+		var product_id_obj: RuStorePayProductId = purchase.productId
+		if product_id_obj == null:
+			continue
+		var platform_product_id: String = product_id_obj.value
+		if platform_product_id == "":
+			continue
+		var local_id: String = _find_local_product_id(platform_product_id)
+		if local_id == "":
+			continue
+		var purchase_id: String = _extract_purchase_id_from_product_purchase(purchase)
+		if purchase_id == "":
+			continue
+		unprocessed_purchase_found.emit(local_id, purchase_id)
 	unprocessed_purchase_check_completed.emit()
 
 
-func _on_rustore_pending_purchases_check_error(message: String) -> void:
+func _on_rustore_get_purchases_failure(error: RuStorePaymentException) -> void:
+	var message: String = _exception_message(error)
+	if message == "":
+		message = "Failed to retrieve purchases"
 	unprocessed_purchase_check_error.emit(message)
+
+
+# Maps a RuStore platform product id back to the local (GemPurchaseConfig) id.
+func _find_local_product_id(platform_product_id: String) -> String:
+	for product: Dictionary in GemPurchaseConfig.get_all():
+		if String(product.get("rustore_product_id", "")) == platform_product_id:
+			return String(product.get("id", ""))
+	return ""
+
+
+# Same preferred id order as _extract_purchase_id_from_result.
+func _extract_purchase_id_from_product_purchase(purchase: RuStorePayProductPurchase) -> String:
+	if purchase.purchaseId != null and purchase.purchaseId.value != "":
+		return purchase.purchaseId.value
+	if purchase.orderId != null and purchase.orderId.value != "":
+		return purchase.orderId.value
+	if purchase.invoiceId != null and purchase.invoiceId.value != "":
+		return purchase.invoiceId.value
+	return ""
 
 # ── Cloud save ────────────────────────────────────────────────────────────────
 
