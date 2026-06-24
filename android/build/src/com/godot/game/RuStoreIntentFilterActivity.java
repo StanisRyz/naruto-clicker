@@ -12,6 +12,10 @@ import android.os.Bundle;
  * to GodotApp (FLAG_ACTIVITY_SINGLE_TOP so no new instance is created) and
  * immediately finishes. GodotActivity.onNewIntent picks up the intent, and the
  * RuStore Pay SDK processes the payment result from there.
+ *
+ * NOTE: RuStoreGodotPay.aar exposes no explicit proceedIntent/handleIntent Java
+ * API through GDScript source. Payment return handling must be verified on a
+ * real device with RuStore installed before release.
  */
 public class RuStoreIntentFilterActivity extends Activity {
 

@@ -69,6 +69,11 @@ RUSTORE_MANIFEST_TAGS = [
     "RuStoreIntentFilterActivity",
 ]
 
+MANIFEST_LITERAL_CHECKS = [
+    ('android:versionName="1.0.0"', "versionName is 1.0.0"),
+    ('android:screenOrientation="portrait"', "screenOrientation is portrait"),
+]
+
 GITIGNORE_PATH = Path(".gitignore")
 
 
@@ -245,6 +250,11 @@ def check_rustore_manifest() -> None:
             _pass(f"AndroidManifest.xml contains RuStore entry: {tag}")
         else:
             _fail(f"AndroidManifest.xml missing RuStore entry: {tag}")
+    for literal, description in MANIFEST_LITERAL_CHECKS:
+        if literal in content:
+            _pass(f"AndroidManifest.xml {description}")
+        else:
+            _fail(f"AndroidManifest.xml expected '{literal}' ({description})")
 
 
 def check_gitignore() -> None:
