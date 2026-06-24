@@ -51,6 +51,22 @@ REQUIRED_GITIGNORE_PATTERNS = [
     "local_release_env.txt",
     "/builds/",
     "/godot_apk/",
+    # Android build secrets — template source is tracked, secrets/generated dirs are not
+    "android/build/local.properties",
+    "android/local.properties",
+]
+
+ANDROID_TEMPLATE_FILES = [
+    Path("android/build/AndroidManifest.xml"),
+    Path("android/build/res/values/rustore_values.xml"),
+    Path("android/build/src/com/godot/game/RuStoreIntentFilterActivity.java"),
+]
+
+RUSTORE_MANIFEST_TAGS = [
+    "console_app_id_value",
+    "internal_config_key",
+    "sdk_pay_scheme_value",
+    "RuStoreIntentFilterActivity",
 ]
 
 GITIGNORE_PATH = Path(".gitignore")
@@ -209,6 +225,28 @@ def check_export_presets() -> None:
         _pass("export_presets.cfg release identity ok")
 
 
+def check_android_template_files() -> None:
+    """Verify that required Android build template files are present on disk."""
+    for path in ANDROID_TEMPLATE_FILES:
+        if path.exists():
+            _pass(f"Android template file present: {path}")
+        else:
+            _fail(f"Android template file missing: {path}")
+
+
+def check_rustore_manifest() -> None:
+    manifest = Path("android/build/AndroidManifest.xml")
+    if not manifest.exists():
+        _fail(f"{manifest} not found — cannot check RuStore Pay entries")
+        return
+    content = manifest.read_text(encoding="utf-8")
+    for tag in RUSTORE_MANIFEST_TAGS:
+        if tag in content:
+            _pass(f"AndroidManifest.xml contains RuStore entry: {tag}")
+        else:
+            _fail(f"AndroidManifest.xml missing RuStore entry: {tag}")
+
+
 def check_gitignore() -> None:
     if not GITIGNORE_PATH.exists():
         _fail(".gitignore not found")
@@ -252,6 +290,8 @@ def main() -> None:
     check_yandex_aar()
     check_export_presets()
     check_gitignore()
+    check_android_template_files()
+    check_rustore_manifest()
 
     print()
     if _failures:

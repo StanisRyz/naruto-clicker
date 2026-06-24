@@ -51,22 +51,38 @@ return RuStoreGodotPayClient.get_instance()
 
 ---
 
-## Required local Android configuration
+## Android build template files (tracked in Git)
 
-Because `/android/` is in `.gitignore`, these files are **never committed**.
-Each developer must configure them locally before building a payment-enabled APK:
+The Android build template is now tracked selectively. Generated/cache directories
+and all secrets remain ignored. The following source files are committed:
 
-1. **`android/build/res/values/rustore_values.xml`** — Application ID:
-   ```xml
-   <resources>
-       <string name="rustore_application_id">YOUR_APP_ID</string>
-   </resources>
-   ```
-2. **`android/build/AndroidManifest.xml`** — RuStore metadata entry and
-   `RuStoreIntentFilterActivity` declaration per official RuStore Godot Pay docs.
+| File | Purpose |
+|---|---|
+| `android/build/AndroidManifest.xml` | App manifest — contains RuStore Pay metadata and deeplink activity |
+| `android/build/res/values/rustore_values.xml` | RuStore Pay SDK strings (consoleApplicationId, internalConfigKey, deeplinkScheme) |
+| `android/build/src/com/godot/game/RuStoreIntentFilterActivity.java` | Deeplink trampoline activity for RuStore Pay |
 
-See the [official RuStore Godot Pay documentation](https://www.rustore.ru/help/sdk/godot-pay)
-for the exact manifest entries and intent filter activity required.
+**`rustore_values.xml`** defines three required string resources:
+```xml
+<resources>
+    <string name="rustore_PayClientSettings_consoleApplicationId" translatable="false">2063726878</string>
+    <string name="rustore_PayClientSettings_internalConfigKey" translatable="false">godot</string>
+    <string name="rustore_PayClientSettings_deeplinkScheme" translatable="false">shinobiclickeridle</string>
+</resources>
+```
+
+**`AndroidManifest.xml`** contains the three RuStore Pay `<meta-data>` entries and
+the `RuStoreIntentFilterActivity` declaration inside `<application>`.
+
+**`RuStoreIntentFilterActivity`** is a transparent trampoline: it catches the
+`shinobiclickeridle://` deeplink from RuStore Pay, forwards the intent to `GodotApp`
+with `FLAG_ACTIVITY_SINGLE_TOP`, and finishes immediately. `GodotActivity.onNewIntent`
+picks up the intent and the RuStore Pay SDK processes the payment result.
+
+**Still ignored** (secrets / generated outputs):
+- `android/build/local.properties`, `android/local.properties` — signing secrets
+- `android/build/build/`, `android/.gradle/`, `android/build/.gradle/` — Gradle cache/output
+- `*.jks`, `*.keystore`, `*.p12`, `*.apk`, `*.aab` — signing keys and build artifacts
 
 ---
 

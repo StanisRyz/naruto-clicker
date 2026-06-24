@@ -1,6 +1,20 @@
 # Godot 4+ specific ignores
 .godot/
-/android/
+
+# Android build — generated/cache/secret files (template source is tracked)
+android/.gradle/
+android/build/.gradle/
+android/build/build/
+android/build/outputs/
+android/build/generated/
+android/build/intermediates/
+android/build/tmp/
+android/build/kotlin/
+android/build/local.properties
+android/local.properties
+# Godot-exported game assets and pre-compiled engine AARs (generated/binary)
+android/build/assets/
+android/build/libs/
 
 # Android signing / local release secrets
 *.jks

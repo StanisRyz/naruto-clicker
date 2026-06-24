@@ -27,6 +27,8 @@ It validates automatically:
 | `AndroidYandexAds` release AAR built | file existence check |
 | `export_presets.cfg` release identity (package, SDK, version) | text search |
 | `.gitignore` release safety patterns present | text search |
+| `android/build/AndroidManifest.xml`, `rustore_values.xml`, `RuStoreIntentFilterActivity.java` present | file existence check |
+| RuStore Pay meta-data and activity in `AndroidManifest.xml` | text search |
 
 Requirements: Python 3.9+, Android SDK Build Tools on `PATH` (`aapt`/`aapt2`, `apksigner`).
 If SDK tools are missing, those checks are skipped with a `SKIP:` message rather than failing.
