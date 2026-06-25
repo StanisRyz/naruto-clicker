@@ -47,7 +47,7 @@ RuStore. Work through each item before uploading the first APK.
 | Plugin source committed | ✅ `addons/android_yandex_ads/` |
 | Plugin enabled in project.godot | ✅ |
 | SDK version | `com.yandex.android:mobileads:8.1.0` |
-| Plugin AAR built | ⚠️ **Must build before export** — see `docs/android_ads_build.md` |
+| Plugin AAR built | ⚠️ **Must rebuild** — plugin uses SDK 8 callback API: `loadAd(request, listener)` (non-suspend), `YandexAds.initialize`, `AdError` for show failures; rebuild with `.\gradlew.bat assembleRelease` — see `docs/android_ads_build.md` |
 | Ad unit ids configured | ✅ Real Yandex ad unit ids set in `AdPlacementConfig.gd`: `rewarded_shop_gems` (R-M-19501283-1), `rewarded_bonus_banner` (R-M-19501283-2), `rewarded_offline_gold_x3` (R-M-19501283-3), `fullscreen_auto_interstitial` (R-M-19501283-4) |
 | Rewarded ads tested on device | ⚠️ Pending — real-device ad display testing required |
 | Interstitial ads tested on device | ⚠️ Pending — real-device ad display testing required |

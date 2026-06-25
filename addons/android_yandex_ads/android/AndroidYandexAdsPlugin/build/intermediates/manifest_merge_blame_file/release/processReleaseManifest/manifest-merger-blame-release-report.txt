@@ -1,0 +1,24 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.shinobi.yandexads" >
+4
+5    <uses-sdk android:minSdkVersion="24" />
+6
+7    <!--
+8        Registers the plugin with Godot 4 Android Plugin v2 system.
+9        Godot reads the meta-data key "org.godotengine.plugin.v2.<PluginName>"
+10        at runtime to instantiate the plugin class and expose it as a singleton.
+11        After this manifest merges into the main app, GDScript can access the plugin via:
+12            Engine.get_singleton("AndroidYandexAds")
+13    -->
+14    <application>
+14-->D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\src\main\AndroidManifest.xml:11:5-15:19
+15        <meta-data
+15-->D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\src\main\AndroidManifest.xml:12:9-14:76
+16            android:name="org.godotengine.plugin.v2.AndroidYandexAds"
+16-->D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\src\main\AndroidManifest.xml:13:13-70
+17            android:value="com.shinobi.yandexads.AndroidYandexAdsPlugin" />
+17-->D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\src\main\AndroidManifest.xml:14:13-73
+18    </application>
+19
+20</manifest>

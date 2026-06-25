@@ -2,10 +2,11 @@ package com.shinobi.yandexads
 
 import android.app.Activity
 import android.util.Log
-import com.yandex.mobile.ads.common.AdRequestConfiguration
+import com.yandex.mobile.ads.common.AdError
+import com.yandex.mobile.ads.common.AdRequest
 import com.yandex.mobile.ads.common.AdRequestError
 import com.yandex.mobile.ads.common.ImpressionData
-import com.yandex.mobile.ads.common.MobileAds
+import com.yandex.mobile.ads.common.YandexAds
 import com.yandex.mobile.ads.interstitial.InterstitialAd
 import com.yandex.mobile.ads.interstitial.InterstitialAdEventListener
 import com.yandex.mobile.ads.interstitial.InterstitialAdLoadListener
@@ -86,7 +87,7 @@ class AndroidYandexAdsPlugin(godot: Godot) : GodotPlugin(godot) {
         }
         activity.runOnUiThread {
             Log.d(TAG, "Yandex Mobile Ads SDK initialization started")
-            MobileAds.initialize(activity) {
+            YandexAds.initialize(activity) {
                 sdkInitialized = true
                 Log.d(TAG, "Yandex Mobile Ads SDK initialized successfully")
             }
@@ -121,8 +122,9 @@ class AndroidYandexAdsPlugin(godot: Godot) : GodotPlugin(godot) {
         activity.runOnUiThread {
             Log.d(TAG, "Loading rewarded ad: $adUnitId")
             val loader = RewardedAdLoader(activity).also { rewardedAdLoader = it }
+            val adRequest = AdRequest.Builder(adUnitId).build()
 
-            loader.setAdLoadListener(object : RewardedAdLoadListener {
+            loader.loadAd(adRequest, object : RewardedAdLoadListener {
                 override fun onAdLoaded(ad: RewardedAd) {
                     rewardedAd = ad
                     ad.setAdEventListener(object : RewardedAdEventListener {
@@ -131,10 +133,10 @@ class AndroidYandexAdsPlugin(godot: Godot) : GodotPlugin(godot) {
                             emitSignal("rewarded_ad_opened")
                         }
 
-                        override fun onAdFailedToShow(error: AdRequestError) {
-                            Log.e(TAG, "Rewarded ad failed to show: ${error.description}")
+                        override fun onAdFailedToShow(adError: AdError) {
+                            Log.e(TAG, "Rewarded ad failed to show: ${adError.description}")
                             rewardedAd = null
-                            emitSignal("rewarded_ad_error", "Failed to show: ${error.description}")
+                            emitSignal("rewarded_ad_error", "Failed to show: ${adError.description}")
                         }
 
                         override fun onAdDismissed() {
@@ -164,8 +166,6 @@ class AndroidYandexAdsPlugin(godot: Godot) : GodotPlugin(godot) {
                     emitSignal("rewarded_ad_error", "Failed to load: ${error.description}")
                 }
             })
-
-            loader.loadAd(AdRequestConfiguration.Builder(adUnitId).build())
         }
     }
 
@@ -187,8 +187,9 @@ class AndroidYandexAdsPlugin(godot: Godot) : GodotPlugin(godot) {
         activity.runOnUiThread {
             Log.d(TAG, "Loading interstitial ad: $adUnitId")
             val loader = InterstitialAdLoader(activity).also { interstitialAdLoader = it }
+            val adRequest = AdRequest.Builder(adUnitId).build()
 
-            loader.setAdLoadListener(object : InterstitialAdLoadListener {
+            loader.loadAd(adRequest, object : InterstitialAdLoadListener {
                 override fun onAdLoaded(ad: InterstitialAd) {
                     interstitialAd = ad
                     ad.setAdEventListener(object : InterstitialAdEventListener {
@@ -197,10 +198,10 @@ class AndroidYandexAdsPlugin(godot: Godot) : GodotPlugin(godot) {
                             emitSignal("fullscreen_ad_opened")
                         }
 
-                        override fun onAdFailedToShow(error: AdRequestError) {
-                            Log.e(TAG, "Interstitial ad failed to show: ${error.description}")
+                        override fun onAdFailedToShow(adError: AdError) {
+                            Log.e(TAG, "Interstitial ad failed to show: ${adError.description}")
                             interstitialAd = null
-                            emitSignal("fullscreen_ad_error", "Failed to show: ${error.description}")
+                            emitSignal("fullscreen_ad_error", "Failed to show: ${adError.description}")
                         }
 
                         override fun onAdDismissed() {
@@ -223,8 +224,6 @@ class AndroidYandexAdsPlugin(godot: Godot) : GodotPlugin(godot) {
                     emitSignal("fullscreen_ad_error", "Failed to load: ${error.description}")
                 }
             })
-
-            loader.loadAd(AdRequestConfiguration.Builder(adUnitId).build())
         }
     }
 }

@@ -47,6 +47,11 @@ main Gradle build automatically by `AndroidYandexAdsExportPlugin.gd`
 (`_get_android_dependencies` + `_get_android_maven_repos`) during every Android
 export that has the plugin enabled.
 
+No additional coroutine library is required. `AndroidYandexAdsPlugin.kt` uses
+the SDK's two-argument callback overload `loadAd(AdRequest, LoadListener)` which
+is a plain non-suspend function. The suspend overload `loadAd(AdRequest)` exists
+in the same SDK but is not used.
+
 ---
 
 ## Required SDK values
@@ -194,6 +199,19 @@ func _on_rewarded_ad_rewarded() -> void:
 | Plugin not loaded (`AndroidYandexAds` singleton absent) | `rewarded_ad_error` / `fullscreen_ad_error` emitted; no crash |
 | Placement id unknown | error emitted; ad-in-progress flag never set |
 | Ad unit id empty in `AdPlacementConfig` | error emitted; ad-in-progress flag never set |
-| Kotlin ad load failure | `rewarded_ad_error` / `fullscreen_ad_error` emitted; flag cleared |
-| Kotlin ad show failure | same as load failure; flag cleared via error callback |
-| Network unavailable | Yandex SDK calls load listener `onAdFailedToLoad`; plugin emits error |
+| Kotlin ad load failure (`onAdFailedToLoad`) | `rewarded_ad_error` / `fullscreen_ad_error` emitted; flag cleared |
+| Kotlin ad show failure (`onAdFailedToShow(AdError)`) | same as load failure; flag cleared via error callback |
+| Network unavailable | Yandex SDK calls `onAdFailedToLoad`; plugin emits error |
+
+## SDK 8 API notes
+
+`AndroidYandexAdsPlugin.kt` uses the following SDK 8 classes:
+
+| Purpose | Class |
+|---|---|
+| Initialization | `YandexAds.initialize(context)` |
+| Ad request | `AdRequest.Builder(adUnitId).build()` |
+| Rewarded loading | `RewardedAdLoader(context).loadAd(request, RewardedAdLoadListener)` |
+| Interstitial loading | `InterstitialAdLoader(context).loadAd(request, InterstitialAdLoadListener)` |
+| Show failure type | `AdError` (in `RewardedAdEventListener` / `InterstitialAdEventListener`) |
+| Load failure type | `AdRequestError` (in load listeners) |

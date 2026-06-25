@@ -1,0 +1,7 @@
+com.shinobi.yandexads-pngs-0 D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\build\generated\res\pngs\release
+com.shinobi.yandexads-resValues-1 D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\build\generated\res\resValues\release
+com.shinobi.yandexads-mergeReleaseResources-2 D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\build\intermediates\incremental\release\mergeReleaseResources\merged.dir
+com.shinobi.yandexads-mergeReleaseResources-3 D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\build\intermediates\incremental\release\mergeReleaseResources\stripped.dir
+com.shinobi.yandexads-release-4 D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\build\intermediates\merged_res\release\mergeReleaseResources
+com.shinobi.yandexads-main-5 D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\src\main\res
+com.shinobi.yandexads-release-6 D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\src\release\res

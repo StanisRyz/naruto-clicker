@@ -1,0 +1,24 @@
+-- Merging decision tree log ---
+manifest
+ADDED from D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\src\main\AndroidManifest.xml:2:1-17:12
+INJECTED from D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\src\main\AndroidManifest.xml:2:1-17:12
+	package
+		INJECTED from D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\src\main\AndroidManifest.xml
+	xmlns:android
+		ADDED from D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\src\main\AndroidManifest.xml:2:11-69
+application
+ADDED from D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\src\main\AndroidManifest.xml:11:5-15:19
+meta-data#org.godotengine.plugin.v2.AndroidYandexAds
+ADDED from D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\src\main\AndroidManifest.xml:12:9-14:76
+	android:value
+		ADDED from D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\src\main\AndroidManifest.xml:14:13-73
+	android:name
+		ADDED from D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\src\main\AndroidManifest.xml:13:13-70
+uses-sdk
+INJECTED from D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\src\main\AndroidManifest.xml
+INJECTED from D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\src\main\AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from D:\Godot_apps\naruto-clicker\addons\android_yandex_ads\android\AndroidYandexAdsPlugin\src\main\AndroidManifest.xml
