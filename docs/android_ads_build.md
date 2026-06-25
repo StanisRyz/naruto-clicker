@@ -56,7 +56,7 @@ export that has the plugin enabled.
 | min SDK | 24 (set in `export_presets.cfg` and `android/build/config.gradle`) |
 | compile SDK | 35 |
 | target SDK | 35 |
-| Android Gradle Plugin | 8.6.1 (used by Godot 4.5.1 template) |
+| Android Gradle Plugin | 8.7.0 (minimum required by Yandex Mobile Ads SDK 8) |
 | Kotlin | 2.1.20 |
 | Java | 17 |
 | Gradle | 8.11.1 |
