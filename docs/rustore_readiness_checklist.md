@@ -48,9 +48,9 @@ RuStore. Work through each item before uploading the first APK.
 | Plugin enabled in project.godot | ✅ |
 | SDK version | `com.yandex.android:mobileads:8.1.0` |
 | Plugin AAR built | ⚠️ **Must build before export** — see `docs/android_ads_build.md` |
-| Ad unit ids configured | ⚠️ **Pending** — `android_ad_unit_id` fields in `AdPlacementConfig.gd` are empty; fill in from Yandex Mobile Ads dashboard after app registration |
-| Rewarded ads tested on device | ⚠️ Pending — requires real ad unit ids |
-| Interstitial ads tested on device | ⚠️ Pending — requires real ad unit ids |
+| Ad unit ids configured | ✅ Real Yandex ad unit ids set in `AdPlacementConfig.gd`: `rewarded_shop_gems` (R-M-19501283-1), `rewarded_bonus_banner` (R-M-19501283-2), `rewarded_offline_gold_x3` (R-M-19501283-3), `fullscreen_auto_interstitial` (R-M-19501283-4) |
+| Rewarded ads tested on device | ⚠️ Pending — real-device ad display testing required |
+| Interstitial ads tested on device | ⚠️ Pending — real-device ad display testing required |
 | Reward granted only in GDScript | ✅ `ClickerScreen._on_rewarded_ad_rewarded()` |
 | No reward on close without reward callback | ✅ Enforced by `_rewarded_ad_reward_granted_for_current_request` flag |
 
@@ -130,7 +130,7 @@ committed and require no local setup. See `docs/rustore_pay_integration.md` for 
 
 1. **Configure release keystore locally** and verify the APK is signed (see `docs/android_release_signing.md`).
 2. **Build the AndroidYandexAds plugin AAR** (`./gradlew assembleRelease` from `addons/android_yandex_ads/android/AndroidYandexAdsPlugin/`).
-3. **Register the app in Yandex Mobile Ads dashboard** and fill in `android_ad_unit_id` values in `AdPlacementConfig.gd`.
+3. ✅ **Android ad unit ids configured** — all 4 placements have real Yandex Mobile Ads ids in `AdPlacementConfig.gd`.
 4. **Test rewarded and interstitial ads on a real Android device**.
 5. **Update `rustore_product_id` values** in `GemPurchaseConfig.gd` to match RuStore developer console.
 6. **Test all 4 gem purchase flows** via `RuStoreGodotPayClient` on a real Android device.

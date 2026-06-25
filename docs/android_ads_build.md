@@ -135,17 +135,15 @@ Ad unit ids are configured in:
 scripts/game/config/AdPlacementConfig.gd
 ```
 
-Each logical placement has an `android_ad_unit_id` field. Leave the field
-empty until you have created the placement in the Yandex Mobile Ads dashboard
-and registered the app. With empty ids, `AndroidRuStorePlatform` emits
-`rewarded_ad_error` or `fullscreen_ad_error` cleanly — no crash, no stuck state.
+Each logical placement has an `android_ad_unit_id` field. Real Yandex Mobile
+Ads unit ids are configured in `AdPlacementConfig.gd`.
 
-| Placement id | Type | Current id |
+| Placement id | Type | Ad unit id |
 |---|---|---|
-| `rewarded_shop_gems` | rewarded | (empty — fill in) |
-| `rewarded_bonus_banner` | rewarded | (empty — fill in) |
-| `rewarded_offline_gold_x3` | rewarded | (empty — fill in) |
-| `fullscreen_auto_interstitial` | fullscreen | (empty — fill in) |
+| `rewarded_shop_gems` | rewarded | `R-M-19501283-1` |
+| `rewarded_bonus_banner` | rewarded | `R-M-19501283-2` |
+| `rewarded_offline_gold_x3` | rewarded | `R-M-19501283-3` |
+| `fullscreen_auto_interstitial` | fullscreen | `R-M-19501283-4` |
 
 ---
 

@@ -13,7 +13,7 @@ requested.
 - Engine: Godot 4.5.1
 - Language: GDScript
 - Export targets: Web / HTML5 (primary), Android (in progress)
-- Platform SDK: Yandex Games (Web), RuStore Pay / Ads (Android — placeholder)
+- Platform SDK: Yandex Games (Web), RuStore Pay / Yandex Mobile Ads (Android)
 - Layout: vertical mobile portrait
 
 ## Platform architecture
@@ -25,7 +25,7 @@ All platform-specific calls go through the `Platform` autoload
 | Export | Active implementation |
 |---|---|
 | Web (`OS.has_feature("web")`) | `WebYandexPlatform` — delegates to `YandexBridge` |
-| Android (`OS.has_feature("android")`) | `AndroidRuStorePlatform` — safe placeholder (no real SDK yet) |
+| Android (`OS.has_feature("android")`) | `AndroidRuStorePlatform` — Yandex Mobile Ads + RuStore Pay |
 | Editor / other | `LocalDebugPlatform` — simulates flows in debug builds only |
 
 `Platform` selects the correct implementation at startup, creates it as a
@@ -53,8 +53,8 @@ Pay SDK for payments.
 - All rewards are granted only by the GDScript `rewarded_ad_rewarded` signal
   handler in `ClickerScreen`; the Kotlin plugin never modifies game state.
 - Ad unit ids are configured in `scripts/game/config/AdPlacementConfig.gd`
-  (`android_ad_unit_id` per placement). Leave them empty until your Yandex Mobile
-  Ads dashboard placements are created.
+  (`android_ad_unit_id` per placement). All 4 placements have real Yandex Mobile
+  Ads unit ids; real-device testing is required before release.
 
 **Payments** — official RuStore Pay SDK via `RuStoreGodotPayClient` (`addons/RuStoreGodotPay/`):
 - `AndroidRuStorePlatform` uses `RuStoreGodotPayClient.get_instance()` with guards for

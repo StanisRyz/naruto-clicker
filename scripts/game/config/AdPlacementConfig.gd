@@ -1,29 +1,26 @@
 class_name AdPlacementConfig
 extends RefCounted
 
-# Logical ad placements. android_ad_unit_id is a placeholder — fill in the
-# real unit ids from the Yandex Mobile Ads dashboard before enabling Android ads.
 const AD_PLACEMENTS: Array[Dictionary] = [
 	{
 		"id": "rewarded_shop_gems",
 		"type": "rewarded",
-		# Fill in the Yandex ad unit id from the Yandex Mobile Ads dashboard.
-		"android_ad_unit_id": "",
+		"android_ad_unit_id": "R-M-19501283-1",
 	},
 	{
 		"id": "rewarded_bonus_banner",
 		"type": "rewarded",
-		"android_ad_unit_id": "",
+		"android_ad_unit_id": "R-M-19501283-2",
 	},
 	{
 		"id": "rewarded_offline_gold_x3",
 		"type": "rewarded",
-		"android_ad_unit_id": "",
+		"android_ad_unit_id": "R-M-19501283-3",
 	},
 	{
 		"id": "fullscreen_auto_interstitial",
 		"type": "fullscreen",
-		"android_ad_unit_id": "",
+		"android_ad_unit_id": "R-M-19501283-4",
 	},
 ]
 

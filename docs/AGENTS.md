@@ -121,3 +121,12 @@ Exit 0 = pass. Exit 1 = fix required before exporting.
 6. Export — the export hook regenerates again immediately before packaging.
 
 See `docs/LOCALIZATION.md` for key naming conventions, the full API, and the Android troubleshooting checklist.
+
+---
+
+## Android ad unit ids — rules
+
+- **Ad unit ids live only in `scripts/game/config/AdPlacementConfig.gd`** (`android_ad_unit_id` field per placement). Do not hardcode ids anywhere else.
+- **Do not grant rewards in Kotlin/Java plugin code.** The `AndroidYandexAdsPlugin` emits `rewarded_ad_rewarded`; the reward is applied exclusively in `ClickerScreen._on_rewarded_ad_rewarded()`.
+- **Do not add new ad formats** (e.g. banner, app-open) without an explicit request. Only `rewarded` and `fullscreen` types exist.
+- **Do not change reward logic when updating ad unit ids.** Updating `android_ad_unit_id` values must never touch reward amounts, reward types, or reward handler code.
