@@ -49,6 +49,10 @@ func _ready() -> void:
 		_pay_client.on_purchase_success.connect(_on_rustore_purchase_success)
 		_pay_client.on_purchase_failure.connect(_on_rustore_purchase_failure)
 		_pay_client.on_purchase_cancelled.connect(_on_rustore_purchase_cancelled)
+		_pay_client.on_payment_completed.connect(_on_rustore_payment_completed)
+		_pay_client.on_payment_failed.connect(_on_rustore_payment_failed)
+		_pay_client.on_payment_started.connect(_on_rustore_payment_started)
+		_pay_client.on_purchase_created.connect(_on_rustore_purchase_created)
 		_pay_client.on_get_purchases_success.connect(_on_rustore_get_purchases_success)
 		_pay_client.on_get_purchases_failure.connect(_on_rustore_get_purchases_failure)
 
@@ -229,18 +233,27 @@ func purchase_product(platform_product_id: String, local_product_id: String = ""
 		params,
 		ERuStorePayPreferredPurchaseType.Item.ONE_STEP,
 		ERuStorePaySdkTheme.Item.DARK,
-		false
+		true
 	)
 
 
-func _on_rustore_purchase_success(result: RuStorePayProductPurchaseResult) -> void:
+# Atomically clears payment state and returns the pending local product id.
+# Returns "" if no payment was in progress — all terminal handlers use this
+# as the dedup guard to prevent double-handling the same purchase event.
+func _consume_pending_payment_local_id() -> String:
 	if not _payment_in_progress:
-		return
+		return ""
 	var local_id: String = _pending_local_product_id
 	_payment_in_progress = false
 	_pending_local_product_id = ""
 	_pending_platform_product_id = ""
+	return local_id
 
+
+func _on_rustore_purchase_success(result: RuStorePayProductPurchaseResult) -> void:
+	var local_id: String = _consume_pending_payment_local_id()
+	if local_id == "":
+		return
 	var purchase_id: String = _extract_purchase_id_from_result(result)
 	if purchase_id == "":
 		payment_purchase_error.emit(local_id, "Purchase result has no valid purchase id")
@@ -263,10 +276,9 @@ func _extract_purchase_id_from_result(result: RuStorePayProductPurchaseResult) -
 
 
 func _on_rustore_purchase_failure(product_id: RuStorePayProductId, error: RuStorePaymentException) -> void:
-	var local_id: String = _pending_local_product_id
-	_payment_in_progress = false
-	_pending_local_product_id = ""
-	_pending_platform_product_id = ""
+	var local_id: String = _consume_pending_payment_local_id()
+	if local_id == "":
+		return
 	var message: String = _exception_message(error)
 	if message == "":
 		message = "Purchase failed"
@@ -276,13 +288,44 @@ func _on_rustore_purchase_failure(product_id: RuStorePayProductId, error: RuStor
 # on_purchase_cancelled emits (productId, purchaseId, invoiceId) — all ignored here.
 # We only need _pending_local_product_id which is already stored.
 func _on_rustore_purchase_cancelled(_product_id: Variant, _purchase_id: Variant, _invoice_id: Variant) -> void:
-	if not _payment_in_progress:
+	var local_id: String = _consume_pending_payment_local_id()
+	if local_id == "":
 		return
-	var local_id: String = _pending_local_product_id
-	_payment_in_progress = false
-	_pending_local_product_id = ""
-	_pending_platform_product_id = ""
 	payment_purchase_cancelled.emit(local_id)
+
+
+# Terminal failure event from the payment event listener.
+# Fires when the RuStore Pay UI reports an error (e.g. "Payment does not work").
+func _on_rustore_payment_failed(_product_id: Variant, _purchase_id: Variant, _invoice_id: Variant) -> void:
+	var local_id: String = _consume_pending_payment_local_id()
+	if local_id == "":
+		return
+	payment_purchase_error.emit(local_id, "Payment failed")
+
+
+# Terminal success fallback event from the payment event listener.
+# May fire instead of or before on_purchase_success. Dedup via _payment_in_progress.
+func _on_rustore_payment_completed(_product_id: Variant, purchase_id: Variant, invoice_id: Variant) -> void:
+	var local_id: String = _consume_pending_payment_local_id()
+	if local_id == "":
+		return
+	var pid: String = str(purchase_id)
+	if pid == "":
+		pid = str(invoice_id)
+	if pid == "":
+		payment_purchase_error.emit(local_id, "Payment completed but no purchase id available")
+		return
+	payment_purchase_success.emit(local_id, pid)
+
+
+func _on_rustore_payment_started(_product_id: Variant, _purchase_id: Variant, _invoice_id: Variant) -> void:
+	if OS.is_debug_build():
+		print("AndroidRuStorePlatform: payment_started product=%s" % str(_product_id))
+
+
+func _on_rustore_purchase_created(_product_id: Variant, _purchase_id: Variant, _invoice_id: Variant) -> void:
+	if OS.is_debug_build():
+		print("AndroidRuStorePlatform: purchase_created product=%s" % str(_product_id))
 
 
 func _exception_message(error: RuStorePaymentException) -> String:

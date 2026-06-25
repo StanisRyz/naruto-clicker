@@ -68,8 +68,12 @@ RuStore. Work through each item before uploading the first APK.
 | SDK availability guards | ✅ checks `OS.has_feature("android")`, `Engine.has_singleton("RuStoreGodotPay")`, `Engine.has_singleton("RuStoreGodotCore")` |
 | Purchase type | ONE_STEP (auto-confirmed consumable) — `confirm_two_step_purchase` is not used |
 | `consume_purchase()` behavior | No-op by design — ONE_STEP is auto-confirmed by SDK; no explicit consume call is made after reward grant |
+| `enable_purchase_event_listener` | ✅ `true` — required for `on_payment_failed` / `on_payment_completed` / `on_purchase_cancelled` event callbacks |
+| Terminal callback hardening | ✅ All 5 terminal signals handled: `on_purchase_success`, `on_purchase_failure`, `on_purchase_cancelled`, `on_payment_completed`, `on_payment_failed` |
+| Stuck payment UI bug | ✅ Fixed — `on_payment_failed` + `on_purchase_cancelled` clear `_payment_in_progress` and re-enable dialog buy button |
+| Duplicate terminal event dedup | ✅ `_consume_pending_payment_local_id()` — returns `""` if already cleared; all terminal handlers check this |
 | Empty product id guard | ✅ `purchase_product()` rejects empty `platform_product_id` before setting in-progress flag |
-| Empty purchase id guard | ✅ `on_purchase_success` result with all-empty ids is treated as error — no reward granted |
+| Empty purchase id guard | ✅ `on_purchase_success` and `on_payment_completed` with all-empty ids treated as error — no reward granted |
 | Purchase id extraction | ✅ preferred order: `purchaseId` → `orderId` → `invoiceId` |
 | Duplicate purchase protection | ✅ `ClickerState.processed_purchase_ids` — persisted, capped at 100, never cleared by prestige/reset |
 | Unprocessed purchase recovery | ✅ `get_purchases(CONSUMABLE_PRODUCT, CONFIRMED)` on startup |

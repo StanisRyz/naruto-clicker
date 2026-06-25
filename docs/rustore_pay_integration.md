@@ -140,7 +140,7 @@ _pay_client.purchase(
     params,
     ERuStorePayPreferredPurchaseType.Item.ONE_STEP,
     ERuStorePaySdkTheme.Item.DARK,
-    false  # enable_purchase_event_listener
+    true  # enable_purchase_event_listener — required for on_payment_failed / on_payment_completed
 )
 ```
 
@@ -148,6 +148,12 @@ Purchase type `ONE_STEP` is used for consumable products. The SDK automatically
 confirms the purchase; no explicit consume/confirm call is needed afterward.
 `RuStorePayProductPurchaseParams._init()` requires `productId` as its first
 positional argument — property assignment after `new()` is incorrect.
+
+`enable_purchase_event_listener = true` enables the payment event listener callbacks:
+`on_payment_started`, `on_purchase_created`, `on_payment_completed`, `on_payment_failed`,
+and `on_purchase_cancelled`. Without this flag those signals are not emitted, which
+leaves the `_payment_in_progress` flag stuck when the RuStore UI shows a generic
+error such as "Payment does not work. Try again later."
 
 ---
 
@@ -217,18 +223,44 @@ startup flow continues without crashing.
 
 ## Signals connected in AndroidRuStorePlatform
 
-| SDK signal | Handler |
-|---|---|
-| `on_purchase_success(result)` | `_on_rustore_purchase_success` |
-| `on_purchase_failure(product_id, error)` | `_on_rustore_purchase_failure` |
-| `on_purchase_cancelled(product_id, purchase_id, invoice_id)` | `_on_rustore_purchase_cancelled` |
-| `on_get_purchases_success(purchases)` | `_on_rustore_get_purchases_success` |
-| `on_get_purchases_failure(error)` | `_on_rustore_get_purchases_failure` |
+| SDK signal | Handler | Notes |
+|---|---|---|
+| `on_purchase_success(result)` | `_on_rustore_purchase_success` | Primary ONE_STEP success path |
+| `on_purchase_failure(product_id, error)` | `_on_rustore_purchase_failure` | SDK-level error |
+| `on_purchase_cancelled(product_id, purchase_id, invoice_id)` | `_on_rustore_purchase_cancelled` | User cancelled in RuStore UI |
+| `on_payment_completed(product_id, purchase_id, invoice_id)` | `_on_rustore_payment_completed` | Success fallback from event listener |
+| `on_payment_failed(product_id, purchase_id, invoice_id)` | `_on_rustore_payment_failed` | Terminal error from event listener (e.g. "Payment does not work") |
+| `on_payment_started(product_id, purchase_id, invoice_id)` | `_on_rustore_payment_started` | Log-only; does not clear state |
+| `on_purchase_created(product_id, purchase_id, invoice_id)` | `_on_rustore_purchase_created` | Log-only; does not clear state |
+| `on_get_purchases_success(purchases)` | `_on_rustore_get_purchases_success` | Startup recovery check |
+| `on_get_purchases_failure(error)` | `_on_rustore_get_purchases_failure` | Startup recovery check error |
+
+All terminal handlers (`on_purchase_success`, `on_purchase_failure`,
+`on_purchase_cancelled`, `on_payment_completed`, `on_payment_failed`) use the
+shared `_consume_pending_payment_local_id()` helper as a dedup gate: it returns
+`""` if `_payment_in_progress` is already false, so duplicate events are ignored
+regardless of which signal fires first.
 
 Old custom signals (`purchase_success`, `purchase_cancelled`, `purchase_error`,
 `pending_purchase_found`, `pending_purchases_check_completed`,
 `pending_purchases_check_error`) belonged to the deprecated `AndroidRuStorePay`
 adapter and are no longer used.
+
+---
+
+## Terminal event behavior
+
+| Event | Reward granted | Game pause cleared | `_payment_in_progress` cleared |
+|---|---|---|---|
+| `on_purchase_success` with non-empty id | ✅ Yes | ✅ Yes | ✅ Yes |
+| `on_purchase_success` with empty id | ❌ No (error emitted) | ✅ Yes | ✅ Yes |
+| `on_purchase_failure` | ❌ No | ✅ Yes | ✅ Yes |
+| `on_purchase_cancelled` | ❌ No | ✅ Yes | ✅ Yes |
+| `on_payment_failed` | ❌ No | ✅ Yes | ✅ Yes |
+| `on_payment_completed` with non-empty id | ✅ Yes | ✅ Yes | ✅ Yes |
+| `on_payment_completed` with empty id | ❌ No (error emitted) | ✅ Yes | ✅ Yes |
+| `on_payment_started` | ❌ No | ❌ No (intentional) | ❌ No (intentional) |
+| `on_purchase_created` | ❌ No | ❌ No (intentional) | ❌ No (intentional) |
 
 ---
 
@@ -238,7 +270,8 @@ adapter and are no longer used.
 - [ ] Purchase gems_150 — reward granted, re-purchase allowed after successful ONE_STEP purchase flow
 - [ ] Purchase gems_500 — reward granted, re-purchase allowed after successful ONE_STEP purchase flow
 - [ ] Purchase gems_1500 — reward granted, re-purchase allowed after successful ONE_STEP purchase flow
-- [ ] Cancel purchase mid-flow — no reward, no stuck `_payment_in_progress` flag
+- [ ] Cancel purchase mid-flow — no reward, dialog buy button re-enabled, gameplay unpaused
+- [ ] RuStore shows "Payment does not work" — no reward, dialog buy button re-enabled, gameplay unpaused
 - [ ] Purchase while payment in progress — second attempt rejected with error signal
 - [ ] Crash after payment, before reward grant — recovery grants reward on next launch
 - [ ] Duplicate purchase id — second grant blocked by `state.is_purchase_processed()`
