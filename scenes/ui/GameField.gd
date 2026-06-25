@@ -30,6 +30,12 @@ const DAMAGE_NUMBER_RISE_DISTANCE: float = 44.0
 const DAMAGE_NUMBER_RANDOM_X: float = 14.0
 const MAX_FLOATING_DAMAGE_LABELS: int = 20
 
+const TOUCH_MOUSE_DEDUP_WINDOW_SEC: float = 0.30
+const TOUCH_MOUSE_DEDUP_MAX_DISTANCE_PX: float = 36.0
+
+var _last_touch_time: float = -999.0
+var _last_touch_position: Vector2 = Vector2.ZERO
+
 @onready var background_image_holder = $BackgroundImageHolder  # ImageSlot (ColorRect subclass)
 @onready var enemy_image_holder = $EnemyImageHolder  # ImageSlot (ColorRect subclass)
 @onready var defeat_feedback_label: Label = $FeedbackLayer/DefeatFeedbackLabel
@@ -37,16 +43,24 @@ const MAX_FLOATING_DAMAGE_LABELS: int = 20
 
 
 func _gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton:
-		var mouse_event: InputEventMouseButton = event as InputEventMouseButton
-		if mouse_event.button_index == MOUSE_BUTTON_LEFT and mouse_event.pressed:
-			accept_event()
-			attack_requested.emit(mouse_event.global_position)
-	elif event is InputEventScreenTouch:
+	if event is InputEventScreenTouch:
 		var touch_event: InputEventScreenTouch = event as InputEventScreenTouch
 		if touch_event.pressed:
+			_last_touch_time = Time.get_ticks_msec() / 1000.0
+			_last_touch_position = touch_event.position
 			accept_event()
 			attack_requested.emit(touch_event.position)
+	elif event is InputEventMouseButton:
+		var mouse_event: InputEventMouseButton = event as InputEventMouseButton
+		if mouse_event.button_index == MOUSE_BUTTON_LEFT and mouse_event.pressed:
+			var now: float = Time.get_ticks_msec() / 1000.0
+			var dt: float = now - _last_touch_time
+			var dist: float = mouse_event.global_position.distance_to(_last_touch_position)
+			if dt < TOUCH_MOUSE_DEDUP_WINDOW_SEC and dist < TOUCH_MOUSE_DEDUP_MAX_DISTANCE_PX:
+				accept_event()
+				return
+			accept_event()
+			attack_requested.emit(mouse_event.global_position)
 
 
 func update_view(state: ClickerState) -> void:

@@ -1,6 +1,6 @@
 extends Node
 
-const _SFX_POOL_SIZE: int = 6
+const _SFX_POOL_SIZE: int = 16
 const GOLD_RECEIVED_SOUND_MIN_INTERVAL_SEC: float = 0.15
 
 signal page_visibility_changed(visible: bool)
@@ -367,9 +367,7 @@ func _play_sfx(stream: AudioStream) -> void:
 			player.stream = stream
 			player.play()
 			return
-	_sfx_players[0].stop()
-	_sfx_players[0].stream = stream
-	_sfx_players[0].play()
+	# All slots busy — skip rather than interrupt a playing SFX.
 
 
 func _on_music_finished() -> void:
