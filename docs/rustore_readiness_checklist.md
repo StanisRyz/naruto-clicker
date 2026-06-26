@@ -69,6 +69,7 @@ RuStore. Work through each item before uploading the first APK.
 | Purchase type | ONE_STEP (auto-confirmed consumable) — `confirm_two_step_purchase` is not used |
 | `consume_purchase()` behavior | No-op by design — ONE_STEP is auto-confirmed by SDK; no explicit consume call is made after reward grant |
 | `enable_purchase_event_listener` | ✅ `true` — required for `on_payment_failed` / `on_payment_completed` / `on_purchase_cancelled` event callbacks |
+| Purchase availability preflight | ✅ `get_purchase_availability()` called before `purchase()` — if unavailable or check fails, `payment_purchase_error` is emitted and `purchase()` is never called; avoids official SDK crash on sideload/test devices |
 | Terminal callback hardening | ✅ All 5 terminal signals handled: `on_purchase_success`, `on_purchase_failure`, `on_purchase_cancelled`, `on_payment_completed`, `on_payment_failed` |
 | Stuck payment UI bug | ✅ Fixed — `on_payment_failed` + `on_purchase_cancelled` clear `_payment_in_progress` and re-enable dialog buy button |
 | Duplicate terminal event dedup | ✅ `_consume_pending_payment_local_id()` — returns `""` if already cleared; all terminal handlers check this |
@@ -77,6 +78,7 @@ RuStore. Work through each item before uploading the first APK.
 | Purchase id extraction | ✅ preferred order: `purchaseId` → `orderId` → `invoiceId` |
 | Duplicate purchase protection | ✅ `ClickerState.processed_purchase_ids` — persisted, capped at 100, never cleared by prestige/reset |
 | Unprocessed purchase recovery | ✅ `get_purchases(CONSUMABLE_PRODUCT, CONFIRMED)` on startup |
+| Successful purchase on real device | ⚠️ **Pending** — availability preflight prevents crashes on sideload/test builds where payments are unavailable; real successful purchase testing requires install via RuStore or distribution context that supports payments |
 | RuStore product ids | ⚠️ **Pending** — `rustore_product_id` fields in `GemPurchaseConfig.gd` are placeholders; update to match RuStore developer console |
 | `android/` tracked selectively | ✅ Template source tracked; generated dirs and secrets ignored via targeted `.gitignore` rules |
 | `rustore_values.xml` | ✅ `android/build/res/values/rustore_values.xml` committed — consoleApplicationId, internalConfigKey, deeplinkScheme set |

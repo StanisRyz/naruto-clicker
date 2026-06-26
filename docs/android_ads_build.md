@@ -73,6 +73,11 @@ in the same SDK but is not used.
 The plugin AAR must be built once before the first Android export. Rebuild after
 any change to `AndroidYandexAdsPlugin.kt`.
 
+**Debug and release builds require separate AARs.** A debug Godot export uses
+`AndroidYandexAdsPlugin-debug.aar`; a release export uses
+`AndroidYandexAdsPlugin-release.aar`. Run both Gradle tasks when testing both
+configurations.
+
 ```bash
 # 1. Copy the godot-lib AAR into the plugin libs/ directory
 cp android/build/libs/release/godot-lib.template_release.aar \
@@ -155,13 +160,14 @@ Ads unit ids are configured in `AdPlacementConfig.gd`.
 ## Logcat tags
 
 ```
-adb logcat -s AndroidYandexAds MobileAds
+adb logcat -s AndroidYandexAds MobileAds godot
 ```
 
 | Tag | Meaning |
 |---|---|
 | `AndroidYandexAds` | Plugin lifecycle, ad load/show/dismiss, reward earned |
 | `MobileAds` | Yandex SDK internal events |
+| `godot` | GDScript `print()` output — includes `AndroidRuStorePlatform` diagnostics |
 
 Key log lines to look for:
 
@@ -176,6 +182,39 @@ D AndroidYandexAds: Loading interstitial ad: <unit_id>
 D AndroidYandexAds: Interstitial ad dismissed
 E AndroidYandexAds: Rewarded ad failed to load: <description> (code N)
 ```
+
+### GDScript diagnostics (debug builds only)
+
+`AndroidRuStorePlatform._ready()` prints on startup:
+
+```
+AndroidRuStorePlatform: _ready — android=true AndroidYandexAds_present=true
+AndroidRuStorePlatform: ads_plugin obtained, calling initialize()
+AndroidRuStorePlatform: ads_plugin.initialize() called
+```
+
+If `AndroidYandexAds` singleton is missing:
+
+```
+AndroidRuStorePlatform: _ready — android=true AndroidYandexAds_present=false
+AndroidRuStorePlatform: AndroidYandexAds singleton not present — ads unavailable
+```
+
+When Watch AD (rewarded ad) is pressed:
+
+```
+AndroidRuStorePlatform: show_rewarded_ad placement=rewarded_bonus_banner ad_unit_id=R-M-19501283-2 plugin_present=true
+AndroidRuStorePlatform: calling plugin.show_rewarded_ad(R-M-19501283-2)
+```
+
+When a fullscreen interstitial fires:
+
+```
+AndroidRuStorePlatform: show_fullscreen_ad placement=fullscreen_auto_interstitial ad_unit_id=R-M-19501283-4 plugin_present=true
+AndroidRuStorePlatform: calling plugin.show_interstitial_ad(R-M-19501283-4)
+```
+
+These lines are suppressed in release builds (`OS.is_debug_build()` guard).
 
 ---
 

@@ -33,8 +33,15 @@ var _pending_fullscreen_placement_id: String = ""
 # ── Initialization ────────────────────────────────────────────────────────────
 
 func _ready() -> void:
+	if OS.is_debug_build():
+		print("AndroidRuStorePlatform: _ready — android=%s AndroidYandexAds_present=%s" % [
+			str(OS.has_feature("android")),
+			str(Engine.has_singleton("AndroidYandexAds")),
+		])
 	var ads_plugin := _get_android_ads_plugin()
 	if ads_plugin:
+		if OS.is_debug_build():
+			print("AndroidRuStorePlatform: ads_plugin obtained, calling initialize()")
 		ads_plugin.rewarded_ad_opened.connect(_on_android_rewarded_ad_opened)
 		ads_plugin.rewarded_ad_rewarded.connect(_on_android_rewarded_ad_rewarded)
 		ads_plugin.rewarded_ad_closed.connect(_on_android_rewarded_ad_closed)
@@ -43,9 +50,16 @@ func _ready() -> void:
 		ads_plugin.fullscreen_ad_closed.connect(_on_android_fullscreen_ad_closed)
 		ads_plugin.fullscreen_ad_error.connect(_on_android_fullscreen_ad_error)
 		ads_plugin.initialize()
+		if OS.is_debug_build():
+			print("AndroidRuStorePlatform: ads_plugin.initialize() called")
+	else:
+		if OS.is_debug_build():
+			print("AndroidRuStorePlatform: AndroidYandexAds singleton not present — ads unavailable")
 
 	_pay_client = _create_rustore_pay_client()
 	if _pay_client:
+		_pay_client.on_get_purchase_availability_success.connect(_on_rustore_get_purchase_availability_success)
+		_pay_client.on_get_purchase_availability_failure.connect(_on_rustore_get_purchase_availability_failure)
 		_pay_client.on_purchase_success.connect(_on_rustore_purchase_success)
 		_pay_client.on_purchase_failure.connect(_on_rustore_purchase_failure)
 		_pay_client.on_purchase_cancelled.connect(_on_rustore_purchase_cancelled)
@@ -121,12 +135,18 @@ func show_rewarded_ad(placement_id: String = "") -> void:
 		return
 
 	var plugin := _get_android_ads_plugin()
+	if OS.is_debug_build():
+		print("AndroidRuStorePlatform: show_rewarded_ad placement=%s ad_unit_id=%s plugin_present=%s" % [
+			placement_id, ad_unit_id, str(plugin != null),
+		])
 	if not plugin:
 		rewarded_ad_error.emit("Rewarded ads not available (AndroidYandexAds plugin not loaded)")
 		return
 
 	_rewarded_ad_in_progress = true
 	_pending_rewarded_placement_id = placement_id
+	if OS.is_debug_build():
+		print("AndroidRuStorePlatform: calling plugin.show_rewarded_ad(%s)" % ad_unit_id)
 	plugin.show_rewarded_ad(ad_unit_id)
 
 
@@ -144,12 +164,18 @@ func show_fullscreen_ad(placement_id: String = "") -> void:
 		return
 
 	var plugin := _get_android_ads_plugin()
+	if OS.is_debug_build():
+		print("AndroidRuStorePlatform: show_fullscreen_ad placement=%s ad_unit_id=%s plugin_present=%s" % [
+			placement_id, ad_unit_id, str(plugin != null),
+		])
 	if not plugin:
 		fullscreen_ad_error.emit("Fullscreen ads not available (AndroidYandexAds plugin not loaded)")
 		return
 
 	_fullscreen_ad_in_progress = true
 	_pending_fullscreen_placement_id = placement_id
+	if OS.is_debug_build():
+		print("AndroidRuStorePlatform: calling plugin.show_interstitial_ad(%s)" % ad_unit_id)
 	plugin.show_interstitial_ad(ad_unit_id)
 
 # ── Android Yandex Ads plugin callbacks ───────────────────────────────────────
@@ -212,23 +238,66 @@ func purchase_product(platform_product_id: String, local_product_id: String = ""
 		payment_purchase_error.emit(local_id, "Payment already in progress")
 		return
 
-	payment_purchase_started.emit(local_id)
-
 	_payment_in_progress = true
 	_pending_local_product_id = local_id
 	_pending_platform_product_id = platform_product_id
 
+	payment_purchase_started.emit(local_id)
+
 	if not _pay_client:
-		_payment_in_progress = false
-		_pending_local_product_id = ""
-		_pending_platform_product_id = ""
-		payment_purchase_error.emit(local_id, "RuStore Pay SDK not available")
+		var err_id := _consume_pending_payment_local_id()
+		payment_purchase_error.emit(err_id, "RuStore Pay SDK not available")
 		return
 
+	if OS.is_debug_build():
+		print("AndroidRuStorePlatform: checking purchase availability for %s" % platform_product_id)
+	_pay_client.get_purchase_availability()
+
+
+func _on_rustore_get_purchase_availability_success(result: RuStorePayGetPurchaseAvailabilityResult) -> void:
+	if not _payment_in_progress:
+		return
+	if result == null:
+		if OS.is_debug_build():
+			print("AndroidRuStorePlatform: availability result is null — failing closed")
+		var local_id := _consume_pending_payment_local_id()
+		payment_purchase_error.emit(local_id, "Purchase availability result unavailable")
+		return
+	if OS.is_debug_build():
+		print("AndroidRuStorePlatform: purchase availability isAvailable=%s" % str(result.isAvailable))
+	if not result.isAvailable:
+		var reason := ""
+		if result.cause != null:
+			reason = result.cause.description if result.cause.description != "" else result.cause.name
+		if reason == "":
+			reason = "Payments unavailable"
+		var local_id := _consume_pending_payment_local_id()
+		payment_purchase_error.emit(local_id, reason)
+		return
+	_start_rustore_purchase_after_availability()
+
+
+func _on_rustore_get_purchase_availability_failure(error: RuStorePaymentException) -> void:
+	if not _payment_in_progress:
+		return
+	var message := _exception_message(error)
+	if message == "":
+		message = "Purchase availability check failed"
+	if OS.is_debug_build():
+		print("AndroidRuStorePlatform: get_purchase_availability failed: %s" % message)
+	var local_id := _consume_pending_payment_local_id()
+	payment_purchase_error.emit(local_id, message)
+
+
+func _start_rustore_purchase_after_availability() -> void:
+	var platform_product_id := _pending_platform_product_id
+	if platform_product_id == "" or not _payment_in_progress:
+		return
 	var params := RuStorePayProductPurchaseParams.new(
 		RuStorePayProductId.new(platform_product_id)
 	)
-
+	if OS.is_debug_build():
+		print("AndroidRuStorePlatform: calling purchase() for %s" % platform_product_id)
 	_pay_client.purchase(
 		params,
 		ERuStorePayPreferredPurchaseType.Item.ONE_STEP,

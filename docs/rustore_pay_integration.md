@@ -109,6 +109,11 @@ ClickerScreen             Platform           AndroidRuStorePlatform     RuStoreG
      │───────────────────────▶│                        │                         │
      │                        │  purchase_product(id)  │                         │
      │                        │───────────────────────▶│                         │
+     │                        │                        │  get_purchase_availability()
+     │                        │                        │────────────────────────▶│
+     │                        │                        │  on_get_purchase_availability_success
+     │                        │                        │◀────────────────────────│
+     │                        │                        │  [if isAvailable=true]  │
      │                        │                        │  client.purchase(params)│
      │                        │                        │────────────────────────▶│
      │                        │                        │                         │ (RuStore UI)
@@ -126,6 +131,45 @@ Key invariants:
 - `_payment_in_progress` flag prevents overlapping purchase attempts.
 - Empty `platform_product_id` is rejected before the flag is set.
 - `on_purchase_success` result with all-empty ids is rejected — no reward granted.
+- `_pay_client.purchase()` is **never** called unless availability is explicitly `true`.
+
+---
+
+## Purchase availability preflight
+
+Before calling `_pay_client.purchase()`, `AndroidRuStorePlatform` calls
+`_pay_client.get_purchase_availability()` and waits for one of two signals:
+
+| Signal | Handler | Outcome |
+|---|---|---|
+| `on_get_purchase_availability_success` | `_on_rustore_get_purchase_availability_success` | calls `_start_rustore_purchase_after_availability()` only if `result.isAvailable == true` |
+| `on_get_purchase_availability_failure` | `_on_rustore_get_purchase_availability_failure` | clears state, emits `payment_purchase_error` |
+
+**Why this is required:**
+
+The official RuStore Godot Pay Android plugin crashes with
+`java.lang.IllegalArgumentException: Invalid type for argument #0. Should be of type java.lang.String`
+when `purchase()` is called and the SDK emits a failure signal on sideloaded or
+test builds where RuStore payments are unavailable. This crash occurs inside the
+plugin JNI layer (`RuStoreGodotPay.purchase$lambda$15`) before our GDScript
+`_on_rustore_purchase_failure` handler can recover.
+
+By gating `purchase()` behind a successful availability check, the SDK failure
+path is never reached when payments are not available.
+
+**`RuStorePayGetPurchaseAvailabilityResult` fields used:**
+- `isAvailable: bool` — set directly from JSON `obj["isAvailable"]`
+- `cause: RuStoreError` — present when `isAvailable == false`; its `description` or
+  `name` field is used as the error message
+
+If the result object is `null` (parse error), the system fails closed: no
+purchase is attempted and `payment_purchase_error` is emitted.
+
+**`_start_rustore_purchase_after_availability()` helper:**
+
+Called only when `isAvailable == true`. Reads `_pending_platform_product_id`,
+builds `RuStorePayProductPurchaseParams`, and calls `_pay_client.purchase()` with
+`ONE_STEP`, `DARK` theme, and `enable_purchase_event_listener = true`.
 
 ---
 
@@ -225,6 +269,8 @@ startup flow continues without crashing.
 
 | SDK signal | Handler | Notes |
 |---|---|---|
+| `on_get_purchase_availability_success(result)` | `_on_rustore_get_purchase_availability_success` | Availability preflight — calls `_start_rustore_purchase_after_availability()` only if `isAvailable == true` |
+| `on_get_purchase_availability_failure(error)` | `_on_rustore_get_purchase_availability_failure` | Availability preflight failed — clears state, emits error |
 | `on_purchase_success(result)` | `_on_rustore_purchase_success` | Primary ONE_STEP success path |
 | `on_purchase_failure(product_id, error)` | `_on_rustore_purchase_failure` | SDK-level error |
 | `on_purchase_cancelled(product_id, purchase_id, invoice_id)` | `_on_rustore_purchase_cancelled` | User cancelled in RuStore UI |
