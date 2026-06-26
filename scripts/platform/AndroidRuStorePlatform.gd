@@ -266,13 +266,13 @@ func _on_rustore_get_purchase_availability_success(result: RuStorePayGetPurchase
 	if OS.is_debug_build():
 		print("AndroidRuStorePlatform: purchase availability isAvailable=%s" % str(result.isAvailable))
 	if not result.isAvailable:
-		var reason := ""
-		if result.cause != null:
-			reason = result.cause.description if result.cause.description != "" else result.cause.name
-		if reason == "":
-			reason = "Payments unavailable"
+		if OS.is_debug_build():
+			var reason := ""
+			if result.cause != null:
+				reason = result.cause.description if result.cause.description != "" else result.cause.name
+			print("AndroidRuStorePlatform: purchase unavailable — cause: %s" % reason)
 		var local_id := _consume_pending_payment_local_id()
-		payment_purchase_error.emit(local_id, reason)
+		payment_purchase_error.emit(local_id, "payment_unavailable")
 		return
 	_start_rustore_purchase_after_availability()
 

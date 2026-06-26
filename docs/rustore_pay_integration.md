@@ -132,6 +132,10 @@ Key invariants:
 - Empty `platform_product_id` is rejected before the flag is set.
 - `on_purchase_success` result with all-empty ids is rejected — no reward granted.
 - `_pay_client.purchase()` is **never** called unless availability is explicitly `true`.
+- When availability is false, `payment_purchase_error` is emitted with the stable code `"payment_unavailable"`.
+- `ClickerScreen` maps `"payment_unavailable"` → `shop.gem_purchase.unavailable` localization key, and all other errors → `shop.gem_purchase.error`.
+- The gem purchase dialog stays open on error/unavailable; the status message is shown inside the dialog.
+- No gems are granted on unavailable / failure / cancellation.
 
 ---
 
@@ -142,7 +146,7 @@ Before calling `_pay_client.purchase()`, `AndroidRuStorePlatform` calls
 
 | Signal | Handler | Outcome |
 |---|---|---|
-| `on_get_purchase_availability_success` | `_on_rustore_get_purchase_availability_success` | calls `_start_rustore_purchase_after_availability()` only if `result.isAvailable == true` |
+| `on_get_purchase_availability_success` | `_on_rustore_get_purchase_availability_success` | calls `_start_rustore_purchase_after_availability()` only if `result.isAvailable == true`; if false, emits `payment_purchase_error` with code `"payment_unavailable"` |
 | `on_get_purchase_availability_failure` | `_on_rustore_get_purchase_availability_failure` | clears state, emits `payment_purchase_error` |
 
 **Why this is required:**

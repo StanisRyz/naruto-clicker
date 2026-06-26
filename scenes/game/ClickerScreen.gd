@@ -681,17 +681,20 @@ func _find_gem_product_by_any_id(product_id: String) -> Dictionary:
 func _on_payment_purchase_cancelled(_local_product_id: String) -> void:
 	_pending_payment_product_id = ""
 	_payment_reward_granted_for_current_request = false
-	gem_purchase_dialog.set_payment_done()
-	_handle_status_text(LocalizationManager.tr_key("shop.gem_purchase.cancelled"))
+	var localized: String = LocalizationManager.tr_key("shop.gem_purchase.cancelled")
+	gem_purchase_dialog.set_payment_failed(localized)
+	_handle_status_text(localized)
 	_clear_payment_pause_and_try_resume()
 
 
 func _on_payment_purchase_error(_local_product_id: String, _message: String) -> void:
 	_pending_payment_product_id = ""
 	_payment_reward_granted_for_current_request = false
-	gem_purchase_dialog.set_payment_done()
 	AudioManager.play_purchase_error()
-	_handle_status_text(LocalizationManager.tr_key("shop.gem_purchase.error"))
+	var key: String = "shop.gem_purchase.unavailable" if _message == "payment_unavailable" else "shop.gem_purchase.error"
+	var localized: String = LocalizationManager.tr_key(key)
+	gem_purchase_dialog.set_payment_failed(localized)
+	_handle_status_text(localized)
 	_clear_payment_pause_and_try_resume()
 
 

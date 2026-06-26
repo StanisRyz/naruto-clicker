@@ -72,6 +72,8 @@ RuStore. Work through each item before uploading the first APK.
 | Purchase availability preflight | ✅ `get_purchase_availability()` called before `purchase()` — if unavailable or check fails, `payment_purchase_error` is emitted and `purchase()` is never called; avoids official SDK crash on sideload/test devices |
 | Terminal callback hardening | ✅ All 5 terminal signals handled: `on_purchase_success`, `on_purchase_failure`, `on_purchase_cancelled`, `on_payment_completed`, `on_payment_failed` |
 | Stuck payment UI bug | ✅ Fixed — `on_payment_failed` + `on_purchase_cancelled` clear `_payment_in_progress` and re-enable dialog buy button |
+| Unavailable payment UX | ✅ When `isAvailable == false`, stable code `"payment_unavailable"` is emitted; dialog stays open and shows "Покупки временно недоступны. Попробуйте позже." — `purchase()` is never called |
+| Purchase error UX | ✅ All payment errors/cancellations show a localized message inside the gem purchase dialog; dialog is not auto-closed; gems are not granted |
 | Duplicate terminal event dedup | ✅ `_consume_pending_payment_local_id()` — returns `""` if already cleared; all terminal handlers check this |
 | Empty product id guard | ✅ `purchase_product()` rejects empty `platform_product_id` before setting in-progress flag |
 | Empty purchase id guard | ✅ `on_purchase_success` and `on_payment_completed` with all-empty ids treated as error — no reward granted |

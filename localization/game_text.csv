@@ -248,8 +248,10 @@ shop.card.gem_purchase_entry,Buy Gems,Купить гемы,ShopPanel card effec
 shop.gem_purchase.title,Buy Gems,Купить гемы,GemPurchaseDialog title,
 shop.gem_purchase.invalid_product,Invalid gem product,Неверный товар,GemPurchaseDialog error status,
 shop.gem_purchase.success,+{amount} Gems!,+{amount} гемов!,GemPurchaseDialog success status,{amount} is integer
-shop.gem_purchase.cancelled,Purchase cancelled,Покупка отменена,GemPurchaseDialog cancel status,
-shop.gem_purchase.error,Purchase failed,Ошибка покупки,GemPurchaseDialog error status,
+shop.gem_purchase.cancelled,Purchase cancelled.,Покупка отменена.,GemPurchaseDialog cancel status,
+shop.gem_purchase.error,Purchase failed. Please try again later.,Покупка не удалась. Попробуйте позже.,GemPurchaseDialog error status,
+shop.gem_purchase.unavailable,Purchases are temporarily unavailable. Please try again later.,Покупки временно недоступны. Попробуйте позже.,GemPurchaseDialog unavailable status,
+shop.gem_purchase.processing,Opening payment...,Открываем оплату...,GemPurchaseDialog processing status,
 shop.gem_purchase.buy,Buy,Купить,GemPurchaseDialog buy button,
 shop.gem_purchase.amount_plain,+{amount} Gems,+{amount} гемов,GemPurchaseDialog gem amount label no bonus,{amount} is integer
 shop.gem_purchase.amount_bonus,+{base} Gems +{bonus} Free,+{base} гемов +{bonus} бесплатно,GemPurchaseDialog gem amount label with bonus,{base} and {bonus} are integers

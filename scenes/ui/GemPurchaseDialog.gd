@@ -10,6 +10,7 @@ const BUY_BUTTON_SIZE: Vector2 = Vector2(160, 52)
 
 var _product_cells: Array[Dictionary] = []
 var _payment_in_progress: bool = false
+var _status_label: Label = null
 
 @onready var _close_button: Button = $CenterContainer/InnerPanel/ContentLayer/CloseButton
 @onready var _products_grid: GridContainer = $CenterContainer/InnerPanel/ContentLayer/GridCenterContainer/ProductsGrid
@@ -18,6 +19,7 @@ var _payment_in_progress: bool = false
 
 func _ready() -> void:
 	_add_panel_background()
+	_add_status_label()
 	ButtonVisualUtils.setup_image_button(_close_button, "ui.sheet.close_button", Color.WHITE)
 	_close_button.pressed.connect(_on_close_pressed)
 	_build_product_cells()
@@ -28,12 +30,14 @@ func show_dialog() -> void:
 	_payment_in_progress = false
 	_set_all_buy_buttons_disabled(false)
 	ButtonVisualUtils.set_image_button_asset(_close_button, "ui.sheet.close_button")
+	clear_status_message()
 	show()
 	move_to_front()
 
 
 func hide_dialog() -> void:
 	_payment_in_progress = false
+	clear_status_message()
 	hide()
 
 
@@ -44,6 +48,27 @@ func refresh_view() -> void:
 func set_payment_done() -> void:
 	_payment_in_progress = false
 	_set_all_buy_buttons_disabled(false)
+
+
+func set_status_message(message: String, color: Color = Color.WHITE) -> void:
+	if not is_instance_valid(_status_label):
+		return
+	_status_label.text = message
+	_status_label.modulate = color
+	_status_label.visible = message != ""
+
+
+func clear_status_message() -> void:
+	if not is_instance_valid(_status_label):
+		return
+	_status_label.text = ""
+	_status_label.visible = false
+
+
+func set_payment_failed(message: String) -> void:
+	_payment_in_progress = false
+	_set_all_buy_buttons_disabled(false)
+	set_status_message(message, Color(1.0, 0.45, 0.35, 1.0))
 
 
 func _on_close_pressed() -> void:
@@ -140,6 +165,7 @@ func _on_buy_pressed(product_id: String, buy_button: Button) -> void:
 	var cell: Dictionary = _find_cell_by_product(product_id)
 	if not cell.is_empty() and cell.has("btn_bg"):
 		cell["btn_bg"].set_asset_key("ui.card.button.active", Color.WHITE)
+	set_status_message(LocalizationManager.tr_key("shop.gem_purchase.processing"))
 	gem_product_purchase_requested.emit(product_id)
 
 
@@ -159,6 +185,29 @@ func _set_all_buy_buttons_disabled(disabled: bool) -> void:
 		if bg:
 			bg.set_asset_key("ui.card.button.default", Color.WHITE)
 			bg.modulate = Color(0.65, 0.65, 0.65, 1.0) if disabled else Color.WHITE
+
+
+func _add_status_label() -> void:
+	var content_layer: Control = $CenterContainer/InnerPanel/ContentLayer
+	_status_label = Label.new()
+	_status_label.name = "PaymentStatusLabel"
+	_status_label.layout_mode = 1
+	_status_label.anchor_left = 0.0
+	_status_label.anchor_top = 1.0
+	_status_label.anchor_right = 1.0
+	_status_label.anchor_bottom = 1.0
+	_status_label.offset_left = 16.0
+	_status_label.offset_top = -64.0
+	_status_label.offset_right = -16.0
+	_status_label.offset_bottom = -10.0
+	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_status_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_status_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	_status_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	UiFontConfig.apply_label_font_size(_status_label, UiFontConfig.UPGRADE_BUTTON_FONT_SIZE)
+	content_layer.add_child(_status_label)
+	_status_label.visible = false
 
 
 func _add_panel_background() -> void:

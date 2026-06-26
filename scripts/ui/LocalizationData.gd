@@ -4,8 +4,8 @@ extends RefCounted
 # AUTO-GENERATED — do not edit by hand.
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
-# Generated key count: 369
-# Generated at: 1782482265
+# Generated key count: 371
+# Generated at: 1782488341
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -258,8 +258,10 @@ const TRANSLATIONS: Dictionary = {
 		"shop.gem_purchase.title": "Buy Gems",
 		"shop.gem_purchase.invalid_product": "Invalid gem product",
 		"shop.gem_purchase.success": "+{amount} Gems!",
-		"shop.gem_purchase.cancelled": "Purchase cancelled",
-		"shop.gem_purchase.error": "Purchase failed",
+		"shop.gem_purchase.cancelled": "Purchase cancelled.",
+		"shop.gem_purchase.error": "Purchase failed. Please try again later.",
+		"shop.gem_purchase.unavailable": "Purchases are temporarily unavailable. Please try again later.",
+		"shop.gem_purchase.processing": "Opening payment...",
 		"shop.gem_purchase.buy": "Buy",
 		"shop.gem_purchase.amount_plain": "+{amount} Gems",
 		"shop.gem_purchase.amount_bonus": "+{base} Gems +{bonus} Free",
@@ -629,8 +631,10 @@ const TRANSLATIONS: Dictionary = {
 		"shop.gem_purchase.title": "Купить гемы",
 		"shop.gem_purchase.invalid_product": "Неверный товар",
 		"shop.gem_purchase.success": "+{amount} гемов!",
-		"shop.gem_purchase.cancelled": "Покупка отменена",
-		"shop.gem_purchase.error": "Ошибка покупки",
+		"shop.gem_purchase.cancelled": "Покупка отменена.",
+		"shop.gem_purchase.error": "Покупка не удалась. Попробуйте позже.",
+		"shop.gem_purchase.unavailable": "Покупки временно недоступны. Попробуйте позже.",
+		"shop.gem_purchase.processing": "Открываем оплату...",
 		"shop.gem_purchase.buy": "Купить",
 		"shop.gem_purchase.amount_plain": "+{amount} гемов",
 		"shop.gem_purchase.amount_bonus": "+{base} гемов +{bonus} бесплатно",
