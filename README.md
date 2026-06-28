@@ -541,7 +541,55 @@ If a protected endpoint is called without a stored session token, it emits
 - The backend stores a raw JSON save blob. `save_version` and `last_save_unix_time`
   must be present in save data before calling `Platform.backend_save_save()`.
 - `SaveManager` wiring is a future patch.
-- Account UI is a future patch.
+- Account UI settings panel is a future patch.
+
+### C3 — Android Auth Gate with Guest Mode (completed)
+
+Android/RuStore now shows an auth gate before gameplay on every cold start.
+
+**Android/RuStore startup flow:**
+
+1. `Main.gd` detects `OS.has_feature("android")` and instantiates `AuthGateScreen`.
+2. `AuthGateScreen` checks `Platform.backend_has_session()`:
+   - Session exists → calls `Platform.backend_get_me()` to validate.
+     - Valid → emits `auth_gate_completed("account")` → gameplay starts.
+     - Unauthorized → calls `Platform.backend_clear_local_auth()`, shows login form.
+   - No session → shows login form directly.
+3. User can: log in, register, request/confirm password reset, or continue as guest.
+4. Guest mode → `auth_gate_completed("guest")` → gameplay starts with local save only.
+5. Login/register success → `auth_gate_completed("account")` → gameplay starts.
+6. `AuthGateScreen` is removed from the scene tree before `_begin_startup_wait()` runs.
+
+**Web/Yandex startup:**
+
+Unchanged. `AuthGateScreen` is never shown. Gameplay starts as before.
+
+**Editor/LocalDebug startup:**
+
+Unchanged. `AuthGateScreen` is never shown. Gameplay starts as before.
+
+**Files added:**
+
+- `scenes/auth/AuthGateScreen.tscn` — auth gate scene (script-driven UI).
+- `scenes/auth/AuthGateScreen.gd` — auth gate logic; calls backend only through `Platform`.
+- `scenes/main/Main.gd` — extended with `_should_show_android_auth_gate()`,
+  `_show_auth_gate()`, `_on_auth_gate_completed()`, `_begin_startup_wait()`.
+
+**What C3 did NOT change:**
+
+- Web/Yandex startup — unchanged.
+- `SaveManager` — not yet wired to backend; local save and Yandex cloud save unchanged.
+- Backend Cloud Functions — unchanged.
+- Gameplay, ads, payments, balance — unchanged.
+- Guest-to-account save upload — future patch.
+- Account settings panel — future patch.
+- Save conflict resolution — future patch.
+
+**New platform method:**
+
+`Platform.backend_clear_local_auth()` — clears the locally stored session token without
+making a network request. Used when `get_me` returns `unauthorized` on startup so the
+invalid token is removed before showing the login form.
 
 ---
 

@@ -285,6 +285,14 @@ func backend_confirm_email_verification(code: String) -> bool:
 	return _impl.backend_confirm_email_verification(code)
 
 
+func backend_clear_local_auth() -> bool:
+	if _impl == null:
+		return false
+	if not _impl.has_method("backend_clear_local_auth"):
+		return false
+	return _impl.backend_clear_local_auth()
+
+
 func backend_load_save() -> bool:
 	if _impl == null:
 		return false

@@ -22,6 +22,25 @@
 
 ---
 
+## Android Auth Gate (scenes/auth/AuthGateScreen)
+
+- `AuthGateScreen` is shown on Android startup before gameplay, instantiated by `Main.gd`.
+- It is **not** shown on Web/Yandex or in the editor/LocalDebug — the `OS.has_feature("android")`
+  check in `Main._should_show_android_auth_gate()` is the single gate.
+- `AuthGateScreen` must call backend only through `Platform` — never call `BackendApiClient` directly.
+- `AuthGateScreen` must not call `SaveManager` and must not know cloud-save internals.
+- Guest mode (`auth_gate_completed("guest")`) enters gameplay with local save only. Backend
+  cloud-save is not wired to `SaveManager` yet — guest and account modes are both local-only.
+- `Platform.backend_clear_local_auth()` — local-only token removal, no network request.
+  Call it when `get_me` returns `unauthorized` so the stale token is cleared before showing login.
+- Do not add account settings panel UI in the same patch as the auth gate.
+- Do not auto-upload guest save after login in the same patch as the auth gate.
+- Do not implement save conflict resolution in the same patch as the auth gate.
+- Web/Yandex startup must never be blocked by backend auth checks.
+- **Never log passwords, session tokens, reset codes, or verification codes anywhere in the auth flow.**
+
+---
+
 ## Bottom sheet vertical offset
 
 All bottom sheet scenes (UpgradeSheet, PartnerSheet, SettlementSheet, PrestigeSheet, ShopSheet) use:

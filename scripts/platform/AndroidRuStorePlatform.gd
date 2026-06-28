@@ -614,6 +614,15 @@ func backend_confirm_email_verification(code: String) -> bool:
 	return _backend_client.confirm_email_verification(code)
 
 
+func backend_clear_local_auth() -> bool:
+	if _backend_client == null:
+		backend_auth_changed.emit({})
+		return false
+	var ok := _backend_client.clear_auth()
+	backend_auth_changed.emit({})
+	return ok
+
+
 func backend_load_save() -> bool:
 	if _backend_client == null:
 		backend_operation_failed.emit("load_save", "backend_client_unavailable", 0, {})

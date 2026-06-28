@@ -4,8 +4,8 @@ extends RefCounted
 # AUTO-GENERATED — do not edit by hand.
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
-# Generated key count: 371
-# Generated at: 1782489258
+# Generated key count: 398
+# Generated at: 1782654807
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -380,6 +380,33 @@ const TRANSLATIONS: Dictionary = {
 		"common.duration.minutes": "{minutes}m",
 		"common.duration.hours": "{hours}h",
 		"common.duration.hours_minutes": "{hours}h {minutes}m",
+		"auth.title": "Sign In",
+		"auth.checking_account": "Checking account...",
+		"auth.login_tab": "Sign In",
+		"auth.register_tab": "Register",
+		"auth.email_placeholder": "Email",
+		"auth.password_placeholder": "Password",
+		"auth.confirm_password_placeholder": "Confirm Password",
+		"auth.login_button": "Sign In",
+		"auth.register_button": "Register",
+		"auth.guest_button": "Continue as Guest",
+		"auth.guest_warning": "Guest mode: progress saved locally only",
+		"auth.forgot_password_button": "Forgot password?",
+		"auth.reset_title": "Reset Password",
+		"auth.reset_request_button": "Send Reset Code",
+		"auth.reset_code_placeholder": "6-digit code",
+		"auth.new_password_placeholder": "New Password",
+		"auth.reset_confirm_button": "Set New Password",
+		"auth.back_to_login_button": "Back to Sign In",
+		"auth.error_email_required": "Email is required",
+		"auth.error_password_short": "Password must be at least 8 characters",
+		"auth.error_password_mismatch": "Passwords do not match",
+		"auth.error_code_invalid": "Enter a 6-digit code",
+		"auth.status_reset_code_sent": "Reset code sent to your email",
+		"auth.status_password_changed": "Password updated",
+		"auth.status_login_after_reset": "Sign in with your new password",
+		"auth.status_guest_mode": "Playing as guest",
+		"auth.status_checking_failed": "Session expired. Please sign in.",
 	},
 	"ru": {
 		"ui.common.close": "Закрыть",
@@ -753,6 +780,33 @@ const TRANSLATIONS: Dictionary = {
 		"common.duration.minutes": "{minutes}м",
 		"common.duration.hours": "{hours}ч",
 		"common.duration.hours_minutes": "{hours}ч {minutes}м",
+		"auth.title": "Вход",
+		"auth.checking_account": "Проверка аккаунта...",
+		"auth.login_tab": "Вход",
+		"auth.register_tab": "Регистрация",
+		"auth.email_placeholder": "Email",
+		"auth.password_placeholder": "Пароль",
+		"auth.confirm_password_placeholder": "Подтвердите пароль",
+		"auth.login_button": "Войти",
+		"auth.register_button": "Зарегистрироваться",
+		"auth.guest_button": "Продолжить как гость",
+		"auth.guest_warning": "Гостевой режим: прогресс только локально",
+		"auth.forgot_password_button": "Забыли пароль?",
+		"auth.reset_title": "Сброс пароля",
+		"auth.reset_request_button": "Отправить код",
+		"auth.reset_code_placeholder": "6-значный код",
+		"auth.new_password_placeholder": "Новый пароль",
+		"auth.reset_confirm_button": "Установить пароль",
+		"auth.back_to_login_button": "Назад",
+		"auth.error_email_required": "Введите email",
+		"auth.error_password_short": "Пароль не менее 8 символов",
+		"auth.error_password_mismatch": "Пароли не совпадают",
+		"auth.error_code_invalid": "Введите 6-значный код",
+		"auth.status_reset_code_sent": "Код сброса отправлен на email",
+		"auth.status_password_changed": "Пароль обновлён",
+		"auth.status_login_after_reset": "Войдите с новым паролем",
+		"auth.status_guest_mode": "Игра в гостевом режиме",
+		"auth.status_checking_failed": "Сессия истекла. Войдите снова.",
 	},
 }
 

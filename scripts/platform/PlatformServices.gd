@@ -174,6 +174,10 @@ func backend_confirm_email_verification(_code: String) -> bool:
 	backend_operation_failed.emit("confirm_email_verification", "not_supported", 0, {})
 	return false
 
+func backend_clear_local_auth() -> bool:
+	backend_auth_changed.emit({})
+	return false
+
 func backend_load_save() -> bool:
 	backend_operation_failed.emit("load_save", "not_supported", 0, {})
 	return false
