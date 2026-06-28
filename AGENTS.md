@@ -638,6 +638,24 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
 
 ## AuthGate UI Rules
 
+- `AuthGateScreen` must always be full-screen. Call
+  `set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)` with
+  `SIZE_EXPAND_FILL` in `_ready()` **before** `_build_ui()`. Do not rely on the
+  parent to set the correct size.
+- `Main._show_auth_gate()` and `Main.show_auth_gate_overlay()` must also call
+  `set_anchors_and_offsets_preset(PRESET_FULL_RECT)` on the gate after
+  `add_child()` as a second safety layer.
+- Do **not** use zero-height containers (`custom_minimum_size = Vector2(x, 0)`)
+  anywhere in the mandatory startup UI path. Every container between the root
+  node and the visible form must have a non-zero height.
+- The auth form layout must use `MarginContainer(full-rect) →
+  CenterContainer(EXPAND_FILL) → PanelContainer(explicit min height)`. The
+  `ScrollContainer` that had `custom_minimum_size = Vector2(340, 0)` is removed.
+- AuthGate startup must always end in one of: login form visible, register form
+  visible, or `auth_gate_completed` emitted. It must never leave a black screen.
+- If `backend_get_me()` is called on startup, a timeout fallback (≥ 6 s) must
+  clear the local auth token and show the login form so the player is never
+  stuck in CHECKING state if the backend does not respond.
 - Do **not** use `.keyboard_type` on `LineEdit`. The property name is invalid on
   the Godot 4.5.1 Android `LineEdit` object and causes a script error that aborts
   UI construction.

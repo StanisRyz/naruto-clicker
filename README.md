@@ -690,6 +690,51 @@ guards.
 - `scenes/auth/AuthGateScreen.gd` — safe virtual-keyboard helper; null-safe
   state machine; UI build guard in `_ready()`.
 
+### C4.2 — Android AuthGate Visible Layout Hotfix (completed)
+
+**Root cause:**
+
+`AuthGateScreen` UI was building successfully (no script errors) but remained
+invisible on Android. The `PanelContainer` inside the `ScrollContainer` had
+`custom_minimum_size = Vector2(340, 0)`, which let the scroll container size it
+to zero height. Additionally, `AuthGateScreen` itself relied on the parent to
+set its anchors — if `Main` added it without forcing a full-rect layout preset,
+the root Control had zero size and clipped all children.
+
+**Fix:**
+
+- `_ready()` now calls `set_anchors_and_offsets_preset(PRESET_FULL_RECT)` with
+  `SIZE_EXPAND_FILL` and `z_index = 1000` before any other setup, guaranteeing
+  the root node covers the screen regardless of how `Main` adds it.
+- `_build_ui()` removes the `ScrollContainer` entirely. The new layout is:
+  `MarginContainer(full-rect, 24 px margins) → CenterContainer(EXPAND_FILL) →
+  PanelContainer(min_size=340×520, SHRINK_CENTER) → VBoxContainer`. No container
+  in the auth form path can have zero height.
+- `Main._show_auth_gate()` and `Main.show_auth_gate_overlay()` both apply
+  `set_anchors_and_offsets_preset(PRESET_FULL_RECT)` after `add_child()` as a
+  second safety layer.
+- Explicit white font colors added to title and checking labels so text is
+  readable on the dark panel even if the theme default is dark.
+- Session-check timeout (6 s) added: if `backend_get_me()` never responds,
+  `backend_clear_local_auth()` is called and the login form is shown so the
+  user is never stuck in CHECKING state indefinitely.
+- Debug `print` statements added for `root size`, `panel min size`, and each
+  state transition to aid Android logcat validation.
+
+**What this patch did NOT change:**
+
+- `SaveManager` — still not wired to backend.
+- Gameplay, ads, payments, balance — unchanged.
+- Backend Cloud Functions — unchanged.
+- Web/editor startup flow — unchanged.
+
+**Files changed:**
+
+- `scenes/auth/AuthGateScreen.gd` — layout rebuild; full-rect anchor in
+  `_ready()`; session-check timeout; font colors; debug prints.
+- `scenes/main/Main.gd` — force full-rect on auth gate after `add_child()` in
+  both `_show_auth_gate()` and `show_auth_gate_overlay()`.
+
 ---
 
 ## QoL update mode

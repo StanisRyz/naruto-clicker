@@ -48,9 +48,16 @@ var _post_register_password: String = ""
 var _reset_email_cache: String = ""
 var _awaiting_login_after_register: bool = false
 
+var _session_check_generation: int = 0
+var _session_check_completed: bool = false
+
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
 
 func _ready() -> void:
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	size_flags_vertical = Control.SIZE_EXPAND_FILL
+	z_index = 1000
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	print("AuthGateScreen: building UI")
 	_build_ui()
@@ -58,6 +65,7 @@ func _ready() -> void:
 		_show_fallback_error("Auth UI failed to initialize")
 		return
 	print("AuthGateScreen: UI ready")
+	print("AuthGateScreen: root size=", size)
 	_connect_platform_signals()
 	_check_existing_session()
 
@@ -75,19 +83,23 @@ func _build_ui() -> void:
 	var overlay := ColorRect.new()
 	overlay.color = Color(0.0, 0.0, 0.0, 0.88)
 	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(overlay)
 
-	var center := CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	center.mouse_filter = Control.MOUSE_FILTER_PASS
-	add_child(center)
+	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 24)
+	margin.add_theme_constant_override("margin_right", 24)
+	margin.add_theme_constant_override("margin_top", 24)
+	margin.add_theme_constant_override("margin_bottom", 24)
+	margin.mouse_filter = Control.MOUSE_FILTER_PASS
+	add_child(margin)
 
-	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(340, 0)
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.mouse_filter = Control.MOUSE_FILTER_PASS
-	center.add_child(scroll)
+	var center := CenterContainer.new()
+	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	center.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	center.mouse_filter = Control.MOUSE_FILTER_PASS
+	margin.add_child(center)
 
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color = Color(0.10, 0.105, 0.125, 1.0)
@@ -106,10 +118,12 @@ func _build_ui() -> void:
 	panel_style.content_margin_bottom = 28
 
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(340, 0)
+	panel.custom_minimum_size = Vector2(340, 520)
+	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	panel.add_theme_stylebox_override("panel", panel_style)
 	panel.mouse_filter = Control.MOUSE_FILTER_PASS
-	scroll.add_child(panel)
+	center.add_child(panel)
 
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 14)
@@ -119,7 +133,10 @@ func _build_ui() -> void:
 	title_label.text = LocalizationManager.tr_key("auth.title")
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_label.add_theme_font_size_override("font_size", 22)
+	title_label.add_theme_color_override("font_color", Color(0.95, 0.95, 0.95, 1.0))
 	vbox.add_child(title_label)
+
+	print("AuthGateScreen: panel min size=", panel.custom_minimum_size)
 
 	_status_label = Label.new()
 	_status_label.text = ""
@@ -200,6 +217,7 @@ func _build_checking_box() -> VBoxContainer:
 	lbl.text = LocalizationManager.tr_key("auth.checking_account")
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.add_theme_font_size_override("font_size", 14)
+	lbl.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9, 1.0))
 	box.add_child(lbl)
 	return box
 
@@ -340,6 +358,7 @@ func _make_flat_button(label_text: String, callback: Callable) -> Button:
 
 func _set_state(state: _State) -> void:
 	_current_state = state
+	print("AuthGateScreen: state=", state)
 	if _checking_box != null:
 		_checking_box.visible = (state == _State.CHECKING)
 	if _login_box != null:
@@ -382,6 +401,7 @@ func _connect_platform_signals() -> void:
 func _on_backend_succeeded(operation: String, _response: Dictionary) -> void:
 	match operation:
 		"get_me":
+			_session_check_completed = true
 			_clear_status()
 			auth_gate_completed.emit("account")
 
@@ -416,6 +436,7 @@ func _on_backend_succeeded(operation: String, _response: Dictionary) -> void:
 func _on_backend_failed(operation: String, error_code: String, _status_code: int, _response: Dictionary) -> void:
 	match operation:
 		"get_me":
+			_session_check_completed = true
 			if error_code in ["unauthorized", "missing_session"]:
 				Platform.backend_clear_local_auth()
 			_show_status(LocalizationManager.tr_key("auth.status_checking_failed"), true)
@@ -440,10 +461,27 @@ func _on_backend_failed(operation: String, error_code: String, _status_code: int
 
 func _check_existing_session() -> void:
 	if Platform.backend_has_session():
+		_session_check_generation += 1
+		_session_check_completed = false
+		var generation := _session_check_generation
 		_set_state(_State.CHECKING)
 		Platform.backend_get_me()
+		_start_session_check_timeout(generation)
 	else:
 		_set_state(_State.LOGIN)
+
+
+func _start_session_check_timeout(generation: int) -> void:
+	await get_tree().create_timer(6.0).timeout
+	if generation != _session_check_generation:
+		return
+	if _session_check_completed:
+		return
+	if _current_state != _State.CHECKING:
+		return
+	Platform.backend_clear_local_auth()
+	_show_status(LocalizationManager.tr_key("auth.status_checking_failed"), true)
+	_set_state(_State.LOGIN)
 
 # ── Button callbacks ──────────────────────────────────────────────────────────
 

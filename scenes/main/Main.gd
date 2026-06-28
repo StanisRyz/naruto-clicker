@@ -32,6 +32,10 @@ func _should_show_android_auth_gate() -> bool:
 func _show_auth_gate() -> void:
 	_auth_gate = AuthGateScreenScene.instantiate()
 	add_child(_auth_gate)
+	if _auth_gate is Control:
+		(_auth_gate as Control).set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		(_auth_gate as Control).size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		(_auth_gate as Control).size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_auth_gate.auth_gate_completed.connect(_on_auth_gate_completed)
 
 
@@ -52,6 +56,10 @@ func show_auth_gate_overlay() -> bool:
 		return false
 	_auth_gate = AuthGateScreenScene.instantiate()
 	add_child(_auth_gate)
+	if _auth_gate is Control:
+		(_auth_gate as Control).set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		(_auth_gate as Control).size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		(_auth_gate as Control).size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_auth_gate.auth_gate_completed.connect(_on_auth_gate_completed)
 	return true
 
