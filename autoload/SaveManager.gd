@@ -229,6 +229,47 @@ func _on_cloud_save_timer_expired() -> void:
 	_send_cloud_save(data, false)
 
 
+# ── Backend cloud save helpers ────────────────────────────────────────────────
+
+func get_cloud_save_payload() -> Dictionary:
+	var data: Dictionary = load_data()
+	if data.is_empty():
+		return {}
+	var payload: Dictionary = data.duplicate(true)
+	payload["save_version"] = SAVE_VERSION
+	payload["last_save_unix_time"] = int(Time.get_unix_time_from_system())
+	payload["cloud_save_meta"] = {
+		"client_platform": "android_rustore",
+		"client_build": ProjectSettings.get_setting("application/config/version", ""),
+	}
+	return payload
+
+
+func apply_cloud_save_payload(payload: Dictionary) -> bool:
+	if payload.is_empty():
+		push_warning("SaveManager: apply_cloud_save_payload called with empty payload")
+		return false
+	if not payload.has("save_version"):
+		push_warning("SaveManager: cloud payload missing save_version")
+		return false
+	var version: int = int(payload.get("save_version", 0))
+	if version <= 0:
+		push_warning("SaveManager: cloud payload has invalid save_version")
+		return false
+	if not payload.has("last_save_unix_time"):
+		push_warning("SaveManager: cloud payload missing last_save_unix_time")
+		return false
+	var ts: int = int(payload.get("last_save_unix_time", 0))
+	if ts <= 0:
+		push_warning("SaveManager: cloud payload has invalid last_save_unix_time")
+		return false
+	var migrated: Dictionary = migrate_save_data(payload)
+	if not validate_save_data(migrated):
+		push_warning("SaveManager: cloud payload failed save validation")
+		return false
+	return save_data(migrated)
+
+
 func _send_cloud_save(data: Dictionary, flush: bool) -> void:
 	var json_string: String = JSON.stringify(data)
 	var byte_size: int = json_string.to_utf8_buffer().size()

@@ -4,8 +4,8 @@ extends RefCounted
 # AUTO-GENERATED — do not edit by hand.
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
-# Generated key count: 417
-# Generated at: 1782660979
+# Generated key count: 433
+# Generated at: 1782662434
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -426,6 +426,22 @@ const TRANSLATIONS: Dictionary = {
 		"settings.account.logout_success": "Logged out",
 		"settings.account.logout_local_fallback": "Local session cleared",
 		"settings.account.backend_error": "Backend error: {error}",
+		"settings.cloud.title": "Cloud Save",
+		"settings.cloud.status_guest_unavailable": "Sign in to use cloud save",
+		"settings.cloud.status_account_ready": "Cloud save ready",
+		"settings.cloud.save_to_cloud": "Save to Cloud",
+		"settings.cloud.load_from_cloud": "Load from Cloud",
+		"settings.cloud.confirm_load": "Confirm Load",
+		"settings.cloud.cancel_load": "Cancel",
+		"settings.cloud.confirm_load_warning": "Loading from cloud will replace local progress.",
+		"settings.cloud.upload_started": "Uploading cloud save...",
+		"settings.cloud.upload_success": "Cloud save uploaded",
+		"settings.cloud.upload_failed": "Cloud upload failed",
+		"settings.cloud.download_started": "Loading cloud save...",
+		"settings.cloud.download_success": "Cloud save loaded",
+		"settings.cloud.download_failed": "Cloud download failed",
+		"settings.cloud.no_cloud_save": "No cloud save found",
+		"settings.cloud.invalid_cloud_save": "Cloud save is invalid",
 	},
 	"ru": {
 		"ui.common.close": "Закрыть",
@@ -845,6 +861,22 @@ const TRANSLATIONS: Dictionary = {
 		"settings.account.logout_success": "Вы вышли из аккаунта",
 		"settings.account.logout_local_fallback": "Локальная сессия очищена",
 		"settings.account.backend_error": "Ошибка backend: {error}",
+		"settings.cloud.title": "Облачное сохранение",
+		"settings.cloud.status_guest_unavailable": "Войдите в аккаунт чтобы использовать облачное сохранение",
+		"settings.cloud.status_account_ready": "Облачное сохранение доступно",
+		"settings.cloud.save_to_cloud": "Сохранить в облако",
+		"settings.cloud.load_from_cloud": "Загрузить из облака",
+		"settings.cloud.confirm_load": "Подтвердить загрузку",
+		"settings.cloud.cancel_load": "Отмена",
+		"settings.cloud.confirm_load_warning": "Загрузка из облака заменит локальный прогресс.",
+		"settings.cloud.upload_started": "Сохраняем в облако...",
+		"settings.cloud.upload_success": "Прогресс сохранён в облако",
+		"settings.cloud.upload_failed": "Не удалось сохранить в облако",
+		"settings.cloud.download_started": "Загружаем из облака...",
+		"settings.cloud.download_success": "Прогресс загружен из облака",
+		"settings.cloud.download_failed": "Не удалось загрузить из облака",
+		"settings.cloud.no_cloud_save": "Облачное сохранение не найдено",
+		"settings.cloud.invalid_cloud_save": "Облачное сохранение повреждено или несовместимо",
 	},
 }
 

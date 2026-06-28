@@ -132,6 +132,10 @@ func _ready() -> void:
 	settings_window.reset_requested.connect(_on_settings_reset_confirmed)
 	settings_window.language_manually_changed.connect(_on_language_manually_changed)
 	settings_window.account_auth_requested.connect(_on_settings_account_auth_requested)
+	settings_window.cloud_save_upload_requested.connect(_on_settings_cloud_save_upload_requested)
+	settings_window.cloud_save_download_requested.connect(_on_settings_cloud_save_download_requested)
+	Platform.backend_operation_succeeded.connect(_on_backend_cloud_op_succeeded)
+	Platform.backend_operation_failed.connect(_on_backend_cloud_op_failed)
 	upgrades_button.pressed.connect(_on_upgrades_button_pressed)
 	partners_button.pressed.connect(_on_partners_button_pressed)
 	settlement_button.pressed.connect(_on_settlement_button_pressed)
@@ -1883,3 +1887,67 @@ func _update_rewarded_ad_banner() -> void:
 	else:
 		rewarded_ad_banner.visible = false
 		rewarded_ad_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+
+# ── Backend cloud save (manual upload / download) ─────────────────────────────
+
+func _on_settings_cloud_save_upload_requested() -> void:
+	if not OS.has_feature("android") or not Platform.backend_has_session():
+		settings_window.set_cloud_save_status(
+			LocalizationManager.tr_key("settings.cloud.upload_failed"), true
+		)
+		return
+	_save_game_now()
+	var payload := SaveManager.get_cloud_save_payload()
+	if payload.is_empty():
+		settings_window.set_cloud_save_status(
+			LocalizationManager.tr_key("settings.cloud.upload_failed"), true
+		)
+		return
+	Platform.backend_save_save(payload)
+
+
+func _on_settings_cloud_save_download_requested() -> void:
+	if not OS.has_feature("android") or not Platform.backend_has_session():
+		settings_window.set_cloud_save_status(
+			LocalizationManager.tr_key("settings.cloud.download_failed"), true
+		)
+		return
+	Platform.backend_load_save()
+
+
+func _on_backend_cloud_op_succeeded(operation: String, response: Dictionary) -> void:
+	match operation:
+		"load_save":
+			var has_save: bool = bool(response.get("has_save", false))
+			if not has_save:
+				settings_window.set_cloud_save_status(
+					LocalizationManager.tr_key("settings.cloud.no_cloud_save")
+				)
+				return
+			var save_data: Dictionary = response.get("save_data", {})
+			var ok: bool = SaveManager.apply_cloud_save_payload(save_data)
+			if ok:
+				var loaded: Dictionary = SaveManager.load_data()
+				if not loaded.is_empty():
+					state.apply_save_data(loaded)
+					_reset_runtime_state_for_new_game()
+					_sync_boss_timer()
+					_update_ui()
+					stage_navigator.center_on_level(state.current_level)
+				settings_window.set_cloud_save_status(
+					LocalizationManager.tr_key("settings.cloud.download_success")
+				)
+			else:
+				settings_window.set_cloud_save_status(
+					LocalizationManager.tr_key("settings.cloud.invalid_cloud_save"), true
+				)
+
+
+func _on_backend_cloud_op_failed(operation: String, error_code: String, _status_code: int, _response: Dictionary) -> void:
+	match operation:
+		"load_save":
+			settings_window.set_cloud_save_status(
+				LocalizationManager.format_key("settings.account.backend_error", {"error": error_code}),
+				true
+			)

@@ -8,6 +8,8 @@ signal reset_requested
 signal reset_confirmed
 signal language_manually_changed(language_code: String)
 signal account_auth_requested
+signal cloud_save_upload_requested
+signal cloud_save_download_requested
 
 const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 
@@ -64,6 +66,20 @@ var _account_logout_button: Button = null
 var _account_logout_button_label: Label = null
 var _account_action_label: Label = null
 var _account_signals_connected: bool = false
+
+var _cloud_section: Control = null
+var _cloud_title_label: Label = null
+var _cloud_status_label: Label = null
+var _cloud_upload_button: Button = null
+var _cloud_upload_button_label: Label = null
+var _cloud_download_button: Button = null
+var _cloud_download_button_label: Label = null
+var _cloud_confirm_box: Control = null
+var _cloud_confirm_warning_label: Label = null
+var _cloud_confirm_button: Button = null
+var _cloud_confirm_button_label: Label = null
+var _cloud_cancel_button: Button = null
+var _cloud_cancel_button_label: Label = null
 
 
 func _ready() -> void:
@@ -501,6 +517,7 @@ func _create_account_section() -> void:
 	account_vbox.add_child(action_lbl)
 	_account_action_label = action_lbl
 
+	_create_cloud_section(account_vbox)
 	_refresh_account_section()
 
 
@@ -519,6 +536,7 @@ func _refresh_account_static_labels() -> void:
 		_account_logout_button_label.text = LocalizationManager.tr_key("settings.account.logout")
 	if _account_code_input != null:
 		_account_code_input.placeholder_text = LocalizationManager.tr_key("settings.account.verification_code_placeholder")
+	_refresh_cloud_static_labels()
 	_refresh_account_section()
 
 
@@ -552,6 +570,7 @@ func _refresh_account_section() -> void:
 	_account_sign_in_button.visible = not has_session
 	_account_verify_button.visible = has_session and not verified
 	_account_logout_button.visible = has_session
+	_refresh_cloud_section()
 
 
 func _show_account_action(text: String, is_error: bool = false) -> void:
@@ -607,6 +626,9 @@ func _on_account_backend_op_succeeded(operation: String, _response: Dictionary) 
 			_refresh_account_section()
 			_show_account_action(LocalizationManager.tr_key("settings.account.logout_success"))
 
+		"save_save":
+			set_cloud_save_status(LocalizationManager.tr_key("settings.cloud.upload_success"))
+
 
 func _on_account_backend_op_failed(operation: String, error_code: String, _status_code: int, _response: Dictionary) -> void:
 	match operation:
@@ -626,6 +648,12 @@ func _on_account_backend_op_failed(operation: String, error_code: String, _statu
 			Platform.backend_clear_local_auth()
 			_refresh_account_section()
 			_show_account_action(LocalizationManager.tr_key("settings.account.logout_local_fallback"))
+
+		"save_save":
+			set_cloud_save_status(
+				LocalizationManager.format_key("settings.account.backend_error", {"error": error_code}),
+				true
+			)
 
 
 func _on_account_sign_in_pressed() -> void:
@@ -649,3 +677,175 @@ func _on_account_confirm_code_pressed() -> void:
 func _on_account_logout_pressed() -> void:
 	_show_account_action("")
 	Platform.backend_logout()
+
+
+# ── Cloud save section ────────────────────────────────────────────────────────
+
+func _create_cloud_section(parent_vbox: VBoxContainer) -> void:
+	var sep := HSeparator.new()
+	parent_vbox.add_child(sep)
+
+	var cloud_vbox := VBoxContainer.new()
+	cloud_vbox.add_theme_constant_override("separation", 6)
+	parent_vbox.add_child(cloud_vbox)
+	_cloud_section = cloud_vbox
+
+	var title_lbl := Label.new()
+	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_lbl.add_theme_font_size_override("font_size", 15)
+	cloud_vbox.add_child(title_lbl)
+	_cloud_title_label = title_lbl
+
+	var status_lbl := Label.new()
+	status_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	status_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	status_lbl.add_theme_font_size_override("font_size", 12)
+	cloud_vbox.add_child(status_lbl)
+	_cloud_status_label = status_lbl
+
+	var upload_btn := Button.new()
+	upload_btn.custom_minimum_size = Vector2(0, 56)
+	upload_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	upload_btn.pressed.connect(_on_cloud_upload_pressed)
+	cloud_vbox.add_child(upload_btn)
+	_cloud_upload_button = upload_btn
+	_cloud_upload_button_label = _make_image_button_label(
+		upload_btn, "ui.popup.button.default",
+		LocalizationManager.tr_key("settings.cloud.save_to_cloud")
+	)
+	UiFontConfig.apply_label_font_size(_cloud_upload_button_label, UiFontConfig.SETTINGS_ACTION_BUTTON_FONT_SIZE)
+
+	var download_btn := Button.new()
+	download_btn.custom_minimum_size = Vector2(0, 56)
+	download_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	download_btn.pressed.connect(_on_cloud_download_pressed)
+	cloud_vbox.add_child(download_btn)
+	_cloud_download_button = download_btn
+	_cloud_download_button_label = _make_image_button_label(
+		download_btn, "ui.popup.button.default",
+		LocalizationManager.tr_key("settings.cloud.load_from_cloud")
+	)
+	UiFontConfig.apply_label_font_size(_cloud_download_button_label, UiFontConfig.SETTINGS_ACTION_BUTTON_FONT_SIZE)
+
+	var confirm_box := VBoxContainer.new()
+	confirm_box.add_theme_constant_override("separation", 4)
+	confirm_box.visible = false
+	cloud_vbox.add_child(confirm_box)
+	_cloud_confirm_box = confirm_box
+
+	var warn_lbl := Label.new()
+	warn_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	warn_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	warn_lbl.add_theme_font_size_override("font_size", 12)
+	warn_lbl.add_theme_color_override("font_color", Color(0.9, 0.75, 0.35, 1.0))
+	confirm_box.add_child(warn_lbl)
+	_cloud_confirm_warning_label = warn_lbl
+
+	var confirm_row := HBoxContainer.new()
+	confirm_row.add_theme_constant_override("separation", 6)
+	confirm_box.add_child(confirm_row)
+
+	var cancel_btn := Button.new()
+	cancel_btn.custom_minimum_size = Vector2(0, 52)
+	cancel_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	cancel_btn.pressed.connect(_on_cloud_confirm_cancel_pressed)
+	confirm_row.add_child(cancel_btn)
+	_cloud_cancel_button = cancel_btn
+	_cloud_cancel_button_label = _make_image_button_label(
+		cancel_btn, "ui.popup.button.default",
+		LocalizationManager.tr_key("settings.cloud.cancel_load")
+	)
+	UiFontConfig.apply_label_font_size(_cloud_cancel_button_label, UiFontConfig.SETTINGS_ACTION_BUTTON_FONT_SIZE)
+
+	var confirm_btn := Button.new()
+	confirm_btn.custom_minimum_size = Vector2(0, 52)
+	confirm_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	confirm_btn.pressed.connect(_on_cloud_confirm_load_pressed)
+	confirm_row.add_child(confirm_btn)
+	_cloud_confirm_button = confirm_btn
+	_cloud_confirm_button_label = _make_image_button_label(
+		confirm_btn, "ui.popup.button.danger",
+		LocalizationManager.tr_key("settings.cloud.confirm_load")
+	)
+	UiFontConfig.apply_label_font_size(_cloud_confirm_button_label, UiFontConfig.SETTINGS_ACTION_BUTTON_FONT_SIZE)
+
+
+func _refresh_cloud_section() -> void:
+	if _cloud_section == null:
+		return
+	var has_session := Platform.backend_has_session()
+	if _cloud_title_label != null:
+		_cloud_title_label.text = LocalizationManager.tr_key("settings.cloud.title")
+	if _cloud_status_label != null:
+		_cloud_status_label.text = (
+			LocalizationManager.tr_key("settings.cloud.status_account_ready")
+			if has_session else
+			LocalizationManager.tr_key("settings.cloud.status_guest_unavailable")
+		)
+	if _cloud_upload_button != null:
+		_cloud_upload_button.visible = has_session
+	if _cloud_download_button != null:
+		_cloud_download_button.visible = has_session
+	if _cloud_confirm_box != null:
+		_cloud_confirm_box.visible = false
+
+
+func _refresh_cloud_static_labels() -> void:
+	if _cloud_section == null:
+		return
+	if _cloud_title_label != null:
+		_cloud_title_label.text = LocalizationManager.tr_key("settings.cloud.title")
+	if _cloud_upload_button_label != null:
+		_cloud_upload_button_label.text = LocalizationManager.tr_key("settings.cloud.save_to_cloud")
+	if _cloud_download_button_label != null:
+		_cloud_download_button_label.text = LocalizationManager.tr_key("settings.cloud.load_from_cloud")
+	if _cloud_confirm_button_label != null:
+		_cloud_confirm_button_label.text = LocalizationManager.tr_key("settings.cloud.confirm_load")
+	if _cloud_cancel_button_label != null:
+		_cloud_cancel_button_label.text = LocalizationManager.tr_key("settings.cloud.cancel_load")
+	if _cloud_confirm_warning_label != null:
+		_cloud_confirm_warning_label.text = LocalizationManager.tr_key("settings.cloud.confirm_load_warning")
+	_refresh_cloud_section()
+
+
+func _on_cloud_upload_pressed() -> void:
+	if _cloud_confirm_box != null:
+		_cloud_confirm_box.visible = false
+	set_cloud_save_status(LocalizationManager.tr_key("settings.cloud.upload_started"))
+	cloud_save_upload_requested.emit()
+
+
+func _on_cloud_download_pressed() -> void:
+	if _cloud_confirm_box == null:
+		return
+	if _cloud_confirm_warning_label != null:
+		_cloud_confirm_warning_label.text = LocalizationManager.tr_key("settings.cloud.confirm_load_warning")
+	_cloud_confirm_box.visible = true
+
+
+func _on_cloud_confirm_load_pressed() -> void:
+	if _cloud_confirm_box != null:
+		_cloud_confirm_box.visible = false
+	set_cloud_save_status(LocalizationManager.tr_key("settings.cloud.download_started"))
+	cloud_save_download_requested.emit()
+
+
+func _on_cloud_confirm_cancel_pressed() -> void:
+	if _cloud_confirm_box != null:
+		_cloud_confirm_box.visible = false
+
+
+# ── Public cloud save helpers ─────────────────────────────────────────────────
+
+func set_cloud_save_status(message: String, is_error: bool = false) -> void:
+	if _cloud_status_label == null:
+		return
+	_cloud_status_label.text = message
+	if is_error:
+		_cloud_status_label.add_theme_color_override("font_color", Color(0.9, 0.35, 0.35, 1.0))
+	else:
+		_cloud_status_label.remove_theme_color_override("font_color")
+
+
+func refresh_account_section() -> void:
+	_refresh_account_section()

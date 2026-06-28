@@ -735,6 +735,73 @@ the root Control had zero size and clipped all children.
 - `scenes/main/Main.gd` — force full-rect on auth gate after `add_child()` in
   both `_show_auth_gate()` and `show_auth_gate_overlay()`.
 
+### C5.1 — Manual Backend Cloud Sync from Settings (completed)
+
+Android/RuStore signed-in accounts can now manually upload and download their save
+to/from the backend cloud. Guest mode remains local-only.
+
+**Upload (Save to Cloud):**
+
+- User presses "Save to Cloud" in the Account section of Settings.
+- `SettingsWindow` emits `cloud_save_upload_requested`.
+- `ClickerScreen` saves the current state to disk, then calls
+  `SaveManager.get_cloud_save_payload()` to get a deep copy of the local save
+  with `save_version` and `last_save_unix_time` stamped to the current time.
+- `Platform.backend_save_save(payload)` sends `PUT /v1/save` with the payload.
+- On success, `SettingsWindow` shows "Cloud save uploaded" status.
+- On failure, `SettingsWindow` shows the backend error code.
+
+**Download (Load from Cloud):**
+
+- User presses "Load from Cloud" in Settings.
+- An inline confirmation warning appears: "Loading from cloud will replace local progress."
+- After user confirms, `SettingsWindow` emits `cloud_save_download_requested`.
+- `ClickerScreen` calls `Platform.backend_load_save()`.
+- On `has_save=false`: status shows "No cloud save found"; local save unchanged.
+- On `has_save=true`: `SaveManager.apply_cloud_save_payload(save_data)` validates
+  (`save_version > 0`, `last_save_unix_time > 0`), applies migration, and writes
+  to the local save file. `ClickerScreen` reloads state from disk, resets runtime
+  timers, refreshes all UI panels, and shows "Cloud save loaded".
+- On invalid payload: shows "Cloud save is invalid"; local save unchanged.
+- On network error: shows backend error code.
+
+**Guest mode:** Cloud save buttons are hidden; status shows "Sign in to use cloud save".
+
+**Web/Yandex:** Account section is hidden entirely (Android-only); Yandex cloud-save
+via `YandexBridge` is unchanged.
+
+**New helper methods:**
+
+- `SaveManager.get_cloud_save_payload() -> Dictionary` — deep copy of local save
+  with `save_version`, `last_save_unix_time`, and optional `cloud_save_meta` block.
+  Does not mutate internal state.
+- `SaveManager.apply_cloud_save_payload(payload) -> bool` — validates, migrates,
+  and writes a cloud payload to the local save file. Returns false on any validation
+  failure without touching the existing local save.
+
+**What C5.1 did NOT add:**
+
+- Automatic cloud-save on game events — future patch.
+- Startup cloud-load — future patch.
+- Local/cloud conflict resolution — future patch.
+- Guest-to-account save upload after login — future patch.
+- Backend Cloud Function changes — none.
+- Gameplay, ads, payments, balance — unchanged.
+
+**Files changed:**
+
+- `autoload/SaveManager.gd` — added `get_cloud_save_payload()` and
+  `apply_cloud_save_payload()`.
+- `scenes/ui/SettingsWindow.gd` — added `cloud_save_upload_requested` /
+  `cloud_save_download_requested` signals; cloud save sub-section in account block
+  (upload button, download button, inline confirmation); `set_cloud_save_status()`
+  and `refresh_account_section()` public helpers.
+- `scenes/game/ClickerScreen.gd` — connected cloud sync signals; implemented
+  `_on_settings_cloud_save_upload_requested()`, `_on_settings_cloud_save_download_requested()`,
+  `_on_backend_cloud_op_succeeded()`, `_on_backend_cloud_op_failed()`.
+- `localization/game_text.csv` — 17 new `settings.cloud.*` keys (EN + RU).
+- `scripts/ui/LocalizationData.gd` — regenerated.
+
 ---
 
 ## QoL update mode

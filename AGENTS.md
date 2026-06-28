@@ -699,15 +699,38 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
   always return to a no-session state.
 - Email verification codes must **never** be logged or stored in script variables beyond
   the temporary LineEdit text that is cleared after use.
-- Do not wire backend cloud-save into `SaveManager` in a settings-UI patch. That is a
-  separate future patch.
 - Do not auto-upload guest saves when the user signs in from settings.
 - The account section in `SettingsWindow` connects to `Platform.backend_auth_changed`,
   `Platform.backend_operation_succeeded`, and `Platform.backend_operation_failed` only
   for operations it initiates: `logout`, `request_email_verification`,
-  `confirm_email_verification`. All other operations must be ignored (match by operation
-  string, not wildcard).
+  `confirm_email_verification`, `save_save`. All other operations must be ignored
+  (match by operation string, not wildcard). `load_save` result is handled by
+  `ClickerScreen`, which calls `settings_window.set_cloud_save_status()`.
 - Disconnect Platform signals in `_exit_tree()` to avoid callbacks on freed nodes.
+
+## Manual Cloud Sync Rules (C5.1)
+
+- Manual backend cloud sync is **account-only on Android/RuStore**. Guest mode
+  must never call `Platform.backend_save_save()` or `Platform.backend_load_save()`.
+- `SettingsWindow` must **not** apply cloud save data. It emits signals
+  (`cloud_save_upload_requested`, `cloud_save_download_requested`) and shows status
+  labels via `set_cloud_save_status()`. `ClickerScreen` owns all data operations.
+- `SaveManager` must **not** call `Platform` or any backend method. The two new
+  helpers (`get_cloud_save_payload`, `apply_cloud_save_payload`) are pure file-IO.
+- `SaveManager.get_cloud_save_payload()` always reads from the local save file.
+  `ClickerScreen` must call `_save_game_now()` before calling it to ensure the
+  disk has the latest state.
+- `SaveManager.apply_cloud_save_payload()` validates `save_version > 0` and
+  `last_save_unix_time > 0` before writing. Return `false` on any failure — do not
+  overwrite the existing local save on invalid payloads.
+- Loading from cloud must require a **confirmation step** before emitting
+  `cloud_save_download_requested`. Never apply cloud saves without user confirmation.
+- Do not log full save payloads. `get_cloud_save_payload()` and `apply_cloud_save_payload()`
+  must not print JSON or save content.
+- Automatic cloud-save, startup cloud-load, and conflict resolution are **future patches**.
+  Do not add them to this flow.
+- Web/Yandex cloud-save via `YandexBridge` is completely separate and must remain
+  unchanged. The backend cloud-sync UI must never appear on Web/editor.
 
 ## Backend API Client Rules
 
