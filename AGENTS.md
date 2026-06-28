@@ -654,12 +654,25 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
 - `BackendApiClient` must be `configure()`d with a base URL before use. The URL
   may be read from the project setting `application/cloud_save/backend_url` via
   `configure_from_project_settings()`. Do not hardcode the backend URL in game code.
+- **If `is_configured()` is false**, all request methods emit
+  `operation_failed(op, "not_configured", 0, {})` and return `false` without
+  touching the network. This is checked after `missing_session` and before
+  `request_in_progress`.
+- **If a protected endpoint is called without a session token**, the client emits
+  `operation_failed(op, "missing_session", 0, {})` and returns `false` without
+  sending any HTTP request.
+- **Request body contents must never be logged.** Do not add `print` or
+  `push_warning` calls that include request body dictionaries.
 - Do not wire `BackendApiClient` into `AndroidRuStorePlatform` or `SaveManager`
   until that integration patch is explicitly requested.
 - Do not add account UI until an account UI patch is explicitly requested.
 - Backend error codes (e.g. `invalid_credentials`, `email_already_registered`,
   `missing_save_version`) are preserved verbatim by `BackendApiClient`. Do not
   translate or remap them in the client layer — UI handles that.
+- Non-2xx responses with a parseable `error` field use that backend error code.
+  Non-2xx responses without parseable JSON emit `http_error`.
+- 2xx responses with empty body emit `empty_response`. 2xx responses with
+  non-JSON or non-Dictionary body emit `invalid_json_response`.
 
 ## Documentation Update Rules
 

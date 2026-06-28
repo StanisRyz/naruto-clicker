@@ -6,14 +6,13 @@ extends Node
 # Owns one HTTPRequest child; supports one active request at a time.
 # Never logs passwords, session tokens, reset/verification codes, or save JSON.
 #
-# Usage:
+# Setup:
 #   var client := BackendApiClient.new()
 #   add_child(client)
 #   client.set_auth_store(BackendAuthStore.new())
-#   client.configure("https://your-backend-url")
+#   client.configure("https://your-backend-url")   # or configure_from_project_settings()
 #   client.operation_succeeded.connect(_on_ok)
 #   client.operation_failed.connect(_on_fail)
-#   client.login("user@example.com", "password")
 
 # Project-settings key where the backend base URL may be stored.
 const DEFAULT_PROJECT_SETTING_BACKEND_URL := "application/cloud_save/backend_url"
@@ -166,6 +165,22 @@ func delete_save() -> bool:
 
 # ── HTTP helpers ──────────────────────────────────────────────────────────────
 
+# Guard check before sending any request.
+# Order: missing_session → not_configured → request_in_progress.
+# Returns true when the request may proceed; emits failure and returns false otherwise.
+func _can_start_request(operation: String, needs_auth: bool) -> bool:
+	if needs_auth and not has_session():
+		_fail_local(operation, "missing_session", 0, {})
+		return false
+	if not is_configured():
+		_fail_local(operation, "not_configured", 0, {})
+		return false
+	if _busy:
+		_fail_local(operation, "request_in_progress", 0, {})
+		return false
+	return true
+
+
 func _build_headers(needs_auth: bool) -> PackedStringArray:
 	var headers: PackedStringArray = PackedStringArray([
 		"Content-Type: application/json",
@@ -177,11 +192,7 @@ func _build_headers(needs_auth: bool) -> PackedStringArray:
 
 
 func _post(path: String, body: Dictionary, operation: String, needs_auth: bool) -> bool:
-	if needs_auth and not has_session():
-		_fail_local(operation, "missing_session", 0, {})
-		return false
-	if _busy:
-		_fail_local(operation, "request_in_progress", 0, {})
+	if not _can_start_request(operation, needs_auth):
 		return false
 	_start_request(operation)
 	var err: int = _http.request(
@@ -198,11 +209,7 @@ func _post(path: String, body: Dictionary, operation: String, needs_auth: bool) 
 
 
 func _get(path: String, operation: String, needs_auth: bool) -> bool:
-	if needs_auth and not has_session():
-		_fail_local(operation, "missing_session", 0, {})
-		return false
-	if _busy:
-		_fail_local(operation, "request_in_progress", 0, {})
+	if not _can_start_request(operation, needs_auth):
 		return false
 	_start_request(operation)
 	var err: int = _http.request(
@@ -218,11 +225,7 @@ func _get(path: String, operation: String, needs_auth: bool) -> bool:
 
 
 func _put(path: String, body: Dictionary, operation: String, needs_auth: bool) -> bool:
-	if needs_auth and not has_session():
-		_fail_local(operation, "missing_session", 0, {})
-		return false
-	if _busy:
-		_fail_local(operation, "request_in_progress", 0, {})
+	if not _can_start_request(operation, needs_auth):
 		return false
 	_start_request(operation)
 	var err: int = _http.request(
@@ -239,11 +242,7 @@ func _put(path: String, body: Dictionary, operation: String, needs_auth: bool) -
 
 
 func _delete(path: String, operation: String, needs_auth: bool) -> bool:
-	if needs_auth and not has_session():
-		_fail_local(operation, "missing_session", 0, {})
-		return false
-	if _busy:
-		_fail_local(operation, "request_in_progress", 0, {})
+	if not _can_start_request(operation, needs_auth):
 		return false
 	_start_request(operation)
 	var err: int = _http.request(
@@ -272,6 +271,21 @@ func _fail_local(operation: String, error_code: String, status_code: int, respon
 	operation_failed.emit(operation, error_code, status_code, response)
 
 
+# Parses a raw HTTP body into a result dictionary.
+# Returns {"ok": true, "error": "", "response": dict} on success.
+# Returns {"ok": false, "error": "<code>", "response": {}} on failure.
+func _parse_response_body(body: PackedByteArray) -> Dictionary:
+	var text: String = body.get_string_from_utf8().strip_edges()
+	if text == "":
+		return {"ok": false, "error": "empty_response", "response": {}}
+	var json: JSON = JSON.new()
+	if json.parse(text) != OK:
+		return {"ok": false, "error": "invalid_json_response", "response": {}}
+	if not json.data is Dictionary:
+		return {"ok": false, "error": "invalid_json_response", "response": {}}
+	return {"ok": true, "error": "", "response": json.data}
+
+
 # ── HTTPRequest callback ──────────────────────────────────────────────────────
 
 func _on_request_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
@@ -282,22 +296,31 @@ func _on_request_completed(result: int, response_code: int, _headers: PackedStri
 		operation_failed.emit(op, "network_error", response_code, {})
 		return
 
-	var text: String = body.get_string_from_utf8()
-	var parsed: Dictionary = {}
+	var is_2xx: bool = response_code >= 200 and response_code < 300
+	var parsed: Dictionary = _parse_response_body(body)
 
-	if text != "":
-		var json: JSON = JSON.new()
-		if json.parse(text) != OK or not json.data is Dictionary:
-			operation_failed.emit(op, "invalid_json_response", response_code, {})
-			return
-		parsed = json.data
-
-	if parsed.get("ok", false) != true:
-		var error_code: String = str(parsed.get("error", "unknown_error"))
-		operation_failed.emit(op, error_code, response_code, parsed)
+	if not is_2xx:
+		# For non-2xx: forward backend error code if the body is valid JSON with an error field.
+		if parsed.ok:
+			var err_code: String = str(parsed.response.get("error", "http_error"))
+			operation_failed.emit(op, err_code, response_code, parsed.response)
+		else:
+			operation_failed.emit(op, "http_error", response_code, {})
 		return
 
-	_handle_success(op, response_code, parsed)
+	# 2xx path: any parse failure is a client-side error.
+	if not parsed.ok:
+		operation_failed.emit(op, parsed.error, response_code, {})
+		return
+
+	var response: Dictionary = parsed.response
+
+	if response.get("ok", false) != true:
+		var error_code: String = str(response.get("error", "unknown_error"))
+		operation_failed.emit(op, error_code, response_code, response)
+		return
+
+	_handle_success(op, response_code, response)
 
 
 # ── Per-operation success side-effects ────────────────────────────────────────

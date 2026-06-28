@@ -495,11 +495,23 @@ application/cloud_save/backend_url
 
 Call `BackendApiClient.configure_from_project_settings()` to read it, or
 `BackendApiClient.configure(url)` to supply it directly. The client does not
-hardcode any URL; it must be configured before making requests.
+hardcode any URL; **it must be configured before making requests.**
 
-**Never commit the backend URL as a secret or store credentials in project files.**
-No passwords, session tokens, SMTP keys, or service-account keys should be
-committed to the repository.
+If the client is not configured when a request is attempted, it emits
+`operation_failed(op, "not_configured", 0, {})` and returns `false` without
+touching the network.
+
+If a protected endpoint is called without a stored session token, the client
+emits `operation_failed(op, "missing_session", 0, {})` without touching
+the network.
+
+The default project setting value is an empty string. Supply the real URL
+through `configure()` or `configure_from_project_settings()` at runtime
+(e.g., from a local env config or an editor project setting override).
+
+**Never commit the backend URL if you treat it as private config, and never
+commit passwords, session tokens, SMTP keys, or service-account keys to
+the repository.**
 
 ### Architecture notes
 
