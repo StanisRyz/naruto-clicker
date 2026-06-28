@@ -636,6 +636,36 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
   `docs/rustore_readiness_checklist.md`, `docs/android_release_signing.md`, and
   `docs/android_release_validation.md` in sync with the actual export preset.
 
+## Account Settings UI Rules
+
+- The account section in `SettingsWindow` is shown **only on Android**
+  (`OS.has_feature("android")`). It must be hidden (or not created) on Web/editor to
+  avoid confusing Yandex Games users and to prevent stray backend calls on Web.
+- `SettingsWindow` must call backend operations **only through `Platform`**. It must
+  never instantiate or reference `BackendApiClient` directly.
+- `SettingsWindow` must never call `SaveManager` for backend cloud-save operations.
+- The `account_auth_requested` signal on `SettingsWindow` is the only way settings
+  triggers an AuthGate open. `ClickerScreen` listens and delegates to
+  `Main.show_auth_gate_overlay()`.
+- `Main.show_auth_gate_overlay()` must **not** re-instantiate `ClickerScreen`. It
+  removes the overlay when `auth_gate_completed` fires and stores the new auth mode.
+  Gameplay continues uninterrupted.
+- Do **not** create a second `AuthGateScreen` if one already exists (`_auth_gate` guard).
+- Logout must **not** delete the local game save. Call `Platform.backend_logout()` and on
+  any failure call `Platform.backend_clear_local_auth()` as a fallback so the user can
+  always return to a no-session state.
+- Email verification codes must **never** be logged or stored in script variables beyond
+  the temporary LineEdit text that is cleared after use.
+- Do not wire backend cloud-save into `SaveManager` in a settings-UI patch. That is a
+  separate future patch.
+- Do not auto-upload guest saves when the user signs in from settings.
+- The account section in `SettingsWindow` connects to `Platform.backend_auth_changed`,
+  `Platform.backend_operation_succeeded`, and `Platform.backend_operation_failed` only
+  for operations it initiates: `logout`, `request_email_verification`,
+  `confirm_email_verification`. All other operations must be ignored (match by operation
+  string, not wildcard).
+- Disconnect Platform signals in `_exit_tree()` to avoid callbacks on freed nodes.
+
 ## Backend API Client Rules
 
 - Backend client code lives under `scripts/platform/backend/`.

@@ -39,7 +39,21 @@ func _on_auth_gate_completed(mode: String) -> void:
 	if is_instance_valid(_auth_gate):
 		_auth_gate.queue_free()
 		_auth_gate = null
-	_start_game_after_auth_gate(mode)
+	if _startup_started:
+		_startup_auth_mode = mode
+	else:
+		_start_game_after_auth_gate(mode)
+
+
+func show_auth_gate_overlay() -> bool:
+	if not OS.has_feature("android"):
+		return false
+	if is_instance_valid(_auth_gate):
+		return false
+	_auth_gate = AuthGateScreenScene.instantiate()
+	add_child(_auth_gate)
+	_auth_gate.auth_gate_completed.connect(_on_auth_gate_completed)
+	return true
 
 
 func _start_game_after_auth_gate(mode: String) -> void:

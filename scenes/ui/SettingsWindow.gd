@@ -7,6 +7,7 @@ signal save_requested
 signal reset_requested
 signal reset_confirmed
 signal language_manually_changed(language_code: String)
+signal account_auth_requested
 
 const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 
@@ -45,6 +46,25 @@ var _reset_confirm_button_label: Label = null
 
 var _reset_action_pending: bool = false
 
+var _account_section: Control = null
+var _account_title_label: Label = null
+var _account_status_label: Label = null
+var _account_email_label: Label = null
+var _account_verification_label: Label = null
+var _account_guest_warning_label: Label = null
+var _account_sign_in_button: Button = null
+var _account_sign_in_button_label: Label = null
+var _account_verify_button: Button = null
+var _account_verify_button_label: Label = null
+var _account_code_box: Control = null
+var _account_code_input: LineEdit = null
+var _account_confirm_button: Button = null
+var _account_confirm_button_label: Label = null
+var _account_logout_button: Button = null
+var _account_logout_button_label: Label = null
+var _account_action_label: Label = null
+var _account_signals_connected: bool = false
+
 
 func _ready() -> void:
 	overlay.gui_input.connect(_on_overlay_gui_input)
@@ -78,7 +98,14 @@ func _ready() -> void:
 	UiFontConfig.apply_label_font_size(_reset_button_label, UiFontConfig.SETTINGS_ACTION_BUTTON_FONT_SIZE)
 	LocalizationManager.language_changed.connect(_refresh_static_labels)
 	_refresh_static_labels()
+	if _is_backend_account_ui_supported():
+		_create_account_section()
+		_connect_account_platform_signals()
 	hide()
+
+
+func _exit_tree() -> void:
+	_disconnect_account_platform_signals()
 
 
 func _refresh_static_labels() -> void:
@@ -97,6 +124,7 @@ func _refresh_static_labels() -> void:
 		_reset_cancel_button_label.text = LocalizationManager.tr_key("ui.common.cancel")
 	if _reset_confirm_button_label:
 		_reset_confirm_button_label.text = LocalizationManager.tr_key("settings.reset")
+	_refresh_account_static_labels()
 
 
 func _create_language_row() -> void:
@@ -168,6 +196,7 @@ func show_window(state: ClickerState) -> void:
 	refresh_view(state)
 	status_label.text = ""
 	reset_confirm_dialog.hide()
+	_refresh_account_section()
 	show()
 
 
@@ -351,3 +380,272 @@ func _make_image_button_label(button: Button, asset_key: String, initial_text: S
 	label.text = initial_text
 	button.add_child(label)
 	return label
+
+
+# ── Account section ───────────────────────────────────────────────────────────
+
+func _is_backend_account_ui_supported() -> bool:
+	return OS.has_feature("android")
+
+
+func _create_account_section() -> void:
+	var vbox: VBoxContainer = panel_container.get_node("MarginContainer/VBoxContainer")
+
+	panel_container.offset_top = -437.0
+	panel_container.offset_bottom = 437.0
+
+	var sep := HSeparator.new()
+	vbox.add_child(sep)
+
+	var account_vbox := VBoxContainer.new()
+	account_vbox.add_theme_constant_override("separation", 8)
+	vbox.add_child(account_vbox)
+	_account_section = account_vbox
+
+	var title_lbl := Label.new()
+	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_lbl.add_theme_font_size_override("font_size", 16)
+	account_vbox.add_child(title_lbl)
+	_account_title_label = title_lbl
+
+	var status_lbl := Label.new()
+	status_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	account_vbox.add_child(status_lbl)
+	_account_status_label = status_lbl
+
+	var email_lbl := Label.new()
+	email_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	email_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	account_vbox.add_child(email_lbl)
+	_account_email_label = email_lbl
+
+	var verif_lbl := Label.new()
+	verif_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	account_vbox.add_child(verif_lbl)
+	_account_verification_label = verif_lbl
+
+	var guest_warn := Label.new()
+	guest_warn.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	guest_warn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	guest_warn.add_theme_color_override("font_color", Color(0.75, 0.65, 0.35, 1.0))
+	account_vbox.add_child(guest_warn)
+	_account_guest_warning_label = guest_warn
+
+	var sign_in_btn := Button.new()
+	sign_in_btn.custom_minimum_size = Vector2(0, 60)
+	sign_in_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sign_in_btn.pressed.connect(_on_account_sign_in_pressed)
+	account_vbox.add_child(sign_in_btn)
+	_account_sign_in_button = sign_in_btn
+	_account_sign_in_button_label = _make_image_button_label(
+		sign_in_btn, "ui.popup.button.default",
+		LocalizationManager.tr_key("settings.account.sign_in_register")
+	)
+	UiFontConfig.apply_label_font_size(_account_sign_in_button_label, UiFontConfig.SETTINGS_ACTION_BUTTON_FONT_SIZE)
+
+	var verify_btn := Button.new()
+	verify_btn.custom_minimum_size = Vector2(0, 60)
+	verify_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	verify_btn.pressed.connect(_on_account_verify_email_pressed)
+	account_vbox.add_child(verify_btn)
+	_account_verify_button = verify_btn
+	_account_verify_button_label = _make_image_button_label(
+		verify_btn, "ui.popup.button.default",
+		LocalizationManager.tr_key("settings.account.verify_email")
+	)
+	UiFontConfig.apply_label_font_size(_account_verify_button_label, UiFontConfig.SETTINGS_ACTION_BUTTON_FONT_SIZE)
+
+	var code_box := VBoxContainer.new()
+	code_box.add_theme_constant_override("separation", 6)
+	code_box.visible = false
+	account_vbox.add_child(code_box)
+	_account_code_box = code_box
+
+	var code_input := LineEdit.new()
+	code_input.placeholder_text = LocalizationManager.tr_key("settings.account.verification_code_placeholder")
+	code_input.max_length = 6
+	code_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	code_input.custom_minimum_size = Vector2(0, 48)
+	code_box.add_child(code_input)
+	_account_code_input = code_input
+
+	var confirm_btn := Button.new()
+	confirm_btn.custom_minimum_size = Vector2(0, 60)
+	confirm_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	confirm_btn.pressed.connect(_on_account_confirm_code_pressed)
+	code_box.add_child(confirm_btn)
+	_account_confirm_button = confirm_btn
+	_account_confirm_button_label = _make_image_button_label(
+		confirm_btn, "ui.popup.button.default",
+		LocalizationManager.tr_key("settings.account.confirm_code")
+	)
+	UiFontConfig.apply_label_font_size(_account_confirm_button_label, UiFontConfig.SETTINGS_ACTION_BUTTON_FONT_SIZE)
+
+	var logout_btn := Button.new()
+	logout_btn.custom_minimum_size = Vector2(0, 60)
+	logout_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	logout_btn.pressed.connect(_on_account_logout_pressed)
+	account_vbox.add_child(logout_btn)
+	_account_logout_button = logout_btn
+	_account_logout_button_label = _make_image_button_label(
+		logout_btn, "ui.popup.button.default",
+		LocalizationManager.tr_key("settings.account.logout")
+	)
+	UiFontConfig.apply_label_font_size(_account_logout_button_label, UiFontConfig.SETTINGS_ACTION_BUTTON_FONT_SIZE)
+
+	var action_lbl := Label.new()
+	action_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	action_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	action_lbl.add_theme_font_size_override("font_size", 13)
+	action_lbl.visible = false
+	account_vbox.add_child(action_lbl)
+	_account_action_label = action_lbl
+
+	_refresh_account_section()
+
+
+func _refresh_account_static_labels() -> void:
+	if _account_section == null:
+		return
+	if _account_title_label != null:
+		_account_title_label.text = LocalizationManager.tr_key("settings.account.title")
+	if _account_sign_in_button_label != null:
+		_account_sign_in_button_label.text = LocalizationManager.tr_key("settings.account.sign_in_register")
+	if _account_verify_button_label != null:
+		_account_verify_button_label.text = LocalizationManager.tr_key("settings.account.verify_email")
+	if _account_confirm_button_label != null:
+		_account_confirm_button_label.text = LocalizationManager.tr_key("settings.account.confirm_code")
+	if _account_logout_button_label != null:
+		_account_logout_button_label.text = LocalizationManager.tr_key("settings.account.logout")
+	if _account_code_input != null:
+		_account_code_input.placeholder_text = LocalizationManager.tr_key("settings.account.verification_code_placeholder")
+	_refresh_account_section()
+
+
+func _refresh_account_section() -> void:
+	if _account_section == null:
+		return
+	_account_code_box.visible = false
+	_account_action_label.visible = false
+	_account_action_label.text = ""
+
+	var has_session := Platform.backend_has_session()
+	var email := Platform.backend_get_email()
+	var verified := Platform.backend_is_email_verified()
+
+	_account_title_label.text = LocalizationManager.tr_key("settings.account.title")
+	_account_status_label.text = (
+		LocalizationManager.tr_key("settings.account.status_signed_in")
+		if has_session else
+		LocalizationManager.tr_key("settings.account.status_guest")
+	)
+	_account_email_label.text = LocalizationManager.format_key("settings.account.email", {"email": email})
+	_account_email_label.visible = has_session
+	_account_verification_label.text = (
+		LocalizationManager.tr_key("settings.account.email_verified")
+		if verified else
+		LocalizationManager.tr_key("settings.account.email_not_verified")
+	)
+	_account_verification_label.visible = has_session
+	_account_guest_warning_label.text = LocalizationManager.tr_key("settings.account.guest_warning")
+	_account_guest_warning_label.visible = not has_session
+	_account_sign_in_button.visible = not has_session
+	_account_verify_button.visible = has_session and not verified
+	_account_logout_button.visible = has_session
+
+
+func _show_account_action(text: String, is_error: bool = false) -> void:
+	if _account_action_label == null:
+		return
+	_account_action_label.text = text
+	_account_action_label.visible = (text != "")
+	if is_error:
+		_account_action_label.add_theme_color_override("font_color", Color(0.9, 0.35, 0.35, 1.0))
+	else:
+		_account_action_label.add_theme_color_override("font_color", Color(0.65, 0.85, 0.45, 1.0))
+
+
+func _connect_account_platform_signals() -> void:
+	if _account_signals_connected:
+		return
+	Platform.backend_auth_changed.connect(_on_account_backend_auth_changed)
+	Platform.backend_operation_succeeded.connect(_on_account_backend_op_succeeded)
+	Platform.backend_operation_failed.connect(_on_account_backend_op_failed)
+	_account_signals_connected = true
+
+
+func _disconnect_account_platform_signals() -> void:
+	if not _account_signals_connected:
+		return
+	if is_instance_valid(Platform):
+		if Platform.backend_auth_changed.is_connected(_on_account_backend_auth_changed):
+			Platform.backend_auth_changed.disconnect(_on_account_backend_auth_changed)
+		if Platform.backend_operation_succeeded.is_connected(_on_account_backend_op_succeeded):
+			Platform.backend_operation_succeeded.disconnect(_on_account_backend_op_succeeded)
+		if Platform.backend_operation_failed.is_connected(_on_account_backend_op_failed):
+			Platform.backend_operation_failed.disconnect(_on_account_backend_op_failed)
+	_account_signals_connected = false
+
+
+func _on_account_backend_auth_changed(_auth_data: Dictionary) -> void:
+	_refresh_account_section()
+
+
+func _on_account_backend_op_succeeded(operation: String, _response: Dictionary) -> void:
+	match operation:
+		"request_email_verification":
+			_account_code_box.visible = true
+			_account_verify_button.visible = false
+			_show_account_action(LocalizationManager.tr_key("settings.account.verification_sent"))
+
+		"confirm_email_verification":
+			_account_code_box.visible = false
+			_show_account_action(LocalizationManager.tr_key("settings.account.verification_success"))
+			_refresh_account_section()
+
+		"logout":
+			_refresh_account_section()
+			_show_account_action(LocalizationManager.tr_key("settings.account.logout_success"))
+
+
+func _on_account_backend_op_failed(operation: String, error_code: String, _status_code: int, _response: Dictionary) -> void:
+	match operation:
+		"request_email_verification":
+			_show_account_action(
+				LocalizationManager.format_key("settings.account.backend_error", {"error": error_code}),
+				true
+			)
+
+		"confirm_email_verification":
+			_show_account_action(
+				LocalizationManager.format_key("settings.account.backend_error", {"error": error_code}),
+				true
+			)
+
+		"logout":
+			Platform.backend_clear_local_auth()
+			_refresh_account_section()
+			_show_account_action(LocalizationManager.tr_key("settings.account.logout_local_fallback"))
+
+
+func _on_account_sign_in_pressed() -> void:
+	account_auth_requested.emit()
+
+
+func _on_account_verify_email_pressed() -> void:
+	_show_account_action("")
+	Platform.backend_request_email_verification()
+
+
+func _on_account_confirm_code_pressed() -> void:
+	var code := _account_code_input.text.strip_edges()
+	if code.length() != 6 or not code.is_valid_int():
+		_show_account_action(LocalizationManager.tr_key("settings.account.verification_invalid_code"), true)
+		return
+	_show_account_action("")
+	Platform.backend_confirm_email_verification(code)
+
+
+func _on_account_logout_pressed() -> void:
+	_show_account_action("")
+	Platform.backend_logout()

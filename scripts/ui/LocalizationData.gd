@@ -4,8 +4,8 @@ extends RefCounted
 # AUTO-GENERATED — do not edit by hand.
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
-# Generated key count: 398
-# Generated at: 1782654807
+# Generated key count: 417
+# Generated at: 1782656526
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -407,6 +407,25 @@ const TRANSLATIONS: Dictionary = {
 		"auth.status_login_after_reset": "Sign in with your new password",
 		"auth.status_guest_mode": "Playing as guest",
 		"auth.status_checking_failed": "Session expired. Please sign in.",
+		"settings.account.title": "Account",
+		"settings.account.status_guest": "Guest mode",
+		"settings.account.status_signed_in": "Signed in",
+		"settings.account.status_unsupported": "Account unavailable on this platform",
+		"settings.account.email": "Email: {email}",
+		"settings.account.email_verified": "Email verified",
+		"settings.account.email_not_verified": "Email not verified",
+		"settings.account.guest_warning": "Guest progress is stored only on this device.",
+		"settings.account.sign_in_register": "Sign in / Register",
+		"settings.account.verify_email": "Verify email",
+		"settings.account.verification_code_placeholder": "6-digit code",
+		"settings.account.confirm_code": "Confirm code",
+		"settings.account.logout": "Logout",
+		"settings.account.verification_sent": "Verification code sent",
+		"settings.account.verification_success": "Email verified",
+		"settings.account.verification_invalid_code": "Enter a 6-digit code",
+		"settings.account.logout_success": "Logged out",
+		"settings.account.logout_local_fallback": "Local session cleared",
+		"settings.account.backend_error": "Backend error: {error}",
 	},
 	"ru": {
 		"ui.common.close": "Закрыть",
@@ -807,6 +826,25 @@ const TRANSLATIONS: Dictionary = {
 		"auth.status_login_after_reset": "Войдите с новым паролем",
 		"auth.status_guest_mode": "Игра в гостевом режиме",
 		"auth.status_checking_failed": "Сессия истекла. Войдите снова.",
+		"settings.account.title": "Аккаунт",
+		"settings.account.status_guest": "Гостевой режим",
+		"settings.account.status_signed_in": "Выполнен вход",
+		"settings.account.status_unsupported": "Аккаунт недоступен на этой платформе",
+		"settings.account.email": "Email: {email}",
+		"settings.account.email_verified": "Email подтверждён",
+		"settings.account.email_not_verified": "Email не подтверждён",
+		"settings.account.guest_warning": "Гостевой прогресс хранится только на этом устройстве.",
+		"settings.account.sign_in_register": "Войти / Зарегистрироваться",
+		"settings.account.verify_email": "Подтвердить email",
+		"settings.account.verification_code_placeholder": "6-значный код",
+		"settings.account.confirm_code": "Подтвердить код",
+		"settings.account.logout": "Выйти",
+		"settings.account.verification_sent": "Код подтверждения отправлен",
+		"settings.account.verification_success": "Email подтверждён",
+		"settings.account.verification_invalid_code": "Введите 6-значный код",
+		"settings.account.logout_success": "Вы вышли из аккаунта",
+		"settings.account.logout_local_fallback": "Локальная сессия очищена",
+		"settings.account.backend_error": "Ошибка backend: {error}",
 	},
 }
 

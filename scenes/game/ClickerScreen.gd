@@ -131,6 +131,7 @@ func _ready() -> void:
 	settings_window.save_requested.connect(_on_settings_save_requested)
 	settings_window.reset_requested.connect(_on_settings_reset_confirmed)
 	settings_window.language_manually_changed.connect(_on_language_manually_changed)
+	settings_window.account_auth_requested.connect(_on_settings_account_auth_requested)
 	upgrades_button.pressed.connect(_on_upgrades_button_pressed)
 	partners_button.pressed.connect(_on_partners_button_pressed)
 	settlement_button.pressed.connect(_on_settlement_button_pressed)
@@ -422,6 +423,12 @@ func _on_ability_unlock_requested(ability_id: String) -> void:
 func _on_settings_requested() -> void:
 	settings_window.show_window(state)
 	_update_rewarded_ad_banner()
+
+
+func _on_settings_account_auth_requested() -> void:
+	var main := get_tree().current_scene
+	if main != null and main.has_method("show_auth_gate_overlay"):
+		main.show_auth_gate_overlay()
 
 
 func _on_settings_sound_toggled(enabled: bool) -> void:

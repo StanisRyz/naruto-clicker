@@ -589,7 +589,7 @@ Android/RuStore now shows an auth gate before gameplay on every cold start.
 - Backend Cloud Functions — unchanged.
 - Gameplay, ads, payments, balance — unchanged.
 - Guest-to-account save upload — future patch.
-- Account settings panel — future patch.
+- Account settings panel — future patch (→ C4).
 - Save conflict resolution — future patch.
 
 **New platform method:**
@@ -597,6 +597,58 @@ Android/RuStore now shows an auth gate before gameplay on every cold start.
 `Platform.backend_clear_local_auth()` — clears the locally stored session token without
 making a network request. Used when `get_me` returns `unauthorized` on startup so the
 invalid token is removed before showing the login form.
+
+### C4 — Account Settings Panel (completed)
+
+Android/RuStore settings window now shows an account management block.
+
+**Account section behavior:**
+
+- **Guest / no backend session:**
+  - Status: "Guest mode"
+  - Warning: progress is stored only on this device.
+  - Button: "Sign in / Register" → opens `AuthGateScreen` as an overlay above gameplay.
+    Gameplay continues without reset; `ClickerScreen` is not re-instantiated.
+
+- **Signed-in account session:**
+  - Email address is displayed.
+  - Email verification state ("Email verified" / "Email not verified").
+  - Button: "Verify email" (visible when not yet verified) → sends verification code.
+  - 6-digit code input + "Confirm code" button appear after the code is sent.
+  - Button: "Logout" → calls `Platform.backend_logout()`; on failure, calls
+    `Platform.backend_clear_local_auth()` as a fallback so the user can always
+    return to guest/no-session state.
+
+- **Web/editor:** account block is hidden entirely. No backend calls are made
+  automatically. Existing Web/Yandex cloud-save is unchanged.
+
+**AuthGate overlay from settings:**
+
+`Main.show_auth_gate_overlay()` instantiates `AuthGateScreen` above the existing
+`ClickerScreen`. When the overlay emits `auth_gate_completed`, `Main` removes it and
+stores the new auth mode — it does **not** re-instantiate `ClickerScreen`. Gameplay
+continues uninterrupted. `SettingsWindow` is refreshed through
+`Platform.backend_auth_changed` when the user later reopens settings.
+
+**What C4 did NOT change:**
+
+- `SaveManager` — not yet wired to backend; local save and Yandex cloud save unchanged.
+- Guest progress is not automatically uploaded after login.
+- Cloud/local save conflict resolution — future patch.
+- Gameplay, ads, payments, balance — unchanged.
+- Backend Cloud Functions — unchanged.
+
+**Files changed:**
+
+- `scenes/main/Main.gd` — added `show_auth_gate_overlay()` public method; updated
+  `_on_auth_gate_completed()` to skip re-starting gameplay when `_startup_started` is true.
+- `scenes/ui/SettingsWindow.gd` — added `account_auth_requested` signal; account section
+  UI (script-built, Android-only); `Platform.backend_*` calls for verification/logout;
+  `_exit_tree()` disconnects Platform signals.
+- `scenes/game/ClickerScreen.gd` — connects `account_auth_requested` and delegates to
+  `Main.show_auth_gate_overlay()`.
+- `localization/game_text.csv` — 19 new `settings.account.*` keys (EN + RU).
+- `scripts/ui/LocalizationData.gd` — regenerated (417 keys).
 
 ---
 
