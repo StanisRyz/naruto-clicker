@@ -59,13 +59,14 @@ func _ready() -> void:
 	size_flags_vertical = Control.SIZE_EXPAND_FILL
 	z_index = 1000
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	print("AuthGateScreen: building UI")
+	if BuildConfig.IS_DEBUG_BUILD:
+		print("AuthGateScreen: building UI")
 	_build_ui()
 	if not _is_ui_built():
 		_show_fallback_error("Auth UI failed to initialize")
 		return
-	print("AuthGateScreen: UI ready")
-	print("AuthGateScreen: root size=", size)
+	if BuildConfig.IS_DEBUG_BUILD:
+		print("AuthGateScreen: UI ready, root size=", size)
 	_connect_platform_signals()
 	_check_existing_session()
 
@@ -136,7 +137,8 @@ func _build_ui() -> void:
 	title_label.add_theme_color_override("font_color", Color(0.95, 0.95, 0.95, 1.0))
 	vbox.add_child(title_label)
 
-	print("AuthGateScreen: panel min size=", panel.custom_minimum_size)
+	if BuildConfig.IS_DEBUG_BUILD:
+		print("AuthGateScreen: panel min size=", panel.custom_minimum_size)
 
 	_status_label = Label.new()
 	_status_label.text = ""
@@ -358,7 +360,8 @@ func _make_flat_button(label_text: String, callback: Callable) -> Button:
 
 func _set_state(state: _State) -> void:
 	_current_state = state
-	print("AuthGateScreen: state=", state)
+	if BuildConfig.IS_DEBUG_BUILD:
+		print("AuthGateScreen: state=", state)
 	if _checking_box != null:
 		_checking_box.visible = (state == _State.CHECKING)
 	if _login_box != null:

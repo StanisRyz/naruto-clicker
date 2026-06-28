@@ -626,9 +626,6 @@ func _on_account_backend_op_succeeded(operation: String, _response: Dictionary) 
 			_refresh_account_section()
 			_show_account_action(LocalizationManager.tr_key("settings.account.logout_success"))
 
-		"save_save":
-			set_cloud_save_status(LocalizationManager.tr_key("settings.cloud.upload_success"))
-
 
 func _on_account_backend_op_failed(operation: String, error_code: String, _status_code: int, _response: Dictionary) -> void:
 	match operation:
@@ -648,12 +645,6 @@ func _on_account_backend_op_failed(operation: String, error_code: String, _statu
 			Platform.backend_clear_local_auth()
 			_refresh_account_section()
 			_show_account_action(LocalizationManager.tr_key("settings.account.logout_local_fallback"))
-
-		"save_save":
-			set_cloud_save_status(
-				LocalizationManager.format_key("settings.account.backend_error", {"error": error_code}),
-				true
-			)
 
 
 func _on_account_sign_in_pressed() -> void:
@@ -845,6 +836,13 @@ func set_cloud_save_status(message: String, is_error: bool = false) -> void:
 		_cloud_status_label.add_theme_color_override("font_color", Color(0.9, 0.35, 0.35, 1.0))
 	else:
 		_cloud_status_label.remove_theme_color_override("font_color")
+
+
+func set_cloud_save_buttons_busy(is_busy: bool) -> void:
+	if _cloud_upload_button != null:
+		_cloud_upload_button.disabled = is_busy
+	if _cloud_download_button != null:
+		_cloud_download_button.disabled = is_busy
 
 
 func refresh_account_section() -> void:

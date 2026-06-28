@@ -432,3 +432,6 @@ settings.cloud.download_success,Cloud save loaded,Прогресс загруж�
 settings.cloud.download_failed,Cloud download failed,Не удалось загрузить из облака,SettingsWindow cloud download failed status,
 settings.cloud.no_cloud_save,No cloud save found,Облачное сохранение не найдено,SettingsWindow cloud download no save status,
 settings.cloud.invalid_cloud_save,Cloud save is invalid,Облачное сохранение повреждено или несовместимо,SettingsWindow cloud download invalid save status,
+settings.cloud.upload_queued,Upload queued,Сохранение в облако поставлено в очередь,SettingsWindow background cloud upload queued status,
+settings.cloud.upload_in_progress,Uploading to cloud...,Сохраняем в облако...,SettingsWindow cloud upload in-progress status,
+settings.cloud.background_upload_failed,Background cloud upload failed,Фоновое сохранение в облако не удалось,SettingsWindow background cloud upload failed status,

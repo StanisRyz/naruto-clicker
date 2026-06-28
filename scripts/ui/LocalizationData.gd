@@ -4,8 +4,8 @@ extends RefCounted
 # AUTO-GENERATED — do not edit by hand.
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
-# Generated key count: 433
-# Generated at: 1782662434
+# Generated key count: 436
+# Generated at: 1782663464
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -442,6 +442,9 @@ const TRANSLATIONS: Dictionary = {
 		"settings.cloud.download_failed": "Cloud download failed",
 		"settings.cloud.no_cloud_save": "No cloud save found",
 		"settings.cloud.invalid_cloud_save": "Cloud save is invalid",
+		"settings.cloud.upload_queued": "Upload queued",
+		"settings.cloud.upload_in_progress": "Uploading to cloud...",
+		"settings.cloud.background_upload_failed": "Background cloud upload failed",
 	},
 	"ru": {
 		"ui.common.close": "Закрыть",
@@ -877,6 +880,9 @@ const TRANSLATIONS: Dictionary = {
 		"settings.cloud.download_failed": "Не удалось загрузить из облака",
 		"settings.cloud.no_cloud_save": "Облачное сохранение не найдено",
 		"settings.cloud.invalid_cloud_save": "Облачное сохранение повреждено или несовместимо",
+		"settings.cloud.upload_queued": "Сохранение в облако поставлено в очередь",
+		"settings.cloud.upload_in_progress": "Сохраняем в облако...",
+		"settings.cloud.background_upload_failed": "Фоновое сохранение в облако не удалось",
 	},
 }
 

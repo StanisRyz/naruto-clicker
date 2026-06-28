@@ -804,6 +804,45 @@ via `YandexBridge` is unchanged.
 
 ---
 
+### C5.2 — Automatic Backend Cloud Upload (completed)
+
+Automatic backend cloud-save upload for Android/RuStore account users.
+
+**Behavior:**
+
+- **Web/Yandex:** unchanged. Existing Yandex cloud-save via `YandexBridge` is unaffected. No backend calls on Web.
+- **Android/RuStore Guest:** local save works as before. No backend cloud upload. Manual cloud controls remain disabled in guest mode.
+- **Android/RuStore Account:** after each normal local save, `SaveManager` schedules a backend `PUT /v1/save` automatically, throttled to at most once every 45 seconds. Backend/network failures are silent warnings — local save and gameplay are never affected.
+
+**Key design points:**
+
+- Throttle: 45-second minimum interval between auto-uploads (`BACKEND_CLOUD_AUTO_UPLOAD_MIN_INTERVAL_SEC`).
+- Payload size guard: 200 KB limit (`BACKEND_CLOUD_AUTO_UPLOAD_MAX_BYTES`). Oversized payloads are skipped with a warning.
+- In-flight guard: only one concurrent backend upload request is allowed. Newer data is queued and retried after 60 seconds if an upload is already in flight.
+- Manual "Save to Cloud" still works and flushes immediately (bypasses throttle). It sets buttons busy while the request is in flight and shows success/error in SettingsWindow.
+- Manual "Load from Cloud" remains confirmation-based and fully manual — no automatic download.
+- Startup cloud auto-load is NOT implemented in this patch.
+- Local/cloud conflict resolution is NOT implemented in this patch.
+- Guest-to-account save upload after login is NOT implemented automatically in this patch (happens naturally on the next normal save after login).
+
+**What C5.2 did NOT add:**
+
+- Startup cloud auto-load — future patch.
+- Local/cloud conflict resolution — future patch.
+- Backend Cloud Function changes — none.
+- Gameplay, ads, payments, balance — unchanged.
+
+**Files changed:**
+
+- `autoload/SaveManager.gd` — added `BACKEND_CLOUD_AUTO_UPLOAD_MIN_INTERVAL_SEC`, `BACKEND_CLOUD_AUTO_UPLOAD_MAX_BYTES`, backend upload fields, `queue_backend_cloud_save()`, `flush_backend_cloud_save_now()`, `upload_current_save_to_backend_cloud_now()`, `mark_backend_cloud_upload_finished()`, `is_backend_cloud_upload_in_flight()`, `_send_backend_cloud_save()`, `_on_backend_cloud_upload_timer_expired()`; hooked `queue_backend_cloud_save(data)` into `save_data()`.
+- `scenes/game/ClickerScreen.gd` — added `_manual_backend_cloud_upload_requested` flag; updated `_on_settings_cloud_save_upload_requested()` to use `SaveManager.upload_current_save_to_backend_cloud_now()`; updated `_on_settings_cloud_save_download_requested()` to set buttons busy; added `save_save` handling in `_on_backend_cloud_op_succeeded()` and `_on_backend_cloud_op_failed()`.
+- `scenes/ui/SettingsWindow.gd` — removed `save_save` from its own backend op handlers (ClickerScreen now owns that); added `set_cloud_save_buttons_busy()`.
+- `scenes/auth/AuthGateScreen.gd` — temporary layout debug logs gated behind `BuildConfig.IS_DEBUG_BUILD`.
+- `localization/game_text.csv` — 3 new `settings.cloud.*` keys (EN + RU).
+- `scripts/ui/LocalizationData.gd` — regenerated.
+
+---
+
 ## QoL update mode
 
 This project is in release-candidate QoL mode. When contributing:

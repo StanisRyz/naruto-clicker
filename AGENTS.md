@@ -763,7 +763,13 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
 - **If a protected endpoint is called without a session token**, the client emits
   `operation_failed(op, "missing_session", 0, {})` and returns `false` without
   sending any HTTP request.
-- Do not wire backend save into `SaveManager` until that patch is explicitly requested.
+- Backend auto-upload (`queue_backend_cloud_save`) is Android + account-session only. It must be a no-op on Web and in Guest mode. The guard is `OS.has_feature("android") and Platform.backend_has_session()`.
+- Do not call `Platform.backend_load_save()` or `SaveManager.apply_cloud_save_payload()` automatically. Cloud download is always manual and confirmation-based.
+- Do not apply cloud saves automatically. No startup cloud auto-load.
+- Backend upload failures must not fail local saves or interrupt gameplay. Silent `push_warning` is the correct response for background auto-upload failures.
+- Do not log full save payloads (JSON) or tokens/passwords in any backend cloud save code path.
+- All `backend_save_save` calls must go through `SaveManager` methods (`queue_backend_cloud_save`, `upload_current_save_to_backend_cloud_now`). Do not call `Platform.backend_save_save()` directly from UI or ClickerScreen.
+- `SaveManager.mark_backend_cloud_upload_finished(success)` must be called from ClickerScreen when every `save_save` backend operation completes (success or failure) so in-flight and retry state stays consistent.
 - Do not add account UI until an account UI patch is explicitly requested.
 - Backend error codes (e.g. `invalid_credentials`, `email_already_registered`,
   `missing_save_version`) are preserved verbatim by `BackendApiClient`. Do not

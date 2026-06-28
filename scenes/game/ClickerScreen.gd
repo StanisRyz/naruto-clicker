@@ -67,6 +67,7 @@ var _unprocessed_purchase_check_requested: bool = false
 var _runtime_pause_reasons: Dictionary = {}
 var _runtime_pause_started_unix_time: int = 0
 var _yandex_game_ready_notified: bool = false
+var _manual_backend_cloud_upload_requested: bool = false
 
 const FULLSCREEN_AD_COOLDOWN_SECONDS: float = 300.0
 const FULLSCREEN_AD_INITIAL_COOLDOWN_SECONDS: float = 300.0
@@ -1897,14 +1898,15 @@ func _on_settings_cloud_save_upload_requested() -> void:
 			LocalizationManager.tr_key("settings.cloud.upload_failed"), true
 		)
 		return
+	_manual_backend_cloud_upload_requested = true
+	settings_window.set_cloud_save_buttons_busy(true)
 	_save_game_now()
-	var payload := SaveManager.get_cloud_save_payload()
-	if payload.is_empty():
+	if not SaveManager.upload_current_save_to_backend_cloud_now():
+		_manual_backend_cloud_upload_requested = false
+		settings_window.set_cloud_save_buttons_busy(false)
 		settings_window.set_cloud_save_status(
 			LocalizationManager.tr_key("settings.cloud.upload_failed"), true
 		)
-		return
-	Platform.backend_save_save(payload)
 
 
 func _on_settings_cloud_save_download_requested() -> void:
@@ -1913,12 +1915,23 @@ func _on_settings_cloud_save_download_requested() -> void:
 			LocalizationManager.tr_key("settings.cloud.download_failed"), true
 		)
 		return
+	settings_window.set_cloud_save_buttons_busy(true)
 	Platform.backend_load_save()
 
 
 func _on_backend_cloud_op_succeeded(operation: String, response: Dictionary) -> void:
 	match operation:
+		"save_save":
+			SaveManager.mark_backend_cloud_upload_finished(true)
+			if _manual_backend_cloud_upload_requested:
+				_manual_backend_cloud_upload_requested = false
+				settings_window.set_cloud_save_buttons_busy(false)
+				settings_window.set_cloud_save_status(
+					LocalizationManager.tr_key("settings.cloud.upload_success")
+				)
+
 		"load_save":
+			settings_window.set_cloud_save_buttons_busy(false)
 			var has_save: bool = bool(response.get("has_save", false))
 			if not has_save:
 				settings_window.set_cloud_save_status(
@@ -1946,7 +1959,20 @@ func _on_backend_cloud_op_succeeded(operation: String, response: Dictionary) -> 
 
 func _on_backend_cloud_op_failed(operation: String, error_code: String, _status_code: int, _response: Dictionary) -> void:
 	match operation:
+		"save_save":
+			SaveManager.mark_backend_cloud_upload_finished(false)
+			if _manual_backend_cloud_upload_requested:
+				_manual_backend_cloud_upload_requested = false
+				settings_window.set_cloud_save_buttons_busy(false)
+				settings_window.set_cloud_save_status(
+					LocalizationManager.format_key("settings.account.backend_error", {"error": error_code}),
+					true
+				)
+			else:
+				push_warning("SaveManager: background backend cloud upload failed: %s" % error_code)
+
 		"load_save":
+			settings_window.set_cloud_save_buttons_busy(false)
 			settings_window.set_cloud_save_status(
 				LocalizationManager.format_key("settings.account.backend_error", {"error": error_code}),
 				true
