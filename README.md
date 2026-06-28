@@ -473,6 +473,48 @@ python -m http.server 8080
 | Web export | Ready for final local/Yandex preview verification |
 | Yandex Games cabinet testing | Ready for final local/Yandex preview verification |
 
+## Backend cloud-save client foundation
+
+A Yandex Cloud auth/save backend client has been added as a foundation for
+future Android/RuStore cloud-save support.
+
+### What was added
+
+- `scripts/platform/backend/BackendAuthStore.gd` — persists session token,
+  email, and email_verified to `user://backend_auth.json`.
+- `scripts/platform/backend/BackendApiClient.gd` — HTTP client that wraps all
+  backend endpoints (auth, password reset, email verification, save load/save/delete).
+
+### Configuration
+
+The backend base URL is expected in the project setting:
+
+```
+application/cloud_save/backend_url
+```
+
+Call `BackendApiClient.configure_from_project_settings()` to read it, or
+`BackendApiClient.configure(url)` to supply it directly. The client does not
+hardcode any URL; it must be configured before making requests.
+
+**Never commit the backend URL as a secret or store credentials in project files.**
+No passwords, session tokens, SMTP keys, or service-account keys should be
+committed to the repository.
+
+### Architecture notes
+
+- This patch only adds the client foundation. Android/RuStore platform wiring
+  and account UI are future patches.
+- Web/Yandex Games cloud-save continues to use the Yandex SDK through
+  `WebYandexPlatform` and `YandexBridge` — unchanged.
+- Gameplay code must not call `BackendApiClient` directly. Future integration
+  will go through `Platform` / `AndroidRuStorePlatform`.
+- The backend stores a raw JSON save blob. It does not know game-specific save
+  fields. `save_version` and `last_save_unix_time` are required by the backend
+  and must be present in the save data before calling `save_save()`.
+
+---
+
 ## QoL update mode
 
 This project is in release-candidate QoL mode. When contributing:

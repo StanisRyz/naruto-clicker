@@ -344,7 +344,7 @@ func _extract_purchase_id_from_result(result: RuStorePayProductPurchaseResult) -
 	return ""
 
 
-func _on_rustore_purchase_failure(product_id: RuStorePayProductId, error: RuStorePaymentException) -> void:
+func _on_rustore_purchase_failure(_product_id: RuStorePayProductId, error: RuStorePaymentException) -> void:
 	var local_id: String = _consume_pending_payment_local_id()
 	if local_id == "":
 		return

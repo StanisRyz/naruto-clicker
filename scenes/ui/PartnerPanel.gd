@@ -57,9 +57,9 @@ func update_view(state: ClickerState) -> void:
 
 	for partner_index in range(partner_rows.size()):
 		var panel_row: Control = partner_rows[partner_index]["row"]
-		var is_visible: bool = _should_show_partner_row(state, partner_index)
-		panel_row.visible = is_visible
-		if is_visible:
+		var row_visible: bool = _should_show_partner_row(state, partner_index)
+		panel_row.visible = row_visible
+		if row_visible:
 			_update_partner_row(state, partner_index, partner_rows[partner_index])
 
 

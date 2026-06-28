@@ -1,5 +1,22 @@
 # Agent & Implementation Notes
 
+## Backend API Client (scripts/platform/backend/)
+
+- `BackendAuthStore.gd` — auth-only persistence class (`user://backend_auth.json`).
+  No Node inheritance; instantiate directly. Never log `session_token`.
+- `BackendApiClient.gd` — extends Node; owns one `HTTPRequest` child.
+  One active request at a time. Call `set_auth_store(store)` and `configure(url)` before use.
+- Gameplay code must not call these classes directly. Integration goes through
+  `Platform` → `AndroidRuStorePlatform` (future patch).
+- Web/Yandex Games cloud-save uses `YandexBridge`/`WebYandexPlatform` — entirely separate.
+- The backend stores a raw JSON blob. `save_version` and `last_save_unix_time` must
+  be present in the save data; the backend validates them. The client does not.
+- Backend error strings are passed through verbatim. UI layers translate them for display.
+- `configure_from_project_settings()` reads `application/cloud_save/backend_url` from
+  `ProjectSettings`. Do not hardcode the URL anywhere in game code.
+
+---
+
 ## Bottom sheet vertical offset
 
 All bottom sheet scenes (UpgradeSheet, PartnerSheet, SettlementSheet, PrestigeSheet, ShopSheet) use:

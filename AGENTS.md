@@ -636,6 +636,31 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
   `docs/rustore_readiness_checklist.md`, `docs/android_release_signing.md`, and
   `docs/android_release_validation.md` in sync with the actual export preset.
 
+## Backend API Client Rules
+
+- Backend client code lives under `scripts/platform/backend/`.
+- Gameplay and UI code must **never** call `BackendApiClient` directly.
+  Future platform integration must go through `Platform` / `AndroidRuStorePlatform`.
+- Web/Yandex Games cloud-save remains completely separate through the Yandex SDK
+  (`YandexBridge` / `WebYandexPlatform`). Do not mix these two code paths.
+- The backend stores a raw JSON save blob. It does not know game-specific save
+  fields. `save_version` and `last_save_unix_time` must be present in `save_data`
+  before calling `BackendApiClient.save_save()`.
+- `BackendAuthStore` persists session data to `user://backend_auth.json`. This
+  file must never be committed to the repository (covered by `.gitignore` via
+  `user://`).
+- Never log passwords, session tokens, reset codes, verification codes, or full
+  save JSON. `BackendAuthStore` and `BackendApiClient` enforce this.
+- `BackendApiClient` must be `configure()`d with a base URL before use. The URL
+  may be read from the project setting `application/cloud_save/backend_url` via
+  `configure_from_project_settings()`. Do not hardcode the backend URL in game code.
+- Do not wire `BackendApiClient` into `AndroidRuStorePlatform` or `SaveManager`
+  until that integration patch is explicitly requested.
+- Do not add account UI until an account UI patch is explicitly requested.
+- Backend error codes (e.g. `invalid_credentials`, `email_already_registered`,
+  `missing_save_version`) are preserved verbatim by `BackendApiClient`. Do not
+  translate or remap them in the client layer — UI handles that.
+
 ## Documentation Update Rules
 
 Update this file when adding important systems, scenes, architecture decisions, workflow rules, or validation requirements. Keep README.md aligned with major project setup or workflow changes.

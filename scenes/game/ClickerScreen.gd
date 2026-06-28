@@ -1403,9 +1403,9 @@ func _on_yandex_platform_resume_requested() -> void:
 		print("ClickerScreen: runtime pause reasons after platform resume: %s" % str(_runtime_pause_reasons.keys()))
 
 
-func _on_page_visibility_changed(visible: bool) -> void:
-	_set_runtime_pause_reason("hidden", not visible)
-	if visible:
+func _on_page_visibility_changed(page_visible: bool) -> void:
+	_set_runtime_pause_reason("hidden", not page_visible)
+	if page_visible:
 		_try_resume_yandex_gameplay()
 
 

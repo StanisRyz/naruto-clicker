@@ -191,6 +191,7 @@ func _add_status_label() -> void:
 	var content_layer: Control = $CenterContainer/InnerPanel/ContentLayer
 	_status_label = Label.new()
 	_status_label.name = "PaymentStatusLabel"
+	@warning_ignore("INT_AS_ENUM_WITHOUT_CAST", "INT_AS_ENUM_WITHOUT_MATCH")
 	_status_label.layout_mode = 1
 	_status_label.anchor_left = 0.0
 	_status_label.anchor_top = 1.0
