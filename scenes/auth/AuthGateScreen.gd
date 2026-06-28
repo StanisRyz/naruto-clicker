@@ -52,7 +52,12 @@ var _awaiting_login_after_register: bool = false
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	print("AuthGateScreen: building UI")
 	_build_ui()
+	if not _is_ui_built():
+		_show_fallback_error("Auth UI failed to initialize")
+		return
+	print("AuthGateScreen: UI ready")
 	_connect_platform_signals()
 	_check_existing_session()
 
@@ -168,6 +173,26 @@ func _build_ui() -> void:
 	_guest_button.set_meta("warning_label", guest_warning)
 
 
+func _is_ui_built() -> bool:
+	return _checking_box != null and _login_box != null and _register_box != null
+
+
+func _show_fallback_error(message: String) -> void:
+	var label := Label.new()
+	label.text = message
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(label)
+
+
+func _try_set_virtual_keyboard_type(edit: LineEdit, keyboard_type: int) -> void:
+	if edit == null:
+		return
+	if "virtual_keyboard_type" in edit:
+		edit.set("virtual_keyboard_type", keyboard_type)
+
+
 func _build_checking_box() -> VBoxContainer:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 10)
@@ -184,7 +209,7 @@ func _build_login_box() -> VBoxContainer:
 	box.add_theme_constant_override("separation", 10)
 
 	_login_email = _make_line_edit(LocalizationManager.tr_key("auth.email_placeholder"))
-	_login_email.keyboard_type = LineEdit.KEYBOARD_TYPE_EMAIL_ADDRESS
+	_try_set_virtual_keyboard_type(_login_email, LineEdit.KEYBOARD_TYPE_EMAIL_ADDRESS)
 	box.add_child(_login_email)
 
 	_login_password = _make_line_edit(LocalizationManager.tr_key("auth.password_placeholder"))
@@ -208,7 +233,7 @@ func _build_register_box() -> VBoxContainer:
 	box.add_theme_constant_override("separation", 10)
 
 	_reg_email = _make_line_edit(LocalizationManager.tr_key("auth.email_placeholder"))
-	_reg_email.keyboard_type = LineEdit.KEYBOARD_TYPE_EMAIL_ADDRESS
+	_try_set_virtual_keyboard_type(_reg_email, LineEdit.KEYBOARD_TYPE_EMAIL_ADDRESS)
 	box.add_child(_reg_email)
 
 	_reg_password = _make_line_edit(LocalizationManager.tr_key("auth.password_placeholder"))
@@ -239,7 +264,7 @@ func _build_reset_request_box() -> VBoxContainer:
 	box.add_child(title_lbl)
 
 	_reset_req_email = _make_line_edit(LocalizationManager.tr_key("auth.email_placeholder"))
-	_reset_req_email.keyboard_type = LineEdit.KEYBOARD_TYPE_EMAIL_ADDRESS
+	_try_set_virtual_keyboard_type(_reset_req_email, LineEdit.KEYBOARD_TYPE_EMAIL_ADDRESS)
 	box.add_child(_reset_req_email)
 
 	var submit := _make_button(LocalizationManager.tr_key("auth.reset_request_button"), _on_reset_request_submit)
@@ -262,7 +287,7 @@ func _build_reset_confirm_box() -> VBoxContainer:
 	box.add_child(title_lbl)
 
 	_reset_conf_email = _make_line_edit(LocalizationManager.tr_key("auth.email_placeholder"))
-	_reset_conf_email.keyboard_type = LineEdit.KEYBOARD_TYPE_EMAIL_ADDRESS
+	_try_set_virtual_keyboard_type(_reset_conf_email, LineEdit.KEYBOARD_TYPE_EMAIL_ADDRESS)
 	box.add_child(_reset_conf_email)
 
 	_reset_conf_code = _make_line_edit(LocalizationManager.tr_key("auth.reset_code_placeholder"))
@@ -315,17 +340,23 @@ func _make_flat_button(label_text: String, callback: Callable) -> Button:
 
 func _set_state(state: _State) -> void:
 	_current_state = state
-	_checking_box.visible = (state == _State.CHECKING)
-	_login_box.visible = (state == _State.LOGIN)
-	_register_box.visible = (state == _State.REGISTER)
-	_reset_request_box.visible = (state == _State.RESET_REQUEST)
-	_reset_confirm_box.visible = (state == _State.RESET_CONFIRM)
+	if _checking_box != null:
+		_checking_box.visible = (state == _State.CHECKING)
+	if _login_box != null:
+		_login_box.visible = (state == _State.LOGIN)
+	if _register_box != null:
+		_register_box.visible = (state == _State.REGISTER)
+	if _reset_request_box != null:
+		_reset_request_box.visible = (state == _State.RESET_REQUEST)
+	if _reset_confirm_box != null:
+		_reset_confirm_box.visible = (state == _State.RESET_CONFIRM)
 
 	var show_guest := state in [_State.LOGIN, _State.REGISTER, _State.RESET_REQUEST, _State.RESET_CONFIRM]
-	_guest_button.visible = show_guest
-	var warning_label: Label = _guest_button.get_meta("warning_label") as Label
-	if is_instance_valid(warning_label):
-		warning_label.visible = show_guest
+	if _guest_button != null:
+		_guest_button.visible = show_guest
+		var warning_label: Label = _guest_button.get_meta("warning_label") as Label
+		if is_instance_valid(warning_label):
+			warning_label.visible = show_guest
 
 
 func _show_status(text: String, is_error: bool = false) -> void:

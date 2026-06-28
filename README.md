@@ -650,6 +650,46 @@ continues uninterrupted. `SettingsWindow` is refreshed through
 - `localization/game_text.csv` — 19 new `settings.account.*` keys (EN + RU).
 - `scripts/ui/LocalizationData.gd` — regenerated (417 keys).
 
+### C4.1 — Android AuthGate Black Screen Hotfix (completed)
+
+**Root cause:**
+
+`AuthGateScreen.gd` assigned `.keyboard_type` directly on `LineEdit` nodes (4
+usages across login / register / reset-request / reset-confirm boxes). This
+property name is invalid on the Godot 4.5.1 Android `LineEdit` object — the
+engine threw a script error at UI-build time, aborting `_build_ui()`. Because
+`ClickerScreen` is not instantiated until `auth_gate_completed` fires (C3.1
+ordering), the screen remained black.
+
+Secondary `Nil.visible` errors appeared because the partially-built boxes were
+never assigned to their variables, and `_set_state()` wrote to them without null
+guards.
+
+**Fix:**
+
+- All four `.keyboard_type = ...` assignments replaced with
+  `_try_set_virtual_keyboard_type(edit, LineEdit.KEYBOARD_TYPE_EMAIL_ADDRESS)`.
+  The helper checks `"virtual_keyboard_type" in edit` before calling `edit.set()`,
+  so it is a no-op on any Godot version that does not expose the property.
+- `_set_state()` now null-checks every box and `_guest_button` before writing
+  `.visible`. A partially built UI no longer cascades into a secondary crash.
+- `_ready()` calls `_is_ui_built()` after `_build_ui()`. If the check fails,
+  `_show_fallback_error()` adds a full-rect error label so the screen is never
+  black, then returns without calling `_connect_platform_signals()` or
+  `_check_existing_session()`.
+
+**What this patch did NOT change:**
+
+- `SaveManager` — still not wired to backend.
+- Gameplay, ads, payments, balance — unchanged.
+- Backend Cloud Functions — unchanged.
+- Web/editor startup flow — unchanged (AuthGate is Android-only).
+
+**Files changed:**
+
+- `scenes/auth/AuthGateScreen.gd` — safe virtual-keyboard helper; null-safe
+  state machine; UI build guard in `_ready()`.
+
 ---
 
 ## QoL update mode

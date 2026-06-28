@@ -636,6 +636,31 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
   `docs/rustore_readiness_checklist.md`, `docs/android_release_signing.md`, and
   `docs/android_release_validation.md` in sync with the actual export preset.
 
+## AuthGate UI Rules
+
+- Do **not** use `.keyboard_type` on `LineEdit`. The property name is invalid on
+  the Godot 4.5.1 Android `LineEdit` object and causes a script error that aborts
+  UI construction.
+- Any virtual keyboard hint must be set through a safe helper that checks property
+  existence first:
+  ```gdscript
+  func _try_set_virtual_keyboard_type(edit: LineEdit, keyboard_type: int) -> void:
+      if edit == null:
+          return
+      if "virtual_keyboard_type" in edit:
+          edit.set("virtual_keyboard_type", keyboard_type)
+  ```
+  Virtual keyboard hints are optional UI optimizations — they must never be
+  required for UI construction to succeed.
+- `AuthGateScreen._set_state()` must null-check every box variable before
+  assigning `.visible`. A partially built UI must not cascade into secondary
+  `Nil.visible` errors.
+- `AuthGateScreen._ready()` must verify that critical UI nodes were created after
+  `_build_ui()` returns. If the check fails, display a fallback error label
+  (never a black screen) and do not proceed to `_connect_platform_signals()` or
+  `_check_existing_session()`.
+- `AuthGateScreen` must never leave the screen black on any startup failure.
+
 ## Account Settings UI Rules
 
 - The account section in `SettingsWindow` is shown **only on Android**
