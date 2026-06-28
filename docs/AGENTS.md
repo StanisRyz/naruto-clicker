@@ -39,6 +39,20 @@
 - Web/Yandex startup must never be blocked by backend auth checks.
 - **Never log passwords, session tokens, reset codes, or verification codes anywhere in the auth flow.**
 
+## Main.tscn / Main.gd startup ordering
+
+- **`Main.tscn` must NOT contain a pre-instanced `ClickerScreen` child.** In Godot 4,
+  child `_ready()` runs before parent `_ready()`. A pre-instanced `ClickerScreen` would
+  initialize gameplay (load save, start music, emit `startup_completed`) before `Main._ready()`
+  can show the AuthGate.
+- `Main.gd` instantiates `ClickerScreen` lazily via `_instantiate_clicker_screen()`.
+  - Android: `ClickerScreen` is added only after `auth_gate_completed` fires.
+  - Web / Editor: `ClickerScreen` is added immediately in `_ready()` via `_start_game_after_auth_gate("web_or_local")`.
+- Do not call `YandexBridge` directly from `Main.gd`. All platform calls go through `Platform`.
+- The `_startup_started` flag in `Main.gd` prevents double-instantiation of `ClickerScreen`.
+- `get_startup_auth_mode()` returns `"account"`, `"guest"`, or `"web_or_local"` for future
+  save-wiring use. Do not use it to gate gameplay in this patch.
+
 ---
 
 ## Bottom sheet vertical offset

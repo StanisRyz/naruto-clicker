@@ -1,7 +1,6 @@
-[gd_scene load_steps=4 format=3 uid="uid://vp5q6agyccmk"]
+[gd_scene load_steps=3 format=3 uid="uid://vp5q6agyccmk"]
 
 [ext_resource type="Script" uid="uid://bf3vodexos683" path="res://scenes/main/Main.gd" id="1_qydc1"]
-[ext_resource type="PackedScene" uid="uid://iyfdkc71gxgi" path="res://scenes/game/ClickerScreen.tscn" id="2_ol1sr"]
 [ext_resource type="Theme" uid="uid://wdthdulajagr" path="res://themes/main_theme.tres" id="3_main_theme"]
 
 [node name="Main" type="Control"]
@@ -13,6 +12,3 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("3_main_theme")
 script = ExtResource("1_qydc1")
-
-[node name="ClickerScreen" parent="." instance=ExtResource("2_ol1sr")]
-layout_mode = 1

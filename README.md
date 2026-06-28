@@ -547,37 +547,44 @@ If a protected endpoint is called without a stored session token, it emits
 
 Android/RuStore now shows an auth gate before gameplay on every cold start.
 
-**Android/RuStore startup flow:**
+**Android/RuStore startup flow (C3.1 ordering fix applied):**
 
-1. `Main.gd` detects `OS.has_feature("android")` and instantiates `AuthGateScreen`.
+1. `Main._ready()` detects `OS.has_feature("android")` and instantiates `AuthGateScreen`.
+   `ClickerScreen` is NOT instantiated yet — its `_ready()` has not run.
 2. `AuthGateScreen` checks `Platform.backend_has_session()`:
    - Session exists → calls `Platform.backend_get_me()` to validate.
-     - Valid → emits `auth_gate_completed("account")` → gameplay starts.
+     - Valid → emits `auth_gate_completed("account")` → `ClickerScreen` is instantiated.
      - Unauthorized → calls `Platform.backend_clear_local_auth()`, shows login form.
    - No session → shows login form directly.
 3. User can: log in, register, request/confirm password reset, or continue as guest.
-4. Guest mode → `auth_gate_completed("guest")` → gameplay starts with local save only.
-5. Login/register success → `auth_gate_completed("account")` → gameplay starts.
-6. `AuthGateScreen` is removed from the scene tree before `_begin_startup_wait()` runs.
+4. Guest mode → `auth_gate_completed("guest")` → `ClickerScreen` is instantiated.
+5. Login/register success → `auth_gate_completed("account")` → `ClickerScreen` is instantiated.
+6. `AuthGateScreen` is removed from the scene tree; then `ClickerScreen` is added.
+7. `ClickerScreen._ready()` loads local save and initializes gameplay.
+8. Existing `startup_completed` / `game_ready` flow continues as before.
 
 **Web/Yandex startup:**
 
-Unchanged. `AuthGateScreen` is never shown. Gameplay starts as before.
+`ClickerScreen` is instantiated immediately in `Main._ready()`. No AuthGate. Unchanged.
 
 **Editor/LocalDebug startup:**
 
-Unchanged. `AuthGateScreen` is never shown. Gameplay starts as before.
+`ClickerScreen` is instantiated immediately in `Main._ready()`. No AuthGate. Unchanged.
 
 **Files added:**
 
 - `scenes/auth/AuthGateScreen.tscn` — auth gate scene (script-driven UI).
 - `scenes/auth/AuthGateScreen.gd` — auth gate logic; calls backend only through `Platform`.
-- `scenes/main/Main.gd` — extended with `_should_show_android_auth_gate()`,
-  `_show_auth_gate()`, `_on_auth_gate_completed()`, `_begin_startup_wait()`.
+
+**Files changed:**
+
+- `scenes/main/Main.tscn` — removed pre-instanced `ClickerScreen` child node.
+- `scenes/main/Main.gd` — lazy `ClickerScreen` instantiation via `_instantiate_clicker_screen()`;
+  `_start_game_after_auth_gate(mode)` gate; `get_startup_auth_mode()` accessor.
 
 **What C3 did NOT change:**
 
-- Web/Yandex startup — unchanged.
+- Web/Yandex startup behavior — unchanged (ClickerScreen still instantiated immediately).
 - `SaveManager` — not yet wired to backend; local save and Yandex cloud save unchanged.
 - Backend Cloud Functions — unchanged.
 - Gameplay, ads, payments, balance — unchanged.

@@ -1,18 +1,28 @@
 extends Control
 
-# Startup root. On Android, shows AuthGateScreen before gameplay begins.
-# Web/editor: unchanged — proceeds directly to startup wait.
+# Startup root.
+#
+# Android: AuthGateScreen is shown first. ClickerScreen is instantiated only
+# after auth_gate_completed fires, so ClickerScreen._ready() (which loads save
+# and initializes gameplay) never runs before the auth/guest decision.
+#
+# Web / Editor: ClickerScreen is instantiated immediately in _ready().
+# No AuthGate. Startup behavior is unchanged.
 
 const AuthGateScreenScene = preload("res://scenes/auth/AuthGateScreen.tscn")
+const ClickerScreenScene = preload("res://scenes/game/ClickerScreen.tscn")
 
 var _auth_gate: Node = null
+var _clicker_screen: Node = null
+var _startup_started: bool = false
+var _startup_auth_mode: String = ""
 
 
 func _ready() -> void:
 	if _should_show_android_auth_gate():
 		_show_auth_gate()
 	else:
-		_begin_startup_wait()
+		_start_game_after_auth_gate("web_or_local")
 
 
 func _should_show_android_auth_gate() -> bool:
@@ -25,28 +35,49 @@ func _show_auth_gate() -> void:
 	_auth_gate.auth_gate_completed.connect(_on_auth_gate_completed)
 
 
-func _on_auth_gate_completed(_mode: String) -> void:
+func _on_auth_gate_completed(mode: String) -> void:
 	if is_instance_valid(_auth_gate):
 		_auth_gate.queue_free()
 		_auth_gate = null
+	_start_game_after_auth_gate(mode)
+
+
+func _start_game_after_auth_gate(mode: String) -> void:
+	if _startup_started:
+		return
+	_startup_started = true
+	_startup_auth_mode = mode
+	_instantiate_clicker_screen()
 	_begin_startup_wait()
 
 
+func _instantiate_clicker_screen() -> void:
+	if is_instance_valid(_clicker_screen):
+		return
+	_clicker_screen = ClickerScreenScene.instantiate()
+	_clicker_screen.name = "ClickerScreen"
+	add_child(_clicker_screen)
+
+
+func get_startup_auth_mode() -> String:
+	return _startup_auth_mode
+
+
 func _begin_startup_wait() -> void:
-	var clicker_screen: Node = get_node_or_null("ClickerScreen")
-	if not is_instance_valid(clicker_screen) or not clicker_screen.has_signal("startup_completed"):
+	var cs: Node = _clicker_screen if is_instance_valid(_clicker_screen) else get_node_or_null("ClickerScreen")
+	if not is_instance_valid(cs) or not cs.has_signal("startup_completed"):
 		push_warning("Main: ClickerScreen startup_completed not found — calling game_ready as fallback")
 		await get_tree().process_frame
 		Platform.game_ready()
 		return
-	if clicker_screen.has_method("is_startup_completed") and clicker_screen.is_startup_completed():
-		if clicker_screen.has_method("notify_yandex_game_ready"):
-			clicker_screen.notify_yandex_game_ready()
+	if cs.has_method("is_startup_completed") and cs.is_startup_completed():
+		if cs.has_method("notify_yandex_game_ready"):
+			cs.notify_yandex_game_ready()
 		else:
 			Platform.game_ready()
 		return
-	await clicker_screen.startup_completed
-	if clicker_screen.has_method("notify_yandex_game_ready"):
-		clicker_screen.notify_yandex_game_ready()
+	await cs.startup_completed
+	if cs.has_method("notify_yandex_game_ready"):
+		cs.notify_yandex_game_ready()
 	else:
 		Platform.game_ready()
