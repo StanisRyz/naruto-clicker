@@ -473,57 +473,75 @@ python -m http.server 8080
 | Web export | Ready for final local/Yandex preview verification |
 | Yandex Games cabinet testing | Ready for final local/Yandex preview verification |
 
-## Backend cloud-save client foundation
+## Backend cloud-save client and platform bridge
 
-A Yandex Cloud auth/save backend client has been added as a foundation for
-future Android/RuStore cloud-save support.
+A Yandex Cloud auth/save backend is integrated for Android/RuStore cloud-save.
+The integration is split across two patches:
 
-### What was added
+### C1 — Client foundation (completed)
 
 - `scripts/platform/backend/BackendAuthStore.gd` — persists session token,
   email, and email_verified to `user://backend_auth.json`.
 - `scripts/platform/backend/BackendApiClient.gd` — HTTP client that wraps all
   backend endpoints (auth, password reset, email verification, save load/save/delete).
 
+### C2 — Platform bridge (completed)
+
+The backend URL is committed as a public project setting in `project.godot`:
+
+```
+application/cloud_save/backend_url="https://d5dkb9m5is8d2uqmrsf7.kr8f6hld.apigw.yandexcloud.net"
+```
+
+This URL is an API Gateway public endpoint — not a secret. No passwords,
+session tokens, SMTP keys, or service-account keys are committed.
+
+**What C2 added:**
+
+- `PlatformServices.gd` — backend auth/save signals and default stub methods.
+  All stubs fail with `not_supported`; no crash on any platform.
+- `Platform.gd` — re-exposes backend signals and forwards all backend methods
+  to the active implementation.
+- `AndroidRuStorePlatform.gd` — creates `BackendAuthStore` + `BackendApiClient`,
+  configures the URL from the project setting, and delegates all backend methods
+  to the client.
+
+**What C2 did NOT change:**
+
+- Web/Yandex Games cloud-save — unchanged; still uses `YandexBridge` / `WebYandexPlatform`.
+- `SaveManager` — not yet wired to backend; local save and Yandex cloud save behaviour unchanged.
+- Account UI — not yet added; future patch.
+- Ads, payments, balance, gameplay — unchanged.
+
 ### Configuration
 
-The backend base URL is expected in the project setting:
+The backend base URL is read from the project setting at Android startup:
 
 ```
 application/cloud_save/backend_url
 ```
 
-Call `BackendApiClient.configure_from_project_settings()` to read it, or
-`BackendApiClient.configure(url)` to supply it directly. The client does not
-hardcode any URL; **it must be configured before making requests.**
+`AndroidRuStorePlatform` calls `BackendApiClient.configure_from_project_settings()`
+automatically in `_ready()`. The URL can also be overridden at runtime via
+`Platform.configure_backend_client(url)`.
 
 If the client is not configured when a request is attempted, it emits
-`operation_failed(op, "not_configured", 0, {})` and returns `false` without
-touching the network.
+`backend_operation_failed(op, "not_configured", 0, {})` without touching the network.
 
-If a protected endpoint is called without a stored session token, the client
-emits `operation_failed(op, "missing_session", 0, {})` without touching
-the network.
+If a protected endpoint is called without a stored session token, it emits
+`backend_operation_failed(op, "missing_session", 0, {})` without touching the network.
 
-The default project setting value is an empty string. Supply the real URL
-through `configure()` or `configure_from_project_settings()` at runtime
-(e.g., from a local env config or an editor project setting override).
-
-**Never commit the backend URL if you treat it as private config, and never
-commit passwords, session tokens, SMTP keys, or service-account keys to
-the repository.**
+**Never commit passwords, session tokens, SMTP keys, or service-account keys.**
 
 ### Architecture notes
 
-- This patch only adds the client foundation. Android/RuStore platform wiring
-  and account UI are future patches.
-- Web/Yandex Games cloud-save continues to use the Yandex SDK through
-  `WebYandexPlatform` and `YandexBridge` — unchanged.
-- Gameplay code must not call `BackendApiClient` directly. Future integration
-  will go through `Platform` / `AndroidRuStorePlatform`.
-- The backend stores a raw JSON save blob. It does not know game-specific save
-  fields. `save_version` and `last_save_unix_time` are required by the backend
-  and must be present in the save data before calling `save_save()`.
+- All backend operations go through `Platform` — gameplay and UI must never
+  call `BackendApiClient` directly.
+- Web/Yandex Games cloud-save remains entirely separate through `YandexBridge`.
+- The backend stores a raw JSON save blob. `save_version` and `last_save_unix_time`
+  must be present in save data before calling `Platform.backend_save_save()`.
+- `SaveManager` wiring is a future patch.
+- Account UI is a future patch.
 
 ---
 

@@ -40,6 +40,11 @@ signal cloud_save_delete_error(message: String)
 signal platform_pause_requested
 signal platform_resume_requested
 
+# ── Backend auth/save signals ─────────────────────────────────────────────────
+signal backend_auth_changed(auth_data: Dictionary)
+signal backend_operation_succeeded(operation: String, response: Dictionary)
+signal backend_operation_failed(operation: String, error_code: String, status_code: int, response: Dictionary)
+
 var _impl: Node
 
 
@@ -56,6 +61,7 @@ func _ready() -> void:
 		_impl = preload("res://scripts/platform/LocalDebugPlatform.gd").new()
 		add_child(_impl)
 		_connect_impl_signals()
+	_connect_backend_signals()
 
 
 func _connect_yandex_bridge_signals() -> void:
@@ -117,6 +123,14 @@ func _connect_impl_signals() -> void:
 
 	_impl.platform_pause_requested.connect(platform_pause_requested.emit)
 	_impl.platform_resume_requested.connect(platform_resume_requested.emit)
+
+
+func _connect_backend_signals() -> void:
+	if _impl == null:
+		return
+	_impl.backend_auth_changed.connect(backend_auth_changed.emit)
+	_impl.backend_operation_succeeded.connect(backend_operation_succeeded.emit)
+	_impl.backend_operation_failed.connect(backend_operation_failed.emit)
 
 
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
@@ -195,3 +209,95 @@ func get_platform_event_debug_state() -> Dictionary:
 
 func get_platform_key() -> String:
 	return _impl.get_platform_key()
+
+
+# ── Backend auth/save ─────────────────────────────────────────────────────────
+
+func configure_backend_client(base_url: String = "") -> void:
+	if _impl == null:
+		return
+	_impl.configure_backend_client(base_url)
+
+
+func backend_has_session() -> bool:
+	if _impl == null:
+		return false
+	return _impl.backend_has_session()
+
+
+func backend_get_email() -> String:
+	if _impl == null:
+		return ""
+	return _impl.backend_get_email()
+
+
+func backend_is_email_verified() -> bool:
+	if _impl == null:
+		return false
+	return _impl.backend_is_email_verified()
+
+
+func backend_register(email: String, password: String) -> bool:
+	if _impl == null:
+		return false
+	return _impl.backend_register(email, password)
+
+
+func backend_login(email: String, password: String) -> bool:
+	if _impl == null:
+		return false
+	return _impl.backend_login(email, password)
+
+
+func backend_logout() -> bool:
+	if _impl == null:
+		return false
+	return _impl.backend_logout()
+
+
+func backend_get_me() -> bool:
+	if _impl == null:
+		return false
+	return _impl.backend_get_me()
+
+
+func backend_request_password_reset(email: String) -> bool:
+	if _impl == null:
+		return false
+	return _impl.backend_request_password_reset(email)
+
+
+func backend_confirm_password_reset(email: String, code: String, new_password: String) -> bool:
+	if _impl == null:
+		return false
+	return _impl.backend_confirm_password_reset(email, code, new_password)
+
+
+func backend_request_email_verification() -> bool:
+	if _impl == null:
+		return false
+	return _impl.backend_request_email_verification()
+
+
+func backend_confirm_email_verification(code: String) -> bool:
+	if _impl == null:
+		return false
+	return _impl.backend_confirm_email_verification(code)
+
+
+func backend_load_save() -> bool:
+	if _impl == null:
+		return false
+	return _impl.backend_load_save()
+
+
+func backend_save_save(save_data: Dictionary) -> bool:
+	if _impl == null:
+		return false
+	return _impl.backend_save_save(save_data)
+
+
+func backend_delete_save() -> bool:
+	if _impl == null:
+		return false
+	return _impl.backend_delete_save()

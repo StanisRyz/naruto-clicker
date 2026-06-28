@@ -15,6 +15,13 @@ extends "res://scripts/platform/PlatformServices.gd"
 #   See docs/rustore_pay_integration.md for setup and manual test checklist.
 
 const AdPlacementConfigClass = preload("res://scripts/game/config/AdPlacementConfig.gd")
+const BackendAuthStoreScript = preload("res://scripts/platform/backend/BackendAuthStore.gd")
+const BackendApiClientScript = preload("res://scripts/platform/backend/BackendApiClient.gd")
+
+# ── Backend state ─────────────────────────────────────────────────────────────
+
+var _backend_auth_store: BackendAuthStore = null
+var _backend_client: BackendApiClient = null
 
 # ── Payment state ─────────────────────────────────────────────────────────────
 
@@ -69,6 +76,15 @@ func _ready() -> void:
 		_pay_client.on_purchase_created.connect(_on_rustore_purchase_created)
 		_pay_client.on_get_purchases_success.connect(_on_rustore_get_purchases_success)
 		_pay_client.on_get_purchases_failure.connect(_on_rustore_get_purchases_failure)
+
+	_backend_auth_store = BackendAuthStoreScript.new()
+	_backend_client = BackendApiClientScript.new()
+	add_child(_backend_client)
+	_backend_client.set_auth_store(_backend_auth_store)
+	_backend_client.configure_from_project_settings()
+	_backend_client.auth_changed.connect(_on_backend_auth_changed)
+	_backend_client.operation_succeeded.connect(_on_backend_operation_succeeded)
+	_backend_client.operation_failed.connect(_on_backend_operation_failed)
 
 # ── Plugin / client access ─────────────────────────────────────────────────────
 
@@ -499,3 +515,121 @@ func get_platform_event_debug_state() -> Dictionary:
 
 func get_platform_key() -> String:
 	return "rustore"
+
+# ── Backend signal handlers ───────────────────────────────────────────────────
+
+func _on_backend_auth_changed(auth_data: Dictionary) -> void:
+	backend_auth_changed.emit(auth_data)
+
+
+func _on_backend_operation_succeeded(operation: String, response: Dictionary) -> void:
+	backend_operation_succeeded.emit(operation, response)
+
+
+func _on_backend_operation_failed(operation: String, error_code: String, status_code: int, response: Dictionary) -> void:
+	backend_operation_failed.emit(operation, error_code, status_code, response)
+
+# ── Backend auth/save ─────────────────────────────────────────────────────────
+
+func configure_backend_client(base_url: String = "") -> void:
+	if _backend_client == null:
+		return
+	if base_url.strip_edges() != "":
+		_backend_client.configure(base_url)
+	else:
+		_backend_client.configure_from_project_settings()
+
+
+func backend_has_session() -> bool:
+	if _backend_client == null:
+		return false
+	return _backend_client.has_session()
+
+
+func backend_get_email() -> String:
+	if _backend_client == null:
+		return ""
+	return _backend_client.get_email()
+
+
+func backend_is_email_verified() -> bool:
+	if _backend_client == null:
+		return false
+	return _backend_client.is_email_verified()
+
+
+func backend_register(email: String, password: String) -> bool:
+	if _backend_client == null:
+		backend_operation_failed.emit("register", "backend_client_unavailable", 0, {})
+		return false
+	return _backend_client.register(email, password)
+
+
+func backend_login(email: String, password: String) -> bool:
+	if _backend_client == null:
+		backend_operation_failed.emit("login", "backend_client_unavailable", 0, {})
+		return false
+	return _backend_client.login(email, password)
+
+
+func backend_logout() -> bool:
+	if _backend_client == null:
+		backend_operation_failed.emit("logout", "backend_client_unavailable", 0, {})
+		return false
+	return _backend_client.logout()
+
+
+func backend_get_me() -> bool:
+	if _backend_client == null:
+		backend_operation_failed.emit("get_me", "backend_client_unavailable", 0, {})
+		return false
+	return _backend_client.get_me()
+
+
+func backend_request_password_reset(email: String) -> bool:
+	if _backend_client == null:
+		backend_operation_failed.emit("request_password_reset", "backend_client_unavailable", 0, {})
+		return false
+	return _backend_client.request_password_reset(email)
+
+
+func backend_confirm_password_reset(email: String, code: String, new_password: String) -> bool:
+	if _backend_client == null:
+		backend_operation_failed.emit("confirm_password_reset", "backend_client_unavailable", 0, {})
+		return false
+	return _backend_client.confirm_password_reset(email, code, new_password)
+
+
+func backend_request_email_verification() -> bool:
+	if _backend_client == null:
+		backend_operation_failed.emit("request_email_verification", "backend_client_unavailable", 0, {})
+		return false
+	return _backend_client.request_email_verification()
+
+
+func backend_confirm_email_verification(code: String) -> bool:
+	if _backend_client == null:
+		backend_operation_failed.emit("confirm_email_verification", "backend_client_unavailable", 0, {})
+		return false
+	return _backend_client.confirm_email_verification(code)
+
+
+func backend_load_save() -> bool:
+	if _backend_client == null:
+		backend_operation_failed.emit("load_save", "backend_client_unavailable", 0, {})
+		return false
+	return _backend_client.load_save()
+
+
+func backend_save_save(save_data: Dictionary) -> bool:
+	if _backend_client == null:
+		backend_operation_failed.emit("save_save", "backend_client_unavailable", 0, {})
+		return false
+	return _backend_client.save_save(save_data)
+
+
+func backend_delete_save() -> bool:
+	if _backend_client == null:
+		backend_operation_failed.emit("delete_save", "backend_client_unavailable", 0, {})
+		return false
+	return _backend_client.delete_save()

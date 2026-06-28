@@ -640,31 +640,34 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
 
 - Backend client code lives under `scripts/platform/backend/`.
 - Gameplay and UI code must **never** call `BackendApiClient` directly.
-  Future platform integration must go through `Platform` / `AndroidRuStorePlatform`.
+  All backend operations go through `Platform` (the autoload).
+- Android/RuStore backend implementation lives in `AndroidRuStorePlatform.gd`.
+  It creates `BackendAuthStore` and `BackendApiClient` in `_ready()` and delegates
+  all `Platform.backend_*` calls to the client.
 - Web/Yandex Games cloud-save remains completely separate through the Yandex SDK
   (`YandexBridge` / `WebYandexPlatform`). Do not mix these two code paths.
+  Backend operations on Web fail with `not_supported` via inherited stubs.
 - The backend stores a raw JSON save blob. It does not know game-specific save
   fields. `save_version` and `last_save_unix_time` must be present in `save_data`
-  before calling `BackendApiClient.save_save()`.
+  before calling `Platform.backend_save_save()`.
 - `BackendAuthStore` persists session data to `user://backend_auth.json`. This
   file must never be committed to the repository (covered by `.gitignore` via
   `user://`).
-- Never log passwords, session tokens, reset codes, verification codes, or full
-  save JSON. `BackendAuthStore` and `BackendApiClient` enforce this.
-- `BackendApiClient` must be `configure()`d with a base URL before use. The URL
-  may be read from the project setting `application/cloud_save/backend_url` via
-  `configure_from_project_settings()`. Do not hardcode the backend URL in game code.
+- **Never log passwords, session tokens, reset codes, verification codes, or full
+  save JSON.** `BackendAuthStore` and `BackendApiClient` enforce this; do not add
+  any `print` or `push_warning` that includes these values.
+- The backend base URL is committed in `project.godot` as
+  `application/cloud_save/backend_url`. It is a public API Gateway endpoint — not a
+  secret. Never commit passwords, SMTP keys, or service-account keys.
+- `BackendApiClient` reads the URL via `configure_from_project_settings()` at
+  Android startup. Do not hardcode the backend URL anywhere in game code.
 - **If `is_configured()` is false**, all request methods emit
   `operation_failed(op, "not_configured", 0, {})` and return `false` without
-  touching the network. This is checked after `missing_session` and before
-  `request_in_progress`.
+  touching the network.
 - **If a protected endpoint is called without a session token**, the client emits
   `operation_failed(op, "missing_session", 0, {})` and returns `false` without
   sending any HTTP request.
-- **Request body contents must never be logged.** Do not add `print` or
-  `push_warning` calls that include request body dictionaries.
-- Do not wire `BackendApiClient` into `AndroidRuStorePlatform` or `SaveManager`
-  until that integration patch is explicitly requested.
+- Do not wire backend save into `SaveManager` until that patch is explicitly requested.
 - Do not add account UI until an account UI patch is explicitly requested.
 - Backend error codes (e.g. `invalid_credentials`, `email_already_registered`,
   `missing_save_version`) are preserved verbatim by `BackendApiClient`. Do not

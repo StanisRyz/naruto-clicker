@@ -119,7 +119,7 @@ func logout() -> bool:
 
 
 func get_me() -> bool:
-	return _get("/v1/me", "get_me", true)
+	return _http_get("/v1/me", "get_me", true)
 
 
 # ── Password reset ────────────────────────────────────────────────────────────
@@ -148,7 +148,7 @@ func confirm_email_verification(code: String) -> bool:
 # ── Cloud save ────────────────────────────────────────────────────────────────
 
 func load_save() -> bool:
-	return _get("/v1/save", "load_save", true)
+	return _http_get("/v1/save", "load_save", true)
 
 
 func save_save(save_data: Dictionary) -> bool:
@@ -208,7 +208,7 @@ func _post(path: String, body: Dictionary, operation: String, needs_auth: bool) 
 	return true
 
 
-func _get(path: String, operation: String, needs_auth: bool) -> bool:
+func _http_get(path: String, operation: String, needs_auth: bool) -> bool:
 	if not _can_start_request(operation, needs_auth):
 		return false
 	_start_request(operation)

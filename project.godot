@@ -15,6 +15,7 @@ run/main_scene="uid://vp5q6agyccmk"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 boot_splash/image="uid://d2xxh4ek0b7ag"
 config/icon="uid://b2er20jnl6rl0"
+cloud_save/backend_url="https://d5dkb9m5is8d2uqmrsf7.kr8f6hld.apigw.yandexcloud.net"
 
 [autoload]
 

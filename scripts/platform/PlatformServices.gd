@@ -59,6 +59,14 @@ signal platform_pause_requested
 @warning_ignore("unused_signal")
 signal platform_resume_requested
 
+# ── Backend auth/save signals ─────────────────────────────────────────────────
+@warning_ignore("unused_signal")
+signal backend_auth_changed(auth_data: Dictionary)
+@warning_ignore("unused_signal")
+signal backend_operation_succeeded(operation: String, response: Dictionary)
+@warning_ignore("unused_signal")
+signal backend_operation_failed(operation: String, error_code: String, status_code: int, response: Dictionary)
+
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
 
 func game_ready() -> void:
@@ -119,3 +127,61 @@ func get_platform_event_debug_state() -> Dictionary:
 
 func get_platform_key() -> String:
 	return ""
+
+# ── Backend auth/save ─────────────────────────────────────────────────────────
+
+func configure_backend_client(_base_url: String = "") -> void:
+	pass
+
+func backend_has_session() -> bool:
+	return false
+
+func backend_get_email() -> String:
+	return ""
+
+func backend_is_email_verified() -> bool:
+	return false
+
+func backend_register(_email: String, _password: String) -> bool:
+	backend_operation_failed.emit("register", "not_supported", 0, {})
+	return false
+
+func backend_login(_email: String, _password: String) -> bool:
+	backend_operation_failed.emit("login", "not_supported", 0, {})
+	return false
+
+func backend_logout() -> bool:
+	backend_operation_failed.emit("logout", "not_supported", 0, {})
+	return false
+
+func backend_get_me() -> bool:
+	backend_operation_failed.emit("get_me", "not_supported", 0, {})
+	return false
+
+func backend_request_password_reset(_email: String) -> bool:
+	backend_operation_failed.emit("request_password_reset", "not_supported", 0, {})
+	return false
+
+func backend_confirm_password_reset(_email: String, _code: String, _new_password: String) -> bool:
+	backend_operation_failed.emit("confirm_password_reset", "not_supported", 0, {})
+	return false
+
+func backend_request_email_verification() -> bool:
+	backend_operation_failed.emit("request_email_verification", "not_supported", 0, {})
+	return false
+
+func backend_confirm_email_verification(_code: String) -> bool:
+	backend_operation_failed.emit("confirm_email_verification", "not_supported", 0, {})
+	return false
+
+func backend_load_save() -> bool:
+	backend_operation_failed.emit("load_save", "not_supported", 0, {})
+	return false
+
+func backend_save_save(_save_data: Dictionary) -> bool:
+	backend_operation_failed.emit("save_save", "not_supported", 0, {})
+	return false
+
+func backend_delete_save() -> bool:
+	backend_operation_failed.emit("delete_save", "not_supported", 0, {})
+	return false

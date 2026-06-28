@@ -6,14 +6,19 @@
   No Node inheritance; instantiate directly. Never log `session_token`.
 - `BackendApiClient.gd` — extends Node; owns one `HTTPRequest` child.
   One active request at a time. Call `set_auth_store(store)` and `configure(url)` before use.
-- Gameplay code must not call these classes directly. Integration goes through
-  `Platform` → `AndroidRuStorePlatform` (future patch).
+- All backend operations must be accessed through `Platform`, not directly from gameplay or UI.
+- `AndroidRuStorePlatform.gd` is the Android/RuStore backend implementation.
+  It creates `BackendAuthStore` + `BackendApiClient` in `_ready()` and delegates all
+  `Platform.backend_*` calls to the client. It is the only place backend SDK calls may live.
 - Web/Yandex Games cloud-save uses `YandexBridge`/`WebYandexPlatform` — entirely separate.
+  Backend operations on Web fail with `not_supported` via inherited `PlatformServices` stubs.
 - The backend stores a raw JSON blob. `save_version` and `last_save_unix_time` must
   be present in the save data; the backend validates them. The client does not.
 - Backend error strings are passed through verbatim. UI layers translate them for display.
 - `configure_from_project_settings()` reads `application/cloud_save/backend_url` from
-  `ProjectSettings`. Do not hardcode the URL anywhere in game code.
+  `ProjectSettings`. This URL is committed in `project.godot` as a public endpoint — not a secret.
+- **Never log backend passwords, session tokens, reset codes, verification codes, or full save JSON.**
+- **Do not commit backend secrets.** Only the public API Gateway URL belongs in `project.godot`.
 
 ---
 
