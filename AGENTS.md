@@ -747,6 +747,17 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
 - **If user declines (Keep Local), set `_startup_cloud_restore_declined_this_session = true`.** Do not re-prompt during the same session unless `auth_overlay` resets it.
 - **`CloudRestorePrompt` blocks fullscreen ads and the rewarded banner** while visible (guarded in `_is_safe_for_fullscreen_ad()` and `_is_main_screen_clear_for_rewarded_banner()`).
 
+## Guest → Account Migration Prompt Rules (C5.4)
+
+- **`GuestMigrationPrompt` must not call `SaveManager` or `Platform` directly.** It only emits `save_guest_progress_confirmed` or `not_now_confirmed`. `ClickerScreen` owns all upload operations.
+- **Do not show `GuestMigrationPrompt` on Web/Yandex.** Guard with `OS.has_feature("android")`.
+- **Do not show `GuestMigrationPrompt` while `CloudRestorePrompt` is pending.** `_startup_cloud_restore_prompt_pending` and `_startup_cloud_restore_check_in_progress` must both be false before showing the migration prompt.
+- **Do not silently upload guest progress immediately after login.** Auto-upload (C5.2) will pick up future saves because the account session is now active, but the migration prompt is the only path to a deliberate initial upload of existing guest progress.
+- **`_guest_migration_prompt_pending_after_restore_check` coordinates timing.** Set it true in `on_account_login_from_overlay()` when `_gameplay_started_as_guest` is true, then check and clear it at each restore-check completion point before calling `_maybe_show_guest_migration_prompt()`. Clear it (false) when the cloud restore prompt is shown instead.
+- **`_gameplay_started_as_guest` is set by `set_startup_auth_mode()` called from Main.gd** before ClickerScreen adds itself to the tree. On non-Android or web startup mode, this is never "guest", so the migration flow is inert.
+- **After a successful migration upload, set `_gameplay_started_as_guest = false`** to prevent re-prompting if the player saves again and the prompt eligibility check is re-entered.
+- **`GuestMigrationPrompt` blocks fullscreen ads and the rewarded banner** while visible (guarded in `_is_safe_for_fullscreen_ad()` and `_is_main_screen_clear_for_rewarded_banner()`).
+
 ## Startup Upload Suspension Rules (C5.3.1)
 
 - **`SaveManager._backend_cloud_auto_upload_suspended` guards `queue_backend_cloud_save()` only.** `upload_current_save_to_backend_cloud_now()` has no suspension guard and must never acquire one — manual Save to Cloud must always work.

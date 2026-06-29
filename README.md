@@ -942,6 +942,37 @@ Ensures the startup cloud-restore prompt compares cloud save against the local s
 
 - `scenes/game/ClickerScreen.gd` — `_pre_startup_had_local_save`, `_pre_startup_local_timestamp`, `_pre_startup_local_save_snapshot_taken` fields; `_capture_pre_startup_local_save_snapshot()` helper; snapshot call in `_ready()`; `_evaluate_cloud_restore_candidate()` rewritten to use snapshot.
 
+### C5.4 — Guest → Account Migration Prompt (completed)
+
+After a guest player logs in or registers an account from Settings / AuthGate overlay, the game now offers to upload current local progress to the backend cloud.
+
+**Behavior:**
+
+- If gameplay started as Guest and the player logs in mid-session from Settings:
+  - The cloud-restore check runs first (C5.3 flow).
+  - If no restore prompt is needed, `GuestMigrationPrompt` appears asking: *"Save your current guest progress to this account?"*
+  - **Save to Cloud** — saves locally then uploads to backend; gameplay continues without reload.
+  - **Not Now** — prompt closes; gameplay unchanged; future auto-uploads will work because an account session now exists.
+- If the restore check shows `CloudRestorePrompt`, the migration prompt is suppressed (restore has priority; both never appear simultaneously).
+- Prompt does not appear on Web/Yandex, in pure guest mode, or if gameplay started as account.
+
+**What C5.4 did NOT add:**
+
+- Silent overwrite of backend cloud immediately after login — always requires user confirmation.
+- Auto-load of backend cloud save — that remains a separate restore flow.
+- Full conflict resolution or merge — future work.
+- Save schema changes, gameplay changes, balance changes, monetization changes.
+
+**Files changed:**
+
+- `scenes/ui/GuestMigrationPrompt.gd` — new signal-only dialog; no SaveManager/Platform calls.
+- `scenes/ui/GuestMigrationPrompt.tscn` — new scene, visual style matches CloudRestorePrompt.
+- `scenes/game/ClickerScreen.tscn` — GuestMigrationPrompt node added.
+- `scenes/game/ClickerScreen.gd` — guest-session tracking fields; `set_startup_auth_mode()`; `on_account_login_from_overlay()`; prompt eligibility check; upload handlers; fullscreen-ad and rewarded-banner guards updated.
+- `scenes/main/Main.gd` — passes startup auth mode to ClickerScreen; routes overlay login to `on_account_login_from_overlay()`.
+- `localization/game_text.csv` — 6 new `guest_migration.*` keys (EN + RU).
+- `scripts/ui/LocalizationData.gd` — regenerated (451 keys).
+
 ---
 
 ## QoL update mode

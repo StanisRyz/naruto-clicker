@@ -46,7 +46,9 @@ func _on_auth_gate_completed(mode: String) -> void:
 	if _startup_started:
 		_startup_auth_mode = mode
 		if mode == "account" and is_instance_valid(_clicker_screen):
-			if _clicker_screen.has_method("request_backend_cloud_restore_check"):
+			if _clicker_screen.has_method("on_account_login_from_overlay"):
+				_clicker_screen.on_account_login_from_overlay()
+			elif _clicker_screen.has_method("request_backend_cloud_restore_check"):
 				_clicker_screen.request_backend_cloud_restore_check("auth_overlay")
 	else:
 		_start_game_after_auth_gate(mode)
@@ -82,6 +84,8 @@ func _instantiate_clicker_screen() -> void:
 	_clicker_screen = ClickerScreenScene.instantiate()
 	_clicker_screen.name = "ClickerScreen"
 	add_child(_clicker_screen)
+	if _clicker_screen.has_method("set_startup_auth_mode"):
+		_clicker_screen.set_startup_auth_mode(_startup_auth_mode)
 
 
 func get_startup_auth_mode() -> String:

@@ -1,4 +1,4 @@
-key,en,ru,context,notes
+﻿key,en,ru,context,notes
 ui.common.close,Close,Закрыть,Buttons,
 ui.common.buy,Buy,Купить,Buttons,
 ui.common.cost,Cost,Цена,Economy label,
@@ -444,3 +444,9 @@ cloud_restore.keep_local,Keep Local,Оставить локальный,CloudRes
 cloud_restore.invalid_save,Cloud save is invalid,Облачное сохранение повреждено или несовместимо,CloudRestorePrompt invalid save warning,
 cloud_restore.load_failed,Failed to load cloud save,Не удалось загрузить облачное сохранение,CloudRestorePrompt load failed message,
 cloud_restore.loaded_success,Cloud progress loaded,Облачный прогресс загружен,CloudRestorePrompt load success message,
+guest_migration.title,Save Guest Progress,Сохранить гостевой прогресс,GuestMigrationPrompt title,
+guest_migration.message,You are now signed in. Save your current guest progress to this account?,Вы вошли в аккаунт. Сохранить текущий гостевой прогресс в этот аккаунт?,GuestMigrationPrompt message,
+guest_migration.save_to_cloud,Save to Cloud,Сохранить в облако,GuestMigrationPrompt save button,
+guest_migration.not_now,Not Now,Не сейчас,GuestMigrationPrompt not now button,
+guest_migration.upload_success,Guest progress saved to cloud,Гостевой прогресс сохранён в облако,GuestMigrationPrompt upload success status,
+guest_migration.upload_failed,Failed to save guest progress,Не удалось сохранить гостевой прогресс,GuestMigrationPrompt upload failed status,
