@@ -45,6 +45,9 @@ func _on_auth_gate_completed(mode: String) -> void:
 		_auth_gate = null
 	if _startup_started:
 		_startup_auth_mode = mode
+		if mode == "account" and is_instance_valid(_clicker_screen):
+			if _clicker_screen.has_method("request_backend_cloud_restore_check"):
+				_clicker_screen.request_backend_cloud_restore_check("auth_overlay")
 	else:
 		_start_game_after_auth_gate(mode)
 

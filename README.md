@@ -843,6 +843,55 @@ Automatic backend cloud-save upload for Android/RuStore account users.
 
 ---
 
+### C5.3 — Android Account Startup Cloud-Restore Check (completed)
+
+Startup and post-login cloud-restore check for Android/RuStore account users with a user-confirmation prompt.
+
+**Behavior:**
+
+- **Web/Yandex:** unchanged. Existing Yandex SDK cloud-save behavior remains unchanged. No backend cloud-restore check.
+- **Android/RuStore Guest:** local-save-only. No backend cloud-restore check.
+- **Android/RuStore Account:** after gameplay starts and a backend session exists, the backend save is checked once automatically. The check also runs after a successful login from the AuthGate overlay while gameplay is already running.
+
+**Prompt logic (Android account only):**
+
+- If no cloud save exists: no prompt, no change.
+- If cloud save exists and local save is missing: prompt appears — "Cloud Progress Found".
+- If cloud save exists and cloud `last_save_unix_time` is newer than local: prompt appears — "Newer cloud progress found".
+- If local save is newer or same age as cloud: no prompt.
+- If cloud save is invalid: no prompt, `push_warning` only.
+- Cloud save is **never applied silently**. User must confirm.
+
+**Key design points:**
+
+- Check runs at most once per startup. After login from AuthGate overlay, one additional check is allowed.
+- If user declines ("Keep Local"), no further startup prompt appears for that session.
+- Manual "Load from Cloud" in Settings remains available and unchanged.
+- Auto-upload (C5.2) continues to work normally; guest saves are never uploaded.
+- No changes to backend Cloud Functions, gameplay, ads, payments, or balance.
+- No save payloads are logged.
+
+**What C5.3 did NOT add:**
+
+- Silent auto-load of cloud saves — user confirmation is always required.
+- Automatic cloud download on startup — only a check and prompt.
+- Full conflict-resolution UI — simple timestamp comparison only.
+- Guest-to-account save upload after login.
+- Backend Cloud Function changes.
+- Gameplay, ads, payments, balance — unchanged.
+
+**Files changed:**
+
+- `localization/game_text.csv` — 9 new `cloud_restore.*` keys (EN + RU).
+- `scripts/ui/LocalizationData.gd` — regenerated (445 keys).
+- `scenes/ui/CloudRestorePrompt.gd` — new Control-based confirmation dialog; emits `load_cloud_confirmed` / `keep_local_confirmed`; does not call SaveManager or Platform.
+- `scenes/ui/CloudRestorePrompt.tscn` — new scene; matches PrestigeConfirmDialog visual style.
+- `scenes/game/ClickerScreen.tscn` — added `CloudRestorePrompt` instance.
+- `scenes/game/ClickerScreen.gd` — added restore-check state fields; `request_backend_cloud_restore_check()`; `_evaluate_cloud_restore_candidate()`; `_on_cloud_restore_load_confirmed()`; `_on_cloud_restore_keep_local_confirmed()`; `_manual_backend_cloud_download_requested` flag; refactored `load_save` response routing to distinguish manual vs startup check.
+- `scenes/main/Main.gd` — after AuthGate overlay login with mode `"account"`, calls `_clicker_screen.request_backend_cloud_restore_check("auth_overlay")`.
+
+---
+
 ## QoL update mode
 
 This project is in release-candidate QoL mode. When contributing:

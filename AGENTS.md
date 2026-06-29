@@ -732,6 +732,21 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
 - Web/Yandex cloud-save via `YandexBridge` is completely separate and must remain
   unchanged. The backend cloud-sync UI must never appear on Web/editor.
 
+## Cloud Restore Prompt Rules (C5.3)
+
+- **Never apply backend cloud saves without user confirmation.** `CloudRestorePrompt` emits signals; `ClickerScreen` applies the save only after the user confirms.
+- **Startup cloud restore check is Android account-only.** The guard is `OS.has_feature("android") and Platform.backend_has_session()`. Guest mode and Web/Yandex must never reach `Platform.backend_load_save()` from this path.
+- **Guest mode must not call backend load or save.** `SaveManager.queue_backend_cloud_save()` and `request_backend_cloud_restore_check()` are both no-ops for guests.
+- **Web/Yandex cloud-save must remain SDK-based and unchanged.** `YandexBridge` / `WebYandexPlatform` handles cloud save for Web. Do not mix with the backend path.
+- **`CloudRestorePrompt` must not call `SaveManager` or `Platform` directly.** It only emits `load_cloud_confirmed` or `keep_local_confirmed`. `ClickerScreen` owns all data operations.
+- **`ClickerScreen` owns applying the cloud save and refreshing gameplay UI** after restore confirmation: `SaveManager.apply_cloud_save_payload()` → `SaveManager.load_data()` → `state.apply_save_data()` → `_reset_runtime_state_for_new_game()` → `_sync_boss_timer()` → `_update_ui()`.
+- **Do not log full save payloads.** `_evaluate_cloud_restore_candidate()` and `_on_cloud_restore_load_confirmed()` must not print JSON or save content.
+- **Manual Settings Load from Cloud remains separate and unchanged.** Distinguish by `_manual_backend_cloud_download_requested` flag vs `_startup_cloud_restore_check_in_progress` flag in the `load_save` response handler.
+- **Startup check runs at most once per session.** Re-check is allowed only after an explicit account login from the AuthGate overlay (via `request_backend_cloud_restore_check("auth_overlay")`), which resets the requested/declined flags.
+- **Do not show a second prompt if one is already pending.** Guard with `_startup_cloud_restore_prompt_pending`.
+- **If user declines (Keep Local), set `_startup_cloud_restore_declined_this_session = true`.** Do not re-prompt during the same session unless `auth_overlay` resets it.
+- **`CloudRestorePrompt` blocks fullscreen ads and the rewarded banner** while visible (guarded in `_is_safe_for_fullscreen_ad()` and `_is_main_screen_clear_for_rewarded_banner()`).
+
 ## Backend API Client Rules
 
 - Backend client code lives under `scripts/platform/backend/`.

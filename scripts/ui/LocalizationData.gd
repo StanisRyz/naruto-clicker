@@ -4,8 +4,8 @@ extends RefCounted
 # AUTO-GENERATED — do not edit by hand.
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
-# Generated key count: 436
-# Generated at: 1782663464
+# Generated key count: 445
+# Generated at: 1782752190
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -445,6 +445,15 @@ const TRANSLATIONS: Dictionary = {
 		"settings.cloud.upload_queued": "Upload queued",
 		"settings.cloud.upload_in_progress": "Uploading to cloud...",
 		"settings.cloud.background_upload_failed": "Background cloud upload failed",
+		"cloud_restore.title": "Cloud Progress Found",
+		"cloud_restore.message_no_local": "We found cloud progress for this account. Load it on this device?",
+		"cloud_restore.message_newer": "A newer cloud progress was found. Load it instead of local progress?",
+		"cloud_restore.timestamp_info": "Local: {local_time} / Cloud: {cloud_time}",
+		"cloud_restore.load_cloud": "Load Cloud Progress",
+		"cloud_restore.keep_local": "Keep Local",
+		"cloud_restore.invalid_save": "Cloud save is invalid",
+		"cloud_restore.load_failed": "Failed to load cloud save",
+		"cloud_restore.loaded_success": "Cloud progress loaded",
 	},
 	"ru": {
 		"ui.common.close": "Закрыть",
@@ -883,6 +892,15 @@ const TRANSLATIONS: Dictionary = {
 		"settings.cloud.upload_queued": "Сохранение в облако поставлено в очередь",
 		"settings.cloud.upload_in_progress": "Сохраняем в облако...",
 		"settings.cloud.background_upload_failed": "Фоновое сохранение в облако не удалось",
+		"cloud_restore.title": "Найден облачный прогресс",
+		"cloud_restore.message_no_local": "Мы нашли облачный прогресс для этого аккаунта. Загрузить его на это устройство?",
+		"cloud_restore.message_newer": "Найден более свежий облачный прогресс. Загрузить его вместо локального?",
+		"cloud_restore.timestamp_info": "Локально: {local_time} / Облако: {cloud_time}",
+		"cloud_restore.load_cloud": "Загрузить облачный прогресс",
+		"cloud_restore.keep_local": "Оставить локальный",
+		"cloud_restore.invalid_save": "Облачное сохранение повреждено или несовместимо",
+		"cloud_restore.load_failed": "Не удалось загрузить облачное сохранение",
+		"cloud_restore.loaded_success": "Облачный прогресс загружен",
 	},
 }
 

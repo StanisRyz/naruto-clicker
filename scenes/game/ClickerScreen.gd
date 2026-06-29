@@ -68,6 +68,14 @@ var _runtime_pause_reasons: Dictionary = {}
 var _runtime_pause_started_unix_time: int = 0
 var _yandex_game_ready_notified: bool = false
 var _manual_backend_cloud_upload_requested: bool = false
+var _manual_backend_cloud_download_requested: bool = false
+
+var _startup_cloud_restore_check_requested: bool = false
+var _startup_cloud_restore_check_in_progress: bool = false
+var _startup_cloud_restore_prompt_pending: bool = false
+var _startup_cloud_restore_pending_save_data: Dictionary = {}
+var _startup_cloud_restore_pending_mode: String = ""
+var _startup_cloud_restore_declined_this_session: bool = false
 
 const FULLSCREEN_AD_COOLDOWN_SECONDS: float = 300.0
 const FULLSCREEN_AD_INITIAL_COOLDOWN_SECONDS: float = 300.0
@@ -112,6 +120,7 @@ var _fullscreen_ad_overlay: Control = null
 @onready var rewarded_ad_banner: Control = $RewardedAdBanner
 @onready var hit_effect_layer: Control = $HitEffectLayer
 @onready var offline_reward_dialog: OfflineRewardDialog = $OfflineRewardDialog
+@onready var cloud_restore_prompt: CloudRestorePrompt = $CloudRestorePrompt
 
 
 func _ready() -> void:
@@ -174,6 +183,8 @@ func _ready() -> void:
 	Platform.rewarded_ad_error.connect(_on_rewarded_ad_error)
 	offline_reward_dialog.claim_requested.connect(_on_offline_reward_claim_requested)
 	offline_reward_dialog.claim_ad_requested.connect(_on_offline_reward_claim_ad_requested)
+	cloud_restore_prompt.load_cloud_confirmed.connect(_on_cloud_restore_load_confirmed)
+	cloud_restore_prompt.keep_local_confirmed.connect(_on_cloud_restore_keep_local_confirmed)
 	LocalizationManager.language_changed.connect(_on_language_changed)
 	Platform.fullscreen_ad_opened.connect(_on_fullscreen_ad_opened)
 	Platform.fullscreen_ad_closed.connect(_on_fullscreen_ad_closed)
@@ -204,6 +215,7 @@ func _ready() -> void:
 		balance_logger.mark_enemy_spawned(state)
 	startup_completed.emit()
 	notify_yandex_game_ready()
+	request_backend_cloud_restore_check("startup")
 
 
 func _process(delta: float) -> void:
@@ -1298,6 +1310,8 @@ func _is_safe_for_fullscreen_ad() -> bool:
 		return false
 	if offline_reward_dialog.visible:
 		return false
+	if cloud_restore_prompt.visible:
+		return false
 	var now: float = Time.get_ticks_msec() / 1000.0
 	if now - _last_user_interaction_time < FULLSCREEN_AD_SAFE_INTERACTION_GAP_SECONDS:
 		return false
@@ -1867,6 +1881,7 @@ func _is_main_screen_clear_for_rewarded_banner() -> bool:
 		and not shop_purchase_confirm_dialog.visible
 		and not gem_purchase_dialog.visible
 		and not offline_reward_dialog.visible
+		and not cloud_restore_prompt.visible
 	)
 
 
@@ -1915,6 +1930,9 @@ func _on_settings_cloud_save_download_requested() -> void:
 			LocalizationManager.tr_key("settings.cloud.download_failed"), true
 		)
 		return
+	# Manual download takes priority — cancel any in-progress startup check context.
+	_startup_cloud_restore_check_in_progress = false
+	_manual_backend_cloud_download_requested = true
 	settings_window.set_cloud_save_buttons_busy(true)
 	Platform.backend_load_save()
 
@@ -1931,30 +1949,144 @@ func _on_backend_cloud_op_succeeded(operation: String, response: Dictionary) -> 
 				)
 
 		"load_save":
-			settings_window.set_cloud_save_buttons_busy(false)
-			var has_save: bool = bool(response.get("has_save", false))
-			if not has_save:
-				settings_window.set_cloud_save_status(
-					LocalizationManager.tr_key("settings.cloud.no_cloud_save")
+			if _manual_backend_cloud_download_requested:
+				_manual_backend_cloud_download_requested = false
+				settings_window.set_cloud_save_buttons_busy(false)
+				var has_save_manual: bool = bool(response.get("has_save", false))
+				if not has_save_manual:
+					settings_window.set_cloud_save_status(
+						LocalizationManager.tr_key("settings.cloud.no_cloud_save")
+					)
+					return
+				var save_data_manual: Dictionary = response.get("save_data", {})
+				var ok_manual: bool = SaveManager.apply_cloud_save_payload(save_data_manual)
+				if ok_manual:
+					var loaded_manual: Dictionary = SaveManager.load_data()
+					if not loaded_manual.is_empty():
+						state.apply_save_data(loaded_manual)
+						_reset_runtime_state_for_new_game()
+						_sync_boss_timer()
+						_update_ui()
+						stage_navigator.center_on_level(state.current_level)
+					settings_window.set_cloud_save_status(
+						LocalizationManager.tr_key("settings.cloud.download_success")
+					)
+				else:
+					settings_window.set_cloud_save_status(
+						LocalizationManager.tr_key("settings.cloud.invalid_cloud_save"), true
+					)
+			elif _startup_cloud_restore_check_in_progress:
+				_startup_cloud_restore_check_in_progress = false
+				var has_save_startup: bool = bool(response.get("has_save", false))
+				if not has_save_startup:
+					return
+				var save_data_startup: Dictionary = response.get("save_data", {})
+				var eval: Dictionary = _evaluate_cloud_restore_candidate(save_data_startup)
+				if not eval.get("should_prompt", false):
+					return
+				if _startup_cloud_restore_prompt_pending:
+					return
+				_startup_cloud_restore_pending_save_data = save_data_startup.duplicate(true)
+				_startup_cloud_restore_pending_mode = eval.get("mode", "")
+				_startup_cloud_restore_prompt_pending = true
+				cloud_restore_prompt.show_prompt(
+					eval.get("mode", ""),
+					eval.get("local_timestamp", 0),
+					eval.get("cloud_timestamp", 0)
 				)
-				return
-			var save_data: Dictionary = response.get("save_data", {})
-			var ok: bool = SaveManager.apply_cloud_save_payload(save_data)
-			if ok:
-				var loaded: Dictionary = SaveManager.load_data()
-				if not loaded.is_empty():
-					state.apply_save_data(loaded)
-					_reset_runtime_state_for_new_game()
-					_sync_boss_timer()
-					_update_ui()
-					stage_navigator.center_on_level(state.current_level)
-				settings_window.set_cloud_save_status(
-					LocalizationManager.tr_key("settings.cloud.download_success")
-				)
-			else:
-				settings_window.set_cloud_save_status(
-					LocalizationManager.tr_key("settings.cloud.invalid_cloud_save"), true
-				)
+
+
+func _should_check_backend_cloud_restore() -> bool:
+	return OS.has_feature("android") and Platform.backend_has_session()
+
+
+func request_backend_cloud_restore_check(reason: String = "startup") -> void:
+	if not _should_check_backend_cloud_restore():
+		return
+	if _startup_cloud_restore_check_in_progress:
+		return
+	if _manual_backend_cloud_download_requested:
+		return
+	if reason == "auth_overlay":
+		_startup_cloud_restore_check_requested = false
+		_startup_cloud_restore_declined_this_session = false
+	if _startup_cloud_restore_check_requested:
+		return
+	if _startup_cloud_restore_prompt_pending:
+		return
+	_startup_cloud_restore_check_requested = true
+	_startup_cloud_restore_check_in_progress = true
+	Platform.backend_load_save()
+
+
+func _evaluate_cloud_restore_candidate(save_data: Dictionary) -> Dictionary:
+	var result: Dictionary = {
+		"should_prompt": false,
+		"mode": "",
+		"local_timestamp": 0,
+		"cloud_timestamp": 0,
+	}
+	if save_data.is_empty():
+		return result
+	var cloud_version: int = int(save_data.get("save_version", 0))
+	if cloud_version <= 0:
+		return result
+	var cloud_time: int = int(save_data.get("last_save_unix_time", 0))
+	if cloud_time <= 0:
+		return result
+	if not SaveManager.validate_save_data(save_data):
+		push_warning("ClickerScreen: startup cloud restore candidate failed validation")
+		return result
+	result["cloud_timestamp"] = cloud_time
+	var local_data: Dictionary = SaveManager.load_data()
+	if local_data.is_empty():
+		result["should_prompt"] = true
+		result["mode"] = "cloud_found_no_local"
+		result["local_timestamp"] = 0
+		return result
+	var local_time: int = int(local_data.get("last_save_unix_time", 0))
+	result["local_timestamp"] = local_time
+	if cloud_time > local_time:
+		result["should_prompt"] = true
+		result["mode"] = "cloud_newer_than_local"
+	return result
+
+
+func _on_cloud_restore_load_confirmed() -> void:
+	cloud_restore_prompt.hide_prompt()
+	_startup_cloud_restore_prompt_pending = false
+	if _startup_cloud_restore_pending_save_data.is_empty():
+		_startup_cloud_restore_pending_mode = ""
+		return
+	var ok: bool = SaveManager.apply_cloud_save_payload(_startup_cloud_restore_pending_save_data)
+	_startup_cloud_restore_pending_save_data = {}
+	_startup_cloud_restore_pending_mode = ""
+	if ok:
+		var loaded: Dictionary = SaveManager.load_data()
+		if not loaded.is_empty():
+			state.apply_save_data(loaded)
+			_reset_runtime_state_for_new_game()
+			_sync_boss_timer()
+			_update_ui()
+			stage_navigator.center_on_level(state.current_level)
+		if settings_window.visible:
+			settings_window.set_cloud_save_status(
+				LocalizationManager.tr_key("cloud_restore.loaded_success")
+			)
+	else:
+		push_warning("ClickerScreen: cloud restore apply failed after user confirmation")
+		if settings_window.visible:
+			settings_window.set_cloud_save_status(
+				LocalizationManager.tr_key("cloud_restore.load_failed"), true
+			)
+
+
+func _on_cloud_restore_keep_local_confirmed() -> void:
+	cloud_restore_prompt.hide_prompt()
+	_startup_cloud_restore_prompt_pending = false
+	_startup_cloud_restore_pending_save_data = {}
+	_startup_cloud_restore_pending_mode = ""
+	_startup_cloud_restore_declined_this_session = true
 
 
 func _on_backend_cloud_op_failed(operation: String, error_code: String, _status_code: int, _response: Dictionary) -> void:
@@ -1972,8 +2104,13 @@ func _on_backend_cloud_op_failed(operation: String, error_code: String, _status_
 				push_warning("SaveManager: background backend cloud upload failed: %s" % error_code)
 
 		"load_save":
-			settings_window.set_cloud_save_buttons_busy(false)
-			settings_window.set_cloud_save_status(
-				LocalizationManager.format_key("settings.account.backend_error", {"error": error_code}),
-				true
-			)
+			if _manual_backend_cloud_download_requested:
+				_manual_backend_cloud_download_requested = false
+				settings_window.set_cloud_save_buttons_busy(false)
+				settings_window.set_cloud_save_status(
+					LocalizationManager.format_key("settings.account.backend_error", {"error": error_code}),
+					true
+				)
+			elif _startup_cloud_restore_check_in_progress:
+				_startup_cloud_restore_check_in_progress = false
+				push_warning("ClickerScreen: startup cloud restore check failed: %s" % error_code)

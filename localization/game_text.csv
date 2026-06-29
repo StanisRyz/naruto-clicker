@@ -435,3 +435,12 @@ settings.cloud.invalid_cloud_save,Cloud save is invalid,Облачное сох�
 settings.cloud.upload_queued,Upload queued,Сохранение в облако поставлено в очередь,SettingsWindow background cloud upload queued status,
 settings.cloud.upload_in_progress,Uploading to cloud...,Сохраняем в облако...,SettingsWindow cloud upload in-progress status,
 settings.cloud.background_upload_failed,Background cloud upload failed,Фоновое сохранение в облако не удалось,SettingsWindow background cloud upload failed status,
+cloud_restore.title,Cloud Progress Found,Найден облачный прогресс,CloudRestorePrompt title,
+cloud_restore.message_no_local,We found cloud progress for this account. Load it on this device?,Мы нашли облачный прогресс для этого аккаунта. Загрузить его на это устройство?,CloudRestorePrompt message when no local save,
+cloud_restore.message_newer,A newer cloud progress was found. Load it instead of local progress?,Найден более свежий облачный прогресс. Загрузить его вместо локального?,CloudRestorePrompt message when cloud is newer,
+cloud_restore.timestamp_info,Local: {local_time} / Cloud: {cloud_time},Локально: {local_time} / Облако: {cloud_time},CloudRestorePrompt timestamp label,{local_time} and {cloud_time} are formatted date-time strings
+cloud_restore.load_cloud,Load Cloud Progress,Загрузить облачный прогресс,CloudRestorePrompt load button,
+cloud_restore.keep_local,Keep Local,Оставить локальный,CloudRestorePrompt keep local button,
+cloud_restore.invalid_save,Cloud save is invalid,Облачное сохранение повреждено или несовместимо,CloudRestorePrompt invalid save warning,
+cloud_restore.load_failed,Failed to load cloud save,Не удалось загрузить облачное сохранение,CloudRestorePrompt load failed message,
+cloud_restore.loaded_success,Cloud progress loaded,Облачный прогресс загружен,CloudRestorePrompt load success message,
