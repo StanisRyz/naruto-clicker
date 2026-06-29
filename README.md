@@ -890,6 +890,33 @@ Startup and post-login cloud-restore check for Android/RuStore account users wit
 - `scenes/game/ClickerScreen.gd` — added restore-check state fields; `request_backend_cloud_restore_check()`; `_evaluate_cloud_restore_candidate()`; `_on_cloud_restore_load_confirmed()`; `_on_cloud_restore_keep_local_confirmed()`; `_manual_backend_cloud_download_requested` flag; refactored `load_save` response routing to distinguish manual vs startup check.
 - `scenes/main/Main.gd` — after AuthGate overlay login with mode `"account"`, calls `_clicker_screen.request_backend_cloud_restore_check("auth_overlay")`.
 
+### C5.3.1 — Startup Upload Suspension Hotfix (completed)
+
+Prevents `_load_game_on_start_async()` from triggering a backend auto-upload before the startup cloud-restore decision is made, which could overwrite the real cloud save on reinstall.
+
+**Root cause:** `_load_game_on_start_async()` calls `_save_game_now()` → `SaveManager.save_data()` → `queue_backend_cloud_save()`. On a fresh install this uploads a default local save, overwriting any real cloud save before `request_backend_cloud_restore_check("startup")` runs.
+
+**Fix:** Backend auto-upload is suspended at the start of `_ready()` on Android/account and resumed at every restore-decision exit point:
+- No cloud save on backend → resume immediately.
+- Cloud save invalid or local newer → resume immediately.
+- Prompt shown → suspended until player confirms or declines.
+- Player confirms Load Cloud → apply payload → resume.
+- Player confirms Keep Local → resume.
+- Backend check failed → resume.
+- Manual Settings Load/Save from Cloud → also resumes as a defensive cleanup.
+- Scene destroyed without a decision → `_exit_tree()` resumes.
+
+**What this did NOT change:**
+- `upload_current_save_to_backend_cloud_now()` (manual Save to Cloud) has no suspension guard — it always fires.
+- Web/Yandex cloud-save is completely unaffected (`_should_suspend...` returns false for non-Android).
+- Guest mode is unaffected (no session → suspension never set → no-op).
+- No new cloud-save features, no schema changes, no gameplay changes.
+
+**Files changed:**
+
+- `autoload/SaveManager.gd` — `_backend_cloud_auto_upload_suspended` field; `set_backend_cloud_auto_upload_suspended()`; `is_backend_cloud_auto_upload_suspended()`; early-return guard in `queue_backend_cloud_save()`.
+- `scenes/game/ClickerScreen.gd` — `_should_suspend_backend_auto_upload_for_startup_restore()`; `_resume_backend_auto_upload_after_restore_decision()`; suspend call in `_ready()`; resume calls in all `load_save` exit paths and prompt handlers; `_exit_tree()` cleanup.
+
 ---
 
 ## QoL update mode

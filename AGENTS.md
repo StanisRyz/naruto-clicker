@@ -747,6 +747,16 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
 - **If user declines (Keep Local), set `_startup_cloud_restore_declined_this_session = true`.** Do not re-prompt during the same session unless `auth_overlay` resets it.
 - **`CloudRestorePrompt` blocks fullscreen ads and the rewarded banner** while visible (guarded in `_is_safe_for_fullscreen_ad()` and `_is_main_screen_clear_for_rewarded_banner()`).
 
+## Startup Upload Suspension Rules (C5.3.1)
+
+- **`SaveManager._backend_cloud_auto_upload_suspended` guards `queue_backend_cloud_save()` only.** `upload_current_save_to_backend_cloud_now()` has no suspension guard and must never acquire one — manual Save to Cloud must always work.
+- **Suspension is set in `ClickerScreen._ready()` before `_load_game_on_start_async()`**, only when `_should_suspend_backend_auto_upload_for_startup_restore()` returns true (Android + has_session). It is a no-op on Web and in guest mode.
+- **Every restore-decision exit point must call `_resume_backend_auto_upload_after_restore_decision()`.** Missing a resume causes auto-upload to be silently disabled for the session. The `_exit_tree()` cleanup is a last-resort guard, not a substitute for explicit resumes.
+- **Do not resume while the restore prompt is still visible.** Suspension must stay active while `_startup_cloud_restore_prompt_pending` is true. Only resume after the player presses Load Cloud or Keep Local.
+- **`apply_cloud_save_payload()` calls `save_data()` which calls `queue_backend_cloud_save()`.** During the restore-load flow, the call to `apply_cloud_save_payload` happens while suspension is still active; resume comes afterwards. This prevents an immediate re-upload of the newly written local save before the decision is complete.
+- **Manual Settings Load from Cloud also calls resume** as a defensive cleanup. By the time the player reaches Settings, startup suspension should already be cleared, so the resume is a no-op in normal cases.
+- **Web/Yandex cloud-save must remain completely unaffected.** The suspension flag lives in `SaveManager` but `queue_backend_cloud_save()` returns early for non-Android before it ever reaches the suspension check.
+
 ## Backend API Client Rules
 
 - Backend client code lives under `scripts/platform/backend/`.

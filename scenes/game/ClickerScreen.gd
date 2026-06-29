@@ -196,6 +196,8 @@ func _ready() -> void:
 	_apply_ui_font_sizes()
 	_apply_button_visual_cleanup()
 	bottom_tabs_backdrop.set_asset_key("ui.bottom_tabs.backdrop", Color.TRANSPARENT)
+	if _should_suspend_backend_auto_upload_for_startup_restore():
+		SaveManager.set_backend_cloud_auto_upload_suspended(true)
 	await _load_game_on_start_async()
 	_request_unprocessed_purchase_check_when_ready()
 	AudioManager.set_music_enabled(state.music_enabled)
@@ -1957,6 +1959,7 @@ func _on_backend_cloud_op_succeeded(operation: String, response: Dictionary) -> 
 					settings_window.set_cloud_save_status(
 						LocalizationManager.tr_key("settings.cloud.no_cloud_save")
 					)
+					_resume_backend_auto_upload_after_restore_decision()
 					return
 				var save_data_manual: Dictionary = response.get("save_data", {})
 				var ok_manual: bool = SaveManager.apply_cloud_save_payload(save_data_manual)
@@ -1975,14 +1978,17 @@ func _on_backend_cloud_op_succeeded(operation: String, response: Dictionary) -> 
 					settings_window.set_cloud_save_status(
 						LocalizationManager.tr_key("settings.cloud.invalid_cloud_save"), true
 					)
+				_resume_backend_auto_upload_after_restore_decision()
 			elif _startup_cloud_restore_check_in_progress:
 				_startup_cloud_restore_check_in_progress = false
 				var has_save_startup: bool = bool(response.get("has_save", false))
 				if not has_save_startup:
+					_resume_backend_auto_upload_after_restore_decision()
 					return
 				var save_data_startup: Dictionary = response.get("save_data", {})
 				var eval: Dictionary = _evaluate_cloud_restore_candidate(save_data_startup)
 				if not eval.get("should_prompt", false):
+					_resume_backend_auto_upload_after_restore_decision()
 					return
 				if _startup_cloud_restore_prompt_pending:
 					return
@@ -2000,8 +2006,18 @@ func _should_check_backend_cloud_restore() -> bool:
 	return OS.has_feature("android") and Platform.backend_has_session()
 
 
+func _should_suspend_backend_auto_upload_for_startup_restore() -> bool:
+	return OS.has_feature("android") and Platform.backend_has_session()
+
+
+func _resume_backend_auto_upload_after_restore_decision() -> void:
+	if SaveManager.is_backend_cloud_auto_upload_suspended():
+		SaveManager.set_backend_cloud_auto_upload_suspended(false)
+
+
 func request_backend_cloud_restore_check(reason: String = "startup") -> void:
 	if not _should_check_backend_cloud_restore():
+		_resume_backend_auto_upload_after_restore_decision()
 		return
 	if _startup_cloud_restore_check_in_progress:
 		return
@@ -2057,10 +2073,12 @@ func _on_cloud_restore_load_confirmed() -> void:
 	_startup_cloud_restore_prompt_pending = false
 	if _startup_cloud_restore_pending_save_data.is_empty():
 		_startup_cloud_restore_pending_mode = ""
+		_resume_backend_auto_upload_after_restore_decision()
 		return
 	var ok: bool = SaveManager.apply_cloud_save_payload(_startup_cloud_restore_pending_save_data)
 	_startup_cloud_restore_pending_save_data = {}
 	_startup_cloud_restore_pending_mode = ""
+	_resume_backend_auto_upload_after_restore_decision()
 	if ok:
 		var loaded: Dictionary = SaveManager.load_data()
 		if not loaded.is_empty():
@@ -2087,6 +2105,7 @@ func _on_cloud_restore_keep_local_confirmed() -> void:
 	_startup_cloud_restore_pending_save_data = {}
 	_startup_cloud_restore_pending_mode = ""
 	_startup_cloud_restore_declined_this_session = true
+	_resume_backend_auto_upload_after_restore_decision()
 
 
 func _on_backend_cloud_op_failed(operation: String, error_code: String, _status_code: int, _response: Dictionary) -> void:
@@ -2111,6 +2130,12 @@ func _on_backend_cloud_op_failed(operation: String, error_code: String, _status_
 					LocalizationManager.format_key("settings.account.backend_error", {"error": error_code}),
 					true
 				)
+				_resume_backend_auto_upload_after_restore_decision()
 			elif _startup_cloud_restore_check_in_progress:
 				_startup_cloud_restore_check_in_progress = false
 				push_warning("ClickerScreen: startup cloud restore check failed: %s" % error_code)
+				_resume_backend_auto_upload_after_restore_decision()
+
+
+func _exit_tree() -> void:
+	_resume_backend_auto_upload_after_restore_decision()

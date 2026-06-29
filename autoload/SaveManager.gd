@@ -27,6 +27,7 @@ var _backend_cloud_upload_timer_running: bool = false
 var _last_backend_cloud_upload_unix_time: int = 0
 var _backend_cloud_upload_in_flight: bool = false
 var _backend_cloud_retry_pending: bool = false
+var _backend_cloud_auto_upload_suspended: bool = false
 
 
 func has_save() -> bool:
@@ -292,10 +293,20 @@ func _send_cloud_save(data: Dictionary, flush: bool) -> void:
 
 # ── Backend cloud auto-upload ─────────────────────────────────────────────────
 
+func set_backend_cloud_auto_upload_suspended(suspended: bool) -> void:
+	_backend_cloud_auto_upload_suspended = suspended
+
+
+func is_backend_cloud_auto_upload_suspended() -> bool:
+	return _backend_cloud_auto_upload_suspended
+
+
 func queue_backend_cloud_save(data: Dictionary, flush: bool = false) -> void:
 	if not OS.has_feature("android"):
 		return
 	if not Platform.backend_has_session():
+		return
+	if _backend_cloud_auto_upload_suspended:
 		return
 
 	var payload: Dictionary = data.duplicate(true)
