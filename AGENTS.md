@@ -757,6 +757,16 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
 - **Manual Settings Load from Cloud also calls resume** as a defensive cleanup. By the time the player reaches Settings, startup suspension should already be cleared, so the resume is a no-op in normal cases.
 - **Web/Yandex cloud-save must remain completely unaffected.** The suspension flag lives in `SaveManager` but `queue_backend_cloud_save()` returns early for non-Android before it ever reaches the suspension check.
 
+## Pre-Startup Local Save Snapshot Rules (C5.3.2)
+
+- **Startup cloud restore decisions must use `_pre_startup_had_local_save` and `_pre_startup_local_timestamp`, not `SaveManager.load_data()`.** A default local save created by `_load_game_on_start_async()` must not influence the prompt decision.
+- **`_capture_pre_startup_local_save_snapshot()` must be called before `_load_game_on_start_async()`** and before `SaveManager.set_backend_cloud_auto_upload_suspended(true)` in `_ready()`. Order in `_ready()`: snapshot → suspend → `await _load_game_on_start_async()`.
+- **The snapshot is idempotent** — `_pre_startup_local_save_snapshot_taken` guards against re-capture. The defensive re-call in `_evaluate_cloud_restore_candidate()` is a safety net only; do not rely on it as the primary call site.
+- **Do not call `_save_game_now()` or `SaveManager.save_data()` before `_capture_pre_startup_local_save_snapshot()` in `_ready()`.** Any earlier write would invalidate the snapshot's purpose.
+- **If pre-startup local save is invalid or empty, treat it as no local save.** The snapshot sets `_pre_startup_had_local_save = false` in this case so the restore prompt still appears.
+- **If `_pre_startup_local_timestamp` is 0 (no `last_save_unix_time`) and cloud timestamp is valid, the restore prompt must appear.** The `cloud_time > 0 > 0` comparison handles this naturally — do not add a special case that suppresses the prompt.
+- **Manual Settings Load from Cloud must not use the pre-startup snapshot.** It has its own confirmation flow and applies immediately after the user confirms.
+
 ## Backend API Client Rules
 
 - Backend client code lives under `scripts/platform/backend/`.

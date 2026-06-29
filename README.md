@@ -917,6 +917,31 @@ Prevents `_load_game_on_start_async()` from triggering a backend auto-upload bef
 - `autoload/SaveManager.gd` — `_backend_cloud_auto_upload_suspended` field; `set_backend_cloud_auto_upload_suspended()`; `is_backend_cloud_auto_upload_suspended()`; early-return guard in `queue_backend_cloud_save()`.
 - `scenes/game/ClickerScreen.gd` — `_should_suspend_backend_auto_upload_for_startup_restore()`; `_resume_backend_auto_upload_after_restore_decision()`; suspend call in `_ready()`; resume calls in all `load_save` exit paths and prompt handlers; `_exit_tree()` cleanup.
 
+### C5.3.2 — Pre-Startup Local Save Snapshot Hotfix (completed)
+
+Ensures the startup cloud-restore prompt compares cloud save against the local save state that existed **before** startup initialization, not against a default save created during startup.
+
+**Root cause:** After reinstall or clear-data, `_load_game_on_start_async()` creates a new default local save with a current `last_save_unix_time`. `_evaluate_cloud_restore_candidate()` then called `SaveManager.load_data()` and compared cloud `last_save_unix_time` against this freshly-created timestamp, which was newer — so the restore prompt never appeared.
+
+**Fix:** Capture pre-startup local save state in `_capture_pre_startup_local_save_snapshot()` before `_load_game_on_start_async()` runs. `_evaluate_cloud_restore_candidate()` now uses `_pre_startup_had_local_save` and `_pre_startup_local_timestamp` instead of re-reading the current local save.
+
+**Behavior after fix:**
+- No local save before startup + cloud save exists → prompt always shown.
+- Local save existed before startup with older timestamp → prompt shown.
+- Local save existed before startup with equal or newer timestamp → no prompt.
+- If pre-startup local save has no `last_save_unix_time` (timestamp = 0) and cloud has a valid timestamp → prompt shown (conservative: assume cloud is newer).
+- Snapshot is idempotent; defensive re-call in `_evaluate_cloud_restore_candidate()` is a no-op if already taken.
+
+**What this did NOT change:**
+- Manual Settings Load from Cloud — unchanged (still uses existing C5.1 confirmation flow).
+- C5.3.1 upload suspension — unchanged and still in effect.
+- Web/Yandex, guest mode — unchanged.
+- No save schema changes, no gameplay changes.
+
+**Files changed:**
+
+- `scenes/game/ClickerScreen.gd` — `_pre_startup_had_local_save`, `_pre_startup_local_timestamp`, `_pre_startup_local_save_snapshot_taken` fields; `_capture_pre_startup_local_save_snapshot()` helper; snapshot call in `_ready()`; `_evaluate_cloud_restore_candidate()` rewritten to use snapshot.
+
 ---
 
 ## QoL update mode

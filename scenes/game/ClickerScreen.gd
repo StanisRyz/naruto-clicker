@@ -77,6 +77,10 @@ var _startup_cloud_restore_pending_save_data: Dictionary = {}
 var _startup_cloud_restore_pending_mode: String = ""
 var _startup_cloud_restore_declined_this_session: bool = false
 
+var _pre_startup_had_local_save: bool = false
+var _pre_startup_local_timestamp: int = 0
+var _pre_startup_local_save_snapshot_taken: bool = false
+
 const FULLSCREEN_AD_COOLDOWN_SECONDS: float = 300.0
 const FULLSCREEN_AD_INITIAL_COOLDOWN_SECONDS: float = 300.0
 const FULLSCREEN_AD_SAFE_INTERACTION_GAP_SECONDS: float = 2.5
@@ -196,6 +200,7 @@ func _ready() -> void:
 	_apply_ui_font_sizes()
 	_apply_button_visual_cleanup()
 	bottom_tabs_backdrop.set_asset_key("ui.bottom_tabs.backdrop", Color.TRANSPARENT)
+	_capture_pre_startup_local_save_snapshot()
 	if _should_suspend_backend_auto_upload_for_startup_restore():
 		SaveManager.set_backend_cloud_auto_upload_suspended(true)
 	await _load_game_on_start_async()
@@ -2002,6 +2007,23 @@ func _on_backend_cloud_op_succeeded(operation: String, response: Dictionary) -> 
 				)
 
 
+func _capture_pre_startup_local_save_snapshot() -> void:
+	if _pre_startup_local_save_snapshot_taken:
+		return
+	_pre_startup_local_save_snapshot_taken = true
+	_pre_startup_had_local_save = SaveManager.has_save()
+	_pre_startup_local_timestamp = 0
+	if not _pre_startup_had_local_save:
+		return
+	var local_data: Dictionary = SaveManager.load_data()
+	if local_data.is_empty():
+		_pre_startup_had_local_save = false
+		return
+	_pre_startup_local_timestamp = int(local_data.get("last_save_unix_time", 0))
+	if BuildConfig.IS_DEBUG_BUILD:
+		print("Cloud restore pre-startup local save: had=", _pre_startup_had_local_save, " ts=", _pre_startup_local_timestamp)
+
+
 func _should_check_backend_cloud_restore() -> bool:
 	return OS.has_feature("android") and Platform.backend_has_session()
 
@@ -2054,15 +2076,15 @@ func _evaluate_cloud_restore_candidate(save_data: Dictionary) -> Dictionary:
 		push_warning("ClickerScreen: startup cloud restore candidate failed validation")
 		return result
 	result["cloud_timestamp"] = cloud_time
-	var local_data: Dictionary = SaveManager.load_data()
-	if local_data.is_empty():
+	if not _pre_startup_local_save_snapshot_taken:
+		_capture_pre_startup_local_save_snapshot()
+	if not _pre_startup_had_local_save:
 		result["should_prompt"] = true
 		result["mode"] = "cloud_found_no_local"
 		result["local_timestamp"] = 0
 		return result
-	var local_time: int = int(local_data.get("last_save_unix_time", 0))
-	result["local_timestamp"] = local_time
-	if cloud_time > local_time:
+	result["local_timestamp"] = _pre_startup_local_timestamp
+	if cloud_time > _pre_startup_local_timestamp:
 		result["should_prompt"] = true
 		result["mode"] = "cloud_newer_than_local"
 	return result
