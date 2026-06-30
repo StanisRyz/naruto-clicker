@@ -328,7 +328,7 @@ Before final release, verify:
 
 ---
 
-## Backend cloud-save rules (C6+)
+## Backend cloud-save rules (C6+ / C6.1+)
 
 These rules apply to all Android/RuStore backend auth and cloud-save work.
 
@@ -347,6 +347,18 @@ These rules apply to all Android/RuStore backend auth and cloud-save work.
 - **`set_startup_auth_mode` before `add_child`.** When passing the startup auth mode to `ClickerScreen`, always call `set_startup_auth_mode(mode)` before `add_child(_clicker_screen)`. The mode must be set before `_ready()` (and therefore `_load_game_on_start_async()`) has any opportunity to read it.
 
 - **Debug print gates.** Any `print(...)` inside `ClickerScreen.gd`, `AuthGateScreen.gd`, or other UI/gameplay scripts that exposes internal flow state must be gated behind `BuildConfig.IS_DEBUG_BUILD`. Debug prints in `AndroidRuStorePlatform.gd` use `OS.is_debug_build()`.
+
+- **Backend upload payload must not be lost on failure.** `_send_backend_cloud_save(payload)` must store a copy in `_backend_cloud_upload_current_payload`. On upload failure, if `_pending_backend_cloud_save_data` is empty, restore the in-flight payload and schedule a retry. Never drop a payload silently.
+
+- **Manual Save to Cloud must queue the current payload when an upload is in-flight.** `upload_current_save_to_backend_cloud_now()` must build the current payload first, then — if an upload is already in-flight — store it in `_pending_backend_cloud_save_data` and set `_backend_cloud_retry_pending = true` rather than assuming the old in-flight data is current.
+
+- **AuthGate navigation and Guest must be blocked during active backend request.** All navigation handlers (`_on_forgot_pressed`, `_on_to_register_pressed`, `_on_to_login_pressed`, `_on_back_to_login`) and the guest handler (`_on_guest_pressed`) must return early if `_request_in_progress == true`. The Guest button must never emit `auth_gate_completed("guest")` while a login/register/reset request is active.
+
+- **ClickerScreen must disconnect backend signals on exit.** `_exit_tree()` must disconnect `Platform.backend_operation_succeeded` and `Platform.backend_operation_failed` if connected. Use `is_instance_valid(Platform)` guard.
+
+- **Android export version name must match `BuildConfig.APP_VERSION` and `validate_android_release.py`.** Keep `version/name` in the Android preset of `export_presets.cfg` in sync with `BuildConfig.APP_VERSION` (`scripts/game/BuildConfig.gd`) and `EXPECTED_VERSION_NAME` in `tools/validate_android_release.py`. Do not set `version/name=""`.
+
+- **`<profileable android:enabled>` must be `false` in the release manifest template.** Never set it to `true` in `android/build/AndroidManifest.xml` — profiling must be disabled for release builds.
 
 ---
 

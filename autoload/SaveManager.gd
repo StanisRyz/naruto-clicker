@@ -26,6 +26,7 @@ var _pending_backend_cloud_save_data: Dictionary = {}
 var _backend_cloud_upload_timer_running: bool = false
 var _last_backend_cloud_upload_unix_time: int = 0
 var _backend_cloud_upload_in_flight: bool = false
+var _backend_cloud_upload_current_payload: Dictionary = {}
 var _backend_cloud_retry_pending: bool = false
 var _backend_cloud_auto_upload_suspended: bool = false
 
@@ -366,9 +367,6 @@ func upload_current_save_to_backend_cloud_now() -> bool:
 		return false
 	if not Platform.backend_has_session():
 		return false
-	if _backend_cloud_upload_in_flight:
-		# In-flight upload covers current save — caller handles its result.
-		return true
 	var payload: Dictionary = get_cloud_save_payload()
 	if payload.is_empty():
 		return false
@@ -377,6 +375,11 @@ func upload_current_save_to_backend_cloud_now() -> bool:
 	if byte_size > BACKEND_CLOUD_AUTO_UPLOAD_MAX_BYTES:
 		push_warning("SaveManager: backend cloud save too large (%d bytes), skipping" % byte_size)
 		return false
+	if _backend_cloud_upload_in_flight:
+		# Another upload is active — queue current payload for retry after it finishes.
+		_pending_backend_cloud_save_data = payload
+		_backend_cloud_retry_pending = true
+		return true
 	_backend_cloud_upload_timer_running = false
 	_pending_backend_cloud_save_data = {}
 	_send_backend_cloud_save(payload)
@@ -386,9 +389,14 @@ func upload_current_save_to_backend_cloud_now() -> bool:
 func mark_backend_cloud_upload_finished(success: bool) -> void:
 	_backend_cloud_upload_in_flight = false
 	if success:
+		_backend_cloud_upload_current_payload = {}
 		if _pending_backend_cloud_save_data.is_empty():
 			_backend_cloud_retry_pending = false
 	else:
+		# On failure, restore the in-flight payload if nothing newer is queued.
+		if _pending_backend_cloud_save_data.is_empty() and not _backend_cloud_upload_current_payload.is_empty():
+			_pending_backend_cloud_save_data = _backend_cloud_upload_current_payload
+		_backend_cloud_upload_current_payload = {}
 		if not _pending_backend_cloud_save_data.is_empty():
 			_backend_cloud_retry_pending = true
 	if _backend_cloud_retry_pending and not _pending_backend_cloud_save_data.is_empty():
@@ -403,6 +411,7 @@ func is_backend_cloud_upload_in_flight() -> bool:
 
 func _send_backend_cloud_save(payload: Dictionary) -> void:
 	_backend_cloud_upload_in_flight = true
+	_backend_cloud_upload_current_payload = payload.duplicate(true)
 	_last_backend_cloud_upload_unix_time = int(Time.get_unix_time_from_system())
 	Platform.backend_save_save(payload)
 

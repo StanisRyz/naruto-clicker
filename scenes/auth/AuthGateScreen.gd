@@ -534,6 +534,8 @@ func _on_register_submit() -> void:
 
 
 func _on_forgot_pressed() -> void:
+	if _request_in_progress:
+		return
 	_clear_status()
 	_reset_req_email.text = _login_email.text.strip_edges()
 	_reset_email_cache = _reset_req_email.text
@@ -574,23 +576,31 @@ func _on_reset_confirm_submit() -> void:
 
 
 func _on_to_register_pressed() -> void:
+	if _request_in_progress:
+		return
 	_clear_status()
 	_reg_email.text = _login_email.text.strip_edges()
 	_set_state(_State.REGISTER)
 
 
 func _on_to_login_pressed() -> void:
+	if _request_in_progress:
+		return
 	_clear_status()
 	_login_email.text = _reg_email.text.strip_edges()
 	_set_state(_State.LOGIN)
 
 
 func _on_back_to_login() -> void:
+	if _request_in_progress:
+		return
 	_clear_status()
 	_set_state(_State.LOGIN)
 
 
 func _on_guest_pressed() -> void:
+	if _request_in_progress:
+		return
 	_show_status(LocalizationManager.tr_key("auth.status_guest_mode"))
 	auth_gate_completed.emit("guest")
 

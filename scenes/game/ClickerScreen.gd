@@ -155,8 +155,10 @@ func _ready() -> void:
 	settings_window.account_auth_requested.connect(_on_settings_account_auth_requested)
 	settings_window.cloud_save_upload_requested.connect(_on_settings_cloud_save_upload_requested)
 	settings_window.cloud_save_download_requested.connect(_on_settings_cloud_save_download_requested)
-	Platform.backend_operation_succeeded.connect(_on_backend_cloud_op_succeeded)
-	Platform.backend_operation_failed.connect(_on_backend_cloud_op_failed)
+	if not Platform.backend_operation_succeeded.is_connected(_on_backend_cloud_op_succeeded):
+		Platform.backend_operation_succeeded.connect(_on_backend_cloud_op_succeeded)
+	if not Platform.backend_operation_failed.is_connected(_on_backend_cloud_op_failed):
+		Platform.backend_operation_failed.connect(_on_backend_cloud_op_failed)
 	upgrades_button.pressed.connect(_on_upgrades_button_pressed)
 	partners_button.pressed.connect(_on_partners_button_pressed)
 	settlement_button.pressed.connect(_on_settlement_button_pressed)
@@ -2268,3 +2270,8 @@ func _on_guest_migration_not_now_confirmed() -> void:
 
 func _exit_tree() -> void:
 	_resume_backend_auto_upload_after_restore_decision()
+	if is_instance_valid(Platform):
+		if Platform.backend_operation_succeeded.is_connected(_on_backend_cloud_op_succeeded):
+			Platform.backend_operation_succeeded.disconnect(_on_backend_cloud_op_succeeded)
+		if Platform.backend_operation_failed.is_connected(_on_backend_cloud_op_failed):
+			Platform.backend_operation_failed.disconnect(_on_backend_cloud_op_failed)

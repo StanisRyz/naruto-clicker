@@ -1022,6 +1022,61 @@ changes.
 
 ---
 
+### C6.1 — Release Audit Fixes (completed)
+
+Small release-safety fixes applied after the C6 stabilization pass. No new gameplay
+features, no balance changes, no backend Cloud Function changes.
+
+**Changes:**
+
+- **`export_presets.cfg`** — Android preset `version/name` set to `"1.0.0"` to match
+  `BuildConfig.APP_VERSION` and the expected value in `tools/validate_android_release.py`.
+  `version/code`, package name, and Web preset are unchanged.
+
+- **`autoload/SaveManager.gd`** — Two upload-reliability improvements:
+  - `upload_current_save_to_backend_cloud_now()` now builds the current payload first.
+    If an upload is already in flight, it queues the new payload into
+    `_pending_backend_cloud_save_data` and sets `_backend_cloud_retry_pending = true`
+    instead of silently relying on the old in-flight data. The function still returns
+    `true` so the caller can listen for the eventual result.
+  - `_send_backend_cloud_save()` stores a deep copy of the dispatched payload in
+    `_backend_cloud_upload_current_payload`. `mark_backend_cloud_upload_finished(false)`
+    now restores that payload into `_pending_backend_cloud_save_data` if nothing newer
+    is queued, then schedules a 60-second retry. This prevents payload loss when the
+    backend returns `request_in_progress` or a network error before the upload response
+    is processed.
+
+- **`scenes/game/ClickerScreen.gd`** — Two signal-safety improvements:
+  - `_ready()` wraps the `Platform.backend_operation_succeeded` and
+    `Platform.backend_operation_failed` connections with `is_connected()` guards,
+    matching the pattern already used in `AuthGateScreen`.
+  - `_exit_tree()` now disconnects both backend signals if connected, preventing
+    stale handler calls after the scene is removed.
+
+- **`scenes/auth/AuthGateScreen.gd`** — Navigation/guest race guard: five navigation
+  handlers (`_on_forgot_pressed`, `_on_to_register_pressed`, `_on_to_login_pressed`,
+  `_on_back_to_login`, `_on_guest_pressed`) now return early if `_request_in_progress`
+  is true. This prevents the Guest button from emitting `auth_gate_completed("guest")`
+  while a login/register/reset request is active.
+
+- **`android/build/AndroidManifest.xml`** — `<profileable android:enabled>` set to
+  `false` to disable profiling in the release template. RuStore Pay metadata and the
+  deeplink activity are unchanged.
+
+**What C6.1 did NOT change:**
+
+- Web/Yandex cloud-save — unchanged.
+- Backend Cloud Functions — none changed.
+- Save schema — no new or renamed fields.
+- Gameplay, ads, payments, balance — unchanged.
+- Localization — no new keys.
+- `BackendApiClient` — no changes needed (already guards with `_busy` flag).
+- `Platform.gd` — no changes needed.
+
+**Validation:** see `docs/validation/backend_cloud_save_stabilization.md` (C6.1 section).
+
+---
+
 ## QoL update mode
 
 This project is in release-candidate QoL mode. When contributing:

@@ -197,3 +197,96 @@ After any C6 change, verify on Web export:
 - [ ] Gem purchase dedup: same purchase id not granted twice
 - [ ] Cancel / error grant nothing
 - [ ] `processed_purchase_ids` persists across prestige and reset
+
+---
+
+## C6.1 Release Audit Fixes — Additional Checks
+
+### C6.1-1. Android release validator — version name
+
+```bash
+python tools/validate_android_release.py --apk <APK_PATH>
+```
+
+| Check | Expected |
+|-------|----------|
+| `export_presets.cfg` contains `version/name="1.0.0"` | PASS |
+| `AndroidManifest.xml` contains `android:versionName="1.0.0"` | PASS (unchanged) |
+| `version/code=1` present | PASS (unchanged) |
+| `package/unique_name="com.stanis.shinobiclickeridle"` present | PASS (unchanged) |
+
+APK checks (`aapt versionName`, signature) require a built APK and `aapt`/`apksigner` in PATH.
+If APK is not available, document that APK checks were skipped and must be run after export.
+
+### C6.1-2. Manual Save to Cloud during in-flight auto-upload
+
+**Setup:** Android account, trigger an auto-upload (save any game state). Immediately press "Save to Cloud" in Settings.
+
+| Step | Expected |
+|------|----------|
+| Auto-upload begins (`_backend_cloud_upload_in_flight = true`) | — |
+| Press "Save to Cloud" | `upload_current_save_to_backend_cloud_now()` called |
+| In-flight detected | Current payload built, stored in `_pending_backend_cloud_save_data`, `_backend_cloud_retry_pending = true`, returns `true` |
+| Auto-upload succeeds | `mark_backend_cloud_upload_finished(true)` → retry timer fires (60 s) → newest payload uploaded |
+| Auto-upload fails | `mark_backend_cloud_upload_finished(false)` → retry triggered immediately via timer |
+| Logcat | No full save JSON printed |
+
+### C6.1-3. Backend `request_in_progress` does not permanently lose pending upload
+
+**Setup:** Android account, two save events in rapid succession.
+
+| Step | Expected |
+|------|----------|
+| First save triggers `_send_backend_cloud_save(payload_A)` | `_backend_cloud_upload_current_payload = payload_A` |
+| Second save queued into `_pending_backend_cloud_save_data = payload_B` | — |
+| Backend returns `request_in_progress` error → `mark_backend_cloud_upload_finished(false)` | `_pending_backend_cloud_save_data` is `payload_B` (not empty) → retry scheduled |
+| First upload responded with normal failure (network error) | `_pending_backend_cloud_save_data` still holds `payload_A` if no newer payload; retry scheduled |
+| Retry fires after 60 s | Newest queued payload uploaded |
+
+### C6.1-4. AuthGate Guest cannot bypass active request
+
+**Setup:** Android, AuthGate login form. Enter credentials and press "Sign In". While request is in-flight:
+
+| Action | Expected |
+|--------|----------|
+| Press "Continue as Guest" | Ignored — `_request_in_progress = true` |
+| Press "Register" tab | Ignored |
+| Press "Forgot Password?" | Ignored |
+| Request succeeds or fails | `_request_in_progress = false`; guest/navigation buttons respond normally |
+
+Repeat for Register form (press "Login" tab while register request in-flight).
+
+### C6.1-5. ClickerScreen backend signals not duplicated
+
+**Setup:** Android account, normal gameplay.
+
+| Scenario | Expected |
+|----------|----------|
+| `ClickerScreen._ready()` called once | `backend_operation_succeeded` connected once |
+| Overlay AuthGate opened and closed (reconnection path) | `is_connected()` guard prevents duplicate; handler still called exactly once per backend event |
+| `ClickerScreen._exit_tree()` | Both backend signals disconnected; no handler called after scene removed |
+
+### C6.1-6. Android manifest — profileable disabled
+
+```bash
+grep -A2 "profileable" android/build/AndroidManifest.xml
+```
+
+Expected output:
+```xml
+<profileable
+    android:shell="true"
+    android:enabled="false"
+```
+
+### C6.1-7. Release log — no sensitive data
+
+Run on device / emulator, perform:
+- Login, logout, password reset request, password reset confirm
+- Cloud save / load
+
+Verify Logcat contains none of:
+- `session_token`
+- `password`
+- `reset_code` / `code`
+- raw save JSON (large `{` blocks with game state fields)
