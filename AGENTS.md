@@ -787,8 +787,10 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
 > kept for historical context. Do not reintroduce `GuestMigrationPrompt` unless the
 > product rule changes. See the C7.1 rules below for the current authority model.
 
-- **`GuestMigrationPrompt` scene/script files are retained but must never be shown.**
-  `show_prompt()` is never called. Signal connections have been removed.
+- **`GuestMigrationPrompt` is fully removed at runtime (C7.1.1).** The node is not
+  present in `ClickerScreen.tscn`. `ClickerScreen.gd` has no `@onready` declaration,
+  no visibility checks, and no signal connections for this prompt.
+  `GuestMigrationPrompt.gd/.tscn` files are retained on disk but are unreferenced.
 - **Do not reintroduce `GuestMigrationPrompt` or `_maybe_show_guest_migration_prompt()`**
   unless explicitly requested by the product owner.
 

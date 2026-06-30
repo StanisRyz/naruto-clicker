@@ -1,4 +1,4 @@
-# C7.1 — Account Save Authority & Guest Paid Shop Lock Validation
+# C7.1 / C7.1.1 — Account Save Authority, Guest Paid Shop Lock & GuestMigrationPrompt Removal Validation
 
 ## Overview
 
@@ -9,6 +9,24 @@
 - Direct account startup: existing `CloudRestorePrompt` restore behavior preserved.
 - Web/Yandex: paid shop and cloud-save behavior completely unchanged.
 - Logout: paid shop locks again on Android; auto-upload stops naturally (no session).
+- **C7.1.1:** `GuestMigrationPrompt` node removed from `ClickerScreen.tscn`. All runtime
+  references (`@onready`, visibility checks) removed from `ClickerScreen.gd`.
+  Scene/script files `GuestMigrationPrompt.gd/.tscn` retained but unreferenced.
+
+---
+
+## C7.1.1 Cleanup Checklist
+
+- [ ] `ClickerScreen.tscn` has no `[ext_resource … GuestMigrationPrompt.tscn …]` line.
+- [ ] `ClickerScreen.tscn` has no `[node name="GuestMigrationPrompt" …]` node.
+- [ ] `ClickerScreen.tscn` `load_steps` is 24 (was 25).
+- [ ] `ClickerScreen.gd` has no `@onready var guest_migration_prompt` declaration.
+- [ ] `ClickerScreen.gd` has no `guest_migration_prompt.visible` references.
+- [ ] `ClickerScreen.gd` `_is_safe_for_fullscreen_ad()` does not check `guest_migration_prompt`.
+- [ ] `ClickerScreen.gd` `_is_main_screen_clear_for_rewarded_banner()` does not check `guest_migration_prompt`.
+- [ ] `AuthGateScreen.gd` header comment lists `account_session`, `account_login`, `account_register`, `guest`.
+- [ ] `GuestMigrationPrompt.gd/.tscn` files exist but are not instantiated by any scene.
+- [ ] C7.1 core methods remain intact: `on_account_registered_from_guest_overlay`, `on_account_login_from_guest_overlay`, `_is_paid_shop_available`, `_update_shop_paid_availability`.
 
 ---
 

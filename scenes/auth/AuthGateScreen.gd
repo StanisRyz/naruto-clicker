@@ -4,7 +4,11 @@ extends Control
 # Auth gate shown on Android startup before gameplay.
 # Calls backend only through Platform. Never calls BackendApiClient directly.
 # Never calls SaveManager.
-# Emits auth_gate_completed("account") or auth_gate_completed("guest").
+# Emits:
+# - "guest"          — user tapped Continue as Guest
+# - "account_session" — stored session get_me succeeded
+# - "account_login"   — user entered credentials and login succeeded
+# - "account_register" — user registered and post-register login succeeded
 
 signal auth_gate_completed(mode: String)
 

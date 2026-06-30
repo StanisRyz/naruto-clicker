@@ -1016,7 +1016,7 @@ changes.
 - Localization — no new keys.
 
 **Prompt priority (unchanged, now enforced by visible-guard):**
-`CloudRestorePrompt` (highest) → `GuestMigrationPrompt` → Settings/manual.
+`CloudRestorePrompt` (highest) → Settings/manual. (`GuestMigrationPrompt` removed in C7.1.1.)
 
 **Validation:** see `docs/validation/backend_cloud_save_stabilization.md`.
 
@@ -1038,8 +1038,9 @@ Android/RuStore guests. Removes the old `GuestMigrationPrompt` mid-session flow.
 - **Guest → Login with no cloud save:** a clean default account save starts; guest
   progress is discarded.
 - Direct account startup restore behavior (C5.3 `CloudRestorePrompt`) is preserved.
-- `GuestMigrationPrompt` flow is disabled; the scene/script files remain but the
-  prompt is never shown.
+- `GuestMigrationPrompt` flow removed (C7.1.1): node removed from `ClickerScreen.tscn`,
+  all runtime references removed from `ClickerScreen.gd`. Scene/script files retained
+  but unreferenced.
 - Web/Yandex paid shop behavior is unchanged.
 
 **Changes:**

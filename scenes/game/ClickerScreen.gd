@@ -130,7 +130,6 @@ var _fullscreen_ad_overlay: Control = null
 @onready var hit_effect_layer: Control = $HitEffectLayer
 @onready var offline_reward_dialog: OfflineRewardDialog = $OfflineRewardDialog
 @onready var cloud_restore_prompt: CloudRestorePrompt = $CloudRestorePrompt
-@onready var guest_migration_prompt: GuestMigrationPrompt = $GuestMigrationPrompt
 
 
 func _ready() -> void:
@@ -1336,8 +1335,6 @@ func _is_safe_for_fullscreen_ad() -> bool:
 		return false
 	if cloud_restore_prompt.visible:
 		return false
-	if guest_migration_prompt.visible:
-		return false
 	var now: float = Time.get_ticks_msec() / 1000.0
 	if now - _last_user_interaction_time < FULLSCREEN_AD_SAFE_INTERACTION_GAP_SECONDS:
 		return false
@@ -1911,7 +1908,6 @@ func _is_main_screen_clear_for_rewarded_banner() -> bool:
 		and not gem_purchase_dialog.visible
 		and not offline_reward_dialog.visible
 		and not cloud_restore_prompt.visible
-		and not guest_migration_prompt.visible
 	)
 
 
