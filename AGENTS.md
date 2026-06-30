@@ -328,6 +328,28 @@ Before final release, verify:
 
 ---
 
+## Backend cloud-save rules (C6+)
+
+These rules apply to all Android/RuStore backend auth and cloud-save work.
+
+- **Signal connection guard required.** Every `Platform.backend_operation_succeeded.connect(...)` and `Platform.backend_operation_failed.connect(...)` call must be wrapped in `if not signal.is_connected(callable)`. Never connect a backend signal without this guard.
+
+- **Backend cloud-save is Android + account only.** `queue_backend_cloud_save()`, `flush_backend_cloud_save_now()`, and all `Platform.backend_*` cloud ops must only run when `OS.has_feature("android")` and `Platform.backend_has_session()` are both true. Guests must never trigger backend cloud-save or cloud-load operations.
+
+- **CloudRestorePrompt has priority over GuestMigrationPrompt.** Never show both simultaneously. `_should_show_guest_migration_prompt()` must check `cloud_restore_prompt.visible` (or the equivalent pending flag) and return false if the restore prompt is active.
+
+- **Backend auto-upload suspension must not leak.** If you add a new exit path from the startup restore-decision flow, you must call `_resume_backend_auto_upload_after_restore_decision()` at that exit point. `_exit_tree()` also calls it as a safety net.
+
+- **Duplicate request guard required.** Any UI submit function that calls a backend operation (`Platform.backend_login()`, `Platform.backend_register()`, `Platform.backend_request_password_reset()`, `Platform.backend_confirm_password_reset()`, etc.) must guard with a `_request_in_progress` flag and clear it on both success and failure responses.
+
+- **Never log auth credentials or full save payloads.** Do not print session tokens, passwords, reset codes, email verification codes, or full save JSON in any log statement — gated or ungated. Use structural summaries (`save_version`, `last_save_unix_time`) only.
+
+- **`set_startup_auth_mode` before `add_child`.** When passing the startup auth mode to `ClickerScreen`, always call `set_startup_auth_mode(mode)` before `add_child(_clicker_screen)`. The mode must be set before `_ready()` (and therefore `_load_game_on_start_async()`) has any opportunity to read it.
+
+- **Debug print gates.** Any `print(...)` inside `ClickerScreen.gd`, `AuthGateScreen.gd`, or other UI/gameplay scripts that exposes internal flow state must be gated behind `BuildConfig.IS_DEBUG_BUILD`. Debug prints in `AndroidRuStorePlatform.gd` use `OS.is_debug_build()`.
+
+---
+
 ## Coding Rules
 
 - Use GDScript only. Do not add C#.

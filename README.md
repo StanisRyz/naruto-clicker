@@ -975,6 +975,53 @@ After a guest player logs in or registers an account from Settings / AuthGate ov
 
 ---
 
+### C6 — Backend Cloud Save Stabilization / Release Hardening (completed)
+
+Hardening pass on the Android/RuStore backend auth and cloud-save flows introduced
+in C3–C5.4. No new gameplay features, no balance changes, no backend Cloud Function
+changes.
+
+**Changes:**
+
+- **`scenes/main/Main.gd`** — `set_startup_auth_mode` now called before `add_child`
+  in `_instantiate_clicker_screen()`. This guarantees `_gameplay_started_as_guest`
+  is set before any `_ready()` code in `ClickerScreen` can read it, even if future
+  code is added before the first `await`.
+
+- **`scenes/auth/AuthGateScreen.gd`** — Four hardening changes:
+  - `_request_in_progress: bool` flag prevents duplicate backend requests from rapid
+    button presses. Guards added to `_on_login_submit()`, `_on_register_submit()`,
+    `_on_reset_request_submit()`, `_on_reset_confirm_submit()`. Flag clears on every
+    success/failure response.
+  - `_connect_platform_signals()` guards with `is_connected()` before each
+    `connect()` call — safe if the method is called more than once.
+
+- **`scenes/game/ClickerScreen.gd`** — Two hardening changes:
+  - Ungated `print` statements in `_load_game_on_start_async()` ("cloud save is
+    newer", "no valid local save, using cloud save") and `notify_yandex_game_ready()`
+    are now gated behind `BuildConfig.IS_DEBUG_BUILD`.
+  - `_should_show_guest_migration_prompt()` now checks
+    `is_instance_valid(cloud_restore_prompt) and cloud_restore_prompt.visible` as a
+    defensive collision guard, in addition to the existing
+    `_startup_cloud_restore_prompt_pending` flag check. Both prompts can never be
+    visible simultaneously.
+
+**What C6 did NOT change:**
+
+- Web/Yandex cloud-save — unchanged; `YandexBridge` and `WebYandexPlatform` unaffected.
+- `SaveManager` — no new cloud-save features; suspension/resume lifecycle unchanged.
+- Backend Cloud Functions — none changed.
+- Gameplay, ads, payments, balance — unchanged.
+- Save schema — no new or renamed fields.
+- Localization — no new keys.
+
+**Prompt priority (unchanged, now enforced by visible-guard):**
+`CloudRestorePrompt` (highest) → `GuestMigrationPrompt` → Settings/manual.
+
+**Validation:** see `docs/validation/backend_cloud_save_stabilization.md`.
+
+---
+
 ## QoL update mode
 
 This project is in release-candidate QoL mode. When contributing:

@@ -50,6 +50,7 @@ var _awaiting_login_after_register: bool = false
 
 var _session_check_generation: int = 0
 var _session_check_completed: bool = false
+var _request_in_progress: bool = false
 
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
 
@@ -397,8 +398,10 @@ func _clear_status() -> void:
 # ── Platform signals ──────────────────────────────────────────────────────────
 
 func _connect_platform_signals() -> void:
-	Platform.backend_operation_succeeded.connect(_on_backend_succeeded)
-	Platform.backend_operation_failed.connect(_on_backend_failed)
+	if not Platform.backend_operation_succeeded.is_connected(_on_backend_succeeded):
+		Platform.backend_operation_succeeded.connect(_on_backend_succeeded)
+	if not Platform.backend_operation_failed.is_connected(_on_backend_failed):
+		Platform.backend_operation_failed.connect(_on_backend_failed)
 
 
 func _on_backend_succeeded(operation: String, _response: Dictionary) -> void:
@@ -409,6 +412,7 @@ func _on_backend_succeeded(operation: String, _response: Dictionary) -> void:
 			auth_gate_completed.emit("account")
 
 		"login":
+			_request_in_progress = false
 			_clear_status()
 			if _awaiting_login_after_register:
 				_awaiting_login_after_register = false
@@ -422,15 +426,18 @@ func _on_backend_succeeded(operation: String, _response: Dictionary) -> void:
 				_awaiting_login_after_register = true
 				Platform.backend_login(_post_register_email, _post_register_password)
 			else:
+				_request_in_progress = false
 				_set_state(_State.LOGIN)
 				_show_status(LocalizationManager.tr_key("auth.login_tab"))
 
 		"request_password_reset":
+			_request_in_progress = false
 			_show_status(LocalizationManager.tr_key("auth.status_reset_code_sent"))
 			_reset_conf_email.text = _reset_email_cache
 			_set_state(_State.RESET_CONFIRM)
 
 		"confirm_password_reset":
+			_request_in_progress = false
 			_show_status(LocalizationManager.tr_key("auth.status_password_changed"))
 			_set_state(_State.LOGIN)
 			_show_status(LocalizationManager.tr_key("auth.status_login_after_reset"))
@@ -446,18 +453,22 @@ func _on_backend_failed(operation: String, error_code: String, _status_code: int
 			_set_state(_State.LOGIN)
 
 		"login":
+			_request_in_progress = false
 			_awaiting_login_after_register = false
 			_show_status(error_code, true)
 
 		"register":
+			_request_in_progress = false
 			_post_register_email = ""
 			_post_register_password = ""
 			_show_status(error_code, true)
 
 		"request_password_reset":
+			_request_in_progress = false
 			_show_status(error_code, true)
 
 		"confirm_password_reset":
+			_request_in_progress = false
 			_show_status(error_code, true)
 
 # ── Startup session check ─────────────────────────────────────────────────────
@@ -489,17 +500,22 @@ func _start_session_check_timeout(generation: int) -> void:
 # ── Button callbacks ──────────────────────────────────────────────────────────
 
 func _on_login_submit() -> void:
+	if _request_in_progress:
+		return
 	var email := _login_email.text.strip_edges()
 	var password := _login_password.text
 	if not _validate_email(email):
 		return
 	if not _validate_password(password):
 		return
+	_request_in_progress = true
 	_clear_status()
 	Platform.backend_login(email, password)
 
 
 func _on_register_submit() -> void:
+	if _request_in_progress:
+		return
 	var email := _reg_email.text.strip_edges()
 	var password := _reg_password.text
 	var confirm := _reg_confirm.text
@@ -510,6 +526,7 @@ func _on_register_submit() -> void:
 	if password != confirm:
 		_show_status(LocalizationManager.tr_key("auth.error_password_mismatch"), true)
 		return
+	_request_in_progress = true
 	_clear_status()
 	_post_register_email = email
 	_post_register_password = password
@@ -524,15 +541,20 @@ func _on_forgot_pressed() -> void:
 
 
 func _on_reset_request_submit() -> void:
+	if _request_in_progress:
+		return
 	var email := _reset_req_email.text.strip_edges()
 	if not _validate_email(email):
 		return
+	_request_in_progress = true
 	_clear_status()
 	_reset_email_cache = email
 	Platform.backend_request_password_reset(email)
 
 
 func _on_reset_confirm_submit() -> void:
+	if _request_in_progress:
+		return
 	var email := _reset_conf_email.text.strip_edges()
 	var code := _reset_conf_code.text.strip_edges()
 	var new_pass := _reset_conf_new_pass.text
@@ -546,6 +568,7 @@ func _on_reset_confirm_submit() -> void:
 	if new_pass != confirm:
 		_show_status(LocalizationManager.tr_key("auth.error_password_mismatch"), true)
 		return
+	_request_in_progress = true
 	_clear_status()
 	Platform.backend_confirm_password_reset(email, code, new_pass)
 

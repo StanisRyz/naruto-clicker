@@ -83,9 +83,9 @@ func _instantiate_clicker_screen() -> void:
 		return
 	_clicker_screen = ClickerScreenScene.instantiate()
 	_clicker_screen.name = "ClickerScreen"
-	add_child(_clicker_screen)
 	if _clicker_screen.has_method("set_startup_auth_mode"):
 		_clicker_screen.set_startup_auth_mode(_startup_auth_mode)
+	add_child(_clicker_screen)
 
 
 func get_startup_auth_mode() -> String:

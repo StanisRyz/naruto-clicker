@@ -1413,7 +1413,8 @@ func notify_yandex_game_ready() -> void:
 	if _yandex_game_ready_notified:
 		return
 	_yandex_game_ready_notified = true
-	print("ClickerScreen: notify_yandex_game_ready called")
+	if BuildConfig.IS_DEBUG_BUILD:
+		print("ClickerScreen: notify_yandex_game_ready called")
 	Platform.game_ready()
 	_try_resume_yandex_gameplay()
 
@@ -1576,14 +1577,16 @@ func _load_game_on_start_async() -> void:
 		var cloud_time: int = int(cloud_data.get("last_save_unix_time", 0))
 		if cloud_time > local_time:
 			chosen = cloud_data
-			print("ClickerScreen: cloud save is newer (%d > %d), using cloud" % [cloud_time, local_time])
+			if BuildConfig.IS_DEBUG_BUILD:
+				print("ClickerScreen: cloud save is newer (%d > %d), using cloud" % [cloud_time, local_time])
 		else:
 			chosen = local_data
 	elif local_valid:
 		chosen = local_data
 	elif cloud_valid:
 		chosen = cloud_data
-		print("ClickerScreen: no valid local save, using cloud save")
+		if BuildConfig.IS_DEBUG_BUILD:
+			print("ClickerScreen: no valid local save, using cloud save")
 
 	if chosen.is_empty():
 		state.last_save_unix_time = now
@@ -2218,6 +2221,8 @@ func _should_show_guest_migration_prompt() -> bool:
 	if _guest_migration_prompt_shown_this_session:
 		return false
 	if _startup_cloud_restore_prompt_pending:
+		return false
+	if is_instance_valid(cloud_restore_prompt) and cloud_restore_prompt.visible:
 		return false
 	if _startup_cloud_restore_check_in_progress:
 		return false
