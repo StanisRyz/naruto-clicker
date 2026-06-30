@@ -16,6 +16,7 @@ var _auth_gate: Node = null
 var _clicker_screen: Node = null
 var _startup_started: bool = false
 var _startup_auth_mode: String = ""
+var _startup_auth_source: String = ""
 
 
 func _ready() -> void:
@@ -39,19 +40,27 @@ func _show_auth_gate() -> void:
 	_auth_gate.auth_gate_completed.connect(_on_auth_gate_completed)
 
 
-func _on_auth_gate_completed(mode: String) -> void:
+func _on_auth_gate_completed(source: String) -> void:
 	if is_instance_valid(_auth_gate):
 		_auth_gate.queue_free()
 		_auth_gate = null
+	var auth_mode: String = "guest" if source == "guest" else "account"
+	_startup_auth_source = source
 	if _startup_started:
-		_startup_auth_mode = mode
-		if mode == "account" and is_instance_valid(_clicker_screen):
-			if _clicker_screen.has_method("on_account_login_from_overlay"):
-				_clicker_screen.on_account_login_from_overlay()
-			elif _clicker_screen.has_method("request_backend_cloud_restore_check"):
-				_clicker_screen.request_backend_cloud_restore_check("auth_overlay")
+		_startup_auth_mode = auth_mode
+		if is_instance_valid(_clicker_screen):
+			match source:
+				"account_register":
+					if _clicker_screen.has_method("on_account_registered_from_guest_overlay"):
+						_clicker_screen.on_account_registered_from_guest_overlay()
+				"account_login":
+					if _clicker_screen.has_method("on_account_login_from_guest_overlay"):
+						_clicker_screen.on_account_login_from_guest_overlay()
+				"account_session":
+					if _clicker_screen.has_method("request_backend_cloud_restore_check"):
+						_clicker_screen.request_backend_cloud_restore_check("auth_overlay")
 	else:
-		_start_game_after_auth_gate(mode)
+		_start_game_after_auth_gate(auth_mode)
 
 
 func show_auth_gate_overlay() -> bool:
@@ -85,6 +94,8 @@ func _instantiate_clicker_screen() -> void:
 	_clicker_screen.name = "ClickerScreen"
 	if _clicker_screen.has_method("set_startup_auth_mode"):
 		_clicker_screen.set_startup_auth_mode(_startup_auth_mode)
+	if _clicker_screen.has_method("set_startup_auth_source"):
+		_clicker_screen.set_startup_auth_source(_startup_auth_source)
 	add_child(_clicker_screen)
 
 

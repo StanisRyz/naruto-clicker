@@ -1022,6 +1022,64 @@ changes.
 
 ---
 
+### C7.1 — Account Save Authority & Guest Paid Shop Lock (completed)
+
+**Purpose:** Clarify save authority on login/register and lock paid gem purchases for
+Android/RuStore guests. Removes the old `GuestMigrationPrompt` mid-session flow.
+
+**New product rules:**
+
+- Guest progress is local-only. Guest can watch rewarded ads. Guest **cannot** use
+  paid donation/gem purchases on Android/RuStore.
+- **Guest → Register:** current guest save is automatically uploaded to the new
+  account's cloud save. Gameplay continues without reload.
+- **Guest → Login:** existing account cloud save is the authority and loads
+  immediately. Guest save is **never** uploaded on login.
+- **Guest → Login with no cloud save:** a clean default account save starts; guest
+  progress is discarded.
+- Direct account startup restore behavior (C5.3 `CloudRestorePrompt`) is preserved.
+- `GuestMigrationPrompt` flow is disabled; the scene/script files remain but the
+  prompt is never shown.
+- Web/Yandex paid shop behavior is unchanged.
+
+**Changes:**
+
+- **`scenes/auth/AuthGateScreen.gd`** — `get_me` success emits `account_session`;
+  login success emits `account_login`; post-register login success emits
+  `account_register`. Guest button still emits `guest`.
+
+- **`scenes/main/Main.gd`** — `_on_auth_gate_completed` maps the four result strings
+  to `_startup_auth_mode` ("guest"/"account") and `_startup_auth_source`. For overlay
+  completions, dispatches `on_account_registered_from_guest_overlay()` or
+  `on_account_login_from_guest_overlay()` on the active ClickerScreen.
+
+- **`scenes/game/ClickerScreen.gd`** —
+  - `on_account_registered_from_guest_overlay()`: saves locally, uploads to backend
+    cloud, continues gameplay, unlocks paid shop.
+  - `on_account_login_from_guest_overlay()`: suspends auto-upload, force-loads account
+    cloud save, applies it (or starts clean save if none), resumes auto-upload.
+  - `_is_paid_shop_available()`: returns `false` on Android without a backend session.
+  - Paid `donation_entry` shop tap and `_on_gem_product_purchase_requested` guarded by
+    `_is_paid_shop_available()`; opens AuthGate overlay if false.
+  - `_on_platform_backend_auth_changed` connected: refreshes shop availability on logout.
+  - All `_guest_migration_*` variables and methods removed.
+
+- **`localization/game_text.csv`** — 10 new keys: `shop.paid_guest_locked_*` and
+  `account_flow.*`.
+
+**What C7.1 did NOT change:**
+
+- Web/Yandex cloud-save or paid shop — unchanged.
+- Backend Cloud Functions — none changed.
+- Gameplay balance — unchanged.
+- Save schema — no new fields.
+- `CloudRestorePrompt` direct-account restore flow — unchanged.
+- Rewarded ads — available in all modes including Guest.
+
+**Validation:** see `docs/validation/account_save_authority_guest_shop_lock.md`.
+
+---
+
 ### C6.1 — Release Audit Fixes (completed)
 
 Small release-safety fixes applied after the C6 stabilization pass. No new gameplay

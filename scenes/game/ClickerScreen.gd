@@ -82,10 +82,9 @@ var _pre_startup_local_timestamp: int = 0
 var _pre_startup_local_save_snapshot_taken: bool = false
 
 var _gameplay_started_as_guest: bool = false
-var _guest_migration_prompt_shown_this_session: bool = false
-var _guest_migration_upload_in_progress: bool = false
-var _guest_migration_cloud_upload_requested: bool = false
-var _guest_migration_prompt_pending_after_restore_check: bool = false
+var _startup_auth_source: String = ""
+var _register_guest_upload_requested: bool = false
+var _force_account_cloud_load_after_guest_login: bool = false
 
 const FULLSCREEN_AD_COOLDOWN_SECONDS: float = 300.0
 const FULLSCREEN_AD_INITIAL_COOLDOWN_SECONDS: float = 300.0
@@ -198,8 +197,8 @@ func _ready() -> void:
 	offline_reward_dialog.claim_ad_requested.connect(_on_offline_reward_claim_ad_requested)
 	cloud_restore_prompt.load_cloud_confirmed.connect(_on_cloud_restore_load_confirmed)
 	cloud_restore_prompt.keep_local_confirmed.connect(_on_cloud_restore_keep_local_confirmed)
-	guest_migration_prompt.save_guest_progress_confirmed.connect(_on_guest_migration_save_confirmed)
-	guest_migration_prompt.not_now_confirmed.connect(_on_guest_migration_not_now_confirmed)
+	if not Platform.backend_auth_changed.is_connected(_on_platform_backend_auth_changed):
+		Platform.backend_auth_changed.connect(_on_platform_backend_auth_changed)
 	LocalizationManager.language_changed.connect(_on_language_changed)
 	Platform.fullscreen_ad_opened.connect(_on_fullscreen_ad_opened)
 	Platform.fullscreen_ad_closed.connect(_on_fullscreen_ad_closed)
@@ -629,6 +628,11 @@ func _on_shop_product_purchase_requested(product_id: String, mode: String) -> vo
 	var product: Dictionary = state.get_shop_product(product_id)
 	var product_type: String = String(product.get("product_type", ""))
 	if product_type == "donation_entry":
+		if not _is_paid_shop_available():
+			var main := get_tree().current_scene
+			if main != null and main.has_method("show_auth_gate_overlay"):
+				main.show_auth_gate_overlay()
+			return
 		gem_purchase_dialog.show_dialog()
 		_update_rewarded_ad_banner()
 		return
@@ -643,6 +647,8 @@ func _on_shop_product_purchase_requested(product_id: String, mode: String) -> vo
 
 
 func _on_gem_product_purchase_requested(product_id: String) -> void:
+	if not _is_paid_shop_available():
+		return
 	var product: Dictionary = GemPurchaseConfigClass.get_by_id(product_id)
 	if product.is_empty():
 		return
@@ -1965,13 +1971,13 @@ func _on_backend_cloud_op_succeeded(operation: String, response: Dictionary) -> 
 	match operation:
 		"save_save":
 			SaveManager.mark_backend_cloud_upload_finished(true)
-			if _guest_migration_cloud_upload_requested:
-				_guest_migration_cloud_upload_requested = false
-				_guest_migration_upload_in_progress = false
+			if _register_guest_upload_requested:
+				_register_guest_upload_requested = false
 				_gameplay_started_as_guest = false
+				_update_shop_paid_availability()
 				if settings_window.visible:
 					settings_window.set_cloud_save_status(
-						LocalizationManager.tr_key("guest_migration.upload_success")
+						LocalizationManager.tr_key("account_flow.register_guest_upload_success")
 					)
 			elif _manual_backend_cloud_upload_requested:
 				_manual_backend_cloud_upload_requested = false
@@ -1981,7 +1987,42 @@ func _on_backend_cloud_op_succeeded(operation: String, response: Dictionary) -> 
 				)
 
 		"load_save":
-			if _manual_backend_cloud_download_requested:
+			if _force_account_cloud_load_after_guest_login:
+				_force_account_cloud_load_after_guest_login = false
+				var has_save_forced: bool = bool(response.get("has_save", false))
+				if has_save_forced:
+					var save_data_forced: Dictionary = response.get("save_data", {})
+					var ok_forced: bool = SaveManager.apply_cloud_save_payload(save_data_forced)
+					if ok_forced:
+						var loaded_forced: Dictionary = SaveManager.load_data()
+						if not loaded_forced.is_empty():
+							state.apply_save_data(loaded_forced)
+							_reset_runtime_state_for_new_game()
+							_sync_boss_timer()
+							_update_ui()
+							stage_navigator.center_on_level(state.current_level)
+						_gameplay_started_as_guest = false
+						_update_shop_paid_availability()
+						if settings_window.visible:
+							settings_window.set_cloud_save_status(
+								LocalizationManager.tr_key("account_flow.login_cloud_load_success")
+							)
+					else:
+						push_warning("ClickerScreen: guest login force-load apply failed")
+						if settings_window.visible:
+							settings_window.set_cloud_save_status(
+								LocalizationManager.tr_key("account_flow.login_cloud_load_failed"), true
+							)
+				else:
+					_apply_clean_account_save_after_guest_login()
+					_gameplay_started_as_guest = false
+					_update_shop_paid_availability()
+					if settings_window.visible:
+						settings_window.set_cloud_save_status(
+							LocalizationManager.tr_key("account_flow.login_cloud_load_missing")
+						)
+				_resume_backend_auto_upload_after_restore_decision()
+			elif _manual_backend_cloud_download_requested:
 				_manual_backend_cloud_download_requested = false
 				settings_window.set_cloud_save_buttons_busy(false)
 				var has_save_manual: bool = bool(response.get("has_save", false))
@@ -2014,22 +2055,14 @@ func _on_backend_cloud_op_succeeded(operation: String, response: Dictionary) -> 
 				var has_save_startup: bool = bool(response.get("has_save", false))
 				if not has_save_startup:
 					_resume_backend_auto_upload_after_restore_decision()
-					if _guest_migration_prompt_pending_after_restore_check:
-						_guest_migration_prompt_pending_after_restore_check = false
-						_maybe_show_guest_migration_prompt()
 					return
 				var save_data_startup: Dictionary = response.get("save_data", {})
 				var eval: Dictionary = _evaluate_cloud_restore_candidate(save_data_startup)
 				if not eval.get("should_prompt", false):
 					_resume_backend_auto_upload_after_restore_decision()
-					if _guest_migration_prompt_pending_after_restore_check:
-						_guest_migration_prompt_pending_after_restore_check = false
-						_maybe_show_guest_migration_prompt()
 					return
 				if _startup_cloud_restore_prompt_pending:
-					_guest_migration_prompt_pending_after_restore_check = false
 					return
-				_guest_migration_prompt_pending_after_restore_check = false
 				_startup_cloud_restore_pending_save_data = save_data_startup.duplicate(true)
 				_startup_cloud_restore_pending_mode = eval.get("mode", "")
 				_startup_cloud_restore_prompt_pending = true
@@ -2167,15 +2200,14 @@ func _on_backend_cloud_op_failed(operation: String, error_code: String, _status_
 	match operation:
 		"save_save":
 			SaveManager.mark_backend_cloud_upload_finished(false)
-			if _guest_migration_cloud_upload_requested:
-				_guest_migration_cloud_upload_requested = false
-				_guest_migration_upload_in_progress = false
+			if _register_guest_upload_requested:
+				_register_guest_upload_requested = false
 				if settings_window.visible:
 					settings_window.set_cloud_save_status(
-						LocalizationManager.tr_key("guest_migration.upload_failed"), true
+						LocalizationManager.tr_key("account_flow.register_guest_upload_failed"), true
 					)
 				else:
-					push_warning("GuestMigration: backend cloud upload failed: %s" % error_code)
+					push_warning("ClickerScreen: register guest upload failed: %s" % error_code)
 			elif _manual_backend_cloud_upload_requested:
 				_manual_backend_cloud_upload_requested = false
 				settings_window.set_cloud_save_buttons_busy(false)
@@ -2187,7 +2219,15 @@ func _on_backend_cloud_op_failed(operation: String, error_code: String, _status_
 				push_warning("SaveManager: background backend cloud upload failed: %s" % error_code)
 
 		"load_save":
-			if _manual_backend_cloud_download_requested:
+			if _force_account_cloud_load_after_guest_login:
+				_force_account_cloud_load_after_guest_login = false
+				push_warning("ClickerScreen: guest login force cloud load failed: %s" % error_code)
+				_resume_backend_auto_upload_after_restore_decision()
+				if settings_window.visible:
+					settings_window.set_cloud_save_status(
+						LocalizationManager.tr_key("account_flow.login_cloud_load_failed"), true
+					)
+			elif _manual_backend_cloud_download_requested:
 				_manual_backend_cloud_download_requested = false
 				settings_window.set_cloud_save_buttons_busy(false)
 				settings_window.set_cloud_save_status(
@@ -2199,73 +2239,76 @@ func _on_backend_cloud_op_failed(operation: String, error_code: String, _status_
 				_startup_cloud_restore_check_in_progress = false
 				push_warning("ClickerScreen: startup cloud restore check failed: %s" % error_code)
 				_resume_backend_auto_upload_after_restore_decision()
-				if _guest_migration_prompt_pending_after_restore_check:
-					_guest_migration_prompt_pending_after_restore_check = false
-					_maybe_show_guest_migration_prompt()
 
 
 func set_startup_auth_mode(mode: String) -> void:
 	_gameplay_started_as_guest = mode == "guest"
 
 
-func on_account_login_from_overlay() -> void:
-	_guest_migration_prompt_pending_after_restore_check = _gameplay_started_as_guest
-	request_backend_cloud_restore_check("auth_overlay")
+func set_startup_auth_source(source: String) -> void:
+	_startup_auth_source = source
 
 
-func _should_show_guest_migration_prompt() -> bool:
-	if not OS.has_feature("android"):
-		return false
-	if not Platform.backend_has_session():
-		return false
+func on_account_registered_from_guest_overlay() -> void:
+	if not OS.has_feature("android") or not Platform.backend_has_session():
+		return
 	if not _gameplay_started_as_guest:
-		return false
-	if _guest_migration_prompt_shown_this_session:
-		return false
-	if _startup_cloud_restore_prompt_pending:
-		return false
-	if is_instance_valid(cloud_restore_prompt) and cloud_restore_prompt.visible:
-		return false
-	if _startup_cloud_restore_check_in_progress:
-		return false
-	if _manual_backend_cloud_download_requested:
-		return false
-	if not SaveManager.has_save():
-		return false
-	if SaveManager.get_cloud_save_payload().is_empty():
-		return false
+		return
+	_save_game_now()
+	if settings_window.visible:
+		settings_window.set_cloud_save_status(
+			LocalizationManager.tr_key("account_flow.register_guest_upload_started")
+		)
+	_register_guest_upload_requested = true
+	if not SaveManager.upload_current_save_to_backend_cloud_now():
+		_register_guest_upload_requested = false
+		if settings_window.visible:
+			settings_window.set_cloud_save_status(
+				LocalizationManager.tr_key("account_flow.register_guest_upload_failed"), true
+			)
+
+
+func on_account_login_from_guest_overlay() -> void:
+	if not OS.has_feature("android") or not Platform.backend_has_session():
+		return
+	if not _gameplay_started_as_guest:
+		return
+	SaveManager.set_backend_cloud_auto_upload_suspended(true)
+	_force_account_cloud_load_after_guest_login = true
+	if settings_window.visible:
+		settings_window.set_cloud_save_status(
+			LocalizationManager.tr_key("account_flow.login_cloud_load_started")
+		)
+	Platform.backend_load_save()
+
+
+func _apply_clean_account_save_after_guest_login() -> void:
+	state = ClickerState.new()
+	state.last_save_unix_time = int(Time.get_unix_time_from_system())
+	state.language = LocalizationManager.get_language()
+	_reset_runtime_state_for_new_game()
+	_sync_boss_timer()
+	_update_ui()
+	stage_navigator.center_on_level(state.current_level)
+	_save_game_now()
+
+
+func _is_paid_shop_available() -> bool:
+	if OS.has_feature("android"):
+		return Platform.backend_has_session()
 	return true
 
 
-func _maybe_show_guest_migration_prompt() -> void:
-	if not _should_show_guest_migration_prompt():
+func _update_shop_paid_availability() -> void:
+	if not _is_paid_shop_available() and is_instance_valid(gem_purchase_dialog) and gem_purchase_dialog.visible:
+		gem_purchase_dialog.hide_dialog()
+	_update_ui()
+
+
+func _on_platform_backend_auth_changed(_auth_data: Dictionary) -> void:
+	if not OS.has_feature("android"):
 		return
-	_guest_migration_prompt_shown_this_session = true
-	guest_migration_prompt.show_prompt()
-
-
-func _on_guest_migration_save_confirmed() -> void:
-	guest_migration_prompt.hide_prompt()
-	if not OS.has_feature("android") or not Platform.backend_has_session():
-		push_warning("GuestMigration: upload requested but no Android/backend session")
-		return
-	_guest_migration_upload_in_progress = true
-	_guest_migration_cloud_upload_requested = true
-	_save_game_now()
-	if not SaveManager.upload_current_save_to_backend_cloud_now():
-		_guest_migration_cloud_upload_requested = false
-		_guest_migration_upload_in_progress = false
-		if settings_window.visible:
-			settings_window.set_cloud_save_status(
-				LocalizationManager.tr_key("guest_migration.upload_failed"), true
-			)
-		else:
-			push_warning("GuestMigration: upload_current_save_to_backend_cloud_now returned false")
-
-
-func _on_guest_migration_not_now_confirmed() -> void:
-	guest_migration_prompt.hide_prompt()
-	_guest_migration_prompt_pending_after_restore_check = false
+	_update_shop_paid_availability()
 
 
 func _exit_tree() -> void:
@@ -2275,3 +2318,5 @@ func _exit_tree() -> void:
 			Platform.backend_operation_succeeded.disconnect(_on_backend_cloud_op_succeeded)
 		if Platform.backend_operation_failed.is_connected(_on_backend_cloud_op_failed):
 			Platform.backend_operation_failed.disconnect(_on_backend_cloud_op_failed)
+		if Platform.backend_auth_changed.is_connected(_on_platform_backend_auth_changed):
+			Platform.backend_auth_changed.disconnect(_on_platform_backend_auth_changed)

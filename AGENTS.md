@@ -336,7 +336,7 @@ These rules apply to all Android/RuStore backend auth and cloud-save work.
 
 - **Backend cloud-save is Android + account only.** `queue_backend_cloud_save()`, `flush_backend_cloud_save_now()`, and all `Platform.backend_*` cloud ops must only run when `OS.has_feature("android")` and `Platform.backend_has_session()` are both true. Guests must never trigger backend cloud-save or cloud-load operations.
 
-- **CloudRestorePrompt has priority over GuestMigrationPrompt.** Never show both simultaneously. `_should_show_guest_migration_prompt()` must check `cloud_restore_prompt.visible` (or the equivalent pending flag) and return false if the restore prompt is active.
+- **CloudRestorePrompt has the highest prompt priority.** Never show it while `_startup_cloud_restore_prompt_pending` or `_startup_cloud_restore_check_in_progress` is true. `GuestMigrationPrompt` is no longer shown (C7.1).
 
 - **Backend auto-upload suspension must not leak.** If you add a new exit path from the startup restore-decision flow, you must call `_resume_backend_auto_upload_after_restore_decision()` at that exit point. `_exit_tree()` also calls it as a safety net.
 
@@ -781,16 +781,56 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
 - **If user declines (Keep Local), set `_startup_cloud_restore_declined_this_session = true`.** Do not re-prompt during the same session unless `auth_overlay` resets it.
 - **`CloudRestorePrompt` blocks fullscreen ads and the rewarded banner** while visible (guarded in `_is_safe_for_fullscreen_ad()` and `_is_main_screen_clear_for_rewarded_banner()`).
 
-## Guest → Account Migration Prompt Rules (C5.4)
+## Guest → Account Migration Prompt Rules (C5.4 — superseded by C7.1)
 
-- **`GuestMigrationPrompt` must not call `SaveManager` or `Platform` directly.** It only emits `save_guest_progress_confirmed` or `not_now_confirmed`. `ClickerScreen` owns all upload operations.
-- **Do not show `GuestMigrationPrompt` on Web/Yandex.** Guard with `OS.has_feature("android")`.
-- **Do not show `GuestMigrationPrompt` while `CloudRestorePrompt` is pending.** `_startup_cloud_restore_prompt_pending` and `_startup_cloud_restore_check_in_progress` must both be false before showing the migration prompt.
-- **Do not silently upload guest progress immediately after login.** Auto-upload (C5.2) will pick up future saves because the account session is now active, but the migration prompt is the only path to a deliberate initial upload of existing guest progress.
-- **`_guest_migration_prompt_pending_after_restore_check` coordinates timing.** Set it true in `on_account_login_from_overlay()` when `_gameplay_started_as_guest` is true, then check and clear it at each restore-check completion point before calling `_maybe_show_guest_migration_prompt()`. Clear it (false) when the cloud restore prompt is shown instead.
-- **`_gameplay_started_as_guest` is set by `set_startup_auth_mode()` called from Main.gd** before ClickerScreen adds itself to the tree. On non-Android or web startup mode, this is never "guest", so the migration flow is inert.
-- **After a successful migration upload, set `_gameplay_started_as_guest = false`** to prevent re-prompting if the player saves again and the prompt eligibility check is re-entered.
-- **`GuestMigrationPrompt` blocks fullscreen ads and the rewarded banner** while visible (guarded in `_is_safe_for_fullscreen_ad()` and `_is_main_screen_clear_for_rewarded_banner()`).
+> **C7.1 replaced the `GuestMigrationPrompt` mid-session flow.** The rules below are
+> kept for historical context. Do not reintroduce `GuestMigrationPrompt` unless the
+> product rule changes. See the C7.1 rules below for the current authority model.
+
+- **`GuestMigrationPrompt` scene/script files are retained but must never be shown.**
+  `show_prompt()` is never called. Signal connections have been removed.
+- **Do not reintroduce `GuestMigrationPrompt` or `_maybe_show_guest_migration_prompt()`**
+  unless explicitly requested by the product owner.
+
+## Account Save Authority & Guest Shop Lock Rules (C7.1)
+
+- **Account cloud save is the authority when logging in to an existing account.**
+  `on_account_login_from_guest_overlay()` must force-load the account cloud save and
+  must **never** upload the current guest save.
+- **Guest progress migrates only on new account registration.**
+  `on_account_registered_from_guest_overlay()` uploads the current local save to the
+  new account's cloud. This is the only path for guest-to-account save migration.
+- **Login to an existing account from Guest must not upload guest save.**
+  Backend auto-upload must be suspended before calling `Platform.backend_load_save()`.
+- **If the account has no cloud save on Guest → Login, start a clean default save.**
+  Do not carry over guest gems, progress, or any state into the account.
+- **Android/RuStore paid gem purchases require a backend account session.**
+  `_is_paid_shop_available()` returns `false` on Android without `Platform.backend_has_session()`.
+  Opening `GemPurchaseDialog` and calling `Platform.purchase_product()` must both be
+  guarded by this check.
+- **Rewarded ads must remain available in Guest mode.** Never gate rewarded ad shop
+  products or the rewarded banner behind `_is_paid_shop_available()`.
+- **Paid shop state must refresh on auth changes.** `_on_platform_backend_auth_changed`
+  is connected in `ClickerScreen._ready()` and calls `_update_shop_paid_availability()`.
+  This handles logout locking the paid shop without requiring a scene restart.
+- **`AuthGateScreen` must emit distinct result strings:**
+  `"guest"`, `"account_session"` (stored-session `get_me` success),
+  `"account_login"` (direct login), `"account_register"` (post-register login).
+  Never emit the old `"account"` string.
+- **`Main.gd` maps guest/account_* sources to `_startup_auth_mode` ("guest"/"account")**
+  and routes overlay results to the correct ClickerScreen method without recreating
+  the ClickerScreen scene.
+- **`_gameplay_started_as_guest` is set by `set_startup_auth_mode()` called from Main.gd**
+  before ClickerScreen `_ready()` runs. Set it to `false` after successful register
+  upload or after login cloud-load completes (success or clean-save fallback).
+- **`_force_account_cloud_load_after_guest_login` must be checked first** in the
+  `load_save` success/failure handlers, before `_manual_backend_cloud_download_requested`
+  and `_startup_cloud_restore_check_in_progress`. Clear it and resume auto-upload at
+  every exit point of that branch.
+- **Do not show `CloudRestorePrompt` for the Guest → Login force-load flow.**
+  The account save is applied immediately without user confirmation.
+- **Web/Yandex behavior is completely unaffected.** `_is_paid_shop_available()` returns
+  `true` unconditionally on non-Android. No auth gate on Web startup.
 
 ## Startup Upload Suspension Rules (C5.3.1)
 

@@ -409,16 +409,17 @@ func _on_backend_succeeded(operation: String, _response: Dictionary) -> void:
 		"get_me":
 			_session_check_completed = true
 			_clear_status()
-			auth_gate_completed.emit("account")
+			auth_gate_completed.emit("account_session")
 
 		"login":
 			_request_in_progress = false
 			_clear_status()
+			var was_post_register := _awaiting_login_after_register
 			if _awaiting_login_after_register:
 				_awaiting_login_after_register = false
 				_post_register_email = ""
 				_post_register_password = ""
-			auth_gate_completed.emit("account")
+			auth_gate_completed.emit("account_register" if was_post_register else "account_login")
 
 		"register":
 			_clear_status()

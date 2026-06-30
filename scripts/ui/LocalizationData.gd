@@ -4,8 +4,8 @@ extends RefCounted
 # AUTO-GENERATED — do not edit by hand.
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
-# Generated key count: 451
-# Generated at: 1782754661
+# Generated key count: 461
+# Generated at: 1782832819
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -460,6 +460,16 @@ const TRANSLATIONS: Dictionary = {
 		"guest_migration.not_now": "Not Now",
 		"guest_migration.upload_success": "Guest progress saved to cloud",
 		"guest_migration.upload_failed": "Failed to save guest progress",
+		"shop.paid_guest_locked_title": "Purchases unavailable in guest mode",
+		"shop.paid_guest_locked_message": "Sign in or register to buy gems. Ads remain available.",
+		"shop.paid_guest_locked_action": "Sign in / Register",
+		"account_flow.register_guest_upload_started": "Saving guest progress to account...",
+		"account_flow.register_guest_upload_success": "Guest progress saved to account",
+		"account_flow.register_guest_upload_failed": "Failed to save guest progress to account",
+		"account_flow.login_cloud_load_started": "Loading account progress...",
+		"account_flow.login_cloud_load_success": "Account progress loaded",
+		"account_flow.login_cloud_load_missing": "No cloud save found. Starting fresh.",
+		"account_flow.login_cloud_load_failed": "Failed to load account progress",
 	},
 	"ru": {
 		"ui.common.close": "Закрыть",
@@ -913,6 +923,16 @@ const TRANSLATIONS: Dictionary = {
 		"guest_migration.not_now": "Не сейчас",
 		"guest_migration.upload_success": "Гостевой прогресс сохранён в облако",
 		"guest_migration.upload_failed": "Не удалось сохранить гостевой прогресс",
+		"shop.paid_guest_locked_title": "Покупки недоступны в гостевом режиме",
+		"shop.paid_guest_locked_message": "Войдите или зарегистрируйтесь чтобы покупать гемы. Реклама остаётся доступной.",
+		"shop.paid_guest_locked_action": "Войти / зарегистрироваться",
+		"account_flow.register_guest_upload_started": "Сохраняем гостевой прогресс в аккаунт...",
+		"account_flow.register_guest_upload_success": "Гостевой прогресс сохранён в аккаунт",
+		"account_flow.register_guest_upload_failed": "Не удалось сохранить гостевой прогресс в аккаунт",
+		"account_flow.login_cloud_load_started": "Загружаем прогресс аккаунта...",
+		"account_flow.login_cloud_load_success": "Прогресс аккаунта загружен",
+		"account_flow.login_cloud_load_missing": "Облачный прогресс аккаунта не найден. Начинаем с чистого сохранения.",
+		"account_flow.login_cloud_load_failed": "Не удалось загрузить прогресс аккаунта",
 	},
 }
 
