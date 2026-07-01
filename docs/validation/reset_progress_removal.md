@@ -121,8 +121,10 @@ git diff --stat
 
 ## Known Limitations
 
-- `assets/images/ui/windows/settings/reset_confirm_background.png` (and its
-  `.import` file) are left on disk but are no longer referenced by any asset key;
-  they can be deleted in a future asset-cleanup pass if desired.
-- `GuestMigrationPrompt.gd/.tscn` (unrelated, retained from C7.1.1) are unaffected
-  by this patch.
+- ~~`assets/images/ui/windows/settings/reset_confirm_background.png` (and its
+  `.import` file) are left on disk but are no longer referenced by any asset key~~
+  — **removed in C7.2.5** (`docs/validation/obsolete_reset_and_guest_migration_cleanup.md`).
+- ~~`GuestMigrationPrompt.gd/.tscn` (unrelated, retained from C7.1.1) are unaffected
+  by this patch~~ — **`GuestMigrationPrompt.gd/.tscn` deleted in C7.2.5** (confirmed
+  unreferenced at runtime since C7.1.1); see
+  `docs/validation/obsolete_reset_and_guest_migration_cleanup.md`.

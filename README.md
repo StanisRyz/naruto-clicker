@@ -355,6 +355,28 @@ res://assets/audio/sfx/rewards/gold_received.ogg
   godot --headless --script res://scripts/tools/ValidateLocalizationExport.gd
   ```
 
+## Current Settings model and account rules
+
+**Settings window (`SettingsWindow.tscn`/`.gd`) contains, in order:** Sound,
+Music, Language, Save Now, Account / Cloud (Android/RuStore only), Version.
+There is **no Reset Progress control** — it was removed from production UI in
+C7.2.1 and Account / Cloud (C7.2.2, C7.2.3) is its replacement for
+progress-management going forward.
+
+**Account rules (Android/RuStore; C7.1–C7.2.4):**
+- Guest mode is local-only; progress is stored only on the device.
+- Guest → Register uploads the current guest save to the new account's cloud
+  save; gameplay continues without reload.
+- Guest → Login force-loads the existing account's cloud save (or starts a
+  clean save if the account has none); the guest save is never uploaded.
+- Android/RuStore paid gem purchases require a backend account session; the
+  Guest shop's donation entry is visibly locked (C7.2.4) and opens the AuthGate
+  overlay instead of the purchase dialog.
+- Rewarded ads remain fully available in Guest mode — never gated behind an
+  account session.
+- Web/Yandex is unaffected by all of the above: no AuthGate, no Account/Cloud
+  section, and the paid shop is always available there.
+
 ## Save / reset rules
 
 **Reset Progress is debug/internal only (removed from production UI in C7.2.1).**
@@ -949,6 +971,12 @@ Ensures the startup cloud-restore prompt compares cloud save against the local s
 - `scenes/game/ClickerScreen.gd` — `_pre_startup_had_local_save`, `_pre_startup_local_timestamp`, `_pre_startup_local_save_snapshot_taken` fields; `_capture_pre_startup_local_save_snapshot()` helper; snapshot call in `_ready()`; `_evaluate_cloud_restore_candidate()` rewritten to use snapshot.
 
 ### C5.4 — Guest → Account Migration Prompt (completed)
+
+> **Superseded.** This mid-session prompt flow was replaced by the C7.1 Account
+> Save Authority rules (Guest → Register auto-uploads; Guest → Login force-loads
+> the account cloud save; no prompt). The runtime flow was removed in C7.1.1, and
+> `GuestMigrationPrompt.gd`/`.tscn` plus the `guest_migration.*` localization keys
+> were deleted in C7.2.5. The section below is kept for historical record only.
 
 After a guest player logs in or registers an account from Settings / AuthGate overlay, the game now offers to upload current local progress to the backend cloud.
 

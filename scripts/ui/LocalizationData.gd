@@ -4,8 +4,8 @@ extends RefCounted
 # AUTO-GENERATED — do not edit by hand.
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
-# Generated key count: 459
-# Generated at: 1782916165
+# Generated key count: 453
+# Generated at: 1782917075
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -451,12 +451,6 @@ const TRANSLATIONS: Dictionary = {
 		"cloud_restore.invalid_save": "Cloud save is invalid",
 		"cloud_restore.load_failed": "Failed to load cloud save",
 		"cloud_restore.loaded_success": "Cloud progress loaded",
-		"guest_migration.title": "Save Guest Progress",
-		"guest_migration.message": "You are now signed in. Save your current guest progress to this account?",
-		"guest_migration.save_to_cloud": "Save to Cloud",
-		"guest_migration.not_now": "Not Now",
-		"guest_migration.upload_success": "Guest progress saved to cloud",
-		"guest_migration.upload_failed": "Failed to save guest progress",
 		"shop.paid_guest_locked_title": "Purchases unavailable in guest mode",
 		"shop.paid_guest_locked_message": "Sign in or register to buy gems. Ads remain available.",
 		"shop.paid_guest_locked_action": "Sign in / Register",
@@ -912,12 +906,6 @@ const TRANSLATIONS: Dictionary = {
 		"cloud_restore.invalid_save": "Облачное сохранение повреждено или несовместимо",
 		"cloud_restore.load_failed": "Не удалось загрузить облачное сохранение",
 		"cloud_restore.loaded_success": "Облачный прогресс загружен",
-		"guest_migration.title": "Сохранить гостевой прогресс",
-		"guest_migration.message": "Вы вошли в аккаунт. Сохранить текущий гостевой прогресс в этот аккаунт?",
-		"guest_migration.save_to_cloud": "Сохранить в облако",
-		"guest_migration.not_now": "Не сейчас",
-		"guest_migration.upload_success": "Гостевой прогресс сохранён в облако",
-		"guest_migration.upload_failed": "Не удалось сохранить гостевой прогресс",
 		"shop.paid_guest_locked_title": "Покупки недоступны в гостевом режиме",
 		"shop.paid_guest_locked_message": "Войдите или зарегистрируйтесь чтобы покупать гемы. Реклама остаётся доступной.",
 		"shop.paid_guest_locked_action": "Войти / зарегистрироваться",

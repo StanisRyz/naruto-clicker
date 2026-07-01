@@ -63,6 +63,12 @@ Repeat for: Register, Request Password Reset, Confirm Reset Code.
 
 ## 5. Guest → Account migration prompt (collision guard)
 
+> **OBSOLETE (historical only).** `GuestMigrationPrompt` and
+> `_should_show_guest_migration_prompt()` were removed at runtime in C7.1.1 and
+> replaced by the C7.1 Account Save Authority rules; the files were deleted in
+> C7.2.5. This section describes a C6-era guard that no longer applies — see
+> `docs/validation/obsolete_reset_and_guest_migration_cleanup.md`.
+
 **Setup:** Android guest session; cloud save with newer timestamp exists.
 
 | Step | Expected |

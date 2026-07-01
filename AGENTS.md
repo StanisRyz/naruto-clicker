@@ -310,6 +310,12 @@ The project is at final release-candidate stage. Future tasks must:
   Shop lock visuals and status messages must not alter `SaveManager`,
   backend Cloud Functions, backend API paths, or Guest → Login/Register logic
   — those are reviewed separately.
+- **Docs/localization/asset cleanup patches must not touch backend save-flow
+  behavior (C7.2.5).** Removing obsolete Reset Progress or GuestMigrationPrompt
+  remnants (docs, localization keys, unused assets, dead files) must never be
+  bundled with changes to `SaveManager`, backend Cloud Functions, backend API
+  paths, Guest → Login/Register logic, `CloudRestorePrompt`, or paid shop lock
+  logic — those remain separate, reviewed changes.
 - Gems survive Reset Progress.
 - Permanent shop upgrades survive Reset Progress.
 - Sound/music/language settings survive Reset Progress.
@@ -835,12 +841,14 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
 > kept for historical context. Do not reintroduce `GuestMigrationPrompt` unless the
 > product rule changes. See the C7.1 rules below for the current authority model.
 
-- **`GuestMigrationPrompt` is fully removed at runtime (C7.1.1).** The node is not
-  present in `ClickerScreen.tscn`. `ClickerScreen.gd` has no `@onready` declaration,
-  no visibility checks, and no signal connections for this prompt.
-  `GuestMigrationPrompt.gd/.tscn` files are retained on disk but are unreferenced.
+- **`GuestMigrationPrompt` is fully removed at runtime (C7.1.1) and its files are
+  deleted (C7.2.5).** The node is not present in `ClickerScreen.tscn`.
+  `ClickerScreen.gd` has no `@onready` declaration, no visibility checks, and no
+  signal connections for this prompt. `GuestMigrationPrompt.gd/.tscn` and their
+  `guest_migration.*` localization keys no longer exist in the repo.
 - **Do not reintroduce `GuestMigrationPrompt` or `_maybe_show_guest_migration_prompt()`**
-  unless explicitly requested by the product owner.
+  unless explicitly requested by the product owner — it must not be instantiated
+  or referenced anywhere at runtime.
 
 ## Account Save Authority & Guest Shop Lock Rules (C7.1)
 

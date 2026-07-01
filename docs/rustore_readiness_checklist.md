@@ -104,7 +104,7 @@ committed and require no local setup. See `docs/rustore_pay_integration.md` for 
 | Item | Status |
 |---|---|
 | Save / load | ✅ Local save works; cloud save returns empty `{}` on Android (no Yandex cloud) |
-| Reset Progress | ✅ Preserves gems, settings, permanent shop items |
+| Reset Progress | Removed from production UI (C7.2.1); debug/internal only. Account / Cloud (Settings) is the current progress-management UI. |
 | Prestige | ✅ Preserves gems, prestige points, permanent shop items |
 | Offline reward | ✅ Accumulates and presents dialog on return |
 | All 4 gem products configured | ✅ `GemPurchaseConfig.gd` — rustore_product_id fields present (placeholders) |

@@ -50,7 +50,7 @@ Stretch mode is `canvas_items` for both. No runtime viewport code involved.
 - [ ] Shop purchase: fails gracefully locally (no purchase granted, error logged)
 - [ ] Offline reward dialog appears and claims correctly
 - [ ] Prestige works and save is written
-- [ ] Reset Progress works and save is written
+- [ ] Reset Progress is not present in production Settings UI (removed C7.2.1; debug/internal only)
 - [ ] Localization generated fallback is fresh after CSV changes
 - [ ] SDK readiness is checked before ads, payments, language, and cloud save calls
 - [ ] F12 does NOT activate debug visual test mode (release build check)

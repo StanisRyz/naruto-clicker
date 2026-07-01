@@ -77,7 +77,7 @@ All localization scripts must exit 0. No unintended files should appear in `git 
 | Old local save (pre-C5.1) loads correctly | No regression; save migration handles missing `cloud_save_meta` |
 | Local save is NOT deleted before a successful cloud load | `apply_cloud_save_payload` only writes on validation success |
 | Local save is NOT modified on cloud load failure | Failure returns `false` without touching `save_v1.json` |
-| Reset Progress still works after cloud load | Normal reset flow unaffected |
+| Internal reset-preservation logic still works after cloud load | Normal prestige/clean-account-save reset flow unaffected (Reset Progress UI itself was removed in C7.2.1) |
 | Prestige still works after cloud load | Normal prestige flow unaffected |
 
 ---

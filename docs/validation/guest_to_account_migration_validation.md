@@ -1,5 +1,13 @@
 # C5.4 Guest → Account Migration Prompt — Validation Checklist
 
+> **OBSOLETE (historical only).** This C5.4 mid-session `GuestMigrationPrompt`
+> flow was replaced by the C7.1 Account Save Authority rules (Guest → Register
+> auto-uploads; Guest → Login force-loads the account cloud save; no prompt).
+> The runtime flow was removed in C7.1.1, and `GuestMigrationPrompt.gd`/`.tscn`
+> and the `guest_migration.*` localization keys were deleted in C7.2.5 — see
+> `docs/validation/obsolete_reset_and_guest_migration_cleanup.md`. Do not use
+> this checklist to validate current behavior.
+
 ## Overview
 
 When a player starts a gameplay session as Guest and later logs in or registers an account from Settings / AuthGate overlay, the game offers to upload current local progress to the backend cloud.
