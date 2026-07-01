@@ -1342,6 +1342,45 @@ patch.
 
 ---
 
+### C7.2.7 — SettingsWindow Fixed Aspect Ratio Cleanup (completed)
+
+**Purpose:** Fix the pre-existing non-proportional `SettingsWindow` resize
+flagged (but left unfixed, as out of scope) during the C7.2.6 audit.
+`SettingsWindow` must keep a static textured-window size and must not resize
+dynamically based on Account/Cloud content.
+
+**Changes:**
+
+- Removed the Android-only runtime override
+  (`panel_container.offset_top = -437.0` / `offset_bottom = 437.0`) that made
+  the panel `540×874` instead of its designed `540×525` — a non-proportional
+  resize that stretched the `ui.window.settings.background` texture unevenly.
+- Added an internal `BodyScrollContainer`/`BodyVBoxContainer` inside
+  `SettingsWindow.tscn`: the header (title + close button) stays fixed and
+  always visible; everything else (Sound, Music, Language, Save Now, Version,
+  and the Android-only Account/Cloud section) now lives inside the scroll
+  area, mirroring the existing `ShopSheet` header/scroll pattern.
+- The outer textured panel is now exactly `540×525` on every platform, always
+  — no runtime resize, no per-content growth, no aspect-ratio change.
+- A proportional resize was evaluated and rejected: matching the ~1.03:1
+  aspect ratio while fitting the full Account/Cloud content would need a
+  ~899px-wide panel, which would overflow the 720px mobile viewport.
+
+**What C7.2.7 did NOT change:**
+
+- `SettingsWindow` signals — unchanged (same 7 signals; no reset signals).
+- Account/Cloud creation/refresh/busy-state logic — only the container the
+  controls are added into changed; all control creation and state logic is
+  untouched.
+- Backend/cloud/payment/shop/gameplay logic, Guest → Login/Register logic,
+  `CloudRestorePrompt` logic, paid shop lock logic, Web/Yandex behavior —
+  all unchanged.
+- Reset Progress and `GuestMigrationPrompt` remain fully removed.
+
+**Validation:** see `docs/validation/settings_window_fixed_aspect_ratio_cleanup.md`.
+
+---
+
 ### C6.1 — Release Audit Fixes (completed)
 
 Small release-safety fixes applied after the C6 stabilization pass. No new gameplay

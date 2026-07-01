@@ -13,14 +13,21 @@ const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 
 @onready var overlay: ColorRect = $Overlay
 @onready var panel_container: PanelContainer = $PanelContainer
+# Settings panel/background is a fixed-size textured window ("ui.window.settings.background",
+# STRETCH_SCALE) — never resize it dynamically based on content. Everything below the
+# header lives in BodyScrollContainer so extra content (e.g. Account/Cloud) scrolls
+# inside the fixed window instead of growing it. If content ever overflows further,
+# shorten text or tighten spacing before considering a proportional (X and Y together) resize.
+const BODY_PATH: String = "MarginContainer/VBoxContainer/BodyScrollContainer/BodyVBoxContainer"
+
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/HeaderMargin/Header/CloseButton
-@onready var sound_button: Button = $PanelContainer/MarginContainer/VBoxContainer/SoundMargin/SoundRow/SoundToggleButton
-@onready var music_button: Button = $PanelContainer/MarginContainer/VBoxContainer/MusicMargin/MusicRow/MusicToggleButton
-@onready var _sound_label: Label = $PanelContainer/MarginContainer/VBoxContainer/SoundMargin/SoundRow/SoundLabel
-@onready var _music_label: Label = $PanelContainer/MarginContainer/VBoxContainer/MusicMargin/MusicRow/MusicLabel
-@onready var save_button: Button = $PanelContainer/MarginContainer/VBoxContainer/SaveButton
-@onready var status_label: Label = $PanelContainer/MarginContainer/VBoxContainer/StatusLabel
-@onready var version_label: Label = $PanelContainer/MarginContainer/VBoxContainer/VersionLabel
+@onready var sound_button: Button = $PanelContainer/MarginContainer/VBoxContainer/BodyScrollContainer/BodyVBoxContainer/SoundMargin/SoundRow/SoundToggleButton
+@onready var music_button: Button = $PanelContainer/MarginContainer/VBoxContainer/BodyScrollContainer/BodyVBoxContainer/MusicMargin/MusicRow/MusicToggleButton
+@onready var _sound_label: Label = $PanelContainer/MarginContainer/VBoxContainer/BodyScrollContainer/BodyVBoxContainer/SoundMargin/SoundRow/SoundLabel
+@onready var _music_label: Label = $PanelContainer/MarginContainer/VBoxContainer/BodyScrollContainer/BodyVBoxContainer/MusicMargin/MusicRow/MusicLabel
+@onready var save_button: Button = $PanelContainer/MarginContainer/VBoxContainer/BodyScrollContainer/BodyVBoxContainer/SaveButton
+@onready var status_label: Label = $PanelContainer/MarginContainer/VBoxContainer/BodyScrollContainer/BodyVBoxContainer/StatusLabel
+@onready var version_label: Label = $PanelContainer/MarginContainer/VBoxContainer/BodyScrollContainer/BodyVBoxContainer/VersionLabel
 @onready var _title_label: Label = $PanelContainer/MarginContainer/VBoxContainer/HeaderMargin/Header/TitleLabel
 
 var sound_enabled: bool = true
@@ -93,7 +100,7 @@ func _ready() -> void:
 	if _is_backend_account_ui_supported():
 		_create_account_section()
 		_connect_account_platform_signals()
-		panel_container.get_node("MarginContainer/VBoxContainer").move_child(version_label, -1)
+		panel_container.get_node(BODY_PATH).move_child(version_label, -1)
 	hide()
 
 
@@ -113,7 +120,7 @@ func _refresh_static_labels() -> void:
 
 
 func _create_language_row() -> void:
-	var vbox: VBoxContainer = panel_container.get_node("MarginContainer/VBoxContainer")
+	var vbox: VBoxContainer = panel_container.get_node(BODY_PATH)
 
 	var lang_row := HBoxContainer.new()
 	lang_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -146,7 +153,7 @@ func _create_language_row() -> void:
 
 
 func _create_debug_localization_row() -> void:
-	var vbox: VBoxContainer = panel_container.get_node("MarginContainer/VBoxContainer")
+	var vbox: VBoxContainer = panel_container.get_node(BODY_PATH)
 
 	var source_label := Label.new()
 	source_label.name = "DebugLocalizationSourceLabel"
@@ -328,10 +335,10 @@ func _is_backend_account_ui_supported() -> bool:
 
 
 func _create_account_section() -> void:
-	var vbox: VBoxContainer = panel_container.get_node("MarginContainer/VBoxContainer")
-
-	panel_container.offset_top = -437.0
-	panel_container.offset_bottom = 437.0
+	# Outer SettingsWindow panel keeps its fixed textured size (see BODY_PATH comment
+	# above) — Account/Cloud content is added into the scrollable body, not used to
+	# grow the panel.
+	var vbox: VBoxContainer = panel_container.get_node(BODY_PATH)
 
 	var sep := HSeparator.new()
 	vbox.add_child(sep)

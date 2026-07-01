@@ -65,12 +65,18 @@ The project is at final release-candidate stage. Future tasks must:
   height proportionally by the same scale factor (C7.2.6).** Preserve the
   aspect ratio and texture proportions — never change only one axis (e.g. only
   `offset_top`/`offset_bottom` without a matching width change). Document the
-  old size, new size, and scale factor in the PR/validation doc. (Note: a
-  pre-existing exception predates this rule — `SettingsWindow`'s panel height
-  is overridden non-proportionally when the Account/Cloud section is created,
-  from C4; this is a known, documented, static conditional resize, not a
-  per-content dynamic one — see `docs/validation/final_settings_account_cloud_regression.md`.
-  Do not use it as precedent for new non-proportional resizes.)
+  old size, new size, and scale factor in the PR/validation doc.
+- **`SettingsWindow` example — content overflow must be handled via internal
+  scrolling, not by resizing the panel (C7.2.7).** The Account/Cloud section
+  used to make `SettingsWindow` non-proportionally taller
+  (`offset_top`/`offset_bottom` override) when created on Android — this was a
+  known bug, not a pattern to copy. It was fixed by keeping the outer
+  `PanelContainer` fixed at `Vector2(540, 525)` on every platform and adding an
+  internal `BodyScrollContainer`/`BodyVBoxContainer` (everything below the
+  header scrolls) — see
+  `docs/validation/settings_window_fixed_aspect_ratio_cleanup.md`. Any future
+  `SettingsWindow` content addition must go inside `BodyVBoxContainer`
+  (`SettingsWindow.BODY_PATH`), never resize `panel_container` directly.
 - **Settings/Shop UI regression or sizing patches must not change backend/cloud/
   payment/gameplay logic (C7.2.6).** Audits, text tweaks, and layout fixes in
   `SettingsWindow`, `ShopSheet`/`ShopPanel`, or related popups must not alter

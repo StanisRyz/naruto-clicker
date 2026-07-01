@@ -82,60 +82,70 @@ custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
 text = "X"
 
-[node name="SoundMargin" type="MarginContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+[node name="BodyScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="BodyVBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/BodyScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="SoundMargin" type="MarginContainer" parent="PanelContainer/MarginContainer/VBoxContainer/BodyScrollContainer/BodyVBoxContainer"]
 layout_mode = 2
 theme_override_constants/margin_left = 15
 theme_override_constants/margin_right = 15
 
-[node name="SoundRow" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/SoundMargin"]
+[node name="SoundRow" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/BodyScrollContainer/BodyVBoxContainer/SoundMargin"]
 layout_mode = 2
 theme_override_constants/separation = 18
 
-[node name="SoundLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/SoundMargin/SoundRow"]
+[node name="SoundLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/BodyScrollContainer/BodyVBoxContainer/SoundMargin/SoundRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = ""
 vertical_alignment = 1
 
-[node name="SoundToggleButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/SoundMargin/SoundRow"]
+[node name="SoundToggleButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/BodyScrollContainer/BodyVBoxContainer/SoundMargin/SoundRow"]
 custom_minimum_size = Vector2(175, 60)
 layout_mode = 2
 size_flags_horizontal = 8
 text = ""
 
-[node name="MusicMargin" type="MarginContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+[node name="MusicMargin" type="MarginContainer" parent="PanelContainer/MarginContainer/VBoxContainer/BodyScrollContainer/BodyVBoxContainer"]
 layout_mode = 2
 theme_override_constants/margin_left = 15
 theme_override_constants/margin_right = 15
 
-[node name="MusicRow" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/MusicMargin"]
+[node name="MusicRow" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/BodyScrollContainer/BodyVBoxContainer/MusicMargin"]
 layout_mode = 2
 theme_override_constants/separation = 18
 
-[node name="MusicLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/MusicMargin/MusicRow"]
+[node name="MusicLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/BodyScrollContainer/BodyVBoxContainer/MusicMargin/MusicRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = ""
 vertical_alignment = 1
 
-[node name="MusicToggleButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/MusicMargin/MusicRow"]
+[node name="MusicToggleButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/BodyScrollContainer/BodyVBoxContainer/MusicMargin/MusicRow"]
 custom_minimum_size = Vector2(175, 60)
 layout_mode = 2
 size_flags_horizontal = 8
 text = ""
 
-[node name="SaveButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer"]
+[node name="SaveButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/BodyScrollContainer/BodyVBoxContainer"]
 custom_minimum_size = Vector2(218, 75)
 layout_mode = 2
 size_flags_horizontal = 4
 text = ""
 
-[node name="StatusLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+[node name="StatusLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/BodyScrollContainer/BodyVBoxContainer"]
 layout_mode = 2
 text = ""
 horizontal_alignment = 1
 
-[node name="VersionLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+[node name="VersionLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/BodyScrollContainer/BodyVBoxContainer"]
 layout_mode = 2
 text = ""
 horizontal_alignment = 1

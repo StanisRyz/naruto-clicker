@@ -146,7 +146,7 @@ Re-verified `scenes/ui/ShopPanel.gd`/`ShopSheet.gd`/`ClickerScreen.gd` (C7.2.4 c
 
 | Window | Background type | Sizing | Touched by C7.2.x? | Finding |
 |---|---|---|---|---|
-| `SettingsWindow.tscn`/`.gd` | Textured (`ImageSlot`, `ui.window.settings.background`) | `PanelContainer` fixed `custom_minimum_size = Vector2(540, 525)` in `.tscn`; runtime override to `offset_top/bottom = ∓437` (height 874) in `_create_account_section()` when Android | Not resized further by C7.2.1–C7.2.3; only text/labels/signals changed | **Pre-existing, non-proportional resize — predates C7.2 series (from C4).** Width stays 540, height changes to 874 (not the same scale factor on both axes). This is a **static, conditional** resize (Android vs. not), not a **dynamic, content-driven** resize — it does not grow further as guest-explanation text, busy messages, or verification UI change. All C7.2 text fits within the existing fixed rect via `autowrap_mode = AUTOWRAP_WORD_SMART` / `OVERRUN_TRIM_ELLIPSIS`, no further growth observed or introduced. **Not fixed in this patch** — correcting the aspect ratio would itself be a Settings layout change, which is explicitly out of scope here; flagged for a dedicated future patch. |
+| `SettingsWindow.tscn`/`.gd` | Textured (`ImageSlot`, `ui.window.settings.background`) | `PanelContainer` fixed `custom_minimum_size = Vector2(540, 525)` in `.tscn` | ~~Runtime override to `offset_top/bottom = ∓437` (height 874) in `_create_account_section()` when Android~~ **RESOLVED in C7.2.7** — the non-proportional override was removed entirely; the panel now stays fixed at `540×525` on every platform. Overflowing content (Sound/Music/Language/Save/Version/Account/Cloud, below the header) scrolls inside a new internal `BodyScrollContainer` instead. See `docs/validation/settings_window_fixed_aspect_ratio_cleanup.md`. | **No longer applicable** — was a pre-existing, non-proportional resize predating the C7.2 series (from C4); fixed in C7.2.7 by preserving the fixed size and adding internal scrolling rather than a proportional resize (which would have required a ~899px width, exceeding the 720px mobile viewport). |
 | `ShopSheet.tscn`/`.gd` | Textured (`ImageSlot`, `ui.sheet.standard`, `STRETCH_SCALE`) | Anchor-based bottom sheet (`anchors_preset = 12`, proportional to viewport, not a fixed pixel window) — this is the existing adaptive-bottom-sheet design, unrelated to the fixed-window rule | C7.2.4 added `_locked_status_label` inside the existing `VBoxContainer`; sheet outer bounds are anchor-driven, not content-driven | No regression — the new label sits above the existing `ScrollContainer` (`size_flags_vertical = 3`), which absorbs any extra content height; the sheet's outer anchor rect is unaffected by card/label content length. |
 | `ShopPanel.gd` cards | Textured (`ImageSlot`, `ui.card.sheet` / button assets) | Fixed constants (`CARD_OUTER_HEIGHT = 156`, `CARD_BUTTON_SIZE = Vector2(210, 72)`, etc.) | C7.2.4 changed only `.text`/`.modulate` on existing labels/buttons — no size constant touched | No regression — card dimensions unchanged; locked-state text uses the same fixed-width, ellipsis-truncating labels as the normal state. |
 | `GemPurchaseDialog.tscn` | Textured | Fixed `custom_minimum_size = Vector2(620, 620)` (square) | Not touched by any C7.2 patch — only `.hide_dialog()`/`.show_dialog()` called externally | No regression. |
@@ -156,9 +156,12 @@ Re-verified `scenes/ui/ShopPanel.gd`/`ShopSheet.gd`/`ClickerScreen.gd` (C7.2.4 c
 
 **Conclusion:** No new dynamic or content-driven textured-window resizing was
 introduced by the C7.2 series. One pre-existing non-proportional resize
-(`SettingsWindow` panel height override from C4) was identified and documented;
-it is a static conditional resize, not a per-content dynamic one, and is left
-unchanged per the "do not redesign Settings" constraint for this patch.
+(`SettingsWindow` panel height override from C4) was identified and documented
+here; it was **resolved in C7.2.7** by preserving the fixed panel size and
+adding an internal `ScrollContainer`, rather than by a proportional resize
+(which was evaluated and rejected — see
+`docs/validation/settings_window_fixed_aspect_ratio_cleanup.md` for the full
+analysis).
 
 ## 9. Web/Yandex Regression
 
@@ -245,10 +248,9 @@ regressions or UI-state bugs in the C7.2.1–C7.2.5 series.
 
 ## Known Limitations
 
-- `SettingsWindow` panel height override (`offset_top/bottom = ∓437`) remains a
-  non-proportional, pre-existing resize from C4. It is static (conditional on
-  Android support), not dynamic (not driven by content length), so it does not
-  violate the "no dynamic resize" rule, but it does not follow the "resize X
-  and Y proportionally" rule either. Left unchanged per this patch's
-  audit-only, no-Settings-redesign scope; recommended as a follow-up patch if
-  the product owner wants the aspect ratio corrected.
+- ~~`SettingsWindow` panel height override (`offset_top/bottom = ∓437`) remains a
+  non-proportional, pre-existing resize from C4... recommended as a follow-up
+  patch if the product owner wants the aspect ratio corrected.~~ —
+  **resolved in C7.2.7**: see
+  `docs/validation/settings_window_fixed_aspect_ratio_cleanup.md`. The panel is
+  now fixed-size on every platform; overflow content scrolls internally.
