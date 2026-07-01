@@ -221,6 +221,8 @@ func _ready() -> void:
 	if not LocalizationManager.has_loaded_translations():
 		push_warning("No localization translations loaded. UI will display keys. " + LocalizationManager.get_localization_source_status())
 	_is_initialized = true
+	if shop_sheet.has_method("set_paid_shop_available"):
+		shop_sheet.set_paid_shop_available(_is_paid_shop_available())
 	_update_ui()
 	ButtonVisualUtils.disable_focus_artifacts_in_tree(self)
 	_sync_boss_timer()
@@ -602,6 +604,7 @@ func _on_shop_product_purchase_requested(product_id: String, mode: String) -> vo
 	var product_type: String = String(product.get("product_type", ""))
 	if product_type == "donation_entry":
 		if not _is_paid_shop_available():
+			shop_sheet.show_status(LocalizationManager.tr_key("shop.paid_guest_locked_message"))
 			var main := get_tree().current_scene
 			if main != null and main.has_method("show_auth_gate_overlay"):
 				main.show_auth_gate_overlay()
@@ -621,6 +624,8 @@ func _on_shop_product_purchase_requested(product_id: String, mode: String) -> vo
 
 func _on_gem_product_purchase_requested(product_id: String) -> void:
 	if not _is_paid_shop_available():
+		if shop_sheet.visible:
+			shop_sheet.show_status(LocalizationManager.tr_key("shop.paid_guest_locked_message"))
 		return
 	var product: Dictionary = GemPurchaseConfigClass.get_by_id(product_id)
 	if product.is_empty():
@@ -2270,7 +2275,10 @@ func _is_paid_shop_available() -> bool:
 
 
 func _update_shop_paid_availability() -> void:
-	if not _is_paid_shop_available() and is_instance_valid(gem_purchase_dialog) and gem_purchase_dialog.visible:
+	var paid_available: bool = _is_paid_shop_available()
+	if shop_sheet.has_method("set_paid_shop_available"):
+		shop_sheet.set_paid_shop_available(paid_available)
+	if not paid_available and is_instance_valid(gem_purchase_dialog) and gem_purchase_dialog.visible:
 		gem_purchase_dialog.hide_dialog()
 	_update_ui()
 

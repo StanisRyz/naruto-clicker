@@ -34,6 +34,7 @@ const CARD_BUTTON_ACTIVE_DURATION_SEC: float = 0.3
 var product_rows: Dictionary = {}
 var selected_buy_mode: String = "x1"
 var latest_state: ClickerState = null
+var paid_shop_available: bool = true
 
 @onready var products_container: VBoxContainer = $ProductsContainer
 
@@ -45,6 +46,16 @@ func _ready() -> void:
 
 func set_selected_buy_mode(mode: String) -> void:
 	selected_buy_mode = mode
+	if latest_state != null:
+		_refresh_view()
+
+
+# Only affects product_type == "donation_entry" cards. Owned by ClickerScreen
+# (account/session logic); ShopPanel only renders the visual locked state.
+func set_paid_shop_available(is_available: bool) -> void:
+	if paid_shop_available == is_available:
+		return
+	paid_shop_available = is_available
 	if latest_state != null:
 		_refresh_view()
 
@@ -271,8 +282,13 @@ func _update_product_row(product_data: Dictionary, row: Dictionary) -> void:
 
 	var can_buy: bool = bool(product_data.get("can_buy", false))
 	button.disabled = not can_buy
+	var donation_locked: bool = product_type == "donation_entry" and not paid_shop_available
 	if product_type == "donation_entry":
-		button_label.text = LocalizationManager.tr_key("shop.button.open")
+		if donation_locked:
+			button_label.text = LocalizationManager.tr_key("shop.paid_guest_locked_action")
+			description_label.text = LocalizationManager.tr_key("shop.paid_guest_locked_short")
+		else:
+			button_label.text = LocalizationManager.tr_key("shop.button.open")
 		owned_label.text = ""
 		total_bonus_label.text = ""
 	elif product_type == "rewarded_ad":
@@ -284,8 +300,12 @@ func _update_product_row(product_data: Dictionary, row: Dictionary) -> void:
 			"shop.buy_button_count",
 			{"count": str(buy_count), "cost": NumberFormatter.compact(cost_gems)}
 		)
-	button_image_holder.modulate = Color.WHITE if can_buy else Color(0.65, 0.65, 0.65, 1.0)
-	button_label.modulate = Color.WHITE if can_buy else Color(0.45, 0.45, 0.45, 1.0)
+	if donation_locked:
+		button_image_holder.modulate = Color(0.8, 0.72, 0.5, 1.0)
+		button_label.modulate = Color(0.85, 0.78, 0.6, 1.0)
+	else:
+		button_image_holder.modulate = Color.WHITE if can_buy else Color(0.65, 0.65, 0.65, 1.0)
+		button_label.modulate = Color.WHITE if can_buy else Color(0.45, 0.45, 0.45, 1.0)
 
 
 func set_product_buy_button_modal_pressed(product_id: String, pressed: bool) -> void:

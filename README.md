@@ -1206,6 +1206,49 @@ a follow-up refresh.
 
 ---
 
+### C7.2.4 — Guest Paid Shop Lock UX (completed)
+
+**Purpose:** The technical Guest paid-shop guards from C7.1 worked, but the
+donation entry card still looked fully available, which confused players when
+tapping it opened AuthGate instead of the purchase dialog. This patch makes
+the lock state visible.
+
+**Changes:**
+
+- `scenes/ui/ShopPanel.gd` — new `set_paid_shop_available(is_available)`; only
+  affects `product_type == "donation_entry"` rendering (button text switches
+  to "Sign in / Register", description switches to "Account required", with a
+  distinct muted tint). `rewarded_ad` and all other product types are
+  unaffected.
+- `scenes/ui/ShopSheet.gd` — delegates `set_paid_shop_available()` to the
+  panel; adds a small status label so tapping the locked donation entry shows
+  a short message ("Sign in or register to buy gems. Ads remain available.")
+  before the AuthGate overlay opens.
+- `scenes/game/ClickerScreen.gd` — `_update_shop_paid_availability()` now also
+  pushes the flag into `shop_sheet`; a one-line startup sync ensures a cold
+  Android Guest session shows the locked state immediately rather than only
+  after the next auth event.
+- Donation entry becomes visually available again immediately after Guest →
+  Register or Guest → Login succeed, and locked again immediately after Logout
+  — using the same `_update_shop_paid_availability()` call sites already wired
+  in C7.1.
+
+**What C7.2.4 did NOT change:**
+
+- Payment/RuStore purchase flow, `GemPurchaseConfig` prices/products —
+  untouched.
+- Rewarded ads — remain fully available and unaffected in Guest mode.
+- Backend Cloud Functions, backend API paths, cloud-save logic — untouched.
+- Guest → Login / Guest → Register logic (C7.1) — untouched.
+- Gameplay balance — unchanged.
+- Reset Progress remains removed (C7.2.1) — not reintroduced.
+- Web/Yandex behavior — `_is_paid_shop_available()` still returns `true`
+  unconditionally off-Android; the shop never shows a locked state there.
+
+**Validation:** see `docs/validation/guest_paid_shop_lock_ux.md`.
+
+---
+
 ### C6.1 — Release Audit Fixes (completed)
 
 Small release-safety fixes applied after the C6 stabilization pass. No new gameplay

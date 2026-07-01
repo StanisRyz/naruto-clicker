@@ -450,6 +450,7 @@ guest_migration.upload_failed,Failed to save guest progress,Не удалось 
 shop.paid_guest_locked_title,Purchases unavailable in guest mode,Покупки недоступны в гостевом режиме,ShopSheet / GemPurchaseDialog guest lock title,
 shop.paid_guest_locked_message,Sign in or register to buy gems. Ads remain available.,Войдите или зарегистрируйтесь чтобы покупать гемы. Реклама остаётся доступной.,ShopSheet guest lock message,
 shop.paid_guest_locked_action,Sign in / Register,Войти / зарегистрироваться,ShopSheet guest lock action button,
+shop.paid_guest_locked_short,Account required,Требуется аккаунт,ShopPanel donation_entry card description when locked for guest,
 account_flow.register_guest_upload_started,Saving guest progress to account...,Сохраняем гостевой прогресс в аккаунт...,ClickerScreen register flow status,
 account_flow.register_guest_upload_success,Guest progress saved to account,Гостевой прогресс сохранён в аккаунт,ClickerScreen register flow status,
 account_flow.register_guest_upload_failed,Failed to save guest progress to account,Не удалось сохранить гостевой прогресс в аккаунт,ClickerScreen register flow status,

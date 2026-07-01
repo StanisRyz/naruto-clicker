@@ -292,6 +292,24 @@ The project is at final release-candidate stage. Future tasks must:
   layout, and status-message changes in `SettingsWindow` must not alter
   `SaveManager` backend logic, Guest → Login/Register flow, or `CloudRestorePrompt`
   behavior — those are separate, reviewed independently.
+- **Android Guest paid gem purchases must be visually locked (C7.2.4).** The
+  `donation_entry` shop card (`gem_purchase_entry`) must show an obvious
+  account-required state (button text, description, and tint) whenever
+  `_is_paid_shop_available()` is false, so tapping it and landing on AuthGate
+  isn't a surprise. It must return to the normal state immediately after
+  Guest → Register/Login and lock again immediately after Logout.
+- **Rewarded ads must remain available in Guest mode (C7.2.4).** Never gate
+  `product_type == "rewarded_ad"` behind account/session state — only
+  `donation_entry` is affected by the paid shop lock UI.
+- **Shop UI must not call `Platform.purchase_product()` in Guest (C7.2.4).**
+  `ClickerScreen` owns the account/session decision
+  (`_is_paid_shop_available()`); `ShopSheet`/`ShopPanel` only render the flag
+  they're given via `set_paid_shop_available()` and must never independently
+  decide to start a purchase.
+- **Do not mix paid shop UX changes with backend/cloud-save changes (C7.2.4).**
+  Shop lock visuals and status messages must not alter `SaveManager`,
+  backend Cloud Functions, backend API paths, or Guest → Login/Register logic
+  — those are reviewed separately.
 - Gems survive Reset Progress.
 - Permanent shop upgrades survive Reset Progress.
 - Sound/music/language settings survive Reset Progress.

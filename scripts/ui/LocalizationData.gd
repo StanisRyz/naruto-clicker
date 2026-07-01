@@ -4,8 +4,8 @@ extends RefCounted
 # AUTO-GENERATED — do not edit by hand.
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
-# Generated key count: 458
-# Generated at: 1782915188
+# Generated key count: 459
+# Generated at: 1782916165
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -460,6 +460,7 @@ const TRANSLATIONS: Dictionary = {
 		"shop.paid_guest_locked_title": "Purchases unavailable in guest mode",
 		"shop.paid_guest_locked_message": "Sign in or register to buy gems. Ads remain available.",
 		"shop.paid_guest_locked_action": "Sign in / Register",
+		"shop.paid_guest_locked_short": "Account required",
 		"account_flow.register_guest_upload_started": "Saving guest progress to account...",
 		"account_flow.register_guest_upload_success": "Guest progress saved to account",
 		"account_flow.register_guest_upload_failed": "Failed to save guest progress to account",
@@ -920,6 +921,7 @@ const TRANSLATIONS: Dictionary = {
 		"shop.paid_guest_locked_title": "Покупки недоступны в гостевом режиме",
 		"shop.paid_guest_locked_message": "Войдите или зарегистрируйтесь чтобы покупать гемы. Реклама остаётся доступной.",
 		"shop.paid_guest_locked_action": "Войти / зарегистрироваться",
+		"shop.paid_guest_locked_short": "Требуется аккаунт",
 		"account_flow.register_guest_upload_started": "Сохраняем гостевой прогресс в аккаунт...",
 		"account_flow.register_guest_upload_success": "Гостевой прогресс сохранён в аккаунт",
 		"account_flow.register_guest_upload_failed": "Не удалось сохранить гостевой прогресс в аккаунт",
