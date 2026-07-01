@@ -269,6 +269,15 @@ The project is at final release-candidate stage. Future tasks must:
   `_reset_runtime_state_for_new_game()`) may remain and are still used by gameplay,
   prestige, and clean account save after Guest → Login with no cloud save. Never add
   a production UI path that calls `SaveManager.delete_save()`.
+- **Account / Cloud is the production replacement for Reset Progress in Settings
+  (C7.2.2).** The Android-only Account/Cloud section in `SettingsWindow` (header,
+  guest explanation, sign-in/register, cloud save/load, logout) is the intended
+  user-facing entry point going forward. Do not reintroduce Reset Progress in
+  production UI. Do not mix Settings UI structure/text changes with backend
+  save-flow changes in the same patch — they are reviewed separately. Android
+  backend account controls must remain gated by
+  `_is_backend_account_ui_supported()` (Android/RuStore-only); Web/Yandex behavior
+  and Yandex SDK cloud-save must remain unchanged.
 - Gems survive Reset Progress.
 - Permanent shop upgrades survive Reset Progress.
 - Sound/music/language settings survive Reset Progress.

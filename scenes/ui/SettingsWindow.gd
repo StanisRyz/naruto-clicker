@@ -92,6 +92,7 @@ func _ready() -> void:
 	if _is_backend_account_ui_supported():
 		_create_account_section()
 		_connect_account_platform_signals()
+		panel_container.get_node("MarginContainer/VBoxContainer").move_child(version_label, -1)
 	hide()
 
 
@@ -319,7 +320,7 @@ func _make_image_button_label(button: Button, asset_key: String, initial_text: S
 	return label
 
 
-# ── Account section ───────────────────────────────────────────────────────────
+# ── Account / Cloud section (Android/RuStore-only; replaces Reset Progress) ───
 
 func _is_backend_account_ui_supported() -> bool:
 	return OS.has_feature("android")
@@ -341,7 +342,7 @@ func _create_account_section() -> void:
 
 	var title_lbl := Label.new()
 	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_lbl.add_theme_font_size_override("font_size", 16)
+	title_lbl.add_theme_font_size_override("font_size", 18)
 	account_vbox.add_child(title_lbl)
 	_account_title_label = title_lbl
 
@@ -446,7 +447,7 @@ func _refresh_account_static_labels() -> void:
 	if _account_section == null:
 		return
 	if _account_title_label != null:
-		_account_title_label.text = LocalizationManager.tr_key("settings.account.title")
+		_account_title_label.text = LocalizationManager.tr_key("settings.account_cloud.title")
 	if _account_sign_in_button_label != null:
 		_account_sign_in_button_label.text = LocalizationManager.tr_key("settings.account.sign_in_register")
 	if _account_verify_button_label != null:
@@ -472,7 +473,7 @@ func _refresh_account_section() -> void:
 	var email := Platform.backend_get_email()
 	var verified := Platform.backend_is_email_verified()
 
-	_account_title_label.text = LocalizationManager.tr_key("settings.account.title")
+	_account_title_label.text = LocalizationManager.tr_key("settings.account_cloud.title")
 	_account_status_label.text = (
 		LocalizationManager.tr_key("settings.account.status_signed_in")
 		if has_session else
@@ -486,7 +487,7 @@ func _refresh_account_section() -> void:
 		LocalizationManager.tr_key("settings.account.email_not_verified")
 	)
 	_account_verification_label.visible = has_session
-	_account_guest_warning_label.text = LocalizationManager.tr_key("settings.account.guest_warning")
+	_account_guest_warning_label.text = LocalizationManager.tr_key("settings.account.guest_explanation")
 	_account_guest_warning_label.visible = not has_session
 	_account_sign_in_button.visible = not has_session
 	_account_verify_button.visible = has_session and not verified

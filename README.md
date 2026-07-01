@@ -1125,6 +1125,41 @@ system, not a raw local wipe.
 
 ---
 
+### C7.2.2 — Account / Cloud Entry Promoted in Settings (completed)
+
+**Purpose:** After removing Reset Progress (C7.2.1), make Account / Cloud the
+clear replacement entry point in Settings so players are guided toward account
+login/register and cloud save instead of a local reset.
+
+**Changes:**
+
+- `scenes/ui/SettingsWindow.gd` — the Android-only account section header now
+  reads "Account / Cloud" (`settings.account_cloud.title`, larger font) instead of
+  plain "Account"; `VersionLabel` is moved to the bottom of the panel so the
+  visual order is Sound → Music → Language → Save Now → Account/Cloud → Version.
+- Guest mode explanation text expanded (`settings.account.guest_explanation`,
+  was `settings.account.guest_warning`) to explicitly state that signing in
+  enables cloud save and gem purchases, while rewarded ads remain available in
+  Guest mode.
+- `localization/game_text.csv` / `scripts/ui/LocalizationData.gd` — two keys
+  renamed and one reworded (455 keys total, no net addition).
+
+**What C7.2.2 did NOT change:**
+
+- Reset Progress remains removed (C7.2.1) — not reintroduced.
+- `SettingsWindow` signals (`sound_toggled`, `music_toggled`, `save_requested`,
+  `language_manually_changed`, `account_auth_requested`,
+  `cloud_save_upload_requested`, `cloud_save_download_requested`) — unchanged.
+- Cloud save/load logic, busy-state handling, and load confirmation — unchanged.
+- Guest → Login / Guest → Register logic (C7.1) — unchanged.
+- Backend Cloud Functions, backend API paths, gameplay balance, ads/payments,
+  Web/Yandex behavior — unchanged. Account/Cloud UI stays Android-only
+  (`_is_backend_account_ui_supported()` still gates on `OS.has_feature("android")`).
+
+**Validation:** see `docs/validation/account_cloud_settings_promotion.md`.
+
+---
+
 ### C6.1 — Release Audit Fixes (completed)
 
 Small release-safety fixes applied after the C6 stabilization pass. No new gameplay

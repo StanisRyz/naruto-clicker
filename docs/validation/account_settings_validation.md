@@ -3,6 +3,14 @@
 C4 patch: account block in SettingsWindow, AuthGate overlay from settings, logout,
 email verification. Backend cloud-save is NOT wired in this patch.
 
+> **C7.2.2 note:** the section title is now "Account / Cloud"
+> (`settings.account_cloud.title`, was `settings.account.title`), and the guest
+> warning text was replaced by a longer explanation
+> (`settings.account.guest_explanation`, was `settings.account.guest_warning`)
+> covering cloud save, paid purchases, and rewarded ads. Reset Progress was removed
+> from Settings entirely in C7.2.1 — ignore any "reset" references below. See
+> `docs/validation/account_cloud_settings_promotion.md` for the current checklist.
+
 ## Validation commands
 
 ```bash
