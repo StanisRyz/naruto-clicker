@@ -4,8 +4,8 @@ extends RefCounted
 # AUTO-GENERATED — do not edit by hand.
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
-# Generated key count: 455
-# Generated at: 1782913510
+# Generated key count: 458
+# Generated at: 1782915188
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -408,15 +408,18 @@ const TRANSLATIONS: Dictionary = {
 		"settings.account.email": "Email: {email}",
 		"settings.account.email_verified": "Email verified",
 		"settings.account.email_not_verified": "Email not verified",
-		"settings.account.guest_explanation": "Sign in or register to save progress in cloud and buy gems. Rewarded ads remain available in Guest mode.",
+		"settings.account.guest_explanation": "Guest mode: progress is stored on this device only. Sign in or register to save progress in cloud and buy gems. Rewarded ads remain available.",
 		"settings.account.sign_in_register": "Sign in / Register",
 		"settings.account.verify_email": "Verify email",
 		"settings.account.verification_code_placeholder": "6-digit code",
 		"settings.account.confirm_code": "Confirm code",
 		"settings.account.logout": "Logout",
+		"settings.account.verification_sending": "Sending verification email...",
 		"settings.account.verification_sent": "Verification code sent",
+		"settings.account.verification_confirming": "Confirming code...",
 		"settings.account.verification_success": "Email verified",
 		"settings.account.verification_invalid_code": "Enter a 6-digit code",
+		"settings.account.logout_in_progress": "Logging out...",
 		"settings.account.logout_success": "Logged out",
 		"settings.account.logout_local_fallback": "Local session cleared",
 		"settings.account.backend_error": "Backend error: {error}",
@@ -865,15 +868,18 @@ const TRANSLATIONS: Dictionary = {
 		"settings.account.email": "Email: {email}",
 		"settings.account.email_verified": "Email подтверждён",
 		"settings.account.email_not_verified": "Email не подтверждён",
-		"settings.account.guest_explanation": "Войдите или зарегистрируйтесь, чтобы сохранять прогресс в облаке и покупать гемы. Реклама остаётся доступной.",
+		"settings.account.guest_explanation": "Гостевой режим. Войдите или зарегистрируйтесь, чтобы сохранять прогресс в облаке и покупать гемы. Реклама остаётся доступной.",
 		"settings.account.sign_in_register": "Войти / Зарегистрироваться",
 		"settings.account.verify_email": "Подтвердить email",
 		"settings.account.verification_code_placeholder": "6-значный код",
 		"settings.account.confirm_code": "Подтвердить код",
 		"settings.account.logout": "Выйти",
+		"settings.account.verification_sending": "Отправляем код подтверждения...",
 		"settings.account.verification_sent": "Код подтверждения отправлен",
+		"settings.account.verification_confirming": "Подтверждаем код...",
 		"settings.account.verification_success": "Email подтверждён",
 		"settings.account.verification_invalid_code": "Введите 6-значный код",
+		"settings.account.logout_in_progress": "Выходим из аккаунта...",
 		"settings.account.logout_success": "Вы вышли из аккаунта",
 		"settings.account.logout_local_fallback": "Локальная сессия очищена",
 		"settings.account.backend_error": "Ошибка backend: {error}",

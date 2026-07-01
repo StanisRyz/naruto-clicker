@@ -51,6 +51,7 @@ var _account_logout_button: Button = null
 var _account_logout_button_label: Label = null
 var _account_action_label: Label = null
 var _account_signals_connected: bool = false
+var _account_action_busy: bool = false
 
 var _cloud_section: Control = null
 var _cloud_title_label: Label = null
@@ -465,10 +466,19 @@ func _refresh_account_static_labels() -> void:
 func _refresh_account_section() -> void:
 	if _account_section == null:
 		return
-	_account_code_box.visible = false
+	_clear_account_verification_input()
 	_account_action_label.visible = false
 	_account_action_label.text = ""
+	_refresh_account_section_state()
 
+
+# Updates account/cloud visibility and status text from current session data
+# without touching the account action message or the verification code input —
+# callers that just showed an operation result (success/failure) must use this
+# instead of `_refresh_account_section()` so the message is not immediately wiped.
+func _refresh_account_section_state() -> void:
+	if _account_section == null:
+		return
 	var has_session := Platform.backend_has_session()
 	var email := Platform.backend_get_email()
 	var verified := Platform.backend_is_email_verified()
@@ -493,6 +503,25 @@ func _refresh_account_section() -> void:
 	_account_verify_button.visible = has_session and not verified
 	_account_logout_button.visible = has_session
 	_refresh_cloud_section()
+
+
+func _clear_account_verification_input() -> void:
+	if _account_code_box != null:
+		_account_code_box.visible = false
+	if _account_code_input != null:
+		_account_code_input.text = ""
+
+
+func _set_account_actions_busy(is_busy: bool) -> void:
+	_account_action_busy = is_busy
+	if _account_verify_button != null:
+		_account_verify_button.disabled = is_busy
+	if _account_confirm_button != null:
+		_account_confirm_button.disabled = is_busy
+	if _account_logout_button != null:
+		_account_logout_button.disabled = is_busy
+	if _account_sign_in_button != null:
+		_account_sign_in_button.disabled = is_busy
 
 
 func _show_account_action(text: String, is_error: bool = false) -> void:
@@ -529,66 +558,86 @@ func _disconnect_account_platform_signals() -> void:
 
 
 func _on_account_backend_auth_changed(_auth_data: Dictionary) -> void:
+	_set_account_actions_busy(false)
 	_refresh_account_section()
 
 
 func _on_account_backend_op_succeeded(operation: String, _response: Dictionary) -> void:
 	match operation:
 		"request_email_verification":
+			_set_account_actions_busy(false)
 			_account_code_box.visible = true
 			_account_verify_button.visible = false
 			_show_account_action(LocalizationManager.tr_key("settings.account.verification_sent"))
 
 		"confirm_email_verification":
+			_set_account_actions_busy(false)
 			_account_code_box.visible = false
+			_refresh_account_section_state()
 			_show_account_action(LocalizationManager.tr_key("settings.account.verification_success"))
-			_refresh_account_section()
 
 		"logout":
-			_refresh_account_section()
+			_set_account_actions_busy(false)
+			_clear_account_verification_input()
+			_refresh_account_section_state()
 			_show_account_action(LocalizationManager.tr_key("settings.account.logout_success"))
 
 
 func _on_account_backend_op_failed(operation: String, error_code: String, _status_code: int, _response: Dictionary) -> void:
 	match operation:
 		"request_email_verification":
+			_set_account_actions_busy(false)
 			_show_account_action(
 				LocalizationManager.format_key("settings.account.backend_error", {"error": error_code}),
 				true
 			)
 
 		"confirm_email_verification":
+			_set_account_actions_busy(false)
 			_show_account_action(
 				LocalizationManager.format_key("settings.account.backend_error", {"error": error_code}),
 				true
 			)
 
 		"logout":
+			_set_account_actions_busy(false)
 			Platform.backend_clear_local_auth()
-			_refresh_account_section()
+			_clear_account_verification_input()
+			_refresh_account_section_state()
 			_show_account_action(LocalizationManager.tr_key("settings.account.logout_local_fallback"))
 
 
 func _on_account_sign_in_pressed() -> void:
+	if _account_action_busy:
+		return
 	account_auth_requested.emit()
 
 
 func _on_account_verify_email_pressed() -> void:
-	_show_account_action("")
+	if _account_action_busy:
+		return
+	_set_account_actions_busy(true)
+	_show_account_action(LocalizationManager.tr_key("settings.account.verification_sending"))
 	Platform.backend_request_email_verification()
 
 
 func _on_account_confirm_code_pressed() -> void:
+	if _account_action_busy:
+		return
 	var code := _account_code_input.text.strip_edges()
 	if code.length() != 6 or not code.is_valid_int():
 		_show_account_action(LocalizationManager.tr_key("settings.account.verification_invalid_code"), true)
 		return
-	_show_account_action("")
+	_set_account_actions_busy(true)
+	_show_account_action(LocalizationManager.tr_key("settings.account.verification_confirming"))
 	Platform.backend_confirm_email_verification(code)
 
 
 func _on_account_logout_pressed() -> void:
-	_show_account_action("")
+	if _account_action_busy:
+		return
+	_set_account_actions_busy(true)
+	_show_account_action(LocalizationManager.tr_key("settings.account.logout_in_progress"))
 	Platform.backend_logout()
 
 

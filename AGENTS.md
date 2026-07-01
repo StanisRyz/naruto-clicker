@@ -278,6 +278,20 @@ The project is at final release-candidate stage. Future tasks must:
   backend account controls must remain gated by
   `_is_backend_account_ui_supported()` (Android/RuStore-only); Web/Yandex behavior
   and Yandex SDK cloud-save must remain unchanged.
+- **Account status messages and Cloud Save messages must remain separate (C7.2.3).**
+  Account operation results (verify email, confirm code, logout, backend errors) go
+  through `SettingsWindow._show_account_action()` into `_account_action_label`.
+  Cloud save/load results go through `SettingsWindow.set_cloud_save_status()` into
+  `_cloud_status_label`. Never write account text into the cloud label or vice versa.
+- **Account action buttons must not allow duplicate backend requests (C7.2.3).**
+  Verify Email, Confirm Code, and Logout must guard against re-entrancy via
+  `_account_action_busy` (set by `_set_account_actions_busy()`), disable while a
+  request is in flight, and always re-enable on success or failure — never leave a
+  button stuck disabled after a backend error.
+- **Settings UI cleanup must not change backend save/auth flow (C7.2.3).** Text,
+  layout, and status-message changes in `SettingsWindow` must not alter
+  `SaveManager` backend logic, Guest → Login/Register flow, or `CloudRestorePrompt`
+  behavior — those are separate, reviewed independently.
 - Gems survive Reset Progress.
 - Permanent shop upgrades survive Reset Progress.
 - Sound/music/language settings survive Reset Progress.

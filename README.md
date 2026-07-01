@@ -1160,6 +1160,52 @@ login/register and cloud save instead of a local reset.
 
 ---
 
+### C7.2.3 — Account Section UX Cleanup (completed)
+
+**Purpose:** Polish and harden the Account/Cloud section after C7.2.2: separate
+account vs. cloud status messages, add busy-state to account actions, and fix a
+stale-message bug where a just-shown success message was immediately cleared by
+a follow-up refresh.
+
+**Changes:**
+
+- `scenes/ui/SettingsWindow.gd` — added `_set_account_actions_busy(is_busy)` and
+  `_account_action_busy`; Verify Email, Confirm Code, Logout (and defensively
+  Sign in/Register) disable while their backend request is in flight and always
+  re-enable on success or failure. Split `_refresh_account_section()` into a
+  full variant (clears the action message and verification code input — used on
+  window open and on external auth changes) and a state-only
+  `_refresh_account_section_state()` (recomputes visibility/text only — used by
+  operation success/failure handlers so their result message isn't immediately
+  wiped). This fixed a real bug: `confirm_email_verification` success used to
+  call the full refresh *after* showing "Email verified", erasing it instantly.
+- Guest explanation text reworded to explicitly state progress is local-only,
+  and that signing in unlocks cloud save and gem purchases while rewarded ads
+  remain available regardless.
+- Account messages (`_account_action_label`) and Cloud Save messages
+  (`_cloud_status_label`) confirmed to use fully separate labels — no code path
+  writes to the wrong one.
+- `localization/game_text.csv` / `scripts/ui/LocalizationData.gd` — reworded
+  `settings.account.guest_explanation`; added 3 busy-state keys
+  (`verification_sending`, `verification_confirming`, `logout_in_progress`;
+  458 keys total).
+
+**What C7.2.3 did NOT change:**
+
+- Reset Progress remains removed (C7.2.1) — not reintroduced.
+- `SettingsWindow` signals — unchanged (same 7 signals as C7.2.2).
+- `SaveManager` backend save/load logic, backend Cloud Functions, backend API
+  paths — untouched.
+- Guest → Login / Guest → Register logic (C7.1), `CloudRestorePrompt` logic —
+  untouched.
+- Cloud Save/Load visibility rules, load confirmation, and
+  `set_cloud_save_buttons_busy()` — unchanged.
+- Gameplay balance, ads/payments, Web/Yandex behavior — unchanged.
+
+**Validation:** see `docs/validation/account_section_ux_cleanup.md`.
+
+---
+
 ### C6.1 — Release Audit Fixes (completed)
 
 Small release-safety fixes applied after the C6 stabilization pass. No new gameplay
