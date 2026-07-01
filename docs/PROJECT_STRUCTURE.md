@@ -100,7 +100,7 @@ naruto-clicker/
 | `AbilityBar.tscn/.gd` | Left-side 80×80 ability buttons; hidden until ability is purchased; first button aligns vertically with TasksButton |
 | `StageNavigator.tscn/.gd` | Horizontal 5-button stage strip (80×80 px) with scroll/drag |
 | `AutoTransitionPopup.tscn/.gd` | Info-only popup showing auto-transition ON/OFF status |
-| `SettingsWindow.tscn/.gd` | Modal: sound/music toggles, Save Now, Reset Progress |
+| `SettingsWindow.tscn/.gd` | Modal: sound/music toggles, Save Now, Account/Cloud Save (Android); Reset Progress removed from production UI (C7.2.1) |
 | `TasksWindow.tscn/.gd` | Modal: 5 active tasks, claim rewards, rotation |
 | `BuyModeSelector.tscn/.gd` | Reusable x1/x10/x100/Max purchase mode selector |
 | `UpgradePanel.tscn/.gd` | Hero level + ability upgrade cards with skill icon rows |

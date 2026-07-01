@@ -148,7 +148,6 @@ func _ready() -> void:
 	settings_window.sound_toggled.connect(_on_settings_sound_toggled)
 	settings_window.music_toggled.connect(_on_settings_music_toggled)
 	settings_window.save_requested.connect(_on_settings_save_requested)
-	settings_window.reset_requested.connect(_on_settings_reset_confirmed)
 	settings_window.language_manually_changed.connect(_on_language_manually_changed)
 	settings_window.account_auth_requested.connect(_on_settings_account_auth_requested)
 	settings_window.cloud_save_upload_requested.connect(_on_settings_cloud_save_upload_requested)
@@ -483,31 +482,6 @@ func _on_settings_save_requested() -> void:
 		settings_window.show_status(LocalizationManager.tr_key("settings.saved"))
 	else:
 		settings_window.show_status(LocalizationManager.tr_key("settings.save_failed"))
-
-
-func _on_settings_reset_confirmed() -> void:
-	var preserved: Dictionary = state.get_reset_progress_preserved_snapshot()
-	SaveManager.delete_save()
-	state.reset_to_new_game()
-	state.apply_reset_progress_preserved_snapshot(preserved)
-	AudioManager.set_sound_enabled(state.sound_enabled)
-	AudioManager.set_music_enabled(state.music_enabled)
-	LocalizationManager.set_language(state.language)
-	_reset_runtime_state_for_new_game()
-	_hide_all_bottom_sheets()
-	active_bottom_tab = ""
-	if tasks_window.visible:
-		tasks_window.hide_window()
-	settings_window.refresh_view(state)
-	settings_window.show_status(LocalizationManager.tr_key("settings.progress_reset"))
-	_update_ui()
-	stage_navigator.center_on_level(1)
-	_sync_boss_timer()
-	if balance_logger:
-		balance_logger.start_session(state)
-		balance_logger.mark_enemy_spawned(state)
-	_save_game_now()
-	SaveManager.flush_cloud_save_now()
 
 
 func _on_tasks_button_pressed() -> void:

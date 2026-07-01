@@ -130,7 +130,6 @@ const ASSET_PATHS: Dictionary = {
 	"ui.popup.skill.background": "res://assets/images/ui/popups/skill/background.png",
 	"ui.popup.auto_transition.background": "res://assets/images/ui/popups/auto_transition/background.png",
 	"ui.window.settings.background": "res://assets/images/ui/windows/settings/background.png",
-	"ui.window.settings.reset_confirm_background": "res://assets/images/ui/windows/settings/reset_confirm_background.png",
 	"ui.dialog.prestige.inner_background": "res://assets/images/ui/dialogs/prestige/inner_background.png",
 	"ui.popup.shop_confirm.background": "res://assets/images/ui/popups/shop_confirm/background.png",
 	"ui.dialog.gem_purchase.background": "res://assets/images/ui/dialogs/gem_purchase/background.png",

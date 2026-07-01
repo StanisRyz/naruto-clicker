@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=2 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/SettingsWindow.gd" id="1_settings"]
 
@@ -9,30 +9,6 @@ border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
 border_color = Color(0.26, 0.28, 0.34, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_reset_panel"]
-bg_color = Color(0.09, 0.095, 0.115, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.38, 0.24, 0.24, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_reset_button"]
-bg_color = Color(0.42, 0.12, 0.12, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.68, 0.25, 0.25, 1)
 corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
@@ -154,13 +130,6 @@ layout_mode = 2
 size_flags_horizontal = 4
 text = ""
 
-[node name="ResetButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(218, 75)
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_styles/normal = SubResource("StyleBoxFlat_reset_button")
-text = ""
-
 [node name="StatusLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = ""
@@ -172,79 +141,3 @@ text = ""
 horizontal_alignment = 1
 modulate = Color(0.55, 0.55, 0.55, 1)
 
-[node name="ResetConfirmDialog" type="Control" parent="."]
-visible = false
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 0
-
-[node name="Overlay" type="ColorRect" parent="ResetConfirmDialog"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 0
-color = Color(0, 0, 0, 0.45)
-
-[node name="PanelContainer" type="PanelContainer" parent="ResetConfirmDialog"]
-custom_minimum_size = Vector2(510, 336)
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -255.0
-offset_top = -168.0
-offset_right = 255.0
-offset_bottom = 168.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 0
-theme_override_styles/panel = SubResource("StyleBoxFlat_reset_panel")
-
-[node name="MarginContainer" type="MarginContainer" parent="ResetConfirmDialog/PanelContainer"]
-layout_mode = 2
-theme_override_constants/margin_left = 32
-theme_override_constants/margin_top = 42
-theme_override_constants/margin_right = 32
-theme_override_constants/margin_bottom = 24
-
-[node name="VBoxContainer" type="VBoxContainer" parent="ResetConfirmDialog/PanelContainer/MarginContainer"]
-layout_mode = 2
-theme_override_constants/separation = 18
-
-[node name="TitleLabel" type="Label" parent="ResetConfirmDialog/PanelContainer/MarginContainer/VBoxContainer"]
-layout_mode = 2
-text = ""
-horizontal_alignment = 1
-
-[node name="DescriptionLabel" type="Label" parent="ResetConfirmDialog/PanelContainer/MarginContainer/VBoxContainer"]
-layout_mode = 2
-text = ""
-autowrap_mode = 3
-horizontal_alignment = 1
-
-[node name="ButtonRow" type="HBoxContainer" parent="ResetConfirmDialog/PanelContainer/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 16
-alignment = 1
-
-[node name="CancelButton" type="Button" parent="ResetConfirmDialog/PanelContainer/MarginContainer/VBoxContainer/ButtonRow"]
-custom_minimum_size = Vector2(168, 58)
-layout_mode = 2
-size_flags_horizontal = 0
-text = ""
-
-[node name="ResetButton" type="Button" parent="ResetConfirmDialog/PanelContainer/MarginContainer/VBoxContainer/ButtonRow"]
-custom_minimum_size = Vector2(168, 58)
-layout_mode = 2
-size_flags_horizontal = 0
-theme_override_styles/normal = SubResource("StyleBoxFlat_reset_button")
-text = ""

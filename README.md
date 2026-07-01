@@ -357,12 +357,17 @@ res://assets/audio/sfx/rewards/gold_received.ogg
 
 ## Save / reset rules
 
-**Reset Progress preserves:**
+**Reset Progress is debug/internal only (removed from production UI in C7.2.1).**
+The underlying `ClickerState.reset_to_new_game()` / preserved-snapshot helpers still
+exist and back prestige and clean-account-save flows, but no production UI path may
+call `SaveManager.delete_save()` or expose a user-facing reset.
+
+**Reset Progress preserves (when invoked internally):**
 - gems
 - permanent shop upgrades
 - settings / language
 
-**Reset Progress resets:**
+**Reset Progress resets (when invoked internally):**
 - normal run progress (gold, hero level, partners, buildings, normal skills)
 - tasks and task baselines
 - temporary buffs / active ability timers
@@ -464,7 +469,8 @@ python -m http.server 8080
 |---|---|
 | Debug / production separation | Complete |
 | Localization cleanup | Complete |
-| Save / Load / Reset / Prestige | Complete |
+| Save / Load / Prestige | Complete |
+| Reset Progress removed from production UI (debug/internal only) | Complete |
 | Ads (rewarded banner, shop, offline) | Complete |
 | Payments (gem purchases) | Complete |
 | UI (panels, sheets, scrolling, touch) | Complete |
@@ -1078,6 +1084,44 @@ Android/RuStore guests. Removes the old `GuestMigrationPrompt` mid-session flow.
 - Rewarded ads — available in all modes including Guest.
 
 **Validation:** see `docs/validation/account_save_authority_guest_shop_lock.md`.
+
+---
+
+### C7.2.1 — Reset Progress Removed from Production UI (completed)
+
+**Purpose:** Reset Progress was unsafe now that backend accounts, cloud save,
+auto-upload, and paid purchases exist — a user-facing local reset could be
+propagated to cloud by auto-upload and silently wipe an account's progress.
+
+**Changes:**
+
+- Reset Progress button, confirmation dialog, and signal flow removed from
+  `scenes/ui/SettingsWindow.tscn` / `SettingsWindow.gd`
+  (`reset_requested`, `reset_confirmed`, `ResetConfirmDialog`, and all related handlers).
+- `scenes/game/ClickerScreen.gd` no longer connects to a Settings reset signal or
+  calls `SaveManager.delete_save()` from any production UI path.
+- Reset-progress-only localization keys removed from `localization/game_text.csv`
+  (`settings.reset_progress`, `settings.confirm_reset`, `settings.progress_reset`,
+  `settings.reset`, `settings.reset_confirm_title`, `settings.reset_confirm_description`)
+  and `scripts/ui/LocalizationData.gd` regenerated.
+- Save deletion/reset is now debug/internal only.
+
+**What C7.2.1 did NOT change:**
+
+- Internal runtime reset helpers (`_reset_runtime_state_for_new_game()`,
+  `state.reset_to_new_game()`, preserved-snapshot helpers) — still used by prestige
+  and by clean account save after Guest → Login with no cloud save.
+- Prestige reset logic — unchanged.
+- `SaveManager.delete_save()` — still exists for internal/tool use; simply has no
+  production UI caller.
+- Web/Yandex behavior, backend Cloud Functions, gameplay balance — unchanged.
+- Account/Cloud Save controls in Settings — unchanged.
+
+Account/Cloud Settings UI will replace the old Reset Progress affordance in later
+patches, if a user-facing reset is ever reintroduced it must go through the account
+system, not a raw local wipe.
+
+**Validation:** see `docs/validation/reset_progress_removal.md`.
 
 ---
 

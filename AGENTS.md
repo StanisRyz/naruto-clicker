@@ -262,6 +262,13 @@ The project is at final release-candidate stage. Future tasks must:
 
 - Both local save and Yandex cloud save (player data) are used. Respect the Yandex player data size limit.
 - Cloud save must be flushed after purchases, ad rewards, task claims, reset, prestige, settings/language changes, and any important economy change.
+- **Reset Progress is debug/internal only (C7.2.1).** Do not reintroduce a production
+  UI path (button, menu entry, etc.) that lets the user reset or delete their save.
+  Save deletion/reset actions must remain debug/tool/internal only. Internal runtime
+  reset helpers (`ClickerState.reset_to_new_game()`, preserved-snapshot helpers,
+  `_reset_runtime_state_for_new_game()`) may remain and are still used by gameplay,
+  prestige, and clean account save after Guest → Login with no cloud save. Never add
+  a production UI path that calls `SaveManager.delete_save()`.
 - Gems survive Reset Progress.
 - Permanent shop upgrades survive Reset Progress.
 - Sound/music/language settings survive Reset Progress.

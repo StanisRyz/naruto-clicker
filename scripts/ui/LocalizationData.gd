@@ -4,8 +4,8 @@ extends RefCounted
 # AUTO-GENERATED — do not edit by hand.
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
-# Generated key count: 461
-# Generated at: 1782832819
+# Generated key count: 455
+# Generated at: 1782912300
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -41,11 +41,8 @@ const TRANSLATIONS: Dictionary = {
 		"settings.language": "Language",
 		"settings.language.en": "English",
 		"settings.language.ru": "Русский",
-		"settings.reset_progress": "Reset Progress",
-		"settings.confirm_reset": "Confirm Reset",
 		"settings.saved": "Saved",
 		"settings.save_failed": "Save failed",
-		"settings.progress_reset": "Progress Reset",
 		"auto_transition.status_on": "ON",
 		"auto_transition.status_off": "OFF",
 		"auto_transition.description.line_1": "When enabled cleared",
@@ -369,9 +366,6 @@ const TRANSLATIONS: Dictionary = {
 		"settings.sound": "Sound",
 		"settings.music": "Music",
 		"settings.save_now": "Save",
-		"settings.reset": "Reset",
-		"settings.reset_confirm_title": "Reset progress?",
-		"settings.reset_confirm_description": "This will reset normal progress but keep gems, permanent upgrades, sound, music, and language.",
 		"settings.version": "Version: {version}",
 		"auto_transition.title": "Auto-transition",
 		"ui.gameplay.new_zone": "New Zone!",
@@ -504,11 +498,8 @@ const TRANSLATIONS: Dictionary = {
 		"settings.language": "Язык",
 		"settings.language.en": "English",
 		"settings.language.ru": "Русский",
-		"settings.reset_progress": "Сброс Прогресса",
-		"settings.confirm_reset": "Подтвердить Сброс",
 		"settings.saved": "Сохранено",
 		"settings.save_failed": "Ошибка Сохранения",
-		"settings.progress_reset": "Сброс Прогресса",
 		"auto_transition.status_on": "Вкл",
 		"auto_transition.status_off": "Выкл",
 		"auto_transition.description.line_1": "Когда включено",
@@ -832,9 +823,6 @@ const TRANSLATIONS: Dictionary = {
 		"settings.sound": "Звук",
 		"settings.music": "Музыка",
 		"settings.save_now": "Сохранить",
-		"settings.reset": "Сбросить",
-		"settings.reset_confirm_title": "Сбросить прогресс?",
-		"settings.reset_confirm_description": "Обычный прогресс будет сброшен, но гемы, постоянные улучшения, звук, музыка и язык сохранятся.",
 		"settings.version": "Версия: {version}",
 		"auto_transition.title": "Автопереход",
 		"ui.gameplay.new_zone": "Новая Зона!",
