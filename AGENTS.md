@@ -922,6 +922,38 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
 - **Web/Yandex behavior is completely unaffected.** `_is_paid_shop_available()` returns
   `true` unconditionally on non-Android. No auth gate on Web startup.
 
+## Account Startup Force Cloud Load Rules (C7.3.1)
+
+- **Account cloud save is authoritative for every account session, not just Guest → Login.**
+  Stored account session at boot, direct AuthGate login at boot, and account-register at
+  boot all force-load the account cloud save the same way `on_account_login_from_guest_overlay()`
+  already does. `CloudRestorePrompt` is no longer shown for any of these paths.
+- **`ClickerScreen._ready()` calls `_begin_account_startup_cloud_load()` instead of
+  `request_backend_cloud_restore_check("startup")`.** The latter is kept in the file
+  unused (not deleted) in case a future patch needs a restore-prompt path again.
+- **`_begin_account_startup_cloud_load()` no-ops for Guest and for Web/editor.** It only
+  proceeds when `OS.has_feature("android") and Platform.backend_has_session()` and
+  `_gameplay_started_as_guest` is false. Backend auto-upload suspension is already set by
+  `_should_suspend_backend_auto_upload_for_startup_restore()` earlier in `_ready()` under
+  the same guard — `_begin_account_startup_cloud_load()` must resume it on every no-op path.
+- **`_force_account_cloud_load_on_startup` is checked before `_force_account_cloud_load_after_guest_login`**
+  in the `load_save` success/failure handlers, mirroring the existing priority pattern
+  (startup force-load → guest-login force-load → manual download → legacy startup check).
+- **Missing cloud save on force-load starts a clean account save**, via
+  `_apply_clean_account_save_after_missing_cloud()` (renamed from
+  `_apply_clean_account_save_after_guest_login()` — now shared by both the startup and
+  Guest → Login force-load paths; it must never carry over guest gems/progress).
+- **`Main.gd`'s `"account_session"` overlay branch also force-loads instead of prompting.**
+  When AuthGate is reopened mid-session (`show_auth_gate_overlay()`) and revalidates a
+  stored session, it calls `_clicker_screen.on_account_login_from_guest_overlay()` — the
+  same guest→login force-load method — instead of `request_backend_cloud_restore_check("auth_overlay")`.
+- **Guest → Register upload behavior is unchanged.** `on_account_registered_from_guest_overlay()`
+  still uploads the guest save; it is never affected by the startup force-load flag.
+- **Manual Settings "Load from Cloud" confirmation is unchanged.** It still goes through
+  `_manual_backend_cloud_download_requested` and still requires no auto-apply without a
+  user-initiated request (the request itself is the confirmation — no `CloudRestorePrompt`
+  was ever used for the manual path).
+
 ## Startup Upload Suspension Rules (C5.3.1)
 
 - **`SaveManager._backend_cloud_auto_upload_suspended` guards `queue_backend_cloud_save()` only.** `upload_current_save_to_backend_cloud_now()` has no suspension guard and must never acquire one — manual Save to Cloud must always work.

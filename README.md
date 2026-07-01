@@ -1381,6 +1381,60 @@ dynamically based on Account/Cloud content.
 
 ---
 
+### C7.3.1 — Account Startup Force Cloud Load (completed)
+
+**Purpose:** Make the account cloud save authoritative for *every* Android/RuStore
+account login/session, not just the Guest → Login overlay path from C7.1. Fresh
+account startup, a stored account session, and a direct AuthGate account login must
+all load the account cloud save automatically — no "Load from cloud?" decision.
+
+**Changes:**
+
+- `ClickerScreen._ready()` now calls `_begin_account_startup_cloud_load()` instead
+  of `request_backend_cloud_restore_check("startup")`. The latter is left defined
+  but unused (no call sites remain) rather than deleted.
+- `_begin_account_startup_cloud_load()` (new): no-op on Web/editor, no-op for Guest
+  mode, no-op if there is no backend session. Otherwise sets
+  `_force_account_cloud_load_on_startup = true` and calls `Platform.backend_load_save()`
+  — the same force-load shape as `on_account_login_from_guest_overlay()` (C7.1), kept
+  as a separate flag so the two triggers stay distinguishable.
+- `_on_backend_cloud_op_succeeded("load_save", ...)` / `_on_backend_cloud_op_failed(...)`
+  now check `_force_account_cloud_load_on_startup` first (before the existing
+  `_force_account_cloud_load_after_guest_login`, manual-download, and legacy
+  startup-check branches). On success with a save: applies it, refreshes gameplay
+  UI, marks the session as non-guest, updates paid shop availability. On success with
+  no save: applies a clean account save. On failure: keeps local gameplay state,
+  shows a status message only if Settings is open, and never uploads local state.
+  Both branches always resume backend auto-upload.
+- `_apply_clean_account_save_after_guest_login()` renamed to
+  `_apply_clean_account_save_after_missing_cloud()` — now shared by both the
+  startup force-load and the Guest → Login force-load paths.
+- `Main.gd`'s `"account_session"` case (AuthGate overlay reopened mid-session and a
+  stored session revalidates) now calls `on_account_login_from_guest_overlay()`
+  instead of `request_backend_cloud_restore_check("auth_overlay")`, so it force-loads
+  too instead of going through the restore-prompt path.
+- No localization changes: reused the existing `account_flow.login_cloud_load_*`
+  keys (started/success/missing/failed) for the startup path's status messages.
+
+**What C7.3.1 did NOT change:**
+
+- Guest → Register upload behavior (C7.1) — `on_account_registered_from_guest_overlay()`
+  is untouched.
+- Guest → Login force-load behavior (C7.1) — same method, same flag shape, still
+  never uploads the guest save.
+- `SaveManager` schema, backend Cloud Function code, backend API paths.
+- Manual Settings "Load from Cloud" confirmation flow
+  (`_manual_backend_cloud_download_requested`) — unchanged.
+- Paid shop lock behavior, payment/RuStore flow, rewarded ads, Settings UI layout.
+- `CloudRestorePrompt` files/scene — left in the repo unused rather than deleted;
+  it simply has no remaining call path that shows it for account startup/login.
+- Web/Yandex behavior — completely unaffected (`_begin_account_startup_cloud_load()`
+  no-ops on `not OS.has_feature("android")`).
+
+**Validation:** see `docs/validation/account_startup_force_cloud_load.md`.
+
+---
+
 ### C6.1 — Release Audit Fixes (completed)
 
 Small release-safety fixes applied after the C6 stabilization pass. No new gameplay

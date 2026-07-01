@@ -84,7 +84,13 @@ var _pre_startup_local_save_snapshot_taken: bool = false
 var _gameplay_started_as_guest: bool = false
 var _startup_auth_source: String = ""
 var _register_guest_upload_requested: bool = false
+# Guest→Login overlay force-load (see on_account_login_from_guest_overlay()).
 var _force_account_cloud_load_after_guest_login: bool = false
+# Stored session / direct AuthGate account login at boot (see
+# _begin_account_startup_cloud_load()). Kept separate from the flag above so
+# the two triggers stay distinguishable, though both apply the same
+# "account cloud save is authoritative, no CloudRestorePrompt" behavior.
+var _force_account_cloud_load_on_startup: bool = false
 
 const FULLSCREEN_AD_COOLDOWN_SECONDS: float = 300.0
 const FULLSCREEN_AD_INITIAL_COOLDOWN_SECONDS: float = 300.0
@@ -232,7 +238,7 @@ func _ready() -> void:
 		balance_logger.mark_enemy_spawned(state)
 	startup_completed.emit()
 	notify_yandex_game_ready()
-	request_backend_cloud_restore_check("startup")
+	_begin_account_startup_cloud_load()
 
 
 func _process(delta: float) -> void:
@@ -1962,7 +1968,42 @@ func _on_backend_cloud_op_succeeded(operation: String, response: Dictionary) -> 
 				)
 
 		"load_save":
-			if _force_account_cloud_load_after_guest_login:
+			if _force_account_cloud_load_on_startup:
+				_force_account_cloud_load_on_startup = false
+				var has_save_startup_forced: bool = bool(response.get("has_save", false))
+				if has_save_startup_forced:
+					var save_data_startup_forced: Dictionary = response.get("save_data", {})
+					var ok_startup_forced: bool = SaveManager.apply_cloud_save_payload(save_data_startup_forced)
+					if ok_startup_forced:
+						var loaded_startup_forced: Dictionary = SaveManager.load_data()
+						if not loaded_startup_forced.is_empty():
+							state.apply_save_data(loaded_startup_forced)
+							_reset_runtime_state_for_new_game()
+							_sync_boss_timer()
+							_update_ui()
+							stage_navigator.center_on_level(state.current_level)
+						_gameplay_started_as_guest = false
+						_update_shop_paid_availability()
+						if settings_window.visible:
+							settings_window.set_cloud_save_status(
+								LocalizationManager.tr_key("account_flow.login_cloud_load_success")
+							)
+					else:
+						push_warning("ClickerScreen: startup account cloud load apply failed")
+						if settings_window.visible:
+							settings_window.set_cloud_save_status(
+								LocalizationManager.tr_key("account_flow.login_cloud_load_failed"), true
+							)
+				else:
+					_apply_clean_account_save_after_missing_cloud()
+					_gameplay_started_as_guest = false
+					_update_shop_paid_availability()
+					if settings_window.visible:
+						settings_window.set_cloud_save_status(
+							LocalizationManager.tr_key("account_flow.login_cloud_load_missing")
+						)
+				_resume_backend_auto_upload_after_restore_decision()
+			elif _force_account_cloud_load_after_guest_login:
 				_force_account_cloud_load_after_guest_login = false
 				var has_save_forced: bool = bool(response.get("has_save", false))
 				if has_save_forced:
@@ -1989,7 +2030,7 @@ func _on_backend_cloud_op_succeeded(operation: String, response: Dictionary) -> 
 								LocalizationManager.tr_key("account_flow.login_cloud_load_failed"), true
 							)
 				else:
-					_apply_clean_account_save_after_guest_login()
+					_apply_clean_account_save_after_missing_cloud()
 					_gameplay_started_as_guest = false
 					_update_shop_paid_availability()
 					if settings_window.visible:
@@ -2194,7 +2235,15 @@ func _on_backend_cloud_op_failed(operation: String, error_code: String, _status_
 				push_warning("SaveManager: background backend cloud upload failed: %s" % error_code)
 
 		"load_save":
-			if _force_account_cloud_load_after_guest_login:
+			if _force_account_cloud_load_on_startup:
+				_force_account_cloud_load_on_startup = false
+				push_warning("ClickerScreen: startup account cloud load failed: %s" % error_code)
+				_resume_backend_auto_upload_after_restore_decision()
+				if settings_window.visible:
+					settings_window.set_cloud_save_status(
+						LocalizationManager.tr_key("account_flow.login_cloud_load_failed"), true
+					)
+			elif _force_account_cloud_load_after_guest_login:
 				_force_account_cloud_load_after_guest_login = false
 				push_warning("ClickerScreen: guest login force cloud load failed: %s" % error_code)
 				_resume_backend_auto_upload_after_restore_decision()
@@ -2257,7 +2306,22 @@ func on_account_login_from_guest_overlay() -> void:
 	Platform.backend_load_save()
 
 
-func _apply_clean_account_save_after_guest_login() -> void:
+# Account cloud save is authoritative (C7.3.1): force-load it for stored
+# sessions / direct AuthGate login at boot instead of showing
+# CloudRestorePrompt. Backend auto-upload is already suspended by
+# _should_suspend_backend_auto_upload_for_startup_restore() before this runs.
+func _begin_account_startup_cloud_load() -> void:
+	if not OS.has_feature("android") or not Platform.backend_has_session():
+		_resume_backend_auto_upload_after_restore_decision()
+		return
+	if _gameplay_started_as_guest:
+		_resume_backend_auto_upload_after_restore_decision()
+		return
+	_force_account_cloud_load_on_startup = true
+	Platform.backend_load_save()
+
+
+func _apply_clean_account_save_after_missing_cloud() -> void:
 	state = ClickerState.new()
 	state.last_save_unix_time = int(Time.get_unix_time_from_system())
 	state.language = LocalizationManager.get_language()

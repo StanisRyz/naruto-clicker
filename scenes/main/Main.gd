@@ -57,8 +57,12 @@ func _on_auth_gate_completed(source: String) -> void:
 					if _clicker_screen.has_method("on_account_login_from_guest_overlay"):
 						_clicker_screen.on_account_login_from_guest_overlay()
 				"account_session":
-					if _clicker_screen.has_method("request_backend_cloud_restore_check"):
-						_clicker_screen.request_backend_cloud_restore_check("auth_overlay")
+					# Stored session revalidated mid-session (e.g. AuthGate overlay
+					# reopened while playing as guest). Account cloud save is
+					# authoritative — force-load it the same way as an explicit
+					# guest→login, instead of showing CloudRestorePrompt.
+					if _clicker_screen.has_method("on_account_login_from_guest_overlay"):
+						_clicker_screen.on_account_login_from_guest_overlay()
 	else:
 		_start_game_after_auth_gate(auth_mode)
 

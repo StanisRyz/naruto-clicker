@@ -1,5 +1,11 @@
 # C7.1 / C7.1.1 — Account Save Authority, Guest Paid Shop Lock & GuestMigrationPrompt Removal Validation
 
+> **Partially superseded by C7.3.1.** "Direct Account startup (session check)" below
+> described the C5.3 `CloudRestorePrompt` flow, which no longer runs for account
+> startup/login. See `docs/validation/account_startup_force_cloud_load.md` for the
+> current behavior (force-load, no prompt). Everything else in this doc (Guest →
+> Register, Guest → Login, paid shop lock) is unchanged and still accurate.
+
 ## Overview
 
 - Android Guest mode: local-only progress, rewarded ads available, paid gem purchases locked.
