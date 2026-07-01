@@ -12,6 +12,10 @@ extends Control
 
 signal auth_gate_completed(mode: String)
 
+# Same image as the project boot splash (project.godot boot_splash/image) — used as the
+# AuthGate background for first-start visual continuity between splash and login (C7.3.3).
+const AUTH_BACKGROUND_TEXTURE := preload("res://assets/images/app/boot_splash.png")
+
 enum _State {
 	CHECKING,
 	LOGIN,
@@ -86,8 +90,17 @@ func _exit_tree() -> void:
 # ── UI construction ───────────────────────────────────────────────────────────
 
 func _build_ui() -> void:
+	var background := TextureRect.new()
+	background.texture = AUTH_BACKGROUND_TEXTURE
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	add_child(background)
+
+	# Moderate dark overlay over the splash background — keeps the panel/text readable
+	# without hiding the splash image entirely (do not use a pure black background here).
 	var overlay := ColorRect.new()
-	overlay.color = Color(0.0, 0.0, 0.0, 0.88)
+	overlay.color = Color(0.0, 0.0, 0.0, 0.35)
 	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(overlay)
@@ -107,6 +120,8 @@ func _build_ui() -> void:
 	center.mouse_filter = Control.MOUSE_FILTER_PASS
 	margin.add_child(center)
 
+	# bg_color alpha is 1.0 — the panel is fully opaque and hides the splash background
+	# behind it entirely; do not lower this alpha (C7.3.3).
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color = Color(0.10, 0.105, 0.125, 1.0)
 	panel_style.border_width_left = 1
@@ -341,7 +356,46 @@ func _make_line_edit(placeholder: String) -> LineEdit:
 	edit.placeholder_text = placeholder
 	edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	edit.custom_minimum_size = Vector2(0, 44)
+	edit.add_theme_color_override("font_color", Color(0.95, 0.95, 0.95, 1.0))
+	edit.add_theme_color_override("font_placeholder_color", Color(0.6, 0.6, 0.62, 1.0))
+	_apply_opaque_line_edit_style(edit)
 	return edit
+
+
+# Opaque normal/focus/read_only backgrounds so fields stay solid and readable over the
+# splash background image (C7.3.3) — the default theme's LineEdit style is not guaranteed
+# fully opaque here since AuthGate builds its UI procedurally with no shared theme style.
+func _apply_opaque_line_edit_style(edit: LineEdit) -> void:
+	var normal_style := StyleBoxFlat.new()
+	normal_style.bg_color = Color(0.16, 0.165, 0.19, 1.0)
+	normal_style.border_width_left = 1
+	normal_style.border_width_top = 1
+	normal_style.border_width_right = 1
+	normal_style.border_width_bottom = 1
+	normal_style.border_color = Color(0.32, 0.34, 0.4, 1.0)
+	normal_style.corner_radius_top_left = 4
+	normal_style.corner_radius_top_right = 4
+	normal_style.corner_radius_bottom_right = 4
+	normal_style.corner_radius_bottom_left = 4
+	normal_style.content_margin_left = 10
+	normal_style.content_margin_right = 10
+	normal_style.content_margin_top = 6
+	normal_style.content_margin_bottom = 6
+
+	var focus_style := normal_style.duplicate() as StyleBoxFlat
+	focus_style.bg_color = Color(0.19, 0.195, 0.23, 1.0)
+	focus_style.border_color = Color(0.55, 0.65, 0.85, 1.0)
+	focus_style.border_width_left = 2
+	focus_style.border_width_top = 2
+	focus_style.border_width_right = 2
+	focus_style.border_width_bottom = 2
+
+	var read_only_style := normal_style.duplicate() as StyleBoxFlat
+	read_only_style.bg_color = Color(0.13, 0.135, 0.155, 1.0)
+
+	edit.add_theme_stylebox_override("normal", normal_style)
+	edit.add_theme_stylebox_override("focus", focus_style)
+	edit.add_theme_stylebox_override("read_only", read_only_style)
 
 
 func _make_button(label_text: String, callback: Callable) -> Button:

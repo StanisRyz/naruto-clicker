@@ -992,6 +992,29 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
   (`_is_backend_account_ui_supported()` gate), matching the pre-existing Account/Cloud
   section gating. Web/Yandex never sees an Account button or `AccountWindow`.
 
+## AuthGate Visual Rules (C7.3.3)
+
+- **`AuthGateScreen` background uses the boot splash image** (same file as
+  `project.godot`'s `boot_splash/image`, loaded via `AUTH_BACKGROUND_TEXTURE = preload("res://assets/images/app/boot_splash.png")`)
+  for visual continuity between app boot and first login. It sits behind the dark overlay
+  as a full-rect `TextureRect` with `mouse_filter = MOUSE_FILTER_IGNORE` and
+  `STRETCH_KEEP_ASPECT_COVERED` — it must never intercept input or distort the aspect ratio.
+- **The dark overlay above the splash must stay moderate (~0.25–0.45 alpha), never pure
+  black/opaque.** The splash image must remain visible; only the panel text/inputs need
+  full readability, not the whole screen.
+- **The AuthGate login/register/reset `PanelContainer` must stay fully opaque
+  (`bg_color.a == 1.0`).** It already is — do not lower it when touching this panel.
+- **AuthGate `LineEdit` fields must use explicit opaque `normal`/`focus`/`read_only`
+  `StyleBoxFlat` overrides** (see `_apply_opaque_line_edit_style()`) plus explicit
+  `font_color`/`font_placeholder_color` — AuthGate builds its UI procedurally with no
+  shared theme LineEdit style, so don't assume the default theme is opaque here.
+- **Visual AuthGate patches must not change `auth_gate_completed` source strings, the
+  stored-session check, login/register/reset request flow, or Continue as Guest.**
+  AuthGate must keep calling the backend only through `Platform`, never `SaveManager` or
+  `BackendApiClient` directly.
+- **Do not mix AuthGate visual polish with cloud-save authority changes (C7.3.1) or
+  Settings/AccountWindow changes (C7.3.2).** Keep these patches independently reviewable.
+
 ## Startup Upload Suspension Rules (C5.3.1)
 
 - **`SaveManager._backend_cloud_auto_upload_suspended` guards `queue_backend_cloud_save()` only.** `upload_current_save_to_backend_cloud_now()` has no suspension guard and must never acquire one — manual Save to Cloud must always work.

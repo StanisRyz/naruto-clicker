@@ -1491,6 +1491,53 @@ dedicated `AccountWindow` so `SettingsWindow` goes back to basic settings only.
 
 ---
 
+### C7.3.3 — Account Window Regression & AuthGate Visual Polish (completed)
+
+**Purpose:** Regression-check the C7.3.2 Settings → AccountWindow split, and apply two
+AuthGate visual microfixes: an opaque login/register/reset panel and the boot splash
+image as the AuthGate background (visual continuity between app boot and first login).
+
+**Changes:**
+
+- Regression pass over C7.3.2: confirmed `SettingsWindow` still shows only Sound, Music,
+  Language, Save, Account, Version with no inline account/cloud details; the Account
+  button opens `AccountWindow` and closes Settings; `AccountWindow`'s three signals are
+  connected in `ClickerScreen.gd`; cloud status/busy calls route through
+  `_set_account_window_cloud_status()`/`_set_account_window_cloud_buttons_busy()`; and
+  `account_window.visible` is included in the ad-safety/rewarded-banner/attack-input
+  guards. No regressions found — no code changes were needed here.
+- `scenes/auth/AuthGateScreen.gd`: added a full-rect `TextureRect` background using
+  `res://assets/images/app/boot_splash.png` (`AUTH_BACKGROUND_TEXTURE`,
+  `STRETCH_KEEP_ASPECT_COVERED`, `MOUSE_FILTER_IGNORE`) behind the existing dark overlay.
+  Lowered the overlay from `Color(0,0,0,0.88)` to `Color(0,0,0,0.35)` so the splash image
+  stays visible while keeping the panel/text readable.
+- The login/register/reset `PanelContainer` background was already fully opaque
+  (`bg_color.a == 1.0`) — documented with a comment rather than changed.
+- Added `_apply_opaque_line_edit_style()`: local `normal`/`focus`/`read_only`
+  `StyleBoxFlat` overrides (opaque backgrounds, visible focus border) plus explicit
+  `font_color`/`font_placeholder_color` overrides, applied to every AuthGate `LineEdit`
+  via `_make_line_edit()`. Buttons were left untouched — `main_theme.tres`'s `Button`
+  styles are already opaque with white/outlined text, readable over any background.
+
+**What C7.3.3 did NOT change:**
+
+- `auth_gate_completed` source strings (`"guest"`, `"account_session"`, `"account_login"`,
+  `"account_register"`), stored-session check, login/register/reset request flow,
+  Continue as Guest — all untouched. AuthGate still only calls the backend through
+  `Platform`, never `SaveManager` or `BackendApiClient` directly.
+- Account startup force-load (C7.3.1), Guest → Register/Login (C7.1),
+  `SaveManager` schema, backend Cloud Function code/API paths, payment/RuStore flow,
+  rewarded ads, paid shop lock logic, gameplay balance.
+- `CloudRestorePrompt` — left in the repo unused, as in C7.3.1/C7.3.2.
+- Web/Yandex behavior — AuthGate only exists on Android; nothing in this patch touches
+  Web/editor code paths.
+- Panel/window sizing — the AuthGate panel keeps its existing procedural fixed
+  `custom_minimum_size = Vector2(340, 520)`; no dynamic resize was introduced.
+
+**Validation:** see `docs/validation/account_window_and_auth_visual_regression.md`.
+
+---
+
 ### C6.1 — Release Audit Fixes (completed)
 
 Small release-safety fixes applied after the C6 stabilization pass. No new gameplay
