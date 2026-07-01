@@ -51,6 +51,32 @@ The project is at final release-candidate stage. Future tasks must:
   to the shorter Web viewport — do not add per-platform offset hacks.
 - Background ImageSlot uses `stretch_mode = STRETCH_KEEP_ASPECT_COVERED` — vertical crop is
   acceptable and expected on the 9:16 Web layout.
+- **Fixed-size textured windows must not dynamically resize to fit content (C7.2.6).**
+  Popups/windows/cards with an `ImageSlot`-based background (`SettingsWindow`,
+  `ShopSheet`, `ShopPanel` cards, `GemPurchaseDialog`,
+  `ShopPurchaseConfirmDialog`, `PrestigeConfirmDialog`, skill popups,
+  `TasksWindow`, etc.) must keep their existing fixed `custom_minimum_size` /
+  anchor offsets whenever possible. Do not let a `PanelContainer`/`VBoxContainer`
+  grow the outer window based on how much text or how many controls are inside
+  it — new content must fit via shorter text, smaller spacing, a smaller (but
+  still safe) local font size, hiding optional controls, or an existing/added
+  internal `ScrollContainer`, in that preference order.
+- **If a fixed textured window must actually be resized, resize width and
+  height proportionally by the same scale factor (C7.2.6).** Preserve the
+  aspect ratio and texture proportions — never change only one axis (e.g. only
+  `offset_top`/`offset_bottom` without a matching width change). Document the
+  old size, new size, and scale factor in the PR/validation doc. (Note: a
+  pre-existing exception predates this rule — `SettingsWindow`'s panel height
+  is overridden non-proportionally when the Account/Cloud section is created,
+  from C4; this is a known, documented, static conditional resize, not a
+  per-content dynamic one — see `docs/validation/final_settings_account_cloud_regression.md`.
+  Do not use it as precedent for new non-proportional resizes.)
+- **Settings/Shop UI regression or sizing patches must not change backend/cloud/
+  payment/gameplay logic (C7.2.6).** Audits, text tweaks, and layout fixes in
+  `SettingsWindow`, `ShopSheet`/`ShopPanel`, or related popups must not alter
+  `SaveManager`, backend Cloud Functions, backend API paths, Guest → Login/
+  Register logic, `CloudRestorePrompt` logic, paid shop lock logic, payment/
+  RuStore flow, rewarded ads, or gameplay balance.
 
 ## Payment rules (all platforms)
 

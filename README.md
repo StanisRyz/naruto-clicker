@@ -1277,6 +1277,71 @@ the lock state visible.
 
 ---
 
+### C7.2.5 — Obsolete Reset Progress / GuestMigrationPrompt Cleanup (completed)
+
+**Purpose:** Remove dead files and stale documentation left over after Reset
+Progress (C7.2.1) and the old GuestMigrationPrompt flow (C7.1/C7.1.1) were
+removed from production.
+
+**Changes:**
+
+- Deleted `scenes/ui/GuestMigrationPrompt.gd`/`.tscn`/`.gd.uid` (confirmed
+  unreferenced since C7.1.1) and the unused
+  `assets/images/ui/windows/settings/reset_confirm_background.png` (+`.import`)
+  left over from C7.2.1.
+- Removed the 6 `guest_migration.*` localization keys that only the deleted
+  script used (459 → 453 keys).
+- Added the "Current Settings model and account rules" summary above and
+  marked historical docs/README sections describing the old flows as
+  superseded/obsolete, without rewriting their point-in-time content.
+
+**What C7.2.5 did NOT change:** any runtime behavior — this was a
+docs/localization/dead-file cleanup only.
+
+**Validation:** see `docs/validation/obsolete_reset_and_guest_migration_cleanup.md`.
+
+---
+
+### C7.2.6 — Final Settings/Account/Cloud/Shop Regression & Fixed-Size Window Audit (completed)
+
+**Purpose:** Final hardening pass across the whole C7.2 series: re-verify
+Settings/Account/Cloud/Shop behavior end-to-end, and audit fixed-size textured
+windows to confirm none of the C7.2 UI changes introduced dynamic,
+content-driven resizing.
+
+**Findings:**
+
+- No functional regressions or UI-state bugs were found in the C7.2.1–C7.2.5
+  series — **no `.gd`/`.tscn` files were changed** by this patch.
+- Reset Progress and GuestMigrationPrompt remain fully absent at runtime; all
+  remaining "reset"/"migration" hits are either the unrelated AuthGate
+  password-reset flow, an internal debug-tool label, or clearly-marked
+  historical documentation.
+- `SettingsWindow` signal contract, Account/Cloud state transitions (Guest ↔
+  Account, Logout), busy-state handling, AuthGate entry points (Settings and
+  Shop), and the Shop paid-lock behavior were all re-verified against the code
+  and match the C7.1–C7.2.4 design with no drift.
+- **Fixed-size window audit:** `SettingsWindow`, `ShopSheet`/`ShopPanel`,
+  `GemPurchaseDialog`, `CloudRestorePrompt`, `AuthGateScreen`,
+  `ShopPurchaseConfirmDialog`, `PrestigeConfirmDialog`, skill popups, and
+  `TasksWindow` were all reviewed. No new dynamic or content-driven textured-
+  window resizing was introduced by C7.2. One **pre-existing** (from C4, not
+  C7.2) non-proportional resize was found in `SettingsWindow` (panel height
+  overridden to 874px while width stays 540px when the Account/Cloud section
+  is created) — it is a static, conditional resize (Android vs. not), not a
+  per-content dynamic one, and was left unchanged since correcting it would be
+  a Settings layout redesign, out of scope for this audit patch.
+
+**What C7.2.6 did NOT change:** backend/cloud/payment/gameplay logic, Settings
+layout, Account/Cloud runtime behavior, Guest → Login/Register logic,
+`CloudRestorePrompt` logic, paid shop lock logic, payment/RuStore flow,
+rewarded ads, Web/Yandex behavior — all confirmed unchanged by this audit-only
+patch.
+
+**Validation:** see `docs/validation/final_settings_account_cloud_regression.md`.
+
+---
+
 ### C6.1 — Release Audit Fixes (completed)
 
 Small release-safety fixes applied after the C6 stabilization pass. No new gameplay
