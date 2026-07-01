@@ -111,6 +111,7 @@ var _fullscreen_ad_overlay: Control = null
 @onready var tasks_button_image_holder = $TasksButton/ImageHolder
 @onready var tasks_window: TasksWindow = $TasksWindow
 @onready var settings_window: SettingsWindow = $SettingsWindow
+@onready var account_window: AccountWindow = $AccountWindow
 @onready var game_field: GameField = $GameField
 @onready var ability_bar: AbilityBar = $AbilityBar
 @onready var upgrades_button: Button = $BottomBar/MarginContainer/HBoxContainer/UpgradesButton
@@ -155,9 +156,10 @@ func _ready() -> void:
 	settings_window.music_toggled.connect(_on_settings_music_toggled)
 	settings_window.save_requested.connect(_on_settings_save_requested)
 	settings_window.language_manually_changed.connect(_on_language_manually_changed)
-	settings_window.account_auth_requested.connect(_on_settings_account_auth_requested)
-	settings_window.cloud_save_upload_requested.connect(_on_settings_cloud_save_upload_requested)
-	settings_window.cloud_save_download_requested.connect(_on_settings_cloud_save_download_requested)
+	settings_window.account_window_requested.connect(_on_settings_account_window_requested)
+	account_window.account_auth_requested.connect(_on_settings_account_auth_requested)
+	account_window.cloud_save_upload_requested.connect(_on_account_window_cloud_save_upload_requested)
+	account_window.cloud_save_download_requested.connect(_on_account_window_cloud_save_download_requested)
 	if not Platform.backend_operation_succeeded.is_connected(_on_backend_cloud_op_succeeded):
 		Platform.backend_operation_succeeded.connect(_on_backend_cloud_op_succeeded)
 	if not Platform.backend_operation_failed.is_connected(_on_backend_cloud_op_failed):
@@ -383,6 +385,9 @@ func _on_attack_requested(click_global_position: Vector2) -> void:
 	if settings_window.visible:
 		return
 
+	if account_window.visible:
+		return
+
 	if enemy_transition_locked:
 		return
 
@@ -462,6 +467,14 @@ func _on_ability_unlock_requested(ability_id: String) -> void:
 
 func _on_settings_requested() -> void:
 	settings_window.show_window(state)
+	_update_rewarded_ad_banner()
+
+
+# Account button in SettingsWindow (C7.3.2): one modal at a time — close Settings,
+# open AccountWindow. Closing AccountWindow returns to gameplay, not back to Settings.
+func _on_settings_account_window_requested() -> void:
+	settings_window.hide_window()
+	account_window.show_window()
 	_update_rewarded_ad_banner()
 
 
@@ -1320,6 +1333,8 @@ func _is_safe_for_fullscreen_ad() -> bool:
 		return false
 	if cloud_restore_prompt.visible:
 		return false
+	if account_window.visible:
+		return false
 	var now: float = Time.get_ticks_msec() / 1000.0
 	if now - _last_user_interaction_time < FULLSCREEN_AD_SAFE_INTERACTION_GAP_SECONDS:
 		return false
@@ -1887,6 +1902,7 @@ func _is_main_screen_clear_for_rewarded_banner() -> bool:
 		and not shop_sheet.visible
 		and not tasks_window.visible
 		and not settings_window.visible
+		and not account_window.visible
 		and not auto_transition_popup.visible
 		and not prestige_confirm_dialog.visible
 		and not shop_purchase_confirm_dialog.visible
@@ -1918,33 +1934,45 @@ func _update_rewarded_ad_banner() -> void:
 
 # ── Backend cloud save (manual upload / download) ─────────────────────────────
 
-func _on_settings_cloud_save_upload_requested() -> void:
+# Safe no-ops if AccountWindow is closed/not instantiated — cloud status/busy
+# updates must never crash regardless of which window (if any) is visible.
+func _set_account_window_cloud_status(text: String, is_error: bool = false) -> void:
+	if is_instance_valid(account_window):
+		account_window.set_cloud_save_status(text, is_error)
+
+
+func _set_account_window_cloud_buttons_busy(is_busy: bool) -> void:
+	if is_instance_valid(account_window):
+		account_window.set_cloud_save_buttons_busy(is_busy)
+
+
+func _on_account_window_cloud_save_upload_requested() -> void:
 	if not OS.has_feature("android") or not Platform.backend_has_session():
-		settings_window.set_cloud_save_status(
+		_set_account_window_cloud_status(
 			LocalizationManager.tr_key("settings.cloud.upload_failed"), true
 		)
 		return
 	_manual_backend_cloud_upload_requested = true
-	settings_window.set_cloud_save_buttons_busy(true)
+	_set_account_window_cloud_buttons_busy(true)
 	_save_game_now()
 	if not SaveManager.upload_current_save_to_backend_cloud_now():
 		_manual_backend_cloud_upload_requested = false
-		settings_window.set_cloud_save_buttons_busy(false)
-		settings_window.set_cloud_save_status(
+		_set_account_window_cloud_buttons_busy(false)
+		_set_account_window_cloud_status(
 			LocalizationManager.tr_key("settings.cloud.upload_failed"), true
 		)
 
 
-func _on_settings_cloud_save_download_requested() -> void:
+func _on_account_window_cloud_save_download_requested() -> void:
 	if not OS.has_feature("android") or not Platform.backend_has_session():
-		settings_window.set_cloud_save_status(
+		_set_account_window_cloud_status(
 			LocalizationManager.tr_key("settings.cloud.download_failed"), true
 		)
 		return
 	# Manual download takes priority — cancel any in-progress startup check context.
 	_startup_cloud_restore_check_in_progress = false
 	_manual_backend_cloud_download_requested = true
-	settings_window.set_cloud_save_buttons_busy(true)
+	_set_account_window_cloud_buttons_busy(true)
 	Platform.backend_load_save()
 
 
@@ -1956,14 +1984,14 @@ func _on_backend_cloud_op_succeeded(operation: String, response: Dictionary) -> 
 				_register_guest_upload_requested = false
 				_gameplay_started_as_guest = false
 				_update_shop_paid_availability()
-				if settings_window.visible:
-					settings_window.set_cloud_save_status(
+				if account_window.visible:
+					_set_account_window_cloud_status(
 						LocalizationManager.tr_key("account_flow.register_guest_upload_success")
 					)
 			elif _manual_backend_cloud_upload_requested:
 				_manual_backend_cloud_upload_requested = false
-				settings_window.set_cloud_save_buttons_busy(false)
-				settings_window.set_cloud_save_status(
+				_set_account_window_cloud_buttons_busy(false)
+				_set_account_window_cloud_status(
 					LocalizationManager.tr_key("settings.cloud.upload_success")
 				)
 
@@ -1984,22 +2012,22 @@ func _on_backend_cloud_op_succeeded(operation: String, response: Dictionary) -> 
 							stage_navigator.center_on_level(state.current_level)
 						_gameplay_started_as_guest = false
 						_update_shop_paid_availability()
-						if settings_window.visible:
-							settings_window.set_cloud_save_status(
+						if account_window.visible:
+							_set_account_window_cloud_status(
 								LocalizationManager.tr_key("account_flow.login_cloud_load_success")
 							)
 					else:
 						push_warning("ClickerScreen: startup account cloud load apply failed")
-						if settings_window.visible:
-							settings_window.set_cloud_save_status(
+						if account_window.visible:
+							_set_account_window_cloud_status(
 								LocalizationManager.tr_key("account_flow.login_cloud_load_failed"), true
 							)
 				else:
 					_apply_clean_account_save_after_missing_cloud()
 					_gameplay_started_as_guest = false
 					_update_shop_paid_availability()
-					if settings_window.visible:
-						settings_window.set_cloud_save_status(
+					if account_window.visible:
+						_set_account_window_cloud_status(
 							LocalizationManager.tr_key("account_flow.login_cloud_load_missing")
 						)
 				_resume_backend_auto_upload_after_restore_decision()
@@ -2019,31 +2047,31 @@ func _on_backend_cloud_op_succeeded(operation: String, response: Dictionary) -> 
 							stage_navigator.center_on_level(state.current_level)
 						_gameplay_started_as_guest = false
 						_update_shop_paid_availability()
-						if settings_window.visible:
-							settings_window.set_cloud_save_status(
+						if account_window.visible:
+							_set_account_window_cloud_status(
 								LocalizationManager.tr_key("account_flow.login_cloud_load_success")
 							)
 					else:
 						push_warning("ClickerScreen: guest login force-load apply failed")
-						if settings_window.visible:
-							settings_window.set_cloud_save_status(
+						if account_window.visible:
+							_set_account_window_cloud_status(
 								LocalizationManager.tr_key("account_flow.login_cloud_load_failed"), true
 							)
 				else:
 					_apply_clean_account_save_after_missing_cloud()
 					_gameplay_started_as_guest = false
 					_update_shop_paid_availability()
-					if settings_window.visible:
-						settings_window.set_cloud_save_status(
+					if account_window.visible:
+						_set_account_window_cloud_status(
 							LocalizationManager.tr_key("account_flow.login_cloud_load_missing")
 						)
 				_resume_backend_auto_upload_after_restore_decision()
 			elif _manual_backend_cloud_download_requested:
 				_manual_backend_cloud_download_requested = false
-				settings_window.set_cloud_save_buttons_busy(false)
+				_set_account_window_cloud_buttons_busy(false)
 				var has_save_manual: bool = bool(response.get("has_save", false))
 				if not has_save_manual:
-					settings_window.set_cloud_save_status(
+					_set_account_window_cloud_status(
 						LocalizationManager.tr_key("settings.cloud.no_cloud_save")
 					)
 					_resume_backend_auto_upload_after_restore_decision()
@@ -2058,11 +2086,11 @@ func _on_backend_cloud_op_succeeded(operation: String, response: Dictionary) -> 
 						_sync_boss_timer()
 						_update_ui()
 						stage_navigator.center_on_level(state.current_level)
-					settings_window.set_cloud_save_status(
+					_set_account_window_cloud_status(
 						LocalizationManager.tr_key("settings.cloud.download_success")
 					)
 				else:
-					settings_window.set_cloud_save_status(
+					_set_account_window_cloud_status(
 						LocalizationManager.tr_key("settings.cloud.invalid_cloud_save"), true
 					)
 				_resume_backend_auto_upload_after_restore_decision()
@@ -2191,14 +2219,14 @@ func _on_cloud_restore_load_confirmed() -> void:
 			_sync_boss_timer()
 			_update_ui()
 			stage_navigator.center_on_level(state.current_level)
-		if settings_window.visible:
-			settings_window.set_cloud_save_status(
+		if account_window.visible:
+			_set_account_window_cloud_status(
 				LocalizationManager.tr_key("cloud_restore.loaded_success")
 			)
 	else:
 		push_warning("ClickerScreen: cloud restore apply failed after user confirmation")
-		if settings_window.visible:
-			settings_window.set_cloud_save_status(
+		if account_window.visible:
+			_set_account_window_cloud_status(
 				LocalizationManager.tr_key("cloud_restore.load_failed"), true
 			)
 
@@ -2218,16 +2246,16 @@ func _on_backend_cloud_op_failed(operation: String, error_code: String, _status_
 			SaveManager.mark_backend_cloud_upload_finished(false)
 			if _register_guest_upload_requested:
 				_register_guest_upload_requested = false
-				if settings_window.visible:
-					settings_window.set_cloud_save_status(
+				if account_window.visible:
+					_set_account_window_cloud_status(
 						LocalizationManager.tr_key("account_flow.register_guest_upload_failed"), true
 					)
 				else:
 					push_warning("ClickerScreen: register guest upload failed: %s" % error_code)
 			elif _manual_backend_cloud_upload_requested:
 				_manual_backend_cloud_upload_requested = false
-				settings_window.set_cloud_save_buttons_busy(false)
-				settings_window.set_cloud_save_status(
+				_set_account_window_cloud_buttons_busy(false)
+				_set_account_window_cloud_status(
 					LocalizationManager.format_key("settings.account.backend_error", {"error": error_code}),
 					true
 				)
@@ -2239,22 +2267,22 @@ func _on_backend_cloud_op_failed(operation: String, error_code: String, _status_
 				_force_account_cloud_load_on_startup = false
 				push_warning("ClickerScreen: startup account cloud load failed: %s" % error_code)
 				_resume_backend_auto_upload_after_restore_decision()
-				if settings_window.visible:
-					settings_window.set_cloud_save_status(
+				if account_window.visible:
+					_set_account_window_cloud_status(
 						LocalizationManager.tr_key("account_flow.login_cloud_load_failed"), true
 					)
 			elif _force_account_cloud_load_after_guest_login:
 				_force_account_cloud_load_after_guest_login = false
 				push_warning("ClickerScreen: guest login force cloud load failed: %s" % error_code)
 				_resume_backend_auto_upload_after_restore_decision()
-				if settings_window.visible:
-					settings_window.set_cloud_save_status(
+				if account_window.visible:
+					_set_account_window_cloud_status(
 						LocalizationManager.tr_key("account_flow.login_cloud_load_failed"), true
 					)
 			elif _manual_backend_cloud_download_requested:
 				_manual_backend_cloud_download_requested = false
-				settings_window.set_cloud_save_buttons_busy(false)
-				settings_window.set_cloud_save_status(
+				_set_account_window_cloud_buttons_busy(false)
+				_set_account_window_cloud_status(
 					LocalizationManager.format_key("settings.account.backend_error", {"error": error_code}),
 					true
 				)
@@ -2279,15 +2307,15 @@ func on_account_registered_from_guest_overlay() -> void:
 	if not _gameplay_started_as_guest:
 		return
 	_save_game_now()
-	if settings_window.visible:
-		settings_window.set_cloud_save_status(
+	if account_window.visible:
+		_set_account_window_cloud_status(
 			LocalizationManager.tr_key("account_flow.register_guest_upload_started")
 		)
 	_register_guest_upload_requested = true
 	if not SaveManager.upload_current_save_to_backend_cloud_now():
 		_register_guest_upload_requested = false
-		if settings_window.visible:
-			settings_window.set_cloud_save_status(
+		if account_window.visible:
+			_set_account_window_cloud_status(
 				LocalizationManager.tr_key("account_flow.register_guest_upload_failed"), true
 			)
 
@@ -2299,8 +2327,8 @@ func on_account_login_from_guest_overlay() -> void:
 		return
 	SaveManager.set_backend_cloud_auto_upload_suspended(true)
 	_force_account_cloud_load_after_guest_login = true
-	if settings_window.visible:
-		settings_window.set_cloud_save_status(
+	if account_window.visible:
+		_set_account_window_cloud_status(
 			LocalizationManager.tr_key("account_flow.login_cloud_load_started")
 		)
 	Platform.backend_load_save()

@@ -53,7 +53,7 @@ The project is at final release-candidate stage. Future tasks must:
   acceptable and expected on the 9:16 Web layout.
 - **Fixed-size textured windows must not dynamically resize to fit content (C7.2.6).**
   Popups/windows/cards with an `ImageSlot`-based background (`SettingsWindow`,
-  `ShopSheet`, `ShopPanel` cards, `GemPurchaseDialog`,
+  `AccountWindow` (C7.3.2), `ShopSheet`, `ShopPanel` cards, `GemPurchaseDialog`,
   `ShopPurchaseConfirmDialog`, `PrestigeConfirmDialog`, skill popups,
   `TasksWindow`, etc.) must keep their existing fixed `custom_minimum_size` /
   anchor offsets whenever possible. Do not let a `PanelContainer`/`VBoxContainer`
@@ -953,6 +953,44 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
   `_manual_backend_cloud_download_requested` and still requires no auto-apply without a
   user-initiated request (the request itself is the confirmation — no `CloudRestorePrompt`
   was ever used for the manual path).
+
+## AccountWindow / Settings Split Rules (C7.3.2)
+
+- **`SettingsWindow` must remain basic settings only:** Sound, Music, Language, Save,
+  Account button, Version. Detailed account/cloud UI (status, email, verification,
+  Save/Load to Cloud, Logout) belongs in `AccountWindow`, not inline in `SettingsWindow`.
+  Do not put it back inline — open `AccountWindow` instead.
+- **`AccountWindow` must use a fixed-size outer `PanelContainer` and internal
+  `BodyScrollContainer`/`BodyVBoxContainer` scrolling**, the same pattern as
+  `SettingsWindow` (C7.2.7). Never resize the outer panel dynamically based on content,
+  and never resize only one axis. It reuses the `"ui.window.settings.background"` texture
+  key for visual consistency — no new art was commissioned for this patch.
+- **`AccountWindow` owns its own Platform signal connections** (`backend_auth_changed`,
+  `backend_operation_succeeded`, `backend_operation_failed`) for refreshing its own account
+  section — moved verbatim from `SettingsWindow._connect_account_platform_signals()`.
+  `ClickerScreen` does not need to poll or refresh `AccountWindow`'s account state; it only
+  forwards cloud-save request signals and routes cloud status/busy updates to it.
+- **`SettingsWindow.account_window_requested` → `ClickerScreen._on_settings_account_window_requested()`
+  hides `SettingsWindow` and shows `AccountWindow`** (one modal at a time). Closing
+  `AccountWindow` returns to gameplay, not back to `SettingsWindow`.
+- **Cloud status/busy routing must go through `_set_account_window_cloud_status()` /
+  `_set_account_window_cloud_buttons_busy()`,** not `settings_window.set_cloud_save_status()`
+  (removed). Both helpers are safe no-ops if `account_window` isn't valid — cloud
+  success/failure handlers must never crash regardless of which window is open.
+- **Guards that previously checked `settings_window.visible` to decide whether to show a
+  cloud status message now check `account_window.visible`** — the account/cloud UI lives
+  there now, not in Settings.
+- **`account_window.visible` must be included in ad-safety and rewarded-banner-visibility
+  checks** (`_is_safe_for_fullscreen_ad()`, `_is_main_screen_clear_for_rewarded_banner()`)
+  and in `_on_attack_requested()`'s blocked-input guard, the same way `settings_window.visible`
+  already was.
+- **Do not mix `AccountWindow` UI changes with cloud-save authority logic (C7.3.1) or
+  Guest → Register/Login logic (C7.1).** This patch only moves *where* the UI lives; the
+  underlying backend/cloud request flow, force-load flags, and signal payloads are
+  byte-for-byte the same as before the split.
+- **The Account button in `SettingsWindow` only exists on Android**
+  (`_is_backend_account_ui_supported()` gate), matching the pre-existing Account/Cloud
+  section gating. Web/Yandex never sees an Account button or `AccountWindow`.
 
 ## Startup Upload Suspension Rules (C5.3.1)
 

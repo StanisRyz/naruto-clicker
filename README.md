@@ -1435,6 +1435,62 @@ all load the account cloud save automatically — no "Load from cloud?" decision
 
 ---
 
+### C7.3.2 — Separate Account Window from Settings (completed)
+
+**Purpose:** `SettingsWindow` had grown crowded once C7.1's Account/Cloud section was
+added on top of Sound/Music/Language/Save. Split the detailed account/cloud UI into a
+dedicated `AccountWindow` so `SettingsWindow` goes back to basic settings only.
+
+**Changes:**
+
+- Added `scenes/ui/AccountWindow.gd` / `AccountWindow.tscn`: a fixed-size textured
+  window (`540×525`, same `"ui.window.settings.background"` texture and
+  `BodyScrollContainer`/`BodyVBoxContainer` pattern as `SettingsWindow`, C7.2.7) that owns
+  all account status/email/verification UI and the manual Save to Cloud / Load from Cloud
+  UI — moved essentially verbatim from `SettingsWindow._create_account_section()` /
+  `_create_cloud_section()`, including its own direct `Platform` signal connections for
+  refreshing account state.
+- `SettingsWindow.gd`: removed all `_account_*`/`_cloud_*` fields, section-building code,
+  and the `account_auth_requested`/`cloud_save_upload_requested`/`cloud_save_download_requested`
+  signals. Added a single Account button under Save (Android-only, same gating as the old
+  Account/Cloud section) and a new `account_window_requested` signal.
+- `ClickerScreen.tscn`: added an `AccountWindow` node next to `SettingsWindow`, hidden by
+  default. `ClickerScreen.gd`: added `@onready var account_window`, connects
+  `settings_window.account_window_requested` → `_on_settings_account_window_requested()`
+  (hides Settings, shows AccountWindow — one modal at a time) and the three `AccountWindow`
+  signals to the (renamed) `_on_account_window_cloud_save_upload_requested()` /
+  `_on_account_window_cloud_save_download_requested()` handlers plus the existing
+  `_on_settings_account_auth_requested()`.
+- All `settings_window.set_cloud_save_status()` / `set_cloud_save_buttons_busy()` call
+  sites replaced with new `_set_account_window_cloud_status()` /
+  `_set_account_window_cloud_buttons_busy()` helpers (safe no-ops if `account_window` isn't
+  valid). Every `if settings_window.visible:` guard that gated a cloud status message now
+  checks `account_window.visible` instead.
+- `account_window.visible` added to `_is_safe_for_fullscreen_ad()`,
+  `_is_main_screen_clear_for_rewarded_banner()`, and the blocked-input guard in
+  `_on_attack_requested()` — the same treatment `settings_window.visible` already had.
+- Localization: added one new key, `settings.account_button` ("Account" / "Аккаунт").
+  Everything else (`settings.account_cloud.title`, `settings.account.*`,
+  `settings.cloud.*`) is reused unchanged as `AccountWindow`'s content — no other CSV
+  churn.
+
+**What C7.3.2 did NOT change:**
+
+- Account startup force-load logic (C7.3.1), Guest → Register upload (C7.1), Guest →
+  Login force-load (C7.1) — the underlying request/response handling is byte-for-byte the
+  same; only which window shows the resulting status message changed.
+- `SaveManager` schema, backend Cloud Function code, backend API paths, payment/RuStore
+  flow, rewarded ads, paid shop lock logic, gameplay balance.
+- `CloudRestorePrompt` — left in the repo unused, as in C7.3.1.
+- Web/Yandex behavior — the Account button and `AccountWindow` only exist on Android
+  (`_is_backend_account_ui_supported()` gate, same as the old Account/Cloud section).
+- Fixed-size window rule — both `SettingsWindow` and `AccountWindow` keep their
+  `540×525` outer panel; only `BodyVBoxContainer` content differs between them.
+
+**Validation:** see `docs/validation/separate_account_window_from_settings.md`.
+
+---
+
 ### C6.1 — Release Audit Fixes (completed)
 
 Small release-safety fixes applied after the C6 stabilization pass. No new gameplay

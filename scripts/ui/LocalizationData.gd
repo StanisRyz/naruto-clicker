@@ -4,8 +4,8 @@ extends RefCounted
 # AUTO-GENERATED — do not edit by hand.
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
-# Generated key count: 453
-# Generated at: 1782920055
+# Generated key count: 454
+# Generated at: 1782922435
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -43,6 +43,7 @@ const TRANSLATIONS: Dictionary = {
 		"settings.language.ru": "Русский",
 		"settings.saved": "Saved",
 		"settings.save_failed": "Save failed",
+		"settings.account_button": "Account",
 		"auto_transition.status_on": "ON",
 		"auto_transition.status_off": "OFF",
 		"auto_transition.description.line_1": "When enabled cleared",
@@ -498,6 +499,7 @@ const TRANSLATIONS: Dictionary = {
 		"settings.language.ru": "Русский",
 		"settings.saved": "Сохранено",
 		"settings.save_failed": "Ошибка Сохранения",
+		"settings.account_button": "Аккаунт",
 		"auto_transition.status_on": "Вкл",
 		"auto_transition.status_off": "Выкл",
 		"auto_transition.description.line_1": "Когда включено",
