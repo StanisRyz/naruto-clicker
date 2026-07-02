@@ -135,7 +135,10 @@ confirm it's in sync.
 ## Known follow-up
 
 This patch does not touch:
-- Yandex draft product enablement or pricing (console-side, Y5).
+- Yandex draft product enablement or pricing (console-side, Y5). For the
+  manual per-product verification checklist (product exists, id matches,
+  enabled, priced, appears in the catalog, purchasable, credited once,
+  consumed), see `docs/yandex/yandex_products_checklist.md`.
 - `priceCurrencyImage` display (field is captured but not rendered — no UI
   requirement for it yet).
 - A RuStore-side catalog/price API (RuStore has no public equivalent to

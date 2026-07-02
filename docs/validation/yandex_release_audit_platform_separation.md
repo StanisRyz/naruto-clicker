@@ -248,10 +248,14 @@ the next submission. None of this is solved by this patch.
   shown as unavailable with purchase blocked. Purchase/consume/credit logic
   was not touched. Remaining: verify `yandex_product_id` values against the
   real Yandex draft (console-side, not code).
-- **Y5 — Metadata / Media Compliance**: needed. Non-code, console/media work
-  from §10 above — title consistency, description formatting, translated
-  fields, screenshot locale matching, promo image chrome removal, category,
-  product enablement.
+- **Y5 — Metadata / Media Compliance**: **docs/checklist implemented by this
+  patch.** See `docs/validation/yandex_submission_metadata_media_compliance.md`
+  and the new `docs/yandex/` folder (`yandex_draft_metadata.md`,
+  `yandex_submission_checklist.md`, `yandex_products_checklist.md`,
+  `yandex_media_requirements.md`). The underlying console/media/manual work
+  itself — filling the draft, exporting clean media, testing in the Yandex
+  console — is still outstanding and cannot be completed from this
+  repository; the docs prepare it but do not perform it.
 - **Y6 — HTML Export Smoke Pass**: needed. Manual verification pass per the
   checklist in §12 below, using a real `godot --headless --export-release
   "Web" …` build served over HTTP (not `file://`) and, ideally, uploaded to
@@ -319,8 +323,11 @@ No code was changed by this audit patch. Findings:
 - The remaining prior moderation issues (title consistency, description
   formatting, translated fields, screenshot locale, promo image chrome,
   category, product/purchase enablement) are **console/media work**, not
-  code — checklist captured in §10, deferred to **Y5**.
+  code — checklist captured in §10, and now formalized under `docs/yandex/`
+  by **Y5**.
 - Y2 and Y3 as originally scoped turned out to already be implemented; this
   audit recommends closing them rather than re-doing the work.
-- **Y4 is now implemented** (this update). Remaining steps in the sequence:
-  Y5 (metadata/media compliance) and Y6 (HTML export smoke pass).
+- **Y4 is implemented.** **Y5's code/docs side is implemented** (this
+  update) — see `docs/validation/yandex_submission_metadata_media_compliance.md`.
+  The manual console/media work Y5 prepares for is still outstanding.
+  Remaining step in the sequence: **Y6** (HTML export smoke pass).

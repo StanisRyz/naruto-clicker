@@ -70,9 +70,20 @@ full Y1 audit. Current follow-up sequence:
    be started for it. Purchase/credit/consume/recovery logic is unchanged.
    Android/RuStore payment behavior and price display are unchanged. See
    `docs/validation/yandex_payments_catalog_price_display.md`.
-5. **Y5** — metadata/media compliance. Needed: console/media checklist
-   (title consistency, translated fields, screenshot locale, promo image
-   chrome, category, product enablement) — not a code change.
+5. **Y5** — submission metadata and compliance docs (completed, code/docs
+   side). The console/media/manual work itself (filling the draft, exporting
+   media, testing in the console) is still outstanding and cannot be done
+   from this repository. Docs added under `docs/yandex/`:
+   - `docs/yandex/yandex_draft_metadata.md` — canonical title findings and
+     RU/EN draft field templates.
+   - `docs/yandex/yandex_submission_checklist.md` — full pre-submission
+     checklist (metadata, media, products, technical smoke test).
+   - `docs/yandex/yandex_products_checklist.md` — per-product Yandex draft
+     verification checklist for the 4 gem products.
+   - `docs/yandex/yandex_media_requirements.md` — promo/media chrome rules
+     (no baked rounded corners/frames, screenshot locale matching).
+   See `docs/validation/yandex_submission_metadata_media_compliance.md` for
+   the full record of this patch.
 6. **Y6** — HTML export smoke pass. Needed: manual verification of a real
    Web export against the Yandex Games preview cabinet.
 

@@ -554,6 +554,34 @@ accidentally cross the boundary:
   (screenshots, promo images, descriptions).** Console/media work is never
   solved by editing GDScript — see the Y5 checklist in
   `docs/validation/yandex_release_audit_platform_separation.md`.
+- **Yandex draft/media compliance is partly manual and cannot be solved
+  entirely in code.** Title consistency, description text, category, and
+  media chrome all require action inside the Yandex developer console — see
+  `docs/yandex/yandex_submission_checklist.md`. Do not treat a docs/checklist
+  patch as a substitute for actually completing the console-side steps.
+- **Product ids in `GemPurchaseConfig.gd` must match the Yandex draft ids
+  exactly.** See `docs/yandex/yandex_products_checklist.md`. A mismatch
+  makes Y4's catalog integration mark the product unavailable and block its
+  purchase — check `YandexBridge.get_catalog_product()`'s debug warning
+  first if a product won't show a real price.
+- **Do not hardcode Yandex prices in UI.** On Web, `GemPurchaseDialog` must
+  keep reading the price from `Platform.get_catalog_product()` (Yandex
+  catalog), never a hardcoded RUB or other currency string. `price_rub` in
+  `GemPurchaseConfig.gd` remains a fallback for Android/RuStore/editor only.
+- **Do not add rounded corners or baked frames to Yandex promo/media
+  exports.** See `docs/yandex/yandex_media_requirements.md`. This was a
+  prior moderation rejection reason.
+- **Screenshots with text must match their locale.** A screenshot attached
+  to the RU listing must show RU in-game UI text; EN listing → EN UI text.
+- **Keep category guidance as `Казуальные` (Casual) unless changed
+  intentionally** — this was previously flagged by moderation and must not
+  drift without a deliberate decision.
+- **Do not mix Yandex console/media checklist patches with
+  gameplay/payment logic patches.** Metadata/media/checklist work (Y5-style)
+  should not touch `YandexBridge` purchase/consume/recovery logic, save
+  logic, ads, or gameplay balance in the same patch — keep them separable so
+  a moderation-focused patch can't accidentally introduce a gameplay
+  regression.
 
 ## Stage Navigator Rules
 
