@@ -507,10 +507,39 @@ accidentally cross the boundary:
   RuStore Pay SDK calls remain confined to `AndroidRuStorePlatform.gd` per
   the existing rule above.
 - **Web/Yandex prices/currency shown to the player must come from the Yandex
-  catalog (`payments.getCatalog()`) when displayed, not a hardcoded RUB
-  figure.** Today `GemPurchaseDialog` shows the hardcoded `price_rub` field
-  from `GemPurchaseConfig.gd` on all platforms — this is a known gap,
-  tracked as **Y4**, not yet fixed.
+  catalog (`payments.getCatalog()`), never a hardcoded RUB figure.**
+  Implemented by Y4: `YandexBridge.load_payment_catalog()` caches
+  `payments.getCatalog()` by Yandex product id; `Platform.get_catalog_product(local_id)`
+  resolves it. `GemPurchaseDialog` shows the real catalog `price` on Web and
+  never falls back to `GemPurchaseConfig.price_rub` there. `price_rub`
+  remains the displayed price on Android/RuStore and in editor/debug only.
+  See `docs/validation/yandex_payments_catalog_price_display.md`.
+- **Local product id must map to `yandex_product_id` before it can be shown
+  or purchased on Web.** Use `GemPurchaseConfig.get_platform_product_id(id,
+  "yandex")` → `Platform.get_catalog_product(id)`, never assume the local id
+  equals the Yandex catalog id even though today's config happens to keep
+  them identical.
+- **A Yandex catalog product missing for a given local id must disable that
+  product's purchase safely — never show a fake price or start a purchase
+  for it.** `GemPurchaseDialog` shows `shop.gem_purchase.unavailable` /
+  keeps the buy button disabled, and blocks `gem_product_purchase_requested`
+  from firing, before `Platform.purchase_product()` is ever called. A debug
+  build logs a warning with both the local id and the resolved Yandex id —
+  that is the signal to check `GemPurchaseConfig.gd` against the real
+  Yandex draft catalog.
+- **Do not change purchase/consume/recovery logic when only fixing
+  catalog/price display.** `_on_payment_purchase_success()`,
+  `_on_payment_purchase_cancelled()`, `_on_payment_purchase_error()`,
+  `_on_unprocessed_purchase_found()`, `state.grant_paid_gem_purchase()`,
+  `state.is_purchase_processed()`, and `Platform.consume_purchase()` call
+  sites in `ClickerScreen.gd` must stay untouched by catalog/price-display
+  work — Y4 gates purchases one step upstream, in `GemPurchaseDialog`,
+  precisely so these functions never need to change.
+- **Android/RuStore payment flow must remain separate and unaffected by
+  Web/Yandex catalog work.** `AndroidRuStorePlatform.gd`'s catalog methods
+  are permanent no-ops (`load_payment_catalog()` emits an empty list;
+  `get_catalog_product()` returns `{}`) — RuStore has no equivalent catalog
+  API. Do not wire RuStore pricing through the same catalog path as Yandex.
 - **Web/Yandex language must be auto-applied from the Yandex SDK.** Already
   implemented in `ClickerScreen._apply_startup_language()` — reads
   `Platform.get_platform_language()` (→ `ysdk.environment.i18n.lang`) unless

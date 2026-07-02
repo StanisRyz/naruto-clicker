@@ -4,8 +4,8 @@ extends RefCounted
 # AUTO-GENERATED — do not edit by hand.
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
-# Generated key count: 423
-# Generated at: 1782999549
+# Generated key count: 426
+# Generated at: 1783002906
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -265,6 +265,9 @@ const TRANSLATIONS: Dictionary = {
 		"shop.gem_purchase.amount_bonus": "+{base} Gems +{bonus} Free",
 		"shop.gem_purchase.total": "Total: {amount} Gems",
 		"shop.gem_purchase.price": "{price} ₽",
+		"shop.gem_purchase.loading_price": "Loading price...",
+		"shop.gem_purchase.catalog_error": "Failed to load prices",
+		"shop.gem_purchase.product_not_found": "Product not found",
 		"shop.gems_25.name": "25 Gems",
 		"shop.gems_25.description": "25 gems for 24 ₽",
 		"shop.gems_150.name": "150 Gems",
@@ -690,6 +693,9 @@ const TRANSLATIONS: Dictionary = {
 		"shop.gem_purchase.amount_bonus": "+{base} гемов +{bonus} бесплатно",
 		"shop.gem_purchase.total": "Всего: {amount} гемов",
 		"shop.gem_purchase.price": "{price} ₽",
+		"shop.gem_purchase.loading_price": "Загрузка цены...",
+		"shop.gem_purchase.catalog_error": "Не удалось загрузить цены",
+		"shop.gem_purchase.product_not_found": "Товар не найден",
 		"shop.gems_25.name": "25 гемов",
 		"shop.gems_25.description": "25 гемов за 24 ₽",
 		"shop.gems_150.name": "150 гемов",

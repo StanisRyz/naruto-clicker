@@ -27,6 +27,8 @@ signal payment_purchase_error(product_id: String, message: String)
 signal unprocessed_purchase_found(product_id: String, purchase_token: String)
 signal unprocessed_purchase_check_completed
 signal unprocessed_purchase_check_error(message: String)
+signal payment_catalog_loaded(products: Array)
+signal payment_catalog_error(message: String)
 
 # ── Cloud save signals ────────────────────────────────────────────────────────
 signal cloud_save_loaded(data: Dictionary)
@@ -83,6 +85,8 @@ func _connect_yandex_bridge_signals() -> void:
 	YandexBridge.unprocessed_purchase_found.connect(unprocessed_purchase_found.emit)
 	YandexBridge.unprocessed_purchase_check_completed.connect(unprocessed_purchase_check_completed.emit)
 	YandexBridge.unprocessed_purchase_check_error.connect(unprocessed_purchase_check_error.emit)
+	YandexBridge.payment_catalog_loaded.connect(payment_catalog_loaded.emit)
+	YandexBridge.payment_catalog_error.connect(payment_catalog_error.emit)
 
 	YandexBridge.cloud_save_loaded.connect(cloud_save_loaded.emit)
 	YandexBridge.cloud_save_load_error.connect(cloud_save_load_error.emit)
@@ -113,6 +117,8 @@ func _connect_impl_signals() -> void:
 	_impl.unprocessed_purchase_found.connect(unprocessed_purchase_found.emit)
 	_impl.unprocessed_purchase_check_completed.connect(unprocessed_purchase_check_completed.emit)
 	_impl.unprocessed_purchase_check_error.connect(unprocessed_purchase_check_error.emit)
+	_impl.payment_catalog_loaded.connect(payment_catalog_loaded.emit)
+	_impl.payment_catalog_error.connect(payment_catalog_error.emit)
 
 	_impl.cloud_save_loaded.connect(cloud_save_loaded.emit)
 	_impl.cloud_save_load_error.connect(cloud_save_load_error.emit)
@@ -173,6 +179,18 @@ func consume_purchase(purchase_token: String) -> void:
 
 func check_unprocessed_purchases() -> void:
 	_impl.check_unprocessed_purchases()
+
+
+func load_payment_catalog() -> void:
+	_impl.load_payment_catalog()
+
+
+func get_cached_payment_catalog() -> Dictionary:
+	return _impl.get_cached_payment_catalog()
+
+
+func get_catalog_product(local_product_id: String) -> Dictionary:
+	return _impl.get_catalog_product(local_product_id)
 
 
 # ── Cloud save ────────────────────────────────────────────────────────────────

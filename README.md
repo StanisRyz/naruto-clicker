@@ -44,9 +44,9 @@ must never be mixed:
 - Yandex purchases must use Yandex product ids
   (`GemPurchaseConfig.yandex_product_id`) and `ysdk.getPayments()` /
   `payments.purchase()` — never RuStore Pay.
-- Prices/currency shown to the player on Web must eventually come from the
-  Yandex catalog (`payments.getCatalog()`), not a hardcoded RUB placeholder —
-  see the Y4 follow-up below.
+- Prices/currency shown to the player on Web come from the Yandex payments
+  catalog (`payments.getCatalog()`), not a hardcoded RUB placeholder — see
+  the Y4 note below.
 - Web language is auto-applied from `ysdk.environment.i18n.lang` at startup
   (unless the player has manually picked a language).
 - Web save uses Yandex Player data (`player.getData` / `player.setData`) via
@@ -56,14 +56,20 @@ must never be mixed:
 See `docs/validation/yandex_release_audit_platform_separation.md` for the
 full Y1 audit. Current follow-up sequence:
 
-1. **Y1** — audit (this document; completed).
+1. **Y1** — audit (completed).
 2. **Y2** — SDK language auto-apply. Audited as already implemented; no
    further work expected.
 3. **Y3** — save authority. Audited as already implemented; no further work
    expected.
-4. **Y4** — payments catalog / purchase / consume. Needed: wire
-   `payments.getCatalog()` and replace the hardcoded RUB price display on
-   Web with the real catalog price.
+4. **Y4** — payments catalog / purchase / consume (completed). Web/Yandex
+   now loads the payment catalog through the Yandex SDK
+   (`YandexBridge.load_payment_catalog()` / `Platform.get_catalog_product()`),
+   and `GemPurchaseDialog` shows the real Yandex catalog price on Web instead
+   of the hardcoded `price_rub`. If a product is missing from the catalog it
+   becomes unavailable instead of showing a fake price, and purchase cannot
+   be started for it. Purchase/credit/consume/recovery logic is unchanged.
+   Android/RuStore payment behavior and price display are unchanged. See
+   `docs/validation/yandex_payments_catalog_price_display.md`.
 5. **Y5** — metadata/media compliance. Needed: console/media checklist
    (title consistency, translated fields, screenshot locale, promo image
    chrome, category, product enablement) — not a code change.
@@ -307,6 +313,13 @@ resolves the store-specific ID at runtime via `Platform.get_platform_key()`.
 Update `rustore_product_id` values to match actual RuStore product registrations
 before publishing to RuStore.
 
+The `Price` column above is the local reference/RUB value used by
+`GemPurchaseConfig.price_rub`. On Web/Yandex it is only used as the
+loading-state fallback — the price actually shown to the player comes from
+`Platform.get_catalog_product(local_id)` (`YandexBridge`'s
+`payments.getCatalog()` cache, see Y4). On Android/RuStore and in the
+editor/debug build, `price_rub` remains the displayed price.
+
 **Purchase safety rules (all platforms):**
 
 - Paid gems are granted only after a success callback that carries a **non-empty
@@ -325,6 +338,12 @@ before publishing to RuStore.
   `getPayments({ signed: true })` without a backend.
 - Unprocessed purchases recovered via `payments.getPurchases()` on startup.
 - Consumable order: grant gems → update UI → save → cloud flush → `consumePurchase()`.
+- Catalog/price display (Y4): `YandexBridge.load_payment_catalog()` calls
+  `payments.getCatalog()` and caches results by Yandex product id.
+  `GemPurchaseDialog` requests the catalog when it's shown and displays the
+  real catalog `price` per product; a product missing from the catalog shows
+  as unavailable and cannot be purchased. This only affects price display and
+  purchase gating — it does not change the grant/consume order above.
 
 **RuStore Pay (Android):**
 

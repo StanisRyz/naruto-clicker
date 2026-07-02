@@ -38,6 +38,10 @@ signal unprocessed_purchase_found(product_id: String, purchase_token: String)
 signal unprocessed_purchase_check_completed
 @warning_ignore("unused_signal")
 signal unprocessed_purchase_check_error(message: String)
+@warning_ignore("unused_signal")
+signal payment_catalog_loaded(products: Array)
+@warning_ignore("unused_signal")
+signal payment_catalog_error(message: String)
 
 # ── Cloud save signals ────────────────────────────────────────────────────────
 @warning_ignore("unused_signal")
@@ -99,6 +103,15 @@ func consume_purchase(_purchase_token: String) -> void:
 
 func check_unprocessed_purchases() -> void:
 	pass
+
+func load_payment_catalog() -> void:
+	pass
+
+func get_cached_payment_catalog() -> Dictionary:
+	return {}
+
+func get_catalog_product(_local_product_id: String) -> Dictionary:
+	return {}
 
 # ── Cloud save ────────────────────────────────────────────────────────────────
 

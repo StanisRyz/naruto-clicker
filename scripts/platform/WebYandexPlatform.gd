@@ -40,6 +40,18 @@ func check_unprocessed_purchases() -> void:
 	YandexBridge.check_unprocessed_purchases()
 
 
+func load_payment_catalog() -> void:
+	YandexBridge.load_payment_catalog()
+
+
+func get_cached_payment_catalog() -> Dictionary:
+	return YandexBridge.get_cached_payment_catalog()
+
+
+func get_catalog_product(local_product_id: String) -> Dictionary:
+	return YandexBridge.get_catalog_product(local_product_id)
+
+
 func is_cloud_save_available() -> bool:
 	return YandexBridge.is_cloud_save_available()
 

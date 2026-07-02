@@ -134,19 +134,21 @@ id mapping is unverified against the real Yandex draft** (see §6).
   the actual catalog price returned by `payments.getCatalog()`, not a
   hardcoded RUB figure.
 
-**Status: confirmed gap.** Follow-up: **Y4 — Yandex Payments Catalog / Price
-Display**. Scope for Y4:
-- Call `ysdk.getPayments().then(p => p.getCatalog())` on Web startup (or lazily
-  when the gem shop opens), cache the result in `WebYandexPlatform`/`Platform`.
-- Add a `Platform.get_catalog_price(local_product_id)` (or similar) that
-  returns the Yandex-formatted price string when available, falling back to
-  the local `price_rub` placeholder off-Yandex or if the catalog call fails.
-- Update `GemPurchaseDialog._create_product_cell()` to prefer the catalog
-  price on Web.
-- Verify `yandex_product_id` values in `GemPurchaseConfig.gd` against the
-  actual Yandex draft product ids before wiring the catalog call — a
-  mismatched id will make `getCatalog()`/`purchase()` fail silently for that
-  product.
+**Status: implemented by Y4.** See
+`docs/validation/yandex_payments_catalog_price_display.md` for the full
+implementation record. Summary: `YandexBridge.load_payment_catalog()` calls
+`ysdk.getPayments().then(p => p.getCatalog())` and caches results by Yandex
+product id; `Platform.get_catalog_product(local_product_id)` resolves
+local → `yandex_product_id` → cached catalog entry;
+`GemPurchaseDialog` shows the real catalog `price` on Web instead of
+`price_rub`, shows a loading/unavailable/error state around the catalog
+fetch, and blocks starting a purchase for a product missing from the
+catalog. Android/RuStore and editor/debug price display are unchanged.
+Remaining manual step: verify `yandex_product_id` values in
+`GemPurchaseConfig.gd` against the real Yandex draft catalog (not possible
+from code) — the debug build logs a warning if a product id resolves to no
+catalog entry, which is the fastest way to catch a mismatch during preview
+testing.
 
 ## 7. Ads
 
@@ -239,11 +241,13 @@ the next submission. None of this is solved by this patch.
 - **Y3 — Yandex Save Authority**: **not needed.** Already implemented
   (`SaveManager` cloud/local merge by timestamp, 200 KB size guard, Android
   backend fully excluded). Close unless real-device testing finds a gap.
-- **Y4 — Yandex Payments Catalog / Purchase / Consume**: needed. Scope:
-  wire `payments.getCatalog()`, replace hardcoded `price_rub` display on Web
-  with the real catalog price, verify `yandex_product_id` values against the
-  Yandex draft. Purchase/consume/credit logic itself is already correct and
-  should not be touched.
+- **Y4 — Yandex Payments Catalog / Purchase / Consume**: **implemented.**
+  See `docs/validation/yandex_payments_catalog_price_display.md`.
+  `payments.getCatalog()` is wired, the hardcoded `price_rub` display on Web
+  is replaced with the real catalog price, and missing catalog products are
+  shown as unavailable with purchase blocked. Purchase/consume/credit logic
+  was not touched. Remaining: verify `yandex_product_id` values against the
+  real Yandex draft (console-side, not code).
 - **Y5 — Metadata / Media Compliance**: needed. Non-code, console/media work
   from §10 above — title consistency, description formatting, translated
   fields, screenshot locale matching, promo image chrome removal, category,
@@ -308,12 +312,15 @@ No code was changed by this audit patch. Findings:
 - Platform selection, SDK init/loader, language auto-apply, save authority,
   purchase credit/consume/recovery, ads, and Android UI exclusion from Web
   are **all already correctly implemented and separated**.
-- The one confirmed **code gap** is the hardcoded RUB price display instead
-  of a Yandex catalog-driven price (§6) — this matches the prior moderation
-  complaint about incorrect portal currency/yans display. Deferred to **Y4**.
+- The one confirmed **code gap** was the hardcoded RUB price display instead
+  of a Yandex catalog-driven price (§6) — this matched the prior moderation
+  complaint about incorrect portal currency/yans display. **Implemented by
+  Y4** — see `docs/validation/yandex_payments_catalog_price_display.md`.
 - The remaining prior moderation issues (title consistency, description
   formatting, translated fields, screenshot locale, promo image chrome,
   category, product/purchase enablement) are **console/media work**, not
   code — checklist captured in §10, deferred to **Y5**.
 - Y2 and Y3 as originally scoped turned out to already be implemented; this
   audit recommends closing them rather than re-doing the work.
+- **Y4 is now implemented** (this update). Remaining steps in the sequence:
+  Y5 (metadata/media compliance) and Y6 (HTML export smoke pass).

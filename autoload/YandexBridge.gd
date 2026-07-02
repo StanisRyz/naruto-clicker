@@ -16,6 +16,8 @@ signal payment_purchase_error(product_id: String, message: String)
 signal unprocessed_purchase_found(product_id: String, purchase_token: String)
 signal unprocessed_purchase_check_completed
 signal unprocessed_purchase_check_error(message: String)
+signal payment_catalog_loaded(products: Array)
+signal payment_catalog_error(message: String)
 
 signal platform_pause_requested
 signal platform_resume_requested
@@ -62,6 +64,11 @@ var _fullscreen_error_cb = null
 var _payment_success_cb = null
 var _payment_cancel_cb = null
 var _payment_error_cb = null
+
+var _catalog_js_callbacks_setup: bool = false
+var _catalog_loaded_js_cb = null
+var _catalog_error_js_cb = null
+var _catalog_cache: Dictionary = {}
 
 var _cloud_loaded_cb = null
 var _cloud_load_err_cb = null
@@ -507,6 +514,95 @@ func _setup_payment_js_callbacks() -> void:
 func _simulate_payment_debug(local_product_id: String) -> void:
 	await Engine.get_main_loop().create_timer(0.5).timeout
 	payment_purchase_success.emit(local_product_id, "debug_token_%d" % Time.get_ticks_usec())
+
+
+# ── Payment catalog ───────────────────────────────────────────────────────────
+
+func load_payment_catalog() -> void:
+	if not _is_ysdk_ready():
+		payment_catalog_error.emit("Yandex SDK is not ready")
+		return
+
+	if not _catalog_js_callbacks_setup:
+		_setup_catalog_js_callbacks()
+
+	JavaScriptBridge.eval("""
+		(function() {
+			try {
+				window.ysdk.getPayments().then(function(payments) {
+					return payments.getCatalog();
+				}).then(function(catalog) {
+					var safe = (Array.isArray(catalog) ? catalog : []).map(function(p) {
+						return {
+							id: (p && p.id) ? String(p.id) : "",
+							title: (p && p.title) ? String(p.title) : "",
+							description: (p && p.description) ? String(p.description) : "",
+							price: (p && p.price) ? String(p.price) : "",
+							priceValue: (p && p.priceValue) ? String(p.priceValue) : "",
+							priceCurrencyCode: (p && p.priceCurrencyCode) ? String(p.priceCurrencyCode) : "",
+							priceCurrencyImage: (p && p.getPriceCurrencyImage) ? String(p.getPriceCurrencyImage("medium") || "") : ""
+						};
+					});
+					if (window._godot_payment_catalog_loaded) {
+						window._godot_payment_catalog_loaded(JSON.stringify(safe));
+					}
+				}).catch(function(err) {
+					if (window._godot_payment_catalog_error) window._godot_payment_catalog_error(String(err));
+				});
+			} catch(e) {
+				if (window._godot_payment_catalog_error) window._godot_payment_catalog_error(String(e));
+			}
+		})();
+	""")
+
+
+func get_cached_payment_catalog() -> Dictionary:
+	return _catalog_cache
+
+
+func get_catalog_product(local_product_id: String) -> Dictionary:
+	var yandex_product_id: String = GemPurchaseConfig.get_platform_product_id(local_product_id, "yandex")
+	if yandex_product_id == "":
+		return {}
+	var product: Dictionary = _catalog_cache.get(yandex_product_id, {})
+	if product.is_empty() and BuildConfig.is_debug_features_enabled():
+		print("YandexBridge: catalog product missing for local='%s' yandex_id='%s'" % [local_product_id, yandex_product_id])
+	return product
+
+
+func _on_js_payment_catalog_loaded(json_str: String) -> void:
+	var json: JSON = JSON.new()
+	var parse_err: int = json.parse(json_str)
+	if parse_err != OK or not json.data is Array:
+		push_warning("YandexBridge: catalog parse failed")
+		payment_catalog_error.emit("Catalog parse failed")
+		return
+	var products: Array = json.data
+	_catalog_cache.clear()
+	for entry in products:
+		if entry is Dictionary:
+			var pid: String = String(entry.get("id", ""))
+			if pid != "":
+				_catalog_cache[pid] = entry
+	if BuildConfig.is_debug_features_enabled():
+		print("YandexBridge: catalog loaded, %d product(s)" % _catalog_cache.size())
+	payment_catalog_loaded.emit(products)
+
+
+func _on_js_payment_catalog_error(message: String) -> void:
+	push_warning("YandexBridge: catalog load error — %s" % message)
+	payment_catalog_error.emit(message)
+
+
+func _setup_catalog_js_callbacks() -> void:
+	_catalog_js_callbacks_setup = true
+	_catalog_loaded_js_cb = JavaScriptBridge.create_callback(func(args): _on_js_payment_catalog_loaded(str(args[0])))
+	_catalog_error_js_cb = JavaScriptBridge.create_callback(func(args): _on_js_payment_catalog_error(str(args[0])))
+	var _win := JavaScriptBridge.get_interface("window")
+	_win._godot_payment_catalog_loaded = _catalog_loaded_js_cb
+	_win._godot_payment_catalog_error = _catalog_error_js_cb
+	if BuildConfig.is_debug_features_enabled():
+		print("YandexBridge: payment catalog callbacks registered on window")
 
 
 # ── Cloud save ────────────────────────────────────────────────────────────────

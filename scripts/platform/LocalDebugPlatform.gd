@@ -85,6 +85,38 @@ func check_unprocessed_purchases() -> void:
 	unprocessed_purchase_check_completed.emit()
 
 
+# Debug-only catalog built from local GemPurchaseConfig prices, so the gem
+# shop dialog has something to show when testing outside a real platform.
+func load_payment_catalog() -> void:
+	payment_catalog_loaded.emit(_build_debug_catalog())
+
+
+func get_cached_payment_catalog() -> Dictionary:
+	var cache: Dictionary = {}
+	for product: Dictionary in _build_debug_catalog():
+		cache[String(product.get("id", ""))] = product
+	return cache
+
+
+func get_catalog_product(local_product_id: String) -> Dictionary:
+	return get_cached_payment_catalog().get(local_product_id, {})
+
+
+func _build_debug_catalog() -> Array:
+	var products: Array = []
+	for product: Dictionary in GemPurchaseConfig.get_all():
+		var price_rub: int = int(product.get("price_rub", 0))
+		products.append({
+			"id": String(product.get("id", "")),
+			"title": String(product.get("name_key", "")),
+			"description": String(product.get("description_key", "")),
+			"price": "%d ₽" % price_rub,
+			"priceValue": str(price_rub),
+			"priceCurrencyCode": "RUB",
+		})
+	return products
+
+
 func is_cloud_save_available() -> bool:
 	return false
 

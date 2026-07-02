@@ -464,6 +464,20 @@ func _on_rustore_get_purchases_failure(error: RuStorePaymentException) -> void:
 	unprocessed_purchase_check_error.emit(message)
 
 
+# RuStore does not have a Yandex-style getCatalog() call yet; catalog display
+# stays on the local price_rub fallback until a RuStore catalog API is wired.
+func load_payment_catalog() -> void:
+	payment_catalog_loaded.emit([])
+
+
+func get_cached_payment_catalog() -> Dictionary:
+	return {}
+
+
+func get_catalog_product(_local_product_id: String) -> Dictionary:
+	return {}
+
+
 # Maps a RuStore platform product id back to the local (GemPurchaseConfig) id.
 func _find_local_product_id(platform_product_id: String) -> String:
 	for product: Dictionary in GemPurchaseConfig.get_all():
