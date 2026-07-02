@@ -31,6 +31,45 @@ All platform-specific calls go through the `Platform` autoload
 `Platform` selects the correct implementation at startup, creates it as a
 child node, and re-exposes all signals so callers only deal with `Platform`.
 
+## Yandex Release Readiness
+
+Web/Yandex is a **separate release track** from Android/RuStore. The two
+must never be mixed:
+
+- Web uses the Yandex SDK (`YandexBridge` / `WebYandexPlatform`) for
+  language, saves, ads, and purchases — never the Android backend.
+- The Android/RuStore backend account/cloud system does not apply to Web.
+  `AccountWindow` and `AuthGateScreen` are Android-only and are never shown
+  on Web.
+- Yandex purchases must use Yandex product ids
+  (`GemPurchaseConfig.yandex_product_id`) and `ysdk.getPayments()` /
+  `payments.purchase()` — never RuStore Pay.
+- Prices/currency shown to the player on Web must eventually come from the
+  Yandex catalog (`payments.getCatalog()`), not a hardcoded RUB placeholder —
+  see the Y4 follow-up below.
+- Web language is auto-applied from `ysdk.environment.i18n.lang` at startup
+  (unless the player has manually picked a language).
+- Web save uses Yandex Player data (`player.getData` / `player.setData`) via
+  `YandexBridge`, merged against the local save by timestamp — never the
+  Android backend cloud save.
+
+See `docs/validation/yandex_release_audit_platform_separation.md` for the
+full Y1 audit. Current follow-up sequence:
+
+1. **Y1** — audit (this document; completed).
+2. **Y2** — SDK language auto-apply. Audited as already implemented; no
+   further work expected.
+3. **Y3** — save authority. Audited as already implemented; no further work
+   expected.
+4. **Y4** — payments catalog / purchase / consume. Needed: wire
+   `payments.getCatalog()` and replace the hardcoded RUB price display on
+   Web with the real catalog price.
+5. **Y5** — metadata/media compliance. Needed: console/media checklist
+   (title consistency, translated fields, screenshot locale, promo image
+   chrome, category, product enablement) — not a code change.
+6. **Y6** — HTML export smoke pass. Needed: manual verification of a real
+   Web export against the Yandex Games preview cabinet.
+
 ### Web / Yandex
 
 `WebYandexPlatform` wraps `YandexBridge`. All SDK internals (JavaScript

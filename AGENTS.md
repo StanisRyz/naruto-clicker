@@ -488,6 +488,44 @@ These rules apply to all Android/RuStore backend auth and cloud-save work.
 - Debug mode simulates ad and payment flows for local testing. These simulations are
   disabled in release builds via `BuildConfig.is_debug_features_enabled()`.
 
+### Web/Yandex vs Android/RuStore platform separation (Y1 audit rules)
+
+Confirmed by the Y1 audit (`docs/validation/yandex_release_audit_platform_separation.md`).
+These rules make the existing separation explicit so future patches don't
+accidentally cross the boundary:
+
+- **Never mix Android/RuStore backend account/cloud with Web/Yandex save
+  flow.** Web save/load must only go through `Platform.load_cloud_save()` /
+  `Platform.save_cloud_save()` (→ `YandexBridge`), never
+  `Platform.backend_load_save()` / `backend_save_save()`.
+- **Web/Yandex must not show Android `AuthGateScreen`/`AccountWindow`.** Both
+  are gated on `OS.has_feature("android")` at their only call sites
+  (`scenes/main/Main.gd`, `scenes/ui/SettingsWindow.gd`). Do not add a
+  Web-reachable path to either.
+- **Web/Yandex purchases must use Yandex SDK payments
+  (`ysdk.getPayments()`/`payments.purchase()`), not RuStore Pay.** Real
+  RuStore Pay SDK calls remain confined to `AndroidRuStorePlatform.gd` per
+  the existing rule above.
+- **Web/Yandex prices/currency shown to the player must come from the Yandex
+  catalog (`payments.getCatalog()`) when displayed, not a hardcoded RUB
+  figure.** Today `GemPurchaseDialog` shows the hardcoded `price_rub` field
+  from `GemPurchaseConfig.gd` on all platforms — this is a known gap,
+  tracked as **Y4**, not yet fixed.
+- **Web/Yandex language must be auto-applied from the Yandex SDK.** Already
+  implemented in `ClickerScreen._apply_startup_language()` — reads
+  `Platform.get_platform_language()` (→ `ysdk.environment.i18n.lang`) unless
+  the player manually selected a language. Do not bypass this on Web.
+- **Web/Yandex saves must use Yandex Player data
+  (`player.getData`/`setData`).** Already implemented in `YandexBridge.gd`
+  under the stable key `save_v1`, with a 200 KB size guard in
+  `SaveManager._send_cloud_save()`. Do not route Web saves through the
+  Android backend.
+- **Yandex release patches must document whether a change is code-side,
+  console-side (Yandex developer console / draft settings), or media-side
+  (screenshots, promo images, descriptions).** Console/media work is never
+  solved by editing GDScript — see the Y5 checklist in
+  `docs/validation/yandex_release_audit_platform_separation.md`.
+
 ## Stage Navigator Rules
 
 - `StageNavigator` shows exactly 5 stage buttons (80×80 ImageSlot-backed squares) at a time.
