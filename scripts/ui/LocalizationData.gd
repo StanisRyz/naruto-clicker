@@ -4,8 +4,8 @@ extends RefCounted
 # AUTO-GENERATED — do not edit by hand.
 # Source: res://localization/game_text.csv
 # Regenerate with: godot --headless --script res://scripts/tools/GenerateLocalizationData.gd
-# Generated key count: 426
-# Generated at: 1783002906
+# Generated key count: 431
+# Generated at: 1783006499
 
 const TRANSLATIONS: Dictionary = {
 	"en": {
@@ -268,6 +268,11 @@ const TRANSLATIONS: Dictionary = {
 		"shop.gem_purchase.loading_price": "Loading price...",
 		"shop.gem_purchase.catalog_error": "Failed to load prices",
 		"shop.gem_purchase.product_not_found": "Product not found",
+		"yandex.ad.unavailable": "Ad is currently unavailable",
+		"yandex.ad.timeout": "Ad did not open",
+		"yandex.catalog.timeout": "Failed to load prices",
+		"yandex.catalog.unavailable": "Products are currently unavailable",
+		"yandex.language.sdk_unavailable": "Failed to detect platform language",
 		"shop.gems_25.name": "25 Gems",
 		"shop.gems_25.description": "25 gems for 24 ₽",
 		"shop.gems_150.name": "150 Gems",
@@ -696,6 +701,11 @@ const TRANSLATIONS: Dictionary = {
 		"shop.gem_purchase.loading_price": "Загрузка цены...",
 		"shop.gem_purchase.catalog_error": "Не удалось загрузить цены",
 		"shop.gem_purchase.product_not_found": "Товар не найден",
+		"yandex.ad.unavailable": "Реклама сейчас недоступна",
+		"yandex.ad.timeout": "Реклама не открылась",
+		"yandex.catalog.timeout": "Не удалось загрузить цены",
+		"yandex.catalog.unavailable": "Товары сейчас недоступны",
+		"yandex.language.sdk_unavailable": "Не удалось определить язык платформы",
 		"shop.gems_25.name": "25 гемов",
 		"shop.gems_25.description": "25 гемов за 24 ₽",
 		"shop.gems_150.name": "150 гемов",

@@ -14,6 +14,10 @@ signal rewarded_ad_rewarded
 signal rewarded_ad_closed(was_shown: bool)
 signal rewarded_ad_error(message: String)
 
+# ── Yandex SDK readiness signals (Web only; never emitted on Android/debug) ──
+signal yandex_sdk_ready
+signal yandex_sdk_unavailable(message: String)
+
 # ── Fullscreen ad signals ─────────────────────────────────────────────────────
 signal fullscreen_ad_opened
 signal fullscreen_ad_closed(was_shown: bool)
@@ -97,6 +101,9 @@ func _connect_yandex_bridge_signals() -> void:
 
 	YandexBridge.platform_pause_requested.connect(platform_pause_requested.emit)
 	YandexBridge.platform_resume_requested.connect(platform_resume_requested.emit)
+
+	YandexBridge.yandex_sdk_ready.connect(yandex_sdk_ready.emit)
+	YandexBridge.yandex_sdk_unavailable.connect(yandex_sdk_unavailable.emit)
 
 
 func _connect_impl_signals() -> void:
@@ -223,6 +230,13 @@ func refresh_platform_ready() -> bool:
 
 func get_platform_event_debug_state() -> Dictionary:
 	return _impl.get_platform_event_debug_state()
+
+
+# Debug-only safe runtime snapshot (Web/Yandex; {} on other platforms).
+func get_yandex_runtime_debug_state() -> Dictionary:
+	if _impl == null or not _impl.has_method("get_yandex_runtime_debug_state"):
+		return {}
+	return _impl.get_yandex_runtime_debug_state()
 
 
 func get_platform_key() -> String:

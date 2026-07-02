@@ -15,7 +15,7 @@ Never commit the file with real values to git.
 # Path to the Godot editor binary on your machine.
 # Example: /home/user/godot/Godot_v4.5.1-stable_linux.x86_64
 #          C:/Godot/Godot_v4.5.1-stable_win64.exe
-GODOT_BINARY=
+GODOT_BINARY="D:\godot\Godot.exe"
 
 # Absolute path to the release keystore file (.jks or .keystore).
 # Keep this outside the repository directory.

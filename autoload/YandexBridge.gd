@@ -5,6 +5,9 @@ signal rewarded_ad_rewarded
 signal rewarded_ad_closed(was_shown: bool)
 signal rewarded_ad_error(message: String)
 
+signal yandex_sdk_ready
+signal yandex_sdk_unavailable(message: String)
+
 signal fullscreen_ad_opened
 signal fullscreen_ad_closed(was_shown: bool)
 signal fullscreen_ad_error(message: String)
@@ -35,9 +38,15 @@ const SDK_READY_RETRY_DELAY_SEC: float = 0.5
 const SDK_READY_MAX_RETRY_ATTEMPTS: int = 60
 const PLATFORM_EVENTS_RETRY_DELAY_SEC: float = 0.5
 const PLATFORM_EVENTS_MAX_RETRY_ATTEMPTS: int = 20
+const REWARDED_AD_TIMEOUT_SEC: float = 7.0
+const CATALOG_LOAD_TIMEOUT_SEC: float = 9.0
 
 var is_web: bool = false
 var is_yandex_available: bool = false
+var _sdk_ready_signal_emitted: bool = false
+var _rewarded_ad_timeout_token: int = 0
+var _catalog_load_pending: bool = false
+var _catalog_load_token: int = 0
 
 var _rewarded_ad_in_progress: bool = false
 var _fullscreen_ad_in_progress: bool = false
@@ -134,7 +143,45 @@ func refresh_yandex_sdk_ready() -> bool:
 		})();
 	""")
 	is_yandex_available = result == true
+	if is_yandex_available and not _sdk_ready_signal_emitted:
+		_sdk_ready_signal_emitted = true
+		if BuildConfig.is_debug_features_enabled():
+			print("YandexBridge: yandex_sdk_ready emitted — debug_state=%s" % str(get_yandex_runtime_debug_state()))
+		yandex_sdk_ready.emit()
 	return is_yandex_available
+
+
+# Safe (non-sensitive) runtime snapshot for debug logs/validation only.
+func get_yandex_runtime_debug_state() -> Dictionary:
+	var state: Dictionary = {
+		"platform_key": "yandex",
+		"is_web": is_web,
+		"sdk_ready": is_yandex_available,
+		"catalog_cache_size": _catalog_cache.size(),
+	}
+	if not is_web:
+		return state
+	var js_state = JavaScriptBridge.eval("""
+		(function() {
+			try {
+				return JSON.stringify({
+					ysdkExists: !!window.ysdk,
+					ysdkReady: !!window.ysdkReady,
+					lang: (window.ysdk && window.ysdk.environment && window.ysdk.environment.i18n && typeof window.ysdk.environment.i18n.lang === "string") ? window.ysdk.environment.i18n.lang : "",
+					hasAdv: !!(window.ysdk && window.ysdk.adv),
+					hasShowRewardedVideo: !!(window.ysdk && window.ysdk.adv && typeof window.ysdk.adv.showRewardedVideo === "function"),
+					hasGetPayments: !!(window.ysdk && typeof window.ysdk.getPayments === "function")
+				});
+			} catch(e) {
+				return "{}";
+			}
+		})();
+	""")
+	if js_state is String and js_state != "":
+		var json: JSON = JSON.new()
+		if json.parse(js_state) == OK and json.data is Dictionary:
+			state.merge(json.data)
+	return state
 
 
 func _is_ysdk_ready() -> bool:
@@ -206,46 +253,73 @@ func show_rewarded_ad() -> void:
 	if _rewarded_ad_in_progress:
 		return
 	_rewarded_ad_in_progress = true
+	_rewarded_ad_timeout_token += 1
+	var token: int = _rewarded_ad_timeout_token
 
 	if not _is_ysdk_ready():
 		if BuildConfig.is_debug_features_enabled():
 			_simulate_rewarded_ad_debug()
 		else:
 			_rewarded_ad_in_progress = false
-			rewarded_ad_error.emit("Rewarded ad unavailable outside Yandex Games")
+			rewarded_ad_error.emit("unavailable: Yandex SDK not ready")
 		return
+
+	if BuildConfig.is_debug_features_enabled():
+		print("YandexBridge: show_rewarded_ad requesting showRewardedVideo")
 
 	JavaScriptBridge.eval("""
 		(function() {
 			try {
 				if (!window.ysdk || !window.ysdk.adv || typeof window.ysdk.adv.showRewardedVideo !== 'function') {
-					if (window._godot_rewarded_ad_error) window._godot_rewarded_ad_error('showRewardedVideo not available');
+					console.warn('YandexBridge: showRewardedVideo not available');
+					if (window._godot_rewarded_ad_error) window._godot_rewarded_ad_error('unavailable: showRewardedVideo not available');
 					return;
 				}
 				window.ysdk.adv.showRewardedVideo({
 					callbacks: {
 						onOpen: function() {
+							console.log('YandexBridge: rewarded ad onOpen');
 							if (window._godot_rewarded_ad_open) window._godot_rewarded_ad_open();
 						},
 						onRewarded: function() {
+							console.log('YandexBridge: rewarded ad onRewarded');
 							if (window._godot_rewarded_ad_rewarded) window._godot_rewarded_ad_rewarded();
 						},
 						onClose: function(wasShown) {
+							console.log('YandexBridge: rewarded ad onClose wasShown=' + wasShown);
 							if (window._godot_rewarded_ad_close) window._godot_rewarded_ad_close(wasShown ? 1 : 0);
 						},
 						onError: function(err) {
-							if (window._godot_rewarded_ad_error) window._godot_rewarded_ad_error(String(err));
+							console.warn('YandexBridge: rewarded ad onError', err);
+							if (window._godot_rewarded_ad_error) window._godot_rewarded_ad_error('unavailable: ' + String(err));
 						}
 					}
 				});
 			} catch(e) {
-				if (window._godot_rewarded_ad_error) window._godot_rewarded_ad_error(String(e));
+				console.warn('YandexBridge: rewarded ad exception', e);
+				if (window._godot_rewarded_ad_error) window._godot_rewarded_ad_error('unavailable: ' + String(e));
 			}
 		})();
 	""")
 
+	_watch_rewarded_ad_timeout(token)
+
+
+func _watch_rewarded_ad_timeout(token: int) -> void:
+	await get_tree().create_timer(REWARDED_AD_TIMEOUT_SEC).timeout
+	if token != _rewarded_ad_timeout_token:
+		return
+	if not _rewarded_ad_in_progress:
+		return
+	_rewarded_ad_in_progress = false
+	push_warning("YandexBridge: rewarded ad timed out — no SDK callback within %.1fs" % REWARDED_AD_TIMEOUT_SEC)
+	rewarded_ad_error.emit("timeout: no ad callback received")
+
 
 func _on_js_rewarded_ad_open() -> void:
+	# Ad genuinely opened — invalidate the pending timeout watcher so it
+	# doesn't fire while the player is mid-ad.
+	_rewarded_ad_timeout_token += 1
 	rewarded_ad_opened.emit()
 
 
@@ -520,40 +594,73 @@ func _simulate_payment_debug(local_product_id: String) -> void:
 
 func load_payment_catalog() -> void:
 	if not _is_ysdk_ready():
-		payment_catalog_error.emit("Yandex SDK is not ready")
+		payment_catalog_error.emit("unavailable: Yandex SDK is not ready")
 		return
 
 	if not _catalog_js_callbacks_setup:
 		_setup_catalog_js_callbacks()
 
+	_catalog_load_token += 1
+	var token: int = _catalog_load_token
+	_catalog_load_pending = true
+
+	if BuildConfig.is_debug_features_enabled():
+		print("YandexBridge: load_payment_catalog requesting getCatalog")
+
 	JavaScriptBridge.eval("""
 		(function() {
 			try {
+				if (typeof window.ysdk.getPayments !== "function") {
+					console.warn("YandexBridge: getPayments not available for catalog");
+					if (window._godot_payment_catalog_error) window._godot_payment_catalog_error("unavailable: getPayments not available");
+					return;
+				}
 				window.ysdk.getPayments().then(function(payments) {
-					return payments.getCatalog();
-				}).then(function(catalog) {
-					var safe = (Array.isArray(catalog) ? catalog : []).map(function(p) {
-						return {
-							id: (p && p.id) ? String(p.id) : "",
-							title: (p && p.title) ? String(p.title) : "",
-							description: (p && p.description) ? String(p.description) : "",
-							price: (p && p.price) ? String(p.price) : "",
-							priceValue: (p && p.priceValue) ? String(p.priceValue) : "",
-							priceCurrencyCode: (p && p.priceCurrencyCode) ? String(p.priceCurrencyCode) : "",
-							priceCurrencyImage: (p && p.getPriceCurrencyImage) ? String(p.getPriceCurrencyImage("medium") || "") : ""
-						};
-					});
-					if (window._godot_payment_catalog_loaded) {
-						window._godot_payment_catalog_loaded(JSON.stringify(safe));
+					if (!payments || typeof payments.getCatalog !== "function") {
+						console.warn("YandexBridge: getCatalog not available");
+						if (window._godot_payment_catalog_error) window._godot_payment_catalog_error("unavailable: getCatalog not available");
+						return;
 					}
+					return payments.getCatalog().then(function(catalog) {
+						var safe = (Array.isArray(catalog) ? catalog : []).map(function(p) {
+							return {
+								id: (p && p.id) ? String(p.id) : "",
+								title: (p && p.title) ? String(p.title) : "",
+								description: (p && p.description) ? String(p.description) : "",
+								price: (p && p.price) ? String(p.price) : "",
+								priceValue: (p && p.priceValue) ? String(p.priceValue) : "",
+								priceCurrencyCode: (p && p.priceCurrencyCode) ? String(p.priceCurrencyCode) : "",
+								priceCurrencyImage: (p && p.getPriceCurrencyImage) ? String(p.getPriceCurrencyImage("medium") || "") : ""
+							};
+						});
+						console.log("YandexBridge: catalog resolved, " + safe.length + " product(s): " + safe.map(function(p){return p.id;}).join(","));
+						if (window._godot_payment_catalog_loaded) {
+							window._godot_payment_catalog_loaded(JSON.stringify(safe));
+						}
+					});
 				}).catch(function(err) {
-					if (window._godot_payment_catalog_error) window._godot_payment_catalog_error(String(err));
+					console.warn("YandexBridge: catalog load failed", err);
+					if (window._godot_payment_catalog_error) window._godot_payment_catalog_error("unavailable: " + String(err));
 				});
 			} catch(e) {
-				if (window._godot_payment_catalog_error) window._godot_payment_catalog_error(String(e));
+				console.warn("YandexBridge: catalog load exception", e);
+				if (window._godot_payment_catalog_error) window._godot_payment_catalog_error("unavailable: " + String(e));
 			}
 		})();
 	""")
+
+	_watch_catalog_load_timeout(token)
+
+
+func _watch_catalog_load_timeout(token: int) -> void:
+	await get_tree().create_timer(CATALOG_LOAD_TIMEOUT_SEC).timeout
+	if token != _catalog_load_token:
+		return
+	if not _catalog_load_pending:
+		return
+	_catalog_load_pending = false
+	push_warning("YandexBridge: catalog load timed out — no response within %.1fs" % CATALOG_LOAD_TIMEOUT_SEC)
+	payment_catalog_error.emit("timeout: catalog did not resolve in time")
 
 
 func get_cached_payment_catalog() -> Dictionary:
@@ -571,11 +678,12 @@ func get_catalog_product(local_product_id: String) -> Dictionary:
 
 
 func _on_js_payment_catalog_loaded(json_str: String) -> void:
+	_catalog_load_pending = false
 	var json: JSON = JSON.new()
 	var parse_err: int = json.parse(json_str)
 	if parse_err != OK or not json.data is Array:
 		push_warning("YandexBridge: catalog parse failed")
-		payment_catalog_error.emit("Catalog parse failed")
+		payment_catalog_error.emit("unavailable: catalog parse failed")
 		return
 	var products: Array = json.data
 	_catalog_cache.clear()
@@ -590,6 +698,7 @@ func _on_js_payment_catalog_loaded(json_str: String) -> void:
 
 
 func _on_js_payment_catalog_error(message: String) -> void:
+	_catalog_load_pending = false
 	push_warning("YandexBridge: catalog load error — %s" % message)
 	payment_catalog_error.emit(message)
 

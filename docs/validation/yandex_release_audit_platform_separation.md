@@ -55,6 +55,14 @@ Y2 task ("Yandex SDK Language Auto-Apply") is **not needed** — this audit
 found it already wired. No follow-up patch required unless testing on a real
 Yandex Games session surfaces a normalization gap.
 
+**Update (Y4.1):** real preview testing did surface a gap — the single
+synchronous read in `_apply_startup_language()` could run before
+`window.ysdk` finished initializing, and an empty read normalized to the
+default language, silently overwriting a real saved language. Fixed with a
+retry loop (`_apply_startup_language_when_platform_ready()`, up to 20
+attempts / ~8s) instead of a one-shot read. See
+`docs/validation/yandex_sdk_runtime_readiness_error_handling.md`.
+
 ## 4. Saves
 
 `YandexBridge`:
@@ -169,6 +177,14 @@ testing.
   start/stop.
 
 **Status: OK, no change needed. Rewards/pricing not touched, per task scope.**
+
+**Update (Y4.1):** real preview testing found that a rewarded ad request
+could pause gameplay/music and then never resolve if the Yandex SDK never
+called back. `YandexBridge.show_rewarded_ad()` now starts a 7s timeout
+watcher; if none of `onOpen`/`onClose`/`onError` arrive, gameplay/audio
+resume and a localized status is shown. Reward is still granted only via
+`onRewarded` — unchanged. See
+`docs/validation/yandex_sdk_runtime_readiness_error_handling.md`.
 
 ## 8. Unprocessed purchases
 

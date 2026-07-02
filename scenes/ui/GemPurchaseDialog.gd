@@ -287,15 +287,22 @@ func _on_payment_catalog_loaded(_products: Array) -> void:
 	_apply_catalog_prices()
 
 
-func _on_payment_catalog_error(_message: String) -> void:
-	if Platform.get_platform_key() != "yandex" or not visible:
+func _on_payment_catalog_error(message: String) -> void:
+	if Platform.get_platform_key() != "yandex":
 		return
+	# Always clear the request flag, even if the dialog was closed before the
+	# response/timeout arrived — otherwise a later show_dialog() would see
+	# _catalog_requested == true forever and never retry the catalog load.
 	_catalog_requested = false
-	var error_text: String = LocalizationManager.tr_key("shop.gem_purchase.catalog_error")
+	if not visible:
+		return
+	var error_key: String = "yandex.catalog.timeout" if message.to_lower().begins_with("timeout") else "shop.gem_purchase.catalog_error"
+	var error_text: String = LocalizationManager.tr_key(error_key)
 	for cell: Dictionary in _product_cells:
 		var label: Label = cell.get("buy_label")
 		if label:
 			label.text = error_text
+	set_status_message(LocalizationManager.tr_key("yandex.catalog.unavailable"), Color(1.0, 0.45, 0.35, 1.0))
 	_set_all_buy_buttons_disabled(true)
 
 

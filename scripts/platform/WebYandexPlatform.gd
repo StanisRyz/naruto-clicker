@@ -80,5 +80,9 @@ func get_platform_event_debug_state() -> Dictionary:
 	return YandexBridge.get_platform_event_debug_state()
 
 
+func get_yandex_runtime_debug_state() -> Dictionary:
+	return YandexBridge.get_yandex_runtime_debug_state()
+
+
 func get_platform_key() -> String:
 	return "yandex"

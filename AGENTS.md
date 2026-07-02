@@ -544,6 +544,35 @@ accidentally cross the boundary:
   implemented in `ClickerScreen._apply_startup_language()` — reads
   `Platform.get_platform_language()` (→ `ysdk.environment.i18n.lang`) unless
   the player manually selected a language. Do not bypass this on Web.
+- **Platform language must not be a one-shot read before the SDK is
+  ready (Y4.1).** `_apply_startup_language_when_platform_ready()` retries
+  (up to `STARTUP_LANGUAGE_MAX_RETRY_ATTEMPTS`, every
+  `STARTUP_LANGUAGE_RETRY_DELAY_SEC`) until `Platform.get_platform_language()`
+  returns a non-empty value or the platform isn't Yandex. Do not revert to a
+  single synchronous read — the Yandex SDK is not guaranteed ready the
+  instant `ClickerScreen._ready()` runs, and reading it too early previously
+  meant an empty language got normalized to the default and could overwrite
+  a real saved language.
+- **Web/Yandex SDK-dependent features (ads, catalog, language) must handle
+  SDK-not-ready, error, AND timeout paths (Y4.1).** Never assume a request
+  the SDK acknowledges will always call back.
+- **Rewarded ads must never leave gameplay/audio paused if SDK callbacks do
+  not arrive.** `YandexBridge.show_rewarded_ad()` starts a
+  `REWARDED_AD_TIMEOUT_SEC` (7s) watcher; if none of `onOpen`/`onClose`/
+  `onError` fire in time it clears `_rewarded_ad_in_progress` and emits
+  `rewarded_ad_error`, which `ClickerScreen` uses to resume gameplay/audio
+  and show a localized status. Do not add a rewarded-ad call site that skips
+  this resume path.
+- **Do not grant ad rewards without `onRewarded`.** Reward is granted only in
+  `ClickerScreen._on_rewarded_ad_rewarded()`; timeouts, errors, and
+  `onClose(wasShown=false)` must never grant a reward.
+- **Catalog loading must never show endless "Loading price..." (Y4.1).**
+  `YandexBridge.load_payment_catalog()` times out after
+  `CATALOG_LOAD_TIMEOUT_SEC` (9s) and emits `payment_catalog_error` if
+  neither `payment_catalog_loaded` nor `payment_catalog_error` arrives.
+  `GemPurchaseDialog._on_payment_catalog_error()` always clears
+  `_catalog_requested` (even if the dialog was closed before the
+  response/timeout arrived) so the next `show_dialog()` can retry.
 - **Web/Yandex saves must use Yandex Player data
   (`player.getData`/`setData`).** Already implemented in `YandexBridge.gd`
   under the stable key `save_v1`, with a 200 KB size guard in

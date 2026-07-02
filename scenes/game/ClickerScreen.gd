@@ -85,9 +85,14 @@ const FULLSCREEN_AD_INITIAL_COOLDOWN_SECONDS: float = 300.0
 const FULLSCREEN_AD_SAFE_INTERACTION_GAP_SECONDS: float = 2.5
 const YANDEX_PURCHASE_RECOVERY_MAX_READY_ATTEMPTS: int = 20
 const YANDEX_PURCHASE_RECOVERY_RETRY_DELAY_SEC: float = 0.5
+const STARTUP_LANGUAGE_MAX_RETRY_ATTEMPTS: int = 20
+const STARTUP_LANGUAGE_RETRY_DELAY_SEC: float = 0.4
 var _fullscreen_ad_cooldown_left: float = FULLSCREEN_AD_INITIAL_COOLDOWN_SECONDS
 var _last_user_interaction_time: float = -999.0
 var _fullscreen_ad_overlay: Control = null
+var _runtime_status_toast: Label = null
+var _runtime_status_hide_token: int = 0
+const RUNTIME_STATUS_TOAST_DURATION_SEC: float = 3.0
 
 @onready var top_interface_image_holder = $TopInterfaceImageHolder
 @onready var combat_effects_layer: CombatEffectsLayer = $CombatEffectsLayer
@@ -197,6 +202,7 @@ func _ready() -> void:
 	Platform.platform_resume_requested.connect(_on_yandex_platform_resume_requested)
 	AudioManager.page_visibility_changed.connect(_on_page_visibility_changed)
 	_create_fullscreen_ad_overlay()
+	_create_runtime_status_toast()
 	_apply_ui_font_sizes()
 	_apply_button_visual_cleanup()
 	bottom_tabs_backdrop.set_asset_key("ui.bottom_tabs.backdrop", Color.TRANSPARENT)
@@ -1293,6 +1299,46 @@ func _create_fullscreen_ad_overlay() -> void:
 	add_child(_fullscreen_ad_overlay)
 
 
+func _create_runtime_status_toast() -> void:
+	_runtime_status_toast = Label.new()
+	_runtime_status_toast.name = "RuntimeStatusToast"
+	_runtime_status_toast.anchor_left = 0.5
+	_runtime_status_toast.anchor_right = 0.5
+	_runtime_status_toast.anchor_top = 0.0
+	_runtime_status_toast.anchor_bottom = 0.0
+	_runtime_status_toast.offset_left = -240
+	_runtime_status_toast.offset_right = 240
+	_runtime_status_toast.offset_top = 90
+	_runtime_status_toast.offset_bottom = 140
+	_runtime_status_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_runtime_status_toast.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_runtime_status_toast.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_runtime_status_toast.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_runtime_status_toast.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+	_runtime_status_toast.add_theme_constant_override("outline_size", 4)
+	_runtime_status_toast.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
+	_runtime_status_toast.visible = false
+	add_child(_runtime_status_toast)
+	move_child(_runtime_status_toast, get_child_count() - 1)
+
+
+func _show_runtime_status_toast(text: String, duration: float = RUNTIME_STATUS_TOAST_DURATION_SEC) -> void:
+	if not is_instance_valid(_runtime_status_toast) or text == "":
+		return
+	_runtime_status_toast.text = text
+	_runtime_status_toast.visible = true
+	_runtime_status_hide_token += 1
+	_hide_runtime_status_toast_after(_runtime_status_hide_token, duration)
+
+
+func _hide_runtime_status_toast_after(token: int, duration: float) -> void:
+	await get_tree().create_timer(duration).timeout
+	if token != _runtime_status_hide_token:
+		return
+	if is_instance_valid(_runtime_status_toast):
+		_runtime_status_toast.visible = false
+
+
 func _mark_user_interaction() -> void:
 	_last_user_interaction_time = Time.get_ticks_msec() / 1000.0
 
@@ -1534,13 +1580,39 @@ func _request_unprocessed_purchase_check_when_ready(attempt: int = 0) -> void:
 
 
 func _apply_startup_language() -> void:
-	if not state.language_manually_selected:
-		var platform_lang: String = Platform.get_platform_language()
+	if state.language_manually_selected:
+		LocalizationManager.set_language(state.language)
+		return
+	_apply_startup_language_when_platform_ready()
+
+
+# Web/Yandex's platform language (ysdk.environment.i18n.lang) is not
+# guaranteed to be available the instant _ready() runs — the SDK may still
+# be initializing. Retry instead of reading it once, so a slow SDK init
+# doesn't get stuck applying an empty/default language over a real saved one.
+func _apply_startup_language_when_platform_ready(attempt: int = 0) -> void:
+	if state.language_manually_selected:
+		return
+	var platform_lang: String = Platform.get_platform_language()
+	if platform_lang != "":
 		var resolved: String = LocalizationManager.normalize_supported_language(platform_lang)
+		if BuildConfig.IS_DEBUG_BUILD:
+			print("ClickerScreen: startup language — platform lang='%s' resolved='%s' (attempt=%d)" % [platform_lang, resolved, attempt])
 		if resolved != state.language:
 			state.language = resolved
 			_save_game_now()
-	LocalizationManager.set_language(state.language)
+		LocalizationManager.set_language(state.language)
+		return
+	var is_yandex: bool = Platform.get_platform_key() == "yandex"
+	if not is_yandex or attempt >= STARTUP_LANGUAGE_MAX_RETRY_ATTEMPTS:
+		if BuildConfig.IS_DEBUG_BUILD:
+			print("ClickerScreen: startup language — platform lang unavailable, falling back to '%s' (attempt=%d)" % [state.language, attempt])
+		if is_yandex:
+			_show_runtime_status_toast(LocalizationManager.tr_key("yandex.language.sdk_unavailable"))
+		LocalizationManager.set_language(state.language)
+		return
+	await get_tree().create_timer(STARTUP_LANGUAGE_RETRY_DELAY_SEC).timeout
+	_apply_startup_language_when_platform_ready(attempt + 1)
 
 
 func _on_language_manually_changed(_language_code: String) -> void:
@@ -1846,7 +1918,7 @@ func _on_rewarded_ad_rewarded() -> void:
 			pass
 
 
-func _on_rewarded_ad_closed(_was_shown: bool) -> void:
+func _on_rewarded_ad_closed(was_shown: bool) -> void:
 	_set_runtime_pause_reason("rewarded_ad", false)
 	AudioManager.resume_after_ad()
 	_try_resume_yandex_gameplay()
@@ -1854,13 +1926,15 @@ func _on_rewarded_ad_closed(_was_shown: bool) -> void:
 		shop_sheet.set_product_buy_button_modal_pressed(_rewarded_ad_shop_product_id, false)
 	if _rewarded_ad_request_context == "offline_gold_x3" and not _rewarded_ad_reward_granted_for_current_request:
 		offline_reward_dialog.set_buttons_loading(false)
+	if not was_shown and not _rewarded_ad_reward_granted_for_current_request:
+		_show_runtime_status_toast(LocalizationManager.tr_key("yandex.ad.unavailable"))
 	_rewarded_ad_request_context = ""
 	_rewarded_ad_shop_product_id = ""
 	_rewarded_ad_reward_granted_for_current_request = false
 	_update_rewarded_ad_banner()
 
 
-func _on_rewarded_ad_error(_message: String) -> void:
+func _on_rewarded_ad_error(message: String) -> void:
 	_set_runtime_pause_reason("rewarded_ad", false)
 	AudioManager.resume_after_ad()
 	_try_resume_yandex_gameplay()
@@ -1868,6 +1942,10 @@ func _on_rewarded_ad_error(_message: String) -> void:
 		shop_sheet.set_product_buy_button_modal_pressed(_rewarded_ad_shop_product_id, false)
 	if _rewarded_ad_request_context == "offline_gold_x3":
 		offline_reward_dialog.set_buttons_loading(false)
+	var status_key: String = "yandex.ad.timeout" if message.to_lower().begins_with("timeout") else "yandex.ad.unavailable"
+	_show_runtime_status_toast(LocalizationManager.tr_key(status_key))
+	if BuildConfig.IS_DEBUG_BUILD:
+		print("ClickerScreen: rewarded ad error — %s" % message)
 	_rewarded_ad_request_context = ""
 	_rewarded_ad_shop_product_id = ""
 	_rewarded_ad_reward_granted_for_current_request = false

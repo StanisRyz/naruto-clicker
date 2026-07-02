@@ -4,6 +4,15 @@ Implements the confirmed Y1 code gap: Web/Yandex showed a hardcoded RUB
 `price_rub` instead of the real Yandex catalog price. Purchase, credit,
 consume, and unprocessed-purchase recovery logic are unchanged.
 
+**Update (Y4.1):** real preview testing found the catalog load had no
+timeout, so `GemPurchaseDialog` could stay on "Loading price..." forever if
+`payments.getCatalog()` never resolved or rejected. `YandexBridge.load_payment_catalog()`
+now times out after 9s and emits `payment_catalog_error`; `GemPurchaseDialog`
+always clears its `_catalog_requested` flag on error (even if the dialog was
+already closed), shows an error/unavailable status, disables Yandex buy
+buttons, and allows retry the next time the dialog opens. See
+`docs/validation/yandex_sdk_runtime_readiness_error_handling.md`.
+
 ## Checklist
 
 - [x] `payments.getCatalog()` implemented — `YandexBridge.load_payment_catalog()`

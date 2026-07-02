@@ -86,6 +86,27 @@ full Y1 audit. Current follow-up sequence:
    the full record of this patch.
 6. **Y6** — HTML export smoke pass. Needed: manual verification of a real
    Web export against the Yandex Games preview cabinet.
+7. **Y4.1** — SDK runtime readiness and error handling (completed). Real
+   preview/testing found three runtime gaps: startup language could apply
+   before the Yandex SDK finished initializing, a rewarded ad request could
+   pause gameplay/music and then never resolve if the SDK never called back,
+   and the gem purchase dialog could be stuck on "Loading price..." forever
+   if the catalog request never resolved. Fixed:
+   - Web/Yandex now waits/retries (`ClickerScreen._apply_startup_language_when_platform_ready()`)
+     for the SDK language instead of reading it once; falls back to the saved
+     language after ~8s if the SDK never reports one. A manually-selected
+     language is never overridden.
+   - Rewarded ad requests now time out after 7s if none of
+     `onOpen`/`onClose`/`onError` arrive; gameplay/audio resume and a
+     localized "Ad unavailable"/"Ad did not open" status is shown. Ad
+     rewards are still granted only via `onRewarded` — unchanged.
+   - Catalog loading now times out after 9s if neither
+     `payment_catalog_loaded` nor `payment_catalog_error` arrives;
+     `GemPurchaseDialog` clears its loading state, shows an
+     error/unavailable status, disables Yandex purchase buttons, and allows
+     retry the next time the dialog opens.
+   - No gameplay, ad reward, purchase/consume/recovery, or backend logic was
+     changed. See `docs/validation/yandex_sdk_runtime_readiness_error_handling.md`.
 
 ### Web / Yandex
 
