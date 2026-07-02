@@ -1538,6 +1538,79 @@ image as the AuthGate background (visual continuity between app boot and first l
 
 ---
 
+### C7.3.4 — CloudRestorePrompt Cleanup & Account/Settings UI Polish (completed)
+
+**Purpose:** Remove the now-dead `CloudRestorePrompt` flow (unused since C7.3.1 made
+account cloud save authoritative) and polish `AccountWindow`/`SettingsWindow` — drop
+the user-facing "Load from Cloud" action, simplify the account section to essentials,
+give `AccountWindow` buttons texture-scale centered sizing instead of full-width
+stretch, and enlarge `SettingsWindow` proportionally so Version is visible without
+scrolling.
+
+**Changes:**
+
+- **`scenes/ui/CloudRestorePrompt.gd` / `.tscn` / `.gd.uid`** — deleted. Dead files;
+  `request_backend_cloud_restore_check()` was already unreferenced outside its own
+  definition per the C7.3.1 note.
+- **`scenes/game/ClickerScreen.gd`** — removed the `cloud_restore_prompt` node ref and
+  all startup cloud-restore prompt state/methods: `_startup_cloud_restore_check_requested`,
+  `_startup_cloud_restore_check_in_progress`, `_startup_cloud_restore_prompt_pending`,
+  `_startup_cloud_restore_pending_save_data`, `_startup_cloud_restore_pending_mode`,
+  `_startup_cloud_restore_declined_this_session`, `_pre_startup_had_local_save`,
+  `_pre_startup_local_timestamp`, `_pre_startup_local_save_snapshot_taken`,
+  `_capture_pre_startup_local_save_snapshot()`, `_should_check_backend_cloud_restore()`,
+  `request_backend_cloud_restore_check()`, `_evaluate_cloud_restore_candidate()`,
+  `_on_cloud_restore_load_confirmed()`, `_on_cloud_restore_keep_local_confirmed()`.
+  Also removed the manual-download branch (`_manual_backend_cloud_download_requested`,
+  `_on_account_window_cloud_save_download_requested()`) since `AccountWindow` no longer
+  exposes Load from Cloud. `_force_account_cloud_load_on_startup` and
+  `_force_account_cloud_load_after_guest_login` handling — untouched.
+- **`scenes/game/ClickerScreen.tscn`** — removed the `CloudRestorePrompt` node and its
+  `ext_resource`; `load_steps` decremented from 25 to 24.
+- **`scenes/ui/AccountWindow.gd`** — removed `cloud_save_download_requested` signal and
+  all Load-from-Cloud UI (download button, confirm/cancel box, warning label) and
+  handlers. Removed the Verify Email button, verification code input, and Confirm Code
+  button — `Platform.backend_request_email_verification()`/
+  `backend_confirm_email_verification()` are untouched (still callable, just no longer
+  wired to this window); the window now only *displays* `Email verified`/`Email not
+  verified`. Removed the big "Signed in"/"Guest mode" status label and the guest
+  explanation label while signed in (guest explanation still shows for guests). Action
+  buttons (`Sign in / Register`, `Save to Cloud`, `Logout`) now use
+  `custom_minimum_size = Vector2(218, 75)` (`ACTION_BUTTON_SIZE`) with
+  `SIZE_SHRINK_CENTER` instead of `SIZE_EXPAND_FILL`, matching the Settings Account
+  button scale. `Logout` kept (needed for account switching) but placed after the cloud
+  section as a secondary action.
+- **`scenes/ui/SettingsWindow.tscn`** — `PanelContainer` enlarged proportionally from
+  `540×525` to `648×630` (scale factor `1.2` on both axes), offsets recentered
+  (`-324/-315` to `324/315`). Margins/theme unchanged — same fixed-size textured-window
+  pattern as before, just larger. This removes the scroll previously needed to see
+  Version.
+- **`localization/game_text.csv`** — removed 26 stale keys: all 9 `cloud_restore.*`
+  keys, and `settings.cloud.{title,status_guest_unavailable,status_account_ready,
+  load_from_cloud,confirm_load,cancel_load,confirm_load_warning,download_started,
+  download_success,download_failed,no_cloud_save,invalid_cloud_save}`, and
+  `settings.account.{status_guest,status_signed_in,verify_email,
+  verification_code_placeholder,confirm_code,verification_sending,verification_sent,
+  verification_confirming,verification_success,verification_invalid_code}`.
+  Regenerated `scripts/ui/LocalizationData.gd` (454 → 423 keys).
+
+**What C7.3.4 did NOT change:**
+
+- Account cloud save authority, startup force-load, Guest → Register upload,
+  Guest → Login force-load (C7.1/C7.3.1) — all untouched.
+- Backend Cloud Function code/API paths, `SaveManager` schema/payload format,
+  payment/RuStore flow, rewarded ads, paid shop lock logic, gameplay balance.
+- `Platform.backend_request_email_verification()` /
+  `backend_confirm_email_verification()` — backend methods untouched, only the
+  `AccountWindow` UI controls that called them were removed.
+- Web/Yandex behavior — unchanged.
+- `AccountWindow`'s own fixed `540×525` size — unchanged; only `SettingsWindow` was
+  resized in this patch.
+
+**Validation:** see `docs/validation/cloud_restore_cleanup_account_ui_polish.md`.
+
+---
+
 ### C6.1 — Release Audit Fixes (completed)
 
 Small release-safety fixes applied after the C6 stabilization pass. No new gameplay

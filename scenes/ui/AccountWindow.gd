@@ -9,7 +9,6 @@ extends Control
 
 signal account_auth_requested
 signal cloud_save_upload_requested
-signal cloud_save_download_requested
 
 const ImageSlotClass = preload("res://scripts/ui/ImageSlot.gd")
 
@@ -24,20 +23,14 @@ const BODY_PATH: String = "MarginContainer/VBoxContainer/BodyScrollContainer/Bod
 @onready var close_button: Button = $PanelContainer/MarginContainer/VBoxContainer/HeaderMargin/Header/CloseButton
 @onready var _title_label: Label = $PanelContainer/MarginContainer/VBoxContainer/HeaderMargin/Header/TitleLabel
 
+const ACTION_BUTTON_SIZE: Vector2 = Vector2(218, 75)
+
 var _account_section: Control = null
-var _account_title_label: Label = null
-var _account_status_label: Label = null
 var _account_email_label: Label = null
 var _account_verification_label: Label = null
 var _account_guest_warning_label: Label = null
 var _account_sign_in_button: Button = null
 var _account_sign_in_button_label: Label = null
-var _account_verify_button: Button = null
-var _account_verify_button_label: Label = null
-var _account_code_box: Control = null
-var _account_code_input: LineEdit = null
-var _account_confirm_button: Button = null
-var _account_confirm_button_label: Label = null
 var _account_logout_button: Button = null
 var _account_logout_button_label: Label = null
 var _account_action_label: Label = null
@@ -45,18 +38,9 @@ var _account_signals_connected: bool = false
 var _account_action_busy: bool = false
 
 var _cloud_section: Control = null
-var _cloud_title_label: Label = null
 var _cloud_status_label: Label = null
 var _cloud_upload_button: Button = null
 var _cloud_upload_button_label: Label = null
-var _cloud_download_button: Button = null
-var _cloud_download_button_label: Label = null
-var _cloud_confirm_box: Control = null
-var _cloud_confirm_warning_label: Label = null
-var _cloud_confirm_button: Button = null
-var _cloud_confirm_button_label: Label = null
-var _cloud_cancel_button: Button = null
-var _cloud_cancel_button_label: Label = null
 
 
 func _ready() -> void:
@@ -179,14 +163,9 @@ func _create_account_section() -> void:
 	var vbox: VBoxContainer = panel_container.get_node(BODY_PATH)
 
 	var account_vbox := VBoxContainer.new()
-	account_vbox.add_theme_constant_override("separation", 8)
+	account_vbox.add_theme_constant_override("separation", 10)
 	vbox.add_child(account_vbox)
 	_account_section = account_vbox
-
-	var status_lbl := Label.new()
-	status_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	account_vbox.add_child(status_lbl)
-	_account_status_label = status_lbl
 
 	var email_lbl := Label.new()
 	email_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -207,8 +186,8 @@ func _create_account_section() -> void:
 	_account_guest_warning_label = guest_warn
 
 	var sign_in_btn := Button.new()
-	sign_in_btn.custom_minimum_size = Vector2(0, 60)
-	sign_in_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sign_in_btn.custom_minimum_size = ACTION_BUTTON_SIZE
+	sign_in_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	sign_in_btn.pressed.connect(_on_account_sign_in_pressed)
 	account_vbox.add_child(sign_in_btn)
 	_account_sign_in_button = sign_in_btn
@@ -218,47 +197,11 @@ func _create_account_section() -> void:
 	)
 	UiFontConfig.apply_label_font_size(_account_sign_in_button_label, UiFontConfig.SETTINGS_ACTION_BUTTON_FONT_SIZE)
 
-	var verify_btn := Button.new()
-	verify_btn.custom_minimum_size = Vector2(0, 60)
-	verify_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	verify_btn.pressed.connect(_on_account_verify_email_pressed)
-	account_vbox.add_child(verify_btn)
-	_account_verify_button = verify_btn
-	_account_verify_button_label = _make_image_button_label(
-		verify_btn, "ui.popup.button.default",
-		LocalizationManager.tr_key("settings.account.verify_email")
-	)
-	UiFontConfig.apply_label_font_size(_account_verify_button_label, UiFontConfig.SETTINGS_ACTION_BUTTON_FONT_SIZE)
-
-	var code_box := VBoxContainer.new()
-	code_box.add_theme_constant_override("separation", 6)
-	code_box.visible = false
-	account_vbox.add_child(code_box)
-	_account_code_box = code_box
-
-	var code_input := LineEdit.new()
-	code_input.placeholder_text = LocalizationManager.tr_key("settings.account.verification_code_placeholder")
-	code_input.max_length = 6
-	code_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	code_input.custom_minimum_size = Vector2(0, 48)
-	code_box.add_child(code_input)
-	_account_code_input = code_input
-
-	var confirm_btn := Button.new()
-	confirm_btn.custom_minimum_size = Vector2(0, 60)
-	confirm_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	confirm_btn.pressed.connect(_on_account_confirm_code_pressed)
-	code_box.add_child(confirm_btn)
-	_account_confirm_button = confirm_btn
-	_account_confirm_button_label = _make_image_button_label(
-		confirm_btn, "ui.popup.button.default",
-		LocalizationManager.tr_key("settings.account.confirm_code")
-	)
-	UiFontConfig.apply_label_font_size(_account_confirm_button_label, UiFontConfig.SETTINGS_ACTION_BUTTON_FONT_SIZE)
+	_create_cloud_section(account_vbox)
 
 	var logout_btn := Button.new()
-	logout_btn.custom_minimum_size = Vector2(0, 60)
-	logout_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	logout_btn.custom_minimum_size = ACTION_BUTTON_SIZE
+	logout_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	logout_btn.pressed.connect(_on_account_logout_pressed)
 	account_vbox.add_child(logout_btn)
 	_account_logout_button = logout_btn
@@ -276,7 +219,6 @@ func _create_account_section() -> void:
 	account_vbox.add_child(action_lbl)
 	_account_action_label = action_lbl
 
-	_create_cloud_section(account_vbox)
 	_refresh_account_section()
 
 
@@ -285,14 +227,8 @@ func _refresh_account_static_labels() -> void:
 		return
 	if _account_sign_in_button_label != null:
 		_account_sign_in_button_label.text = LocalizationManager.tr_key("settings.account.sign_in_register")
-	if _account_verify_button_label != null:
-		_account_verify_button_label.text = LocalizationManager.tr_key("settings.account.verify_email")
-	if _account_confirm_button_label != null:
-		_account_confirm_button_label.text = LocalizationManager.tr_key("settings.account.confirm_code")
 	if _account_logout_button_label != null:
 		_account_logout_button_label.text = LocalizationManager.tr_key("settings.account.logout")
-	if _account_code_input != null:
-		_account_code_input.placeholder_text = LocalizationManager.tr_key("settings.account.verification_code_placeholder")
 	_refresh_cloud_static_labels()
 	_refresh_account_section()
 
@@ -300,16 +236,15 @@ func _refresh_account_static_labels() -> void:
 func _refresh_account_section() -> void:
 	if _account_section == null:
 		return
-	_clear_account_verification_input()
 	_account_action_label.visible = false
 	_account_action_label.text = ""
 	_refresh_account_section_state()
 
 
 # Updates account/cloud visibility and status text from current session data
-# without touching the account action message or the verification code input —
-# callers that just showed an operation result (success/failure) must use this
-# instead of `_refresh_account_section()` so the message is not immediately wiped.
+# without touching the account action message — callers that just showed an
+# operation result (success/failure) must use this instead of
+# `_refresh_account_section()` so the message is not immediately wiped.
 func _refresh_account_section_state() -> void:
 	if _account_section == null:
 		return
@@ -317,11 +252,6 @@ func _refresh_account_section_state() -> void:
 	var email := Platform.backend_get_email()
 	var verified := Platform.backend_is_email_verified()
 
-	_account_status_label.text = (
-		LocalizationManager.tr_key("settings.account.status_signed_in")
-		if has_session else
-		LocalizationManager.tr_key("settings.account.status_guest")
-	)
 	_account_email_label.text = LocalizationManager.format_key("settings.account.email", {"email": email})
 	_account_email_label.visible = has_session
 	_account_verification_label.text = (
@@ -333,24 +263,12 @@ func _refresh_account_section_state() -> void:
 	_account_guest_warning_label.text = LocalizationManager.tr_key("settings.account.guest_explanation")
 	_account_guest_warning_label.visible = not has_session
 	_account_sign_in_button.visible = not has_session
-	_account_verify_button.visible = has_session and not verified
 	_account_logout_button.visible = has_session
 	_refresh_cloud_section()
 
 
-func _clear_account_verification_input() -> void:
-	if _account_code_box != null:
-		_account_code_box.visible = false
-	if _account_code_input != null:
-		_account_code_input.text = ""
-
-
 func _set_account_actions_busy(is_busy: bool) -> void:
 	_account_action_busy = is_busy
-	if _account_verify_button != null:
-		_account_verify_button.disabled = is_busy
-	if _account_confirm_button != null:
-		_account_confirm_button.disabled = is_busy
 	if _account_logout_button != null:
 		_account_logout_button.disabled = is_busy
 	if _account_sign_in_button != null:
@@ -397,45 +315,17 @@ func _on_account_backend_auth_changed(_auth_data: Dictionary) -> void:
 
 func _on_account_backend_op_succeeded(operation: String, _response: Dictionary) -> void:
 	match operation:
-		"request_email_verification":
-			_set_account_actions_busy(false)
-			_account_code_box.visible = true
-			_account_verify_button.visible = false
-			_show_account_action(LocalizationManager.tr_key("settings.account.verification_sent"))
-
-		"confirm_email_verification":
-			_set_account_actions_busy(false)
-			_account_code_box.visible = false
-			_refresh_account_section_state()
-			_show_account_action(LocalizationManager.tr_key("settings.account.verification_success"))
-
 		"logout":
 			_set_account_actions_busy(false)
-			_clear_account_verification_input()
 			_refresh_account_section_state()
 			_show_account_action(LocalizationManager.tr_key("settings.account.logout_success"))
 
 
-func _on_account_backend_op_failed(operation: String, error_code: String, _status_code: int, _response: Dictionary) -> void:
+func _on_account_backend_op_failed(operation: String, _error_code: String, _status_code: int, _response: Dictionary) -> void:
 	match operation:
-		"request_email_verification":
-			_set_account_actions_busy(false)
-			_show_account_action(
-				LocalizationManager.format_key("settings.account.backend_error", {"error": error_code}),
-				true
-			)
-
-		"confirm_email_verification":
-			_set_account_actions_busy(false)
-			_show_account_action(
-				LocalizationManager.format_key("settings.account.backend_error", {"error": error_code}),
-				true
-			)
-
 		"logout":
 			_set_account_actions_busy(false)
 			Platform.backend_clear_local_auth()
-			_clear_account_verification_input()
 			_refresh_account_section_state()
 			_show_account_action(LocalizationManager.tr_key("settings.account.logout_local_fallback"))
 
@@ -444,26 +334,6 @@ func _on_account_sign_in_pressed() -> void:
 	if _account_action_busy:
 		return
 	account_auth_requested.emit()
-
-
-func _on_account_verify_email_pressed() -> void:
-	if _account_action_busy:
-		return
-	_set_account_actions_busy(true)
-	_show_account_action(LocalizationManager.tr_key("settings.account.verification_sending"))
-	Platform.backend_request_email_verification()
-
-
-func _on_account_confirm_code_pressed() -> void:
-	if _account_action_busy:
-		return
-	var code := _account_code_input.text.strip_edges()
-	if code.length() != 6 or not code.is_valid_int():
-		_show_account_action(LocalizationManager.tr_key("settings.account.verification_invalid_code"), true)
-		return
-	_set_account_actions_busy(true)
-	_show_account_action(LocalizationManager.tr_key("settings.account.verification_confirming"))
-	Platform.backend_confirm_email_verification(code)
 
 
 func _on_account_logout_pressed() -> void:
@@ -477,30 +347,14 @@ func _on_account_logout_pressed() -> void:
 # ── Cloud save section ────────────────────────────────────────────────────────
 
 func _create_cloud_section(parent_vbox: VBoxContainer) -> void:
-	var sep := HSeparator.new()
-	parent_vbox.add_child(sep)
-
 	var cloud_vbox := VBoxContainer.new()
 	cloud_vbox.add_theme_constant_override("separation", 6)
 	parent_vbox.add_child(cloud_vbox)
 	_cloud_section = cloud_vbox
 
-	var title_lbl := Label.new()
-	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_lbl.add_theme_font_size_override("font_size", 15)
-	cloud_vbox.add_child(title_lbl)
-	_cloud_title_label = title_lbl
-
-	var status_lbl := Label.new()
-	status_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	status_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	status_lbl.add_theme_font_size_override("font_size", 12)
-	cloud_vbox.add_child(status_lbl)
-	_cloud_status_label = status_lbl
-
 	var upload_btn := Button.new()
-	upload_btn.custom_minimum_size = Vector2(0, 56)
-	upload_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	upload_btn.custom_minimum_size = ACTION_BUTTON_SIZE
+	upload_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	upload_btn.pressed.connect(_on_cloud_upload_pressed)
 	cloud_vbox.add_child(upload_btn)
 	_cloud_upload_button = upload_btn
@@ -510,124 +364,33 @@ func _create_cloud_section(parent_vbox: VBoxContainer) -> void:
 	)
 	UiFontConfig.apply_label_font_size(_cloud_upload_button_label, UiFontConfig.SETTINGS_ACTION_BUTTON_FONT_SIZE)
 
-	var download_btn := Button.new()
-	download_btn.custom_minimum_size = Vector2(0, 56)
-	download_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	download_btn.pressed.connect(_on_cloud_download_pressed)
-	cloud_vbox.add_child(download_btn)
-	_cloud_download_button = download_btn
-	_cloud_download_button_label = _make_image_button_label(
-		download_btn, "ui.popup.button.default",
-		LocalizationManager.tr_key("settings.cloud.load_from_cloud")
-	)
-	UiFontConfig.apply_label_font_size(_cloud_download_button_label, UiFontConfig.SETTINGS_ACTION_BUTTON_FONT_SIZE)
-
-	var confirm_box := VBoxContainer.new()
-	confirm_box.add_theme_constant_override("separation", 4)
-	confirm_box.visible = false
-	cloud_vbox.add_child(confirm_box)
-	_cloud_confirm_box = confirm_box
-
-	var warn_lbl := Label.new()
-	warn_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	warn_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	warn_lbl.add_theme_font_size_override("font_size", 12)
-	warn_lbl.add_theme_color_override("font_color", Color(0.9, 0.75, 0.35, 1.0))
-	confirm_box.add_child(warn_lbl)
-	_cloud_confirm_warning_label = warn_lbl
-
-	var confirm_row := HBoxContainer.new()
-	confirm_row.add_theme_constant_override("separation", 6)
-	confirm_box.add_child(confirm_row)
-
-	var cancel_btn := Button.new()
-	cancel_btn.custom_minimum_size = Vector2(0, 52)
-	cancel_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	cancel_btn.pressed.connect(_on_cloud_confirm_cancel_pressed)
-	confirm_row.add_child(cancel_btn)
-	_cloud_cancel_button = cancel_btn
-	_cloud_cancel_button_label = _make_image_button_label(
-		cancel_btn, "ui.popup.button.default",
-		LocalizationManager.tr_key("settings.cloud.cancel_load")
-	)
-	UiFontConfig.apply_label_font_size(_cloud_cancel_button_label, UiFontConfig.SETTINGS_ACTION_BUTTON_FONT_SIZE)
-
-	var confirm_btn := Button.new()
-	confirm_btn.custom_minimum_size = Vector2(0, 52)
-	confirm_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	confirm_btn.pressed.connect(_on_cloud_confirm_load_pressed)
-	confirm_row.add_child(confirm_btn)
-	_cloud_confirm_button = confirm_btn
-	_cloud_confirm_button_label = _make_image_button_label(
-		confirm_btn, "ui.popup.button.danger",
-		LocalizationManager.tr_key("settings.cloud.confirm_load")
-	)
-	UiFontConfig.apply_label_font_size(_cloud_confirm_button_label, UiFontConfig.SETTINGS_ACTION_BUTTON_FONT_SIZE)
+	var status_lbl := Label.new()
+	status_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	status_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	status_lbl.add_theme_font_size_override("font_size", 12)
+	cloud_vbox.add_child(status_lbl)
+	_cloud_status_label = status_lbl
 
 
 func _refresh_cloud_section() -> void:
 	if _cloud_section == null:
 		return
 	var has_session := Platform.backend_has_session()
-	if _cloud_title_label != null:
-		_cloud_title_label.text = LocalizationManager.tr_key("settings.cloud.title")
-	if _cloud_status_label != null:
-		_cloud_status_label.text = (
-			LocalizationManager.tr_key("settings.cloud.status_account_ready")
-			if has_session else
-			LocalizationManager.tr_key("settings.cloud.status_guest_unavailable")
-		)
 	if _cloud_upload_button != null:
 		_cloud_upload_button.visible = has_session
-	if _cloud_download_button != null:
-		_cloud_download_button.visible = has_session
-	if _cloud_confirm_box != null:
-		_cloud_confirm_box.visible = false
 
 
 func _refresh_cloud_static_labels() -> void:
 	if _cloud_section == null:
 		return
-	if _cloud_title_label != null:
-		_cloud_title_label.text = LocalizationManager.tr_key("settings.cloud.title")
 	if _cloud_upload_button_label != null:
 		_cloud_upload_button_label.text = LocalizationManager.tr_key("settings.cloud.save_to_cloud")
-	if _cloud_download_button_label != null:
-		_cloud_download_button_label.text = LocalizationManager.tr_key("settings.cloud.load_from_cloud")
-	if _cloud_confirm_button_label != null:
-		_cloud_confirm_button_label.text = LocalizationManager.tr_key("settings.cloud.confirm_load")
-	if _cloud_cancel_button_label != null:
-		_cloud_cancel_button_label.text = LocalizationManager.tr_key("settings.cloud.cancel_load")
-	if _cloud_confirm_warning_label != null:
-		_cloud_confirm_warning_label.text = LocalizationManager.tr_key("settings.cloud.confirm_load_warning")
 	_refresh_cloud_section()
 
 
 func _on_cloud_upload_pressed() -> void:
-	if _cloud_confirm_box != null:
-		_cloud_confirm_box.visible = false
 	set_cloud_save_status(LocalizationManager.tr_key("settings.cloud.upload_started"))
 	cloud_save_upload_requested.emit()
-
-
-func _on_cloud_download_pressed() -> void:
-	if _cloud_confirm_box == null:
-		return
-	if _cloud_confirm_warning_label != null:
-		_cloud_confirm_warning_label.text = LocalizationManager.tr_key("settings.cloud.confirm_load_warning")
-	_cloud_confirm_box.visible = true
-
-
-func _on_cloud_confirm_load_pressed() -> void:
-	if _cloud_confirm_box != null:
-		_cloud_confirm_box.visible = false
-	set_cloud_save_status(LocalizationManager.tr_key("settings.cloud.download_started"))
-	cloud_save_download_requested.emit()
-
-
-func _on_cloud_confirm_cancel_pressed() -> void:
-	if _cloud_confirm_box != null:
-		_cloud_confirm_box.visible = false
 
 
 # ── Public cloud save helpers ─────────────────────────────────────────────────
@@ -645,8 +408,6 @@ func set_cloud_save_status(message: String, is_error: bool = false) -> void:
 func set_cloud_save_buttons_busy(is_busy: bool) -> void:
 	if _cloud_upload_button != null:
 		_cloud_upload_button.disabled = is_busy
-	if _cloud_download_button != null:
-		_cloud_download_button.disabled = is_busy
 
 
 func refresh_account_section() -> void:

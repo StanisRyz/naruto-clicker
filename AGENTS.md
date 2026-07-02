@@ -422,7 +422,7 @@ These rules apply to all Android/RuStore backend auth and cloud-save work.
 
 - **Backend cloud-save is Android + account only.** `queue_backend_cloud_save()`, `flush_backend_cloud_save_now()`, and all `Platform.backend_*` cloud ops must only run when `OS.has_feature("android")` and `Platform.backend_has_session()` are both true. Guests must never trigger backend cloud-save or cloud-load operations.
 
-- **CloudRestorePrompt has the highest prompt priority.** Never show it while `_startup_cloud_restore_prompt_pending` or `_startup_cloud_restore_check_in_progress` is true. `GuestMigrationPrompt` is no longer shown (C7.1).
+- **Do not reintroduce `CloudRestorePrompt`.** It was deleted in C7.3.4 (`scenes/ui/CloudRestorePrompt.gd`/`.tscn` and all `_startup_cloud_restore_*`/`_pre_startup_*` state in `ClickerScreen.gd`). Account login/startup must not ask a local-vs-cloud conflict question — the account cloud save is authoritative and force-loads silently (C7.3.1). `GuestMigrationPrompt` is also no longer shown (C7.1).
 
 - **Backend auto-upload suspension must not leak.** If you add a new exit path from the startup restore-decision flow, you must call `_resume_backend_auto_upload_after_restore_decision()` at that exit point. `_exit_tree()` also calls it as a safety net.
 
@@ -852,20 +852,31 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
 - Web/Yandex cloud-save via `YandexBridge` is completely separate and must remain
   unchanged. The backend cloud-sync UI must never appear on Web/editor.
 
-## Cloud Restore Prompt Rules (C5.3)
+## Cloud Restore Prompt Rules (C5.3 — removed in C7.3.4)
 
-- **Never apply backend cloud saves without user confirmation.** `CloudRestorePrompt` emits signals; `ClickerScreen` applies the save only after the user confirms.
-- **Startup cloud restore check is Android account-only.** The guard is `OS.has_feature("android") and Platform.backend_has_session()`. Guest mode and Web/Yandex must never reach `Platform.backend_load_save()` from this path.
-- **Guest mode must not call backend load or save.** `SaveManager.queue_backend_cloud_save()` and `request_backend_cloud_restore_check()` are both no-ops for guests.
-- **Web/Yandex cloud-save must remain SDK-based and unchanged.** `YandexBridge` / `WebYandexPlatform` handles cloud save for Web. Do not mix with the backend path.
-- **`CloudRestorePrompt` must not call `SaveManager` or `Platform` directly.** It only emits `load_cloud_confirmed` or `keep_local_confirmed`. `ClickerScreen` owns all data operations.
-- **`ClickerScreen` owns applying the cloud save and refreshing gameplay UI** after restore confirmation: `SaveManager.apply_cloud_save_payload()` → `SaveManager.load_data()` → `state.apply_save_data()` → `_reset_runtime_state_for_new_game()` → `_sync_boss_timer()` → `_update_ui()`.
-- **Do not log full save payloads.** `_evaluate_cloud_restore_candidate()` and `_on_cloud_restore_load_confirmed()` must not print JSON or save content.
-- **Manual Settings Load from Cloud remains separate and unchanged.** Distinguish by `_manual_backend_cloud_download_requested` flag vs `_startup_cloud_restore_check_in_progress` flag in the `load_save` response handler.
-- **Startup check runs at most once per session.** Re-check is allowed only after an explicit account login from the AuthGate overlay (via `request_backend_cloud_restore_check("auth_overlay")`), which resets the requested/declined flags.
-- **Do not show a second prompt if one is already pending.** Guard with `_startup_cloud_restore_prompt_pending`.
-- **If user declines (Keep Local), set `_startup_cloud_restore_declined_this_session = true`.** Do not re-prompt during the same session unless `auth_overlay` resets it.
-- **`CloudRestorePrompt` blocks fullscreen ads and the rewarded banner** while visible (guarded in `_is_safe_for_fullscreen_ad()` and `_is_main_screen_clear_for_rewarded_banner()`).
+> **C7.3.4 deleted `CloudRestorePrompt` entirely** (`scenes/ui/CloudRestorePrompt.gd`/`.tscn`,
+> all `_startup_cloud_restore_*`/`_pre_startup_*` state and methods in `ClickerScreen.gd`,
+> and the `cloud_restore.*` localization keys). The rules below are kept for historical
+> context only — do not reintroduce any of this. Account cloud save is authoritative and
+> force-loads silently at startup/login (C7.3.1); there is no local-vs-cloud conflict
+> prompt anymore. `AccountWindow` also no longer has a manual "Load from Cloud" action
+> (see the C7.3.4 rules below) — `_manual_backend_cloud_download_requested` no longer
+> exists either.
+>
+> - Never apply backend cloud saves without user confirmation — historically enforced by
+>   `CloudRestorePrompt` signals; now enforced by the account-authority model instead
+>   (force-load is itself the "confirmation" — there is nothing to confirm).
+> - Startup cloud restore check was Android account-only, guarded by
+>   `OS.has_feature("android") and Platform.backend_has_session()`.
+> - Guest mode must never call backend load or save — still true; enforced by
+>   `_gameplay_started_as_guest` guards in the force-load paths.
+> - Web/Yandex cloud-save remains SDK-based via `YandexBridge`/`WebYandexPlatform` —
+>   still true and unaffected by this removal.
+> - `ClickerScreen` still owns applying the cloud save and refreshing gameplay UI in the
+>   force-load paths: `SaveManager.apply_cloud_save_payload()` → `SaveManager.load_data()`
+>   → `state.apply_save_data()` → `_reset_runtime_state_for_new_game()` →
+>   `_sync_boss_timer()` → `_update_ui()`.
+> - Do not log full save payloads — still true for all cloud-save code paths.
 
 ## Guest → Account Migration Prompt Rules (C5.4 — superseded by C7.1)
 
@@ -914,11 +925,12 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
   before ClickerScreen `_ready()` runs. Set it to `false` after successful register
   upload or after login cloud-load completes (success or clean-save fallback).
 - **`_force_account_cloud_load_after_guest_login` must be checked first** in the
-  `load_save` success/failure handlers, before `_manual_backend_cloud_download_requested`
-  and `_startup_cloud_restore_check_in_progress`. Clear it and resume auto-upload at
-  every exit point of that branch.
+  `load_save` success/failure handlers, before `_force_account_cloud_load_on_startup`'s
+  sibling branches. Clear it and resume auto-upload at every exit point of that branch.
 - **Do not show `CloudRestorePrompt` for the Guest → Login force-load flow.**
-  The account save is applied immediately without user confirmation.
+  The account save is applied immediately without user confirmation. (`CloudRestorePrompt`
+  no longer exists as of C7.3.4 — this rule is kept because the "no conflict prompt,
+  ever" principle still applies.)
 - **Web/Yandex behavior is completely unaffected.** `_is_paid_shop_available()` returns
   `true` unconditionally on non-Android. No auth gate on Web startup.
 
@@ -927,18 +939,19 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
 - **Account cloud save is authoritative for every account session, not just Guest → Login.**
   Stored account session at boot, direct AuthGate login at boot, and account-register at
   boot all force-load the account cloud save the same way `on_account_login_from_guest_overlay()`
-  already does. `CloudRestorePrompt` is no longer shown for any of these paths.
-- **`ClickerScreen._ready()` calls `_begin_account_startup_cloud_load()` instead of
-  `request_backend_cloud_restore_check("startup")`.** The latter is kept in the file
-  unused (not deleted) in case a future patch needs a restore-prompt path again.
+  already does. `CloudRestorePrompt` is no longer shown for any of these paths (and no
+  longer exists at all as of C7.3.4).
+- **`ClickerScreen._ready()` calls `_begin_account_startup_cloud_load()`.** The old
+  `request_backend_cloud_restore_check("startup")` alternative was deleted in C7.3.4 along
+  with the rest of the restore-prompt flow — do not reintroduce it.
 - **`_begin_account_startup_cloud_load()` no-ops for Guest and for Web/editor.** It only
   proceeds when `OS.has_feature("android") and Platform.backend_has_session()` and
   `_gameplay_started_as_guest` is false. Backend auto-upload suspension is already set by
   `_should_suspend_backend_auto_upload_for_startup_restore()` earlier in `_ready()` under
   the same guard — `_begin_account_startup_cloud_load()` must resume it on every no-op path.
 - **`_force_account_cloud_load_on_startup` is checked before `_force_account_cloud_load_after_guest_login`**
-  in the `load_save` success/failure handlers, mirroring the existing priority pattern
-  (startup force-load → guest-login force-load → manual download → legacy startup check).
+  in the `load_save` success/failure handlers — these are the only two force-load branches
+  remaining as of C7.3.4.
 - **Missing cloud save on force-load starts a clean account save**, via
   `_apply_clean_account_save_after_missing_cloud()` (renamed from
   `_apply_clean_account_save_after_guest_login()` — now shared by both the startup and
@@ -946,13 +959,10 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
 - **`Main.gd`'s `"account_session"` overlay branch also force-loads instead of prompting.**
   When AuthGate is reopened mid-session (`show_auth_gate_overlay()`) and revalidates a
   stored session, it calls `_clicker_screen.on_account_login_from_guest_overlay()` — the
-  same guest→login force-load method — instead of `request_backend_cloud_restore_check("auth_overlay")`.
+  same guest→login force-load method. There is no restore-prompt alternative to call
+  instead (deleted in C7.3.4).
 - **Guest → Register upload behavior is unchanged.** `on_account_registered_from_guest_overlay()`
   still uploads the guest save; it is never affected by the startup force-load flag.
-- **Manual Settings "Load from Cloud" confirmation is unchanged.** It still goes through
-  `_manual_backend_cloud_download_requested` and still requires no auto-apply without a
-  user-initiated request (the request itself is the confirmation — no `CloudRestorePrompt`
-  was ever used for the manual path).
 
 ## AccountWindow / Settings Split Rules (C7.3.2)
 
@@ -992,6 +1002,43 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
   (`_is_backend_account_ui_supported()` gate), matching the pre-existing Account/Cloud
   section gating. Web/Yandex never sees an Account button or `AccountWindow`.
 
+## CloudRestorePrompt Cleanup & AccountWindow/Settings Polish Rules (C7.3.4)
+
+- **Do not reintroduce `CloudRestorePrompt`.** See the C5.3 section above — it is fully
+  deleted, not just unused. There is no local-vs-cloud conflict UI anywhere in the app.
+- **`AccountWindow` must not have a user-facing "Load from Cloud" action.** The account
+  cloud save is authoritative and force-loads automatically at startup/login (C7.3.1);
+  a manual download button would let a user overwrite newer local progress with a stale
+  cloud copy for no reason. `Save to Cloud` is the only manual cloud action in
+  `AccountWindow`. If a future patch needs manual download back, treat it as a new
+  product decision, not a revert of this cleanup.
+- **`AccountWindow`'s signed-in state shows only `Email: ...` and
+  `Email verified`/`Email not verified`**, plus `Save to Cloud` and `Logout`. Do not add
+  back the big "Signed in"/"Guest mode" status label, the Verify Email button, the
+  verification code input, or the Confirm Code button — those are deliberately gone from
+  the UI (C7.3.4). `Platform.backend_request_email_verification()` and
+  `backend_confirm_email_verification()` are untouched and may be re-wired to UI later if
+  the product wants inline verification back; don't delete the backend methods.
+- **`AccountWindow` action buttons (Sign in / Register, Save to Cloud, Logout) must use
+  texture-scale centered sizing, not full-width stretch.** Use
+  `custom_minimum_size = AccountWindow.ACTION_BUTTON_SIZE` (`Vector2(218, 75)`, matching
+  the `SettingsWindow` Account button) and `size_flags_horizontal = Control.SIZE_SHRINK_CENTER`.
+  Do not use `Control.SIZE_EXPAND_FILL` on these buttons.
+- **`SettingsWindow` may only be resized proportionally on both X and Y, by the same
+  scale factor, never dynamically.** Current fixed size is `648×630` (scaled `1.2×` from
+  the original `540×525`, C7.3.4). If a future patch needs more room, pick a new scale
+  factor and apply it to both axes — do not stretch one axis, do not compute size from
+  content. `AccountWindow` keeps its own separate `540×525` fixed size; the two windows
+  are not required to match.
+- **Version must remain visible in `SettingsWindow` without scrolling in the normal
+  layout** (Sound, Music, Language, Save, Account, Version — `BodyScrollContainer` should
+  not need to scroll to reach `VersionLabel`). If content grows again and scrolling
+  returns, prefer another proportional resize over shrinking rows or fonts.
+- **UI polish patches like this one must not touch backend/cloud-save authority logic.**
+  Account startup force-load (C7.3.1), Guest → Register upload, and Guest → Login
+  force-load (C7.1) are all unchanged by C7.3.4 — only the UI presenting/triggering them
+  changed.
+
 ## AuthGate Visual Rules (C7.3.3)
 
 - **`AuthGateScreen` background uses the boot splash image** (same file as
@@ -1020,18 +1067,23 @@ See `docs/LOCALIZATION.md` for the full architecture and troubleshooting guide.
 - **`SaveManager._backend_cloud_auto_upload_suspended` guards `queue_backend_cloud_save()` only.** `upload_current_save_to_backend_cloud_now()` has no suspension guard and must never acquire one — manual Save to Cloud must always work.
 - **Suspension is set in `ClickerScreen._ready()` before `_load_game_on_start_async()`**, only when `_should_suspend_backend_auto_upload_for_startup_restore()` returns true (Android + has_session). It is a no-op on Web and in guest mode.
 - **Every restore-decision exit point must call `_resume_backend_auto_upload_after_restore_decision()`.** Missing a resume causes auto-upload to be silently disabled for the session. The `_exit_tree()` cleanup is a last-resort guard, not a substitute for explicit resumes.
-- **Do not resume while the restore prompt is still visible.** Suspension must stay active while `_startup_cloud_restore_prompt_pending` is true. Only resume after the player presses Load Cloud or Keep Local.
-- **`apply_cloud_save_payload()` calls `save_data()` which calls `queue_backend_cloud_save()`.** During the restore-load flow, the call to `apply_cloud_save_payload` happens while suspension is still active; resume comes afterwards. This prevents an immediate re-upload of the newly written local save before the decision is complete.
-- **Manual Settings Load from Cloud also calls resume** as a defensive cleanup. By the time the player reaches Settings, startup suspension should already be cleared, so the resume is a no-op in normal cases.
+- **`apply_cloud_save_payload()` calls `save_data()` which calls `queue_backend_cloud_save()`.** During a force-load flow, the call to `apply_cloud_save_payload` happens while suspension is still active; resume comes afterwards. This prevents an immediate re-upload of the newly written local save before the load is complete.
 - **Web/Yandex cloud-save must remain completely unaffected.** The suspension flag lives in `SaveManager` but `queue_backend_cloud_save()` returns early for non-Android before it ever reaches the suspension check.
 
-## Pre-Startup Local Save Snapshot Rules (C5.3.2)
+> The "restore prompt visible" and "Manual Settings Load from Cloud" bullets that used to
+> live here were removed in C7.3.4 along with `CloudRestorePrompt` and `AccountWindow`'s
+> manual download action — there is no longer a prompt to stay suspended for, and no
+> manual download path to call resume from.
 
-- **Startup cloud restore decisions must use `_pre_startup_had_local_save` and `_pre_startup_local_timestamp`, not `SaveManager.load_data()`.** A default local save created by `_load_game_on_start_async()` must not influence the prompt decision.
-- **`_capture_pre_startup_local_save_snapshot()` must be called before `_load_game_on_start_async()`** and before `SaveManager.set_backend_cloud_auto_upload_suspended(true)` in `_ready()`. Order in `_ready()`: snapshot → suspend → `await _load_game_on_start_async()`.
-- **The snapshot is idempotent** — `_pre_startup_local_save_snapshot_taken` guards against re-capture. The defensive re-call in `_evaluate_cloud_restore_candidate()` is a safety net only; do not rely on it as the primary call site.
-- **Do not call `_save_game_now()` or `SaveManager.save_data()` before `_capture_pre_startup_local_save_snapshot()` in `_ready()`.** Any earlier write would invalidate the snapshot's purpose.
-- **If pre-startup local save is invalid or empty, treat it as no local save.** The snapshot sets `_pre_startup_had_local_save = false` in this case so the restore prompt still appears.
+## Pre-Startup Local Save Snapshot Rules (C5.3.2 — removed in C7.3.4)
+
+> **`_capture_pre_startup_local_save_snapshot()` and the `_pre_startup_*` fields it wrote
+> (`_pre_startup_had_local_save`, `_pre_startup_local_timestamp`,
+> `_pre_startup_local_save_snapshot_taken`) were deleted in C7.3.4** along with the rest
+> of the `CloudRestorePrompt` flow that consumed them. Nothing in the current codebase
+> needs a pre-startup local save snapshot — the account cloud save force-loads
+> unconditionally and overwrites local state directly. Do not reintroduce this snapshot
+> unless a future patch brings back some form of local-vs-cloud comparison.
 - **If `_pre_startup_local_timestamp` is 0 (no `last_save_unix_time`) and cloud timestamp is valid, the restore prompt must appear.** The `cloud_time > 0 > 0` comparison handles this naturally — do not add a special case that suppresses the prompt.
 - **Manual Settings Load from Cloud must not use the pre-startup snapshot.** It has its own confirmation flow and applies immediately after the user confirms.
 

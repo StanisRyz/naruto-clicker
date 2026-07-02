@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3 uid="uid://iyfdkc71gxgi"]
+[gd_scene load_steps=24 format=3 uid="uid://iyfdkc71gxgi"]
 
 [ext_resource type="Script" uid="uid://dnim7mf4hei23" path="res://scenes/game/ClickerScreen.gd" id="1_ymqc8"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PrimaryStatsPanel.tscn" id="2_primary"]
@@ -22,7 +22,6 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/RewardedAdBanner.tscn" id="21_rad"]
 [ext_resource type="PackedScene" path="res://scenes/ui/GemPurchaseDialog.tscn" id="22_gpd"]
 [ext_resource type="PackedScene" path="res://scenes/ui/OfflineRewardDialog.tscn" id="23_ord"]
-[ext_resource type="PackedScene" path="res://scenes/ui/CloudRestorePrompt.tscn" id="24_crp"]
 [ext_resource type="PackedScene" path="res://scenes/ui/AccountWindow.tscn" id="25_account"]
 
 [node name="ClickerScreen" type="Control"]
@@ -341,14 +340,6 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="OfflineRewardDialog" parent="." instance=ExtResource("23_ord")]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="CloudRestorePrompt" parent="." instance=ExtResource("24_crp")]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
